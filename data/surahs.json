@@ -1,0 +1,914 @@
+[
+ {
+  "surah": 1,
+  "name": "ٱلْفَاتِحَةِ",
+  "nameEn": "Al-Faatiha",
+  "translation": "The Opening",
+  "ayahs": 7,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 2,
+  "name": "البَقَرَةِ",
+  "nameEn": "Al-Baqara",
+  "translation": "The Cow",
+  "ayahs": 286,
+  "revelation": "Medinan"
+ },
+ {
+  "surah": 3,
+  "name": "آلِ عِمۡرَانَ",
+  "nameEn": "Aal-i-Imraan",
+  "translation": "The Family of Imraan",
+  "ayahs": 200,
+  "revelation": "Medinan"
+ },
+ {
+  "surah": 4,
+  "name": "النِّسَاءِ",
+  "nameEn": "An-Nisaa",
+  "translation": "The Women",
+  "ayahs": 176,
+  "revelation": "Medinan"
+ },
+ {
+  "surah": 5,
+  "name": "المَائـِدَةِ",
+  "nameEn": "Al-Maaida",
+  "translation": "The Table",
+  "ayahs": 120,
+  "revelation": "Medinan"
+ },
+ {
+  "surah": 6,
+  "name": "الأَنۡعَامِ",
+  "nameEn": "Al-An'aam",
+  "translation": "The Cattle",
+  "ayahs": 165,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 7,
+  "name": "الأَعۡرَافِ",
+  "nameEn": "Al-A'raaf",
+  "translation": "The Heights",
+  "ayahs": 206,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 8,
+  "name": "الأَنفَالِ",
+  "nameEn": "Al-Anfaal",
+  "translation": "The Spoils of War",
+  "ayahs": 75,
+  "revelation": "Medinan"
+ },
+ {
+  "surah": 9,
+  "name": "التَّوۡبَةِ",
+  "nameEn": "At-Tawba",
+  "translation": "The Repentance",
+  "ayahs": 129,
+  "revelation": "Medinan"
+ },
+ {
+  "surah": 10,
+  "name": "يُونُسَ",
+  "nameEn": "Yunus",
+  "translation": "Jonas",
+  "ayahs": 109,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 11,
+  "name": "هُودٍ",
+  "nameEn": "Hud",
+  "translation": "Hud",
+  "ayahs": 123,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 12,
+  "name": "يُوسُفَ",
+  "nameEn": "Yusuf",
+  "translation": "Joseph",
+  "ayahs": 111,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 13,
+  "name": "الرَّعۡدِ",
+  "nameEn": "Ar-Ra'd",
+  "translation": "The Thunder",
+  "ayahs": 43,
+  "revelation": "Medinan"
+ },
+ {
+  "surah": 14,
+  "name": "إِبۡرَاهِيمَ",
+  "nameEn": "Ibrahim",
+  "translation": "Abraham",
+  "ayahs": 52,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 15,
+  "name": "الحِجۡرِ",
+  "nameEn": "Al-Hijr",
+  "translation": "The Rock",
+  "ayahs": 99,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 16,
+  "name": "النَّحۡلِ",
+  "nameEn": "An-Nahl",
+  "translation": "The Bee",
+  "ayahs": 128,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 17,
+  "name": "الإِسۡرَاءِ",
+  "nameEn": "Al-Israa",
+  "translation": "The Night Journey",
+  "ayahs": 111,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 18,
+  "name": "الكَهۡفِ",
+  "nameEn": "Al-Kahf",
+  "translation": "The Cave",
+  "ayahs": 110,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 19,
+  "name": "مَرۡيَمَ",
+  "nameEn": "Maryam",
+  "translation": "Mary",
+  "ayahs": 98,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 20,
+  "name": "طه",
+  "nameEn": "Taa-Haa",
+  "translation": "Taa-Haa",
+  "ayahs": 135,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 21,
+  "name": "الأَنبِيَاءِ",
+  "nameEn": "Al-Anbiyaa",
+  "translation": "The Prophets",
+  "ayahs": 112,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 22,
+  "name": "الحَجِّ",
+  "nameEn": "Al-Hajj",
+  "translation": "The Pilgrimage",
+  "ayahs": 78,
+  "revelation": "Medinan"
+ },
+ {
+  "surah": 23,
+  "name": "المُؤۡمِنُونَ",
+  "nameEn": "Al-Muminoon",
+  "translation": "The Believers",
+  "ayahs": 118,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 24,
+  "name": "النُّورِ",
+  "nameEn": "An-Noor",
+  "translation": "The Light",
+  "ayahs": 64,
+  "revelation": "Medinan"
+ },
+ {
+  "surah": 25,
+  "name": "الفُرۡقَانِ",
+  "nameEn": "Al-Furqaan",
+  "translation": "The Criterion",
+  "ayahs": 77,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 26,
+  "name": "الشُّعَرَاءِ",
+  "nameEn": "Ash-Shu'araa",
+  "translation": "The Poets",
+  "ayahs": 227,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 27,
+  "name": "النَّمۡلِ",
+  "nameEn": "An-Naml",
+  "translation": "The Ant",
+  "ayahs": 93,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 28,
+  "name": "القَصَصِ",
+  "nameEn": "Al-Qasas",
+  "translation": "The Stories",
+  "ayahs": 88,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 29,
+  "name": "العَنكَبُوتِ",
+  "nameEn": "Al-Ankaboot",
+  "translation": "The Spider",
+  "ayahs": 69,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 30,
+  "name": "الرُّومِ",
+  "nameEn": "Ar-Room",
+  "translation": "The Romans",
+  "ayahs": 60,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 31,
+  "name": "لُقۡمَانَ",
+  "nameEn": "Luqman",
+  "translation": "Luqman",
+  "ayahs": 34,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 32,
+  "name": "السَّجۡدَةِ",
+  "nameEn": "As-Sajda",
+  "translation": "The Prostration",
+  "ayahs": 30,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 33,
+  "name": "الأَحۡزَابِ",
+  "nameEn": "Al-Ahzaab",
+  "translation": "The Clans",
+  "ayahs": 73,
+  "revelation": "Medinan"
+ },
+ {
+  "surah": 34,
+  "name": "سَبَإٍ",
+  "nameEn": "Saba",
+  "translation": "Sheba",
+  "ayahs": 54,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 35,
+  "name": "فَاطِرٍ",
+  "nameEn": "Faatir",
+  "translation": "The Originator",
+  "ayahs": 45,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 36,
+  "name": "يسٓ",
+  "nameEn": "Yaseen",
+  "translation": "Yaseen",
+  "ayahs": 83,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 37,
+  "name": "الصَّافَّاتِ",
+  "nameEn": "As-Saaffaat",
+  "translation": "Those drawn up in Ranks",
+  "ayahs": 182,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 38,
+  "name": "صٓ",
+  "nameEn": "Saad",
+  "translation": "The letter Saad",
+  "ayahs": 88,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 39,
+  "name": "الزُّمَرِ",
+  "nameEn": "Az-Zumar",
+  "translation": "The Groups",
+  "ayahs": 75,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 40,
+  "name": "غَافِرٍ",
+  "nameEn": "Ghafir",
+  "translation": "The Forgiver",
+  "ayahs": 85,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 41,
+  "name": "فُصِّلَتۡ",
+  "nameEn": "Fussilat",
+  "translation": "Explained in detail",
+  "ayahs": 54,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 42,
+  "name": "الشُّورَىٰ",
+  "nameEn": "Ash-Shura",
+  "translation": "Consultation",
+  "ayahs": 53,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 43,
+  "name": "الزُّخۡرُفِ",
+  "nameEn": "Az-Zukhruf",
+  "translation": "Ornaments of gold",
+  "ayahs": 89,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 44,
+  "name": "الدُّخَانِ",
+  "nameEn": "Ad-Dukhaan",
+  "translation": "The Smoke",
+  "ayahs": 59,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 45,
+  "name": "الجَاثِيَةِ",
+  "nameEn": "Al-Jaathiya",
+  "translation": "Crouching",
+  "ayahs": 37,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 46,
+  "name": "الأَحۡقَافِ",
+  "nameEn": "Al-Ahqaf",
+  "translation": "The Dunes",
+  "ayahs": 35,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 47,
+  "name": "مُحَمَّدٍ",
+  "nameEn": "Muhammad",
+  "translation": "Muhammad",
+  "ayahs": 38,
+  "revelation": "Medinan"
+ },
+ {
+  "surah": 48,
+  "name": "الفَتۡحِ",
+  "nameEn": "Al-Fath",
+  "translation": "The Victory",
+  "ayahs": 29,
+  "revelation": "Medinan"
+ },
+ {
+  "surah": 49,
+  "name": "الحُجُرَاتِ",
+  "nameEn": "Al-Hujuraat",
+  "translation": "The Inner Apartments",
+  "ayahs": 18,
+  "revelation": "Medinan"
+ },
+ {
+  "surah": 50,
+  "name": "قٓ",
+  "nameEn": "Qaaf",
+  "translation": "The letter Qaaf",
+  "ayahs": 45,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 51,
+  "name": "الذَّارِيَاتِ",
+  "nameEn": "Adh-Dhaariyat",
+  "translation": "The Winnowing Winds",
+  "ayahs": 60,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 52,
+  "name": "الطُّورِ",
+  "nameEn": "At-Tur",
+  "translation": "The Mount",
+  "ayahs": 49,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 53,
+  "name": "النَّجۡمِ",
+  "nameEn": "An-Najm",
+  "translation": "The Star",
+  "ayahs": 62,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 54,
+  "name": "القَمَرِ",
+  "nameEn": "Al-Qamar",
+  "translation": "The Moon",
+  "ayahs": 55,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 55,
+  "name": "الرَّحۡمَٰن",
+  "nameEn": "Ar-Rahmaan",
+  "translation": "The Beneficent",
+  "ayahs": 78,
+  "revelation": "Medinan"
+ },
+ {
+  "surah": 56,
+  "name": "الوَاقِعَةِ",
+  "nameEn": "Al-Waaqia",
+  "translation": "The Inevitable",
+  "ayahs": 96,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 57,
+  "name": "الحَدِيدِ",
+  "nameEn": "Al-Hadid",
+  "translation": "The Iron",
+  "ayahs": 29,
+  "revelation": "Medinan"
+ },
+ {
+  "surah": 58,
+  "name": "المُجَادلَةِ",
+  "nameEn": "Al-Mujaadila",
+  "translation": "The Pleading Woman",
+  "ayahs": 22,
+  "revelation": "Medinan"
+ },
+ {
+  "surah": 59,
+  "name": "الحَشۡرِ",
+  "nameEn": "Al-Hashr",
+  "translation": "The Exile",
+  "ayahs": 24,
+  "revelation": "Medinan"
+ },
+ {
+  "surah": 60,
+  "name": "المُمۡتَحنَةِ",
+  "nameEn": "Al-Mumtahana",
+  "translation": "She that is to be examined",
+  "ayahs": 13,
+  "revelation": "Medinan"
+ },
+ {
+  "surah": 61,
+  "name": "الصَّفِّ",
+  "nameEn": "As-Saff",
+  "translation": "The Ranks",
+  "ayahs": 14,
+  "revelation": "Medinan"
+ },
+ {
+  "surah": 62,
+  "name": "الجُمُعَةِ",
+  "nameEn": "Al-Jumu'a",
+  "translation": "Friday",
+  "ayahs": 11,
+  "revelation": "Medinan"
+ },
+ {
+  "surah": 63,
+  "name": "المُنَافِقُونَ",
+  "nameEn": "Al-Munaafiqoon",
+  "translation": "The Hypocrites",
+  "ayahs": 11,
+  "revelation": "Medinan"
+ },
+ {
+  "surah": 64,
+  "name": "التَّغَابُنِ",
+  "nameEn": "At-Taghaabun",
+  "translation": "Mutual Disillusion",
+  "ayahs": 18,
+  "revelation": "Medinan"
+ },
+ {
+  "surah": 65,
+  "name": "الطَّلَاقِ",
+  "nameEn": "At-Talaaq",
+  "translation": "Divorce",
+  "ayahs": 12,
+  "revelation": "Medinan"
+ },
+ {
+  "surah": 66,
+  "name": "التَّحۡرِيمِ",
+  "nameEn": "At-Tahrim",
+  "translation": "The Prohibition",
+  "ayahs": 12,
+  "revelation": "Medinan"
+ },
+ {
+  "surah": 67,
+  "name": "المُلۡكِ",
+  "nameEn": "Al-Mulk",
+  "translation": "The Sovereignty",
+  "ayahs": 30,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 68,
+  "name": "القَلَمِ",
+  "nameEn": "Al-Qalam",
+  "translation": "The Pen",
+  "ayahs": 52,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 69,
+  "name": "الحَاقَّةِ",
+  "nameEn": "Al-Haaqqa",
+  "translation": "The Reality",
+  "ayahs": 52,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 70,
+  "name": "المَعَارِجِ",
+  "nameEn": "Al-Ma'aarij",
+  "translation": "The Ascending Stairways",
+  "ayahs": 44,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 71,
+  "name": "نُوحٍ",
+  "nameEn": "Nooh",
+  "translation": "Noah",
+  "ayahs": 28,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 72,
+  "name": "الجِنِّ",
+  "nameEn": "Al-Jinn",
+  "translation": "The Jinn",
+  "ayahs": 28,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 73,
+  "name": "المُزَّمِّلِ",
+  "nameEn": "Al-Muzzammil",
+  "translation": "The Enshrouded One",
+  "ayahs": 20,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 74,
+  "name": "المُدَّثِّرِ",
+  "nameEn": "Al-Muddaththir",
+  "translation": "The Cloaked One",
+  "ayahs": 56,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 75,
+  "name": "القِيَامَةِ",
+  "nameEn": "Al-Qiyaama",
+  "translation": "The Resurrection",
+  "ayahs": 40,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 76,
+  "name": "الإِنسَانِ",
+  "nameEn": "Al-Insaan",
+  "translation": "Man",
+  "ayahs": 31,
+  "revelation": "Medinan"
+ },
+ {
+  "surah": 77,
+  "name": "المُرۡسَلَاتِ",
+  "nameEn": "Al-Mursalaat",
+  "translation": "The Emissaries",
+  "ayahs": 50,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 78,
+  "name": "النَّبَإِ",
+  "nameEn": "An-Naba",
+  "translation": "The Announcement",
+  "ayahs": 40,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 79,
+  "name": "النَّازِعَاتِ",
+  "nameEn": "An-Naazi'aat",
+  "translation": "Those who drag forth",
+  "ayahs": 46,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 80,
+  "name": "عَبَسَ",
+  "nameEn": "Abasa",
+  "translation": "He frowned",
+  "ayahs": 42,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 81,
+  "name": "التَّكۡوِيرِ",
+  "nameEn": "At-Takwir",
+  "translation": "The Overthrowing",
+  "ayahs": 29,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 82,
+  "name": "الانفِطَارِ",
+  "nameEn": "Al-Infitaar",
+  "translation": "The Cleaving",
+  "ayahs": 19,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 83,
+  "name": "المُطَفِّفِينَ",
+  "nameEn": "Al-Mutaffifin",
+  "translation": "Defrauding",
+  "ayahs": 36,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 84,
+  "name": "الانشِقَاقِ",
+  "nameEn": "Al-Inshiqaaq",
+  "translation": "The Splitting Open",
+  "ayahs": 25,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 85,
+  "name": "البُرُوجِ",
+  "nameEn": "Al-Burooj",
+  "translation": "The Constellations",
+  "ayahs": 22,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 86,
+  "name": "الطَّارِقِ",
+  "nameEn": "At-Taariq",
+  "translation": "The Morning Star",
+  "ayahs": 17,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 87,
+  "name": "الأَعۡلَىٰ",
+  "nameEn": "Al-A'laa",
+  "translation": "The Most High",
+  "ayahs": 19,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 88,
+  "name": "الغَاشِيَةِ",
+  "nameEn": "Al-Ghaashiya",
+  "translation": "The Overwhelming",
+  "ayahs": 26,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 89,
+  "name": "الفَجۡرِ",
+  "nameEn": "Al-Fajr",
+  "translation": "The Dawn",
+  "ayahs": 30,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 90,
+  "name": "البَلَدِ",
+  "nameEn": "Al-Balad",
+  "translation": "The City",
+  "ayahs": 20,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 91,
+  "name": "الشَّمۡسِ",
+  "nameEn": "Ash-Shams",
+  "translation": "The Sun",
+  "ayahs": 15,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 92,
+  "name": "اللَّيۡلِ",
+  "nameEn": "Al-Lail",
+  "translation": "The Night",
+  "ayahs": 21,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 93,
+  "name": "الضُّحَىٰ",
+  "nameEn": "Ad-Dhuhaa",
+  "translation": "The Morning Hours",
+  "ayahs": 11,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 94,
+  "name": "الشَّرۡحِ",
+  "nameEn": "Ash-Sharh",
+  "translation": "The Consolation",
+  "ayahs": 8,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 95,
+  "name": "التِّينِ",
+  "nameEn": "At-Tin",
+  "translation": "The Fig",
+  "ayahs": 8,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 96,
+  "name": "العَلَقِ",
+  "nameEn": "Al-Alaq",
+  "translation": "The Clot",
+  "ayahs": 19,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 97,
+  "name": "القَدۡرِ",
+  "nameEn": "Al-Qadr",
+  "translation": "The Power, Fate",
+  "ayahs": 5,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 98,
+  "name": "البَيِّنَةِ",
+  "nameEn": "Al-Bayyina",
+  "translation": "The Evidence",
+  "ayahs": 8,
+  "revelation": "Medinan"
+ },
+ {
+  "surah": 99,
+  "name": "الزَّلۡزَلَةِ",
+  "nameEn": "Az-Zalzala",
+  "translation": "The Earthquake",
+  "ayahs": 8,
+  "revelation": "Medinan"
+ },
+ {
+  "surah": 100,
+  "name": "العَادِيَاتِ",
+  "nameEn": "Al-Aadiyaat",
+  "translation": "The Chargers",
+  "ayahs": 11,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 101,
+  "name": "القَارِعَةِ",
+  "nameEn": "Al-Qaari'a",
+  "translation": "The Calamity",
+  "ayahs": 11,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 102,
+  "name": "التَّكَاثُرِ",
+  "nameEn": "At-Takaathur",
+  "translation": "Competition",
+  "ayahs": 8,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 103,
+  "name": "العَصۡرِ",
+  "nameEn": "Al-Asr",
+  "translation": "The Declining Day, Epoch",
+  "ayahs": 3,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 104,
+  "name": "الهُمَزَةِ",
+  "nameEn": "Al-Humaza",
+  "translation": "The Traducer",
+  "ayahs": 9,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 105,
+  "name": "الفِيلِ",
+  "nameEn": "Al-Fil",
+  "translation": "The Elephant",
+  "ayahs": 5,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 106,
+  "name": "قُرَيۡشٍ",
+  "nameEn": "Quraish",
+  "translation": "Quraysh",
+  "ayahs": 4,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 107,
+  "name": "المَاعُونِ",
+  "nameEn": "Al-Maa'un",
+  "translation": "Almsgiving",
+  "ayahs": 7,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 108,
+  "name": "الكَوۡثَرِ",
+  "nameEn": "Al-Kawthar",
+  "translation": "Abundance",
+  "ayahs": 3,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 109,
+  "name": "الكَافِرُونَ",
+  "nameEn": "Al-Kaafiroon",
+  "translation": "The Disbelievers",
+  "ayahs": 6,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 110,
+  "name": "النَّصۡرِ",
+  "nameEn": "An-Nasr",
+  "translation": "Divine Support",
+  "ayahs": 3,
+  "revelation": "Medinan"
+ },
+ {
+  "surah": 111,
+  "name": "المَسَدِ",
+  "nameEn": "Al-Masad",
+  "translation": "The Palm Fibre",
+  "ayahs": 5,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 112,
+  "name": "الإِخۡلَاصِ",
+  "nameEn": "Al-Ikhlaas",
+  "translation": "Sincerity",
+  "ayahs": 4,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 113,
+  "name": "الفَلَقِ",
+  "nameEn": "Al-Falaq",
+  "translation": "The Dawn",
+  "ayahs": 5,
+  "revelation": "Meccan"
+ },
+ {
+  "surah": 114,
+  "name": "النَّاسِ",
+  "nameEn": "An-Naas",
+  "translation": "Mankind",
+  "ayahs": 6,
+  "revelation": "Meccan"
+ }
+]

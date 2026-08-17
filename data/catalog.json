@@ -1,6 +1,8 @@
 {
  "reciter": "ياسر الدوسري",
  "mushaf": "إنتاج المركز السعودي للتلاوات القرآنية",
+ "source": "tilawatalharamain.com / yaldosry.com mirrors on archive.org",
+ "generated": "2026-08-17",
  "released": 37,
  "total": 114,
  "surahs": [
@@ -8,297 +10,297 @@
    "surah": 1,
    "name": "الفاتحة",
    "url": "https://ia601405.us.archive.org/29/items/fatiha-yaser/fatiha-yaser.mp3",
-   "cors": "yes",
-   "alts": 1,
-   "bytes": 1956191
+   "fallbackUrl": null,
+   "bytes": 1956191,
+   "verified": true
   },
   {
    "surah": 2,
    "name": "البقرة",
    "url": "https://ia601403.us.archive.org/20/items/surat-albaqra-mp-3/surat albaqra (mp3).mp3",
-   "cors": "yes",
-   "alts": 2,
-   "bytes": 228582855
+   "fallbackUrl": "https://media.altilawat.com/surat albaqra (mp3).mp3",
+   "bytes": 228582855,
+   "verified": true
   },
   {
    "surah": 3,
    "name": "آل عمران",
    "url": "https://ia600703.us.archive.org/33/items/2_20260519_20260519_1902/2.mp3",
-   "cors": "yes",
-   "alts": 2,
-   "bytes": 118445069
+   "fallbackUrl": "https://media.altilawat.com/al aimran.mp3",
+   "bytes": 118445069,
+   "verified": false
   },
   {
    "surah": 4,
    "name": "النساء",
    "url": "https://ia600800.us.archive.org/4/items/4_20260521_20260521/4.mp3",
-   "cors": "yes",
-   "alts": 2,
-   "bytes": 124054369
+   "fallbackUrl": "https://media.altilawat.com/annisa (mp3).mp3",
+   "bytes": 124054369,
+   "verified": false
   },
   {
    "surah": 5,
    "name": "المائدة",
    "url": "https://ia903206.us.archive.org/34/items/5_20260523_20260523/5.mp3",
-   "cors": "yes",
-   "alts": 2,
-   "bytes": 99172001
+   "fallbackUrl": "https://media.altilawat.com/6yasser.mp3",
+   "bytes": 99172001,
+   "verified": true
   },
   {
    "surah": 6,
    "name": "الأنعام",
    "url": "https://ia601500.us.archive.org/7/items/6_20260525_20260525/6.mp3",
-   "cors": "yes",
-   "alts": 2,
-   "bytes": 110314360
+   "fallbackUrl": "https://media.altilawat.com/al&#039;anam.mp3",
+   "bytes": 0,
+   "verified": false
   },
   {
    "surah": 7,
    "name": "الأعراف",
    "url": "https://ia600108.us.archive.org/35/items/7_20260528/7.mp3",
-   "cors": "yes",
-   "alts": 2,
-   "bytes": 115550502
+   "fallbackUrl": "https://media.altilawat.com/7yass.mp3",
+   "bytes": 115550502,
+   "verified": true
   },
   {
    "surah": 8,
    "name": "الأنفال",
    "url": "https://ia902805.us.archive.org/0/items/8_20260529_20260529_1909/8.mp3",
-   "cors": "yes",
-   "alts": 2,
-   "bytes": 44856552
+   "fallbackUrl": "https://media.altilawat.com/alanfal.mp3",
+   "bytes": 44856552,
+   "verified": true
   },
   {
    "surah": 9,
    "name": "التوبة",
    "url": "https://ia902906.us.archive.org/21/items/8_20260531_202605/8.mp3",
-   "cors": "yes",
-   "alts": 2,
-   "bytes": 88199022
+   "fallbackUrl": "https://media.altilawat.com/altawbah.mp3",
+   "bytes": 88199022,
+   "verified": true
   },
   {
    "surah": 10,
    "name": "يونس",
    "url": "https://ia600805.us.archive.org/25/items/yunus_202606/yunus.mp3",
-   "cors": "yes",
-   "alts": 2,
-   "bytes": 61749328
+   "fallbackUrl": "https://media.altilawat.com/yunus.mp3",
+   "bytes": 61749328,
+   "verified": true
   },
   {
    "surah": 11,
    "name": "هود",
    "url": "https://ia902805.us.archive.org/18/items/9_20260603_20260603/9.mp3",
-   "cors": "yes",
-   "alts": 2,
-   "bytes": 66004602
+   "fallbackUrl": "https://media.altilawat.com/Huud.mp3",
+   "bytes": 66004602,
+   "verified": true
   },
   {
    "surah": 12,
    "name": "يوسف",
    "url": "https://ia600109.us.archive.org/21/items/10_20260604_202606/10.mp3",
-   "cors": "yes",
-   "alts": 2,
-   "bytes": 62689658
+   "fallbackUrl": "https://media.altilawat.com/Yusufyaser.mp3",
+   "bytes": 62689658,
+   "verified": true
   },
   {
    "surah": 13,
    "name": "الرعد",
    "url": "https://ia601908.us.archive.org/23/items/11_20260605_20260605/11.mp3",
-   "cors": "yes",
-   "alts": 2,
-   "bytes": 28512934
+   "fallbackUrl": "https://media.altilawat.com/ar-ra&#039;dd---.mp3",
+   "bytes": 0,
+   "verified": false
   },
   {
    "surah": 14,
    "name": "إبراهيم",
    "url": "https://ia600601.us.archive.org/26/items/12_20260605_20260605/12.mp3",
-   "cors": "yes",
-   "alts": 2,
-   "bytes": 28629041
+   "fallbackUrl": "https://media.altilawat.com/suratebrahim.mp3",
+   "bytes": 28629041,
+   "verified": true
   },
   {
    "surah": 15,
    "name": "الحجر",
    "url": "https://ia600500.us.archive.org/20/items/13_20260606_20260606/13.mp3",
-   "cors": "yes",
-   "alts": 2,
-   "bytes": 22151066
+   "fallbackUrl": "https://media.altilawat.com/alhijrrr.mp3",
+   "bytes": 22151066,
+   "verified": true
   },
   {
    "surah": 16,
    "name": "النحل",
    "url": "https://ia600608.us.archive.org/29/items/14_20260607_202606/14.mp3",
-   "cors": "yes",
-   "alts": 2,
-   "bytes": 58437231
+   "fallbackUrl": "https://media.altilawat.com/surah-annahl.mp3",
+   "bytes": 58437231,
+   "verified": true
   },
   {
    "surah": 17,
    "name": "الإسراء",
    "url": "https://ia903109.us.archive.org/22/items/15_20260608_20260608/15.mp3",
-   "cors": "yes",
-   "alts": 2,
-   "bytes": 50037763
+   "fallbackUrl": "https://media.altilawat.com/surah al-isra.mp3",
+   "bytes": 50037763,
+   "verified": true
   },
   {
    "surah": 18,
    "name": "الكهف",
    "url": "https://ia600104.us.archive.org/22/items/16_20260609_202606/16.mp3",
-   "cors": "yes",
-   "alts": 2,
-   "bytes": 50316321
+   "fallbackUrl": "https://media.altilawat.com/surah-al-kahf.mp3",
+   "bytes": 50316321,
+   "verified": true
   },
   {
    "surah": 19,
    "name": "مريم",
    "url": "https://ia902805.us.archive.org/25/items/17_20260610_202606/17.mp3",
-   "cors": "yes",
-   "alts": 2,
-   "bytes": 32369608
+   "fallbackUrl": "https://media.altilawat.com/surah maryam.mp3",
+   "bytes": 32369608,
+   "verified": true
   },
   {
    "surah": 20,
    "name": "طه",
    "url": "https://ia600108.us.archive.org/6/items/18_20260611_20260611/18.mp3",
-   "cors": "yes",
-   "alts": 2,
-   "bytes": 40668810
+   "fallbackUrl": "https://media.altilawat.com/surah ta ha.mp3",
+   "bytes": 40668810,
+   "verified": true
   },
   {
    "surah": 21,
    "name": "الأنبياء",
    "url": "https://ia600609.us.archive.org/3/items/19_20260612_202606/19.mp3",
-   "cors": "yes",
-   "alts": 2,
-   "bytes": 37691585
+   "fallbackUrl": "https://media.altilawat.com/surah al-anbya&#039;a.mp3",
+   "bytes": 0,
+   "verified": false
   },
   {
    "surah": 22,
    "name": "الحج",
    "url": "https://ia600409.us.archive.org/14/items/20_20260613/20.mp3",
-   "cors": "yes",
-   "alts": 2,
-   "bytes": 41268786
+   "fallbackUrl": "https://media.altilawat.com/surah al-hajj-.mp3",
+   "bytes": 41268786,
+   "verified": true
   },
   {
    "surah": 23,
    "name": "المؤمنون",
    "url": "https://ia600404.us.archive.org/9/items/21_20260614/21.mp3",
-   "cors": "yes",
-   "alts": 2,
-   "bytes": 36347526
+   "fallbackUrl": "https://media.altilawat.com/surah al-mu&#039;minun-.mp3",
+   "bytes": 0,
+   "verified": false
   },
   {
    "surah": 24,
    "name": "النور",
    "url": "https://ia601601.us.archive.org/28/items/23_20260615/23.mp3",
-   "cors": "yes",
-   "alts": 2,
-   "bytes": 45325939
+   "fallbackUrl": "https://media.altilawat.com/surah an-noor.mp3",
+   "bytes": 45325939,
+   "verified": true
   },
   {
    "surah": 25,
    "name": "الفرقان",
    "url": "https://ia600404.us.archive.org/30/items/24_20260616/24.mp3",
-   "cors": "yes",
-   "alts": 2,
-   "bytes": 30778805
+   "fallbackUrl": "https://media.altilawat.com/surah al-forqan.mp3",
+   "bytes": 30778805,
+   "verified": true
   },
   {
    "surah": 26,
    "name": "الشعراء",
    "url": "https://ia600502.us.archive.org/17/items/25_20260617/25.mp3",
-   "cors": "yes",
-   "alts": 2,
-   "bytes": 44584326
+   "fallbackUrl": "https://media.altilawat.com/surah ash-shu&#039;ara-.m4a",
+   "bytes": 0,
+   "verified": false
   },
   {
    "surah": 27,
    "name": "النمل",
    "url": "https://ia601801.us.archive.org/25/items/26_20260618_202606/26.mp3",
-   "cors": "yes",
-   "alts": 2,
-   "bytes": 38080330
+   "fallbackUrl": "https://media.altilawat.com/surah an-naml.m4a",
+   "bytes": 38080330,
+   "verified": false
   },
   {
    "surah": 28,
    "name": "القصص",
-   "url": "https://archive.org/download/28_20260620/28.mp3",
-   "cors": "yes",
-   "alts": 1,
-   "bytes": 0
+   "url": "https://media.altilawat.com/surah al-qasas.mp3",
+   "fallbackUrl": null,
+   "bytes": 46090356,
+   "verified": true
   },
   {
    "surah": 29,
    "name": "العنكبوت",
    "url": "https://ia903202.us.archive.org/13/items/28_20260620/28.mp3",
-   "cors": "yes",
-   "alts": 2,
-   "bytes": 31927201
+   "fallbackUrl": "https://media.altilawat.com/surah al-ankabut.m4a",
+   "bytes": 31927201,
+   "verified": false
   },
   {
    "surah": 30,
    "name": "الروم",
    "url": "https://ia600106.us.archive.org/15/items/29_20260620/29.mp3",
-   "cors": "yes",
-   "alts": 2,
-   "bytes": 27326615
+   "fallbackUrl": "https://media.altilawat.com/surah ar-rum.m4a",
+   "bytes": 27326615,
+   "verified": false
   },
   {
    "surah": 31,
    "name": "لقمان",
    "url": "https://ia600106.us.archive.org/0/items/31_20260621_202606/31.mp3",
-   "cors": "yes",
-   "alts": 2,
-   "bytes": 17549712
+   "fallbackUrl": "https://media.altilawat.com/surah luqman.m4a",
+   "bytes": 17549712,
+   "verified": false
   },
   {
    "surah": 32,
    "name": "السجدة",
    "url": "https://ia902807.us.archive.org/1/items/30_20260621/30.mp3",
-   "cors": "yes",
-   "alts": 2,
-   "bytes": 12936382
+   "fallbackUrl": "https://media.altilawat.com/surah as-sajda.m4a",
+   "bytes": 12936382,
+   "verified": false
   },
   {
    "surah": 33,
    "name": "الأحزاب",
    "url": "https://ia801904.us.archive.org/11/items/32_20260622/32.mp3",
-   "cors": "yes",
-   "alts": 2,
-   "bytes": 43122065
+   "fallbackUrl": "https://media.altilawat.com/surah alahzab.m4a",
+   "bytes": 43122065,
+   "verified": false
   },
   {
    "surah": 34,
    "name": "سبأ",
    "url": "https://ia600800.us.archive.org/19/items/33_20260623/33.mp3",
-   "cors": "yes",
-   "alts": 2,
-   "bytes": 27578292
+   "fallbackUrl": "https://media.altilawat.com/surah saba.m4a",
+   "bytes": 27578292,
+   "verified": false
   },
   {
    "surah": 35,
    "name": "فاطر",
    "url": "https://ia903204.us.archive.org/12/items/34_20260623/34.mp3",
-   "cors": "yes",
-   "alts": 2,
-   "bytes": 26772439
+   "fallbackUrl": "https://media.altilawat.com/surah fatir.m4a",
+   "bytes": 26772439,
+   "verified": false
   },
   {
    "surah": 36,
    "name": "يس",
    "url": "https://ia903205.us.archive.org/9/items/35_20260624/35.mp3",
-   "cors": "yes",
-   "alts": 2,
-   "bytes": 24309224
+   "fallbackUrl": "https://media.altilawat.com/surah yaseen.m4a",
+   "bytes": 24309224,
+   "verified": false
   },
   {
    "surah": 37,
    "name": "الصافات",
    "url": "https://ia903202.us.archive.org/34/items/36_20260624/36.mp3",
-   "cors": "yes",
-   "alts": 2,
-   "bytes": 0
+   "fallbackUrl": "https://media.altilawat.com/surah as-saaaffat.m4a",
+   "bytes": 31612393,
+   "verified": false
   }
  ]
 }
