@@ -1,5 +1,9 @@
 import type { SurahView } from '../catalog/types'
-import { formatBytes } from './format'
+import { Play, Handle, Download, Saved } from './Icons'
+
+/** Bare surah name, diacritics removed, for the small line under the title. */
+export const plainName = (s: string) =>
+  s.replace(/[ؐ-ًؚ-ٰٟۖ-ۭ]/g, '').trim()
 
 type Props = {
   surahs: SurahView[]
@@ -22,58 +26,68 @@ export function SurahList({
 }: Props) {
   const released = surahs.filter((s) => s.released)
   const upcoming = surahs.filter((s) => !s.released)
-  const lastReleased = released[released.length - 1]
+  const last = released[released.length - 1]
+
+  if (!surahs.length) {
+    return <p className="empty">لا توجد نتائج</p>
+  }
 
   return (
     <>
       <ul className="surah-list">
         {released.map((s) => {
+          const active = current === s.surah
           const have = downloaded.has(s.surah)
           const pct = progress[s.surah]
           return (
             <li key={s.surah}>
               <button
-                className={`surah${have ? ' is-ready' : ''}`}
+                className={`row${active ? ' active' : ''}`}
                 onClick={() => onPlay(s.surah)}
-                aria-current={current === s.surah ? 'true' : undefined}
+                aria-current={active ? 'true' : undefined}
               >
                 <span className="numeral">{s.surah}</span>
+
                 <span className="names">
-                  <span className="name-ar">{s.name}</span>
-                  <span className="name-en">
-                    {s.nameEn} · {s.ayahs} ayahs · {formatBytes(s.bytes)}
+                  <span className="name-ar">سُورَةُ {s.name}</span>
+                  <span className="name-plain">
+                    {s.nameEn} · {s.translation}
                   </span>
                 </span>
-                <span className="state">
-                  {!verified(s) && <span className="tag unverified">check</span>}
+
+                <span className="row-end">
                   {pct !== undefined ? (
-                    <span className="bar">
-                      <span style={{ width: `${Math.round(pct * 100)}%` }} />
-                    </span>
-                  ) : have ? (
-                    <>
-                      <span className="dot" />
-                      offline
-                    </>
+                    <span className="ring">{Math.round(pct * 100)}%</span>
                   ) : (
                     <span
                       role="button"
                       tabIndex={0}
-                      className="dl"
+                      aria-label={have ? 'Saved offline' : 'Save for offline'}
+                      className={`mini${have ? ' is-saved' : ''}${
+                        !verified(s) ? ' needs-check' : ''
+                      }`}
                       onClick={(e) => {
                         e.stopPropagation()
-                        onDownload(s.surah)
+                        if (!have) onDownload(s.surah)
                       }}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
                           e.stopPropagation()
                           e.preventDefault()
-                          onDownload(s.surah)
+                          if (!have) onDownload(s.surah)
                         }
                       }}
                     >
-                      save
+                      {have ? <Saved size={19} /> : <Download size={19} />}
                     </span>
+                  )}
+
+                  {active ? (
+                    <span className="play-dot">
+                      <Play size={20} />
+                    </span>
+                  ) : (
+                    <Handle size={20} />
                   )}
                 </span>
               </button>
@@ -82,29 +96,27 @@ export function SurahList({
         })}
       </ul>
 
-      {/* The recording stops here because it has not been made yet, so the
-          rule fades out rather than ending. */}
-      <div className="frontier">
-        <div className="fade" />
-        <p>
-          <span className="ar">{lastReleased?.name}</span> is the last surah recorded.
-          <br />
-          The mushaf is still being produced — new surahs air nightly and appear here on their own.
-        </p>
-      </div>
+      {last && (
+        <div className="frontier">
+          <div className="fade" />
+          <p>
+            آخر سورة مُسجَّلة: {plainName(last.name)}
+            <br />
+            المصحف ما زال قيد التسجيل — تُضاف السور الجديدة تلقائيًا
+          </p>
+        </div>
+      )}
 
       <ul className="surah-list">
         {upcoming.map((s) => (
           <li key={s.surah}>
-            <button className="surah" disabled>
+            <button className="row" disabled>
               <span className="numeral">{s.surah}</span>
               <span className="names">
-                <span className="name-ar">{s.name}</span>
-                <span className="name-en">
-                  {s.nameEn} · {s.ayahs} ayahs
-                </span>
+                <span className="name-ar">سُورَةُ {s.name}</span>
+                <span className="name-plain">{plainName(s.name)}</span>
               </span>
-              <span className="state">not recorded</span>
+              <span className="row-end" />
             </button>
           </li>
         ))}

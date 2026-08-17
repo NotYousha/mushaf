@@ -15,6 +15,7 @@ export function buildView(cat: Catalog, m: SurahMeta[]): SurahView[] {
       released: !!e,
       verified: e?.verified ?? false,
       url: e?.url ?? null,
+      fallbackUrl: e?.fallbackUrl ?? null,
       bytes: e?.bytes ?? 0,
     }
   })

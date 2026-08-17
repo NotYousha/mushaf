@@ -33,5 +33,8 @@ export type SurahView = {
   released: boolean
   verified: boolean
   url: string | null
+  /** Alternate host for the same audio. Archive.org nodes rotate and
+   *  individual nodes go unhealthy, so playback retries here on error. */
+  fallbackUrl: string | null
   bytes: number
 }
