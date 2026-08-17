@@ -222,10 +222,11 @@ export default function App() {
     await setPref('favourites', next)
   }
 
+  // The transport reads left-to-right like a video scrubber, even though the
+  // surah list around it is RTL.
   const seekTo = (e: React.MouseEvent<HTMLDivElement>) => {
     const r = e.currentTarget.getBoundingClientRect()
-    // RTL track: progress grows from the right edge.
-    const f = (r.right - e.clientX) / r.width
+    const f = (e.clientX - r.left) / r.width
     engine.current!.seek(Math.max(0, Math.min(1, f)) * duration)
   }
 
@@ -235,7 +236,7 @@ export default function App() {
     <div className="app">
       <div className="sheet">
         <div className="sheet-head">
-          <h1>القرآن الكريم</h1>
+          <h1>المُتابَعة</h1>
           <div className="head-actions">
             <button
               className="round"
@@ -371,9 +372,11 @@ export default function App() {
       {currentView && (
         <div className="player">
           <div className="player-top">
-            <div className="medallion" aria-hidden="true">
-              <QuranMark size={34} />
-            </div>
+            <div
+              className="medallion"
+              aria-hidden="true"
+              style={{ ['--face-src' as string]: "url('/sheikh.jpg')" }}
+            />
 
             <div className="now">
               <div className="surah-name">سُورَةُ {currentView.name}</div>
@@ -435,13 +438,26 @@ export default function App() {
           </div>
 
           <div className="progress">
-            <div className="track" onClick={seekTo}>
+            <div
+              className="track"
+              onClick={seekTo}
+              role="slider"
+              tabIndex={0}
+              aria-label="موضع التشغيل"
+              aria-valuemin={0}
+              aria-valuemax={Math.round(duration)}
+              aria-valuenow={Math.round(time)}
+              onKeyDown={(e) => {
+                if (e.key === 'ArrowRight') engine.current!.seek(time + 10)
+                if (e.key === 'ArrowLeft') engine.current!.seek(time - 10)
+              }}
+            >
               <div className="fill" style={{ width: `${pct}%` }} />
-              <div className="knob" style={{ right: `${pct}%` }} />
+              <div className="knob" style={{ left: `${pct}%` }} />
             </div>
             <div className="times">
               <span>{formatTime(time)}</span>
-              <span>
+              <span className="badge">
                 {mode === 'offline' ? 'محفوظة' : 'بث'}
                 {sleepAt ? ` · ${sleepAt}د` : ''}
               </span>
@@ -449,11 +465,7 @@ export default function App() {
             </div>
           </div>
 
-          {error && (
-            <p className="empty" style={{ padding: '0 0 0.6rem', color: 'var(--warn)' }}>
-              {error}
-            </p>
-          )}
+          {error && <p className="err">{error}</p>}
         </div>
       )}
 

@@ -1,30 +1,43 @@
 /* ---------------------------------------------------------------
-   Mushaf — cream + gold, RTL, card-based.
+   Mushaf — cream + gold, RTL list, LTR transport.
+   Palette sampled from the reference player.
    --------------------------------------------------------------- */
 
 :root {
-  --bg: #f7f1e8;
-  --card: #fdfaf5;
-  --card-2: #fbf6ee;
-  --tile: #f6ebd4;
-  --tile-active: linear-gradient(160deg, #efdcae, #e0c489);
-  --pill: #f5efe3;
+  --bg: #f6f0e6;
+  --card: #fdfbf8;
+  --card-2: #fdfaf4;
+  --tile: #f7ebd5;
+  --tile-active-a: #ebd5a4;
+  --tile-active-b: #dcc088;
+  --tile-active-ink: #8a6d2e;
+  --pill: #f5efe4;
 
-  --gold: #c2a15e;
-  --gold-deep: #a8863c;
-  --gold-soft: #d9c193;
-  --gold-line: #ece0c9;
+  --gold: #c9a961;
+  --gold-deep: #b8974f;
+  --gold-ink: #bfa365;
+  --gold-soft: #dcc9a8;
+  --gold-line: #eee2cc;
 
-  --ink: #6f6250;
+  --ink: #7d7263;
   --ink-strong: #5c5142;
-  --muted: #ab9c86;
-  --divider: #f1e8d8;
+  --muted: #ada08c;
+  --divider: #f0e9dc;
+
+  --play-a: #ead5a8;
+  --play-b: #d2b172;
 
   --ready: #4f8a6b;
   --warn: #b3703c;
 
   --radius-card: 28px;
   --radius-tile: 16px;
+
+  /* Portrait crop — the source is a phone screenshot, so the face is framed
+     out of the full image. Nudge these two if you want it tighter or looser. */
+  --face-zoom: 158%;
+  --face-x: 49%;
+  --face-y: 34%;
 
   --font-ar: 'Amiri', 'Traditional Arabic', serif;
   --font-ui: 'IBM Plex Sans Arabic', system-ui, -apple-system, sans-serif;
@@ -36,13 +49,16 @@
   :root:not([data-theme='light']) {
     --bg: #14100a;
     --card: #1d1710;
-    --card-2: #221b12;
+    --card-2: #241c13;
     --tile: #2c2317;
-    --tile-active: linear-gradient(160deg, #6b5530, #4e3d22);
+    --tile-active-a: #6b5530;
+    --tile-active-b: #4e3d22;
+    --tile-active-ink: #f0dfb8;
     --pill: #251d14;
 
     --gold: #d2b478;
     --gold-deep: #e0c48d;
+    --gold-ink: #d2b478;
     --gold-soft: #7a6539;
     --gold-line: #33291a;
 
@@ -51,6 +67,9 @@
     --muted: #93836a;
     --divider: #2a2116;
 
+    --play-a: #8a6c33;
+    --play-b: #6b5227;
+
     color-scheme: dark;
   }
 }
@@ -58,18 +77,23 @@
 :root[data-theme='dark'] {
   --bg: #14100a;
   --card: #1d1710;
-  --card-2: #221b12;
+  --card-2: #241c13;
   --tile: #2c2317;
-  --tile-active: linear-gradient(160deg, #6b5530, #4e3d22);
+  --tile-active-a: #6b5530;
+  --tile-active-b: #4e3d22;
+  --tile-active-ink: #f0dfb8;
   --pill: #251d14;
   --gold: #d2b478;
   --gold-deep: #e0c48d;
+  --gold-ink: #d2b478;
   --gold-soft: #7a6539;
   --gold-line: #33291a;
   --ink: #d9cdb8;
   --ink-strong: #efe4cf;
   --muted: #93836a;
   --divider: #2a2116;
+  --play-a: #8a6c33;
+  --play-b: #6b5227;
   color-scheme: dark;
 }
 
@@ -100,16 +124,15 @@ body {
   max-width: 30rem;
   margin: 0 auto;
   position: relative;
-  /* faint girih texture, barely there */
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='90' height='90'%3E%3Cg fill='none' stroke='%23c2a15e' stroke-opacity='0.05'%3E%3Cpath d='M45 5 53 28 76 20 61 41 85 45 61 49 76 70 53 62 45 85 37 62 14 70 29 49 5 45 29 41 14 20 37 28Z'/%3E%3C/g%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96'%3E%3Cg fill='none' stroke='%23c9a961' stroke-opacity='0.045'%3E%3Cpath d='M48 6 56 30 80 22 66 44 90 48 66 52 80 74 56 66 48 90 40 66 16 74 30 52 6 48 30 44 16 22 40 30Z'/%3E%3C/g%3E%3C/svg%3E");
 }
 
 /* ============ list card ============ */
 .sheet {
   background: var(--card);
   border-radius: var(--radius-card);
-  margin: 0.9rem 0.8rem 0;
-  box-shadow: 0 2px 20px rgba(120, 95, 50, 0.07);
+  margin: 0.85rem 0.75rem 0;
+  box-shadow: 0 2px 22px rgba(140, 110, 55, 0.06);
   overflow: hidden;
   flex: 1;
   display: flex;
@@ -121,25 +144,25 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.15rem 1.15rem 0.7rem;
+  padding: 1.2rem 1.2rem 0.75rem;
   gap: 0.6rem;
 }
 
 .sheet-head h1 {
   font-family: var(--font-ar);
-  font-size: 1.7rem;
+  font-size: 1.75rem;
   font-weight: 700;
   margin: 0;
-  color: var(--gold-deep);
+  color: var(--gold);
   line-height: 1.4;
 }
 
 .round {
-  width: 2.65rem;
-  height: 2.65rem;
+  width: 2.7rem;
+  height: 2.7rem;
   border-radius: 50%;
   border: 1.5px solid var(--gold-line);
-  background: var(--card-2);
+  background: var(--card);
   color: var(--gold);
   display: grid;
   place-items: center;
@@ -157,26 +180,27 @@ body {
 .round:focus-visible,
 .tab:focus-visible,
 .row:focus-visible,
-.ctrl:focus-visible {
+.ctrl:focus-visible,
+.track:focus-visible {
   outline: 2px solid var(--gold);
   outline-offset: 2px;
 }
 
 .head-actions {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.55rem;
 }
 
 /* ============ search ============ */
 .search {
-  margin: 0 1.15rem 0.9rem;
+  margin: 0 1.2rem 0.85rem;
   display: flex;
   align-items: center;
-  gap: 0.65rem;
+  gap: 0.7rem;
   background: var(--pill);
   border-radius: 999px;
-  padding: 0 1rem;
-  height: 3.15rem;
+  padding: 0 1.05rem;
+  height: 3.2rem;
   border: 1px solid transparent;
 }
 
@@ -215,7 +239,7 @@ body {
 .surah-list {
   list-style: none;
   margin: 0;
-  padding: 0 0.7rem;
+  padding: 0 0.75rem;
 }
 
 .row {
@@ -224,7 +248,7 @@ body {
   grid-template-columns: 3.5rem 1fr auto;
   align-items: center;
   gap: 0.85rem;
-  padding: 0.8rem 0.55rem;
+  padding: 0.75rem 0.6rem;
   background: none;
   border: 1px solid transparent;
   border-radius: 18px;
@@ -239,8 +263,8 @@ body {
   content: '';
   position: absolute;
   top: 0;
-  right: 0.55rem;
-  left: 0.55rem;
+  right: 0.6rem;
+  left: 0.6rem;
   height: 1px;
   background: var(--divider);
 }
@@ -248,10 +272,10 @@ body {
 .row.active {
   background: var(--card-2);
   border-color: var(--gold-line);
+  box-shadow: 0 1px 8px rgba(150, 120, 60, 0.05);
 }
 
-.row.active::after,
-.row.active + .row::after {
+.row.active::after {
   display: none;
 }
 
@@ -261,21 +285,21 @@ body {
 }
 
 .numeral {
-  width: 3.4rem;
-  height: 3.4rem;
+  width: 3.45rem;
+  height: 3.45rem;
   border-radius: var(--radius-tile);
   background: var(--tile);
-  color: var(--gold-deep);
+  color: var(--gold);
   display: grid;
   place-items: center;
-  font-size: 1.35rem;
+  font-size: 1.4rem;
   font-weight: 500;
   flex: none;
 }
 
 .row.active .numeral {
-  background: var(--tile-active);
-  color: #6b5019;
+  background: linear-gradient(160deg, var(--tile-active-a), var(--tile-active-b));
+  color: var(--tile-active-ink);
 }
 
 .names {
@@ -288,7 +312,7 @@ body {
   font-family: var(--font-ar);
   font-size: 1.5rem;
   line-height: 1.5;
-  color: var(--gold-deep);
+  color: var(--gold-ink);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -299,7 +323,6 @@ body {
   font-size: 0.82rem;
   color: var(--muted);
   margin-top: -0.1rem;
-  /* English sits left-to-right even inside the RTL row */
   direction: ltr;
   text-align: right;
   white-space: nowrap;
@@ -310,20 +333,20 @@ body {
 .row-end {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.45rem;
   color: var(--gold-soft);
   flex: none;
 }
 
 .play-dot {
-  width: 3rem;
-  height: 3rem;
+  width: 3.1rem;
+  height: 3.1rem;
   border-radius: 50%;
-  background: linear-gradient(160deg, #e9d3a1, #cfae6d);
+  background: linear-gradient(160deg, var(--play-a), var(--play-b));
   color: #fff;
   display: grid;
   place-items: center;
-  box-shadow: 0 2px 8px rgba(170, 135, 60, 0.3);
+  box-shadow: 0 2px 9px rgba(170, 135, 60, 0.28);
 }
 
 .mini {
@@ -352,15 +375,13 @@ body {
 }
 
 .ring {
-  width: 2rem;
-  height: 2rem;
+  width: 2.2rem;
   display: grid;
   place-items: center;
-  font-size: 0.62rem;
+  font-size: 0.64rem;
   color: var(--gold-deep);
 }
 
-/* frontier: the recording simply has not reached further yet */
 .frontier {
   text-align: center;
   padding: 1.6rem 1.5rem 0.6rem;
@@ -383,9 +404,9 @@ body {
 .player {
   background: var(--card);
   border-radius: var(--radius-card) var(--radius-card) 0 0;
-  margin: -1.4rem 0.35rem 0;
-  padding: 1.2rem 1.25rem 0.6rem;
-  box-shadow: 0 -4px 24px rgba(120, 95, 50, 0.09);
+  margin: -1.5rem 0.3rem 0;
+  padding: 1.15rem 1.25rem 0.5rem;
+  box-shadow: 0 -4px 26px rgba(140, 110, 55, 0.08);
   position: relative;
   z-index: 5;
 }
@@ -397,25 +418,24 @@ body {
   gap: 0.9rem;
 }
 
-/* ornamental medallion — drop a photo in and it fills the frame */
+/* Portrait medallion. The photo is a phone screenshot, so it is zoomed and
+   offset by the --face-* variables to frame the face inside the ring. */
 .medallion {
-  width: 5.3rem;
-  height: 5.3rem;
+  width: 5.4rem;
+  height: 5.4rem;
   border-radius: 50%;
   flex: none;
-  background: radial-gradient(circle at 35% 30%, #f3e6c9, #e2cb9c 60%, #cdae72);
-  border: 2px solid var(--gold-soft);
-  box-shadow: 0 0 0 3px var(--card), 0 0 0 4.5px var(--gold-line);
+  background-color: var(--tile);
+  background-image: var(--face-src, none);
+  background-size: var(--face-zoom) auto;
+  background-position: var(--face-x) var(--face-y);
+  background-repeat: no-repeat;
+  border: 2.5px solid #fff;
+  box-shadow: 0 0 0 2px var(--gold-soft), 0 2px 10px rgba(150, 120, 60, 0.18);
   display: grid;
   place-items: center;
   overflow: hidden;
-  color: #a8863c;
-}
-
-.medallion img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  color: var(--gold);
 }
 
 .now {
@@ -425,39 +445,40 @@ body {
 
 .now .surah-name {
   font-family: var(--font-ar);
-  font-size: 1.55rem;
-  color: var(--gold-deep);
-  line-height: 1.4;
+  font-size: 1.5rem;
+  color: var(--gold-ink);
+  line-height: 1.45;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .now .label {
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   color: var(--muted);
-  margin-top: 0.1rem;
+  margin-top: 0.05rem;
 }
 
 .now .reciter-ar {
   font-family: var(--font-ar);
-  font-size: 1.2rem;
+  font-size: 1.22rem;
   color: var(--gold);
   line-height: 1.5;
 }
 
 .now .reciter-en {
-  font-size: 0.92rem;
-  color: var(--ink);
-  letter-spacing: 0.01em;
+  font-size: 0.95rem;
+  color: var(--ink-strong);
+  direction: ltr;
 }
 
 .controls {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
-  padding: 0.9rem 0.2rem 0.4rem;
+  gap: 0.4rem;
+  padding: 0.85rem 0.15rem 0.3rem;
+  direction: ltr;
 }
 
 .ctrl {
@@ -470,9 +491,9 @@ body {
   padding: 0.4rem;
   border-radius: 50%;
   font: inherit;
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 500;
-  min-width: 2.6rem;
+  min-width: 2.7rem;
 }
 
 .ctrl:hover {
@@ -480,23 +501,23 @@ body {
 }
 
 .ctrl.big {
-  width: 4.1rem;
-  height: 4.1rem;
+  width: 4.2rem;
+  height: 4.2rem;
   border-radius: 50%;
-  background: linear-gradient(160deg, #f0dcb0, #d8ba7d);
-  color: #7a5d20;
-  box-shadow: 0 0 0 3px var(--card), 0 0 0 4.5px var(--gold-line),
-    0 4px 14px rgba(170, 135, 60, 0.25);
+  background: linear-gradient(160deg, var(--play-a), var(--play-b));
+  color: #fffdf8;
+  border: 3px solid var(--card);
+  box-shadow: 0 0 0 2.5px var(--gold-soft), 0 4px 14px rgba(170, 135, 60, 0.22);
 }
 
 .ctrl[aria-pressed='true'] {
   color: var(--gold-deep);
-  background: var(--tile);
 }
 
-/* progress */
+/* ============ progress — left to right, like a video scrubber ============ */
 .progress {
-  padding: 0.2rem 0.15rem 0.4rem;
+  padding: 0.35rem 0.1rem 0.45rem;
+  direction: ltr;
 }
 
 .track {
@@ -506,34 +527,41 @@ body {
   position: relative;
   cursor: pointer;
   touch-action: none;
+  margin: 0.55rem 0.3rem;
 }
 
 .track .fill {
   position: absolute;
-  inset: 0 auto 0 0;
-  right: 0;
-  background: linear-gradient(270deg, var(--gold), var(--gold-soft));
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: var(--gold);
   border-radius: 2px;
 }
 
 .track .knob {
   position: absolute;
   top: 50%;
-  width: 12px;
-  height: 12px;
+  width: 13px;
+  height: 13px;
   border-radius: 50%;
   background: var(--gold);
-  transform: translate(50%, -50%);
-  box-shadow: 0 1px 4px rgba(140, 110, 50, 0.4);
+  transform: translate(-50%, -50%);
+  box-shadow: 0 1px 4px rgba(140, 110, 50, 0.35);
 }
 
 .times {
   display: flex;
   justify-content: space-between;
-  font-size: 0.78rem;
+  align-items: center;
+  font-size: 0.8rem;
   color: var(--muted);
-  margin-top: 0.45rem;
-  direction: ltr;
+  padding: 0 0.3rem;
+}
+
+.times .badge {
+  font-size: 0.7rem;
+  color: var(--gold-deep);
 }
 
 /* ============ tab bar ============ */
@@ -542,7 +570,7 @@ body {
   grid-template-columns: repeat(4, 1fr);
   background: var(--card);
   border-top: 1px solid var(--divider);
-  padding: 0.5rem 0 calc(0.35rem + env(safe-area-inset-bottom));
+  padding: 0.55rem 0 calc(0.4rem + env(safe-area-inset-bottom));
   position: sticky;
   bottom: 0;
   z-index: 6;
@@ -553,24 +581,24 @@ body {
   background: none;
   display: grid;
   justify-items: center;
-  gap: 0.22rem;
-  padding: 0.35rem 0;
+  gap: 0.25rem;
+  padding: 0.3rem 0;
   color: var(--muted);
   font: inherit;
-  font-size: 0.72rem;
+  font-size: 0.73rem;
   cursor: pointer;
   position: relative;
 }
 
 .tab[aria-selected='true'] {
-  color: var(--gold-deep);
+  color: var(--gold);
 }
 
 .tab[aria-selected='true']::after {
   content: '';
   position: absolute;
-  bottom: -0.35rem;
-  width: 1.5rem;
+  bottom: -0.3rem;
+  width: 1.6rem;
   height: 2.5px;
   border-radius: 2px;
   background: var(--gold);
@@ -578,20 +606,20 @@ body {
 
 /* ============ panels ============ */
 .panel {
-  padding: 1rem 1.3rem 2rem;
+  padding: 1rem 1.35rem 2rem;
 }
 
 .panel h2 {
   font-family: var(--font-ar);
   font-size: 1.4rem;
   font-weight: 700;
-  color: var(--gold-deep);
+  color: var(--gold);
   margin: 0 0 0.5rem;
 }
 
 .panel p {
   font-size: 0.88rem;
-  line-height: 1.75;
+  line-height: 1.8;
   color: var(--ink);
   margin: 0 0 0.9rem;
 }
@@ -607,7 +635,7 @@ body {
 .meter span {
   display: block;
   height: 100%;
-  background: linear-gradient(270deg, var(--gold), var(--gold-soft));
+  background: var(--gold);
 }
 
 .btn {
@@ -623,7 +651,7 @@ body {
 }
 
 .btn.solid {
-  background: linear-gradient(160deg, #edd9ab, #d5b678);
+  background: linear-gradient(160deg, var(--play-a), var(--play-b));
   color: #6b5019;
   border-color: transparent;
 }
@@ -652,6 +680,14 @@ body {
   color: var(--muted);
   font-size: 0.88rem;
   padding: 2.5rem 1rem;
+}
+
+.err {
+  text-align: center;
+  color: var(--warn);
+  font-size: 0.8rem;
+  padding: 0 0 0.6rem;
+  margin: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {
