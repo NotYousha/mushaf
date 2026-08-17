@@ -13,8 +13,8 @@ export default defineConfig({
         short_name: 'Mushaf',
         start_url: '/',
         display: 'standalone',
-        background_color: '#0b1120',
-        theme_color: '#0b1120',
+        background_color: '#f6f0e6',
+        theme_color: '#f6f0e6',
         icons: [{ src: '/icon-512.png', sizes: '512x512', type: 'image/png' }],
       },
       workbox: {

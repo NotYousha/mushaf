@@ -42,59 +42,11 @@
   --font-ar: 'Amiri', 'Traditional Arabic', serif;
   --font-ui: 'IBM Plex Sans Arabic', system-ui, -apple-system, sans-serif;
 
-  color-scheme: light;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) {
-    --bg: #14100a;
-    --card: #1d1710;
-    --card-2: #241c13;
-    --tile: #2c2317;
-    --tile-active-a: #6b5530;
-    --tile-active-b: #4e3d22;
-    --tile-active-ink: #f0dfb8;
-    --pill: #251d14;
-
-    --gold: #d2b478;
-    --gold-deep: #e0c48d;
-    --gold-ink: #d2b478;
-    --gold-soft: #7a6539;
-    --gold-line: #33291a;
-
-    --ink: #d9cdb8;
-    --ink-strong: #efe4cf;
-    --muted: #93836a;
-    --divider: #2a2116;
-
-    --play-a: #8a6c33;
-    --play-b: #6b5227;
-
-    color-scheme: dark;
-  }
-}
-
-:root[data-theme='dark'] {
-  --bg: #14100a;
-  --card: #1d1710;
-  --card-2: #241c13;
-  --tile: #2c2317;
-  --tile-active-a: #6b5530;
-  --tile-active-b: #4e3d22;
-  --tile-active-ink: #f0dfb8;
-  --pill: #251d14;
-  --gold: #d2b478;
-  --gold-deep: #e0c48d;
-  --gold-ink: #d2b478;
-  --gold-soft: #7a6539;
-  --gold-line: #33291a;
-  --ink: #d9cdb8;
-  --ink-strong: #efe4cf;
-  --muted: #93836a;
-  --divider: #2a2116;
-  --play-a: #8a6c33;
-  --play-b: #6b5227;
-  color-scheme: dark;
+  /* This design is cream-and-gold only. There is deliberately no dark
+     variant: the reference artwork is a light mushaf card, and swapping it
+     for dark browns on a phone set to dark mode was simply wrong. Pinning
+     `light` stops the browser auto-darkening form controls and backgrounds. */
+  color-scheme: light only;
 }
 
 * {
