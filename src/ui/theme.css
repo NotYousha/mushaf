@@ -1,0 +1,515 @@
+/* ---------------------------------------------------------------
+   Mushaf — palette drawn from the Saudi Center mushaf card.
+   Gold ramp for ornament, umber for text, ivory ground.
+   Green is reserved for exactly one meaning: ready offline.
+   --------------------------------------------------------------- */
+
+:root {
+  --ivory: #f7f2e7;
+  --ivory-deep: #f0e8d8;
+  --parchment: #efe6d5;
+  --parchment-edge: #e2d4b8;
+
+  --gold-deep: #a67c2e;
+  --gold: #c9a227;
+  --gold-light: #e8d08a;
+  --gold-wash: rgba(201, 162, 39, 0.12);
+
+  --umber: #4a3826;
+  --umber-soft: #7a6448;
+  --umber-faint: #a89279;
+
+  --ready: #1f6b4f;
+  --warn: #a8532b;
+
+  --rule: linear-gradient(90deg, var(--gold-deep), var(--gold-light), var(--gold-deep));
+
+  --font-calligraphy: 'Aref Ruqaa', 'Amiri', serif;
+  --font-quran: 'Amiri', 'Traditional Arabic', serif;
+  --font-ui: 'IBM Plex Sans Arabic', system-ui, -apple-system, sans-serif;
+
+  --shadow-raised: 0 1px 2px rgba(74, 56, 38, 0.06), 0 8px 24px rgba(74, 56, 38, 0.06);
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --ivory: #17110b;
+    --ivory-deep: #120d08;
+    --parchment: #21190f;
+    --parchment-edge: #332717;
+
+    --umber: #efe3cd;
+    --umber-soft: #bda989;
+    --umber-faint: #8a7658;
+
+    --gold-wash: rgba(201, 162, 39, 0.16);
+    --ready: #4fae86;
+    --shadow-raised: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.3);
+
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme='dark'] {
+  --ivory: #17110b;
+  --ivory-deep: #120d08;
+  --parchment: #21190f;
+  --parchment-edge: #332717;
+
+  --umber: #efe3cd;
+  --umber-soft: #bda989;
+  --umber-faint: #8a7658;
+
+  --gold-wash: rgba(201, 162, 39, 0.16);
+  --ready: #4fae86;
+  --shadow-raised: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.3);
+
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--ivory);
+  color: var(--umber);
+  font-family: var(--font-ui);
+  font-feature-settings: 'tnum' 1;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* The card's ground is not flat — it carries a faint eight-point girih
+   star, the traditional Islamic tiling motif. Rendered here as a very low
+   contrast SVG tile so it reads as texture, never as pattern. */
+.app::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg fill='none' stroke='%23a67c2e' stroke-opacity='0.07' stroke-width='1'%3E%3Cpath d='M40 4 47 25 68 18 55 36 76 40 55 44 68 62 47 55 40 76 33 55 12 62 25 44 4 40 25 36 12 18 33 25Z'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* --- the gold band, top and bottom, as on the card --- */
+.band {
+  height: 6px;
+  background: var(--rule);
+  flex: none;
+}
+
+.app {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+main {
+  flex: 1;
+  padding: 0 max(1rem, env(safe-area-inset-left)) 7rem;
+  max-width: 44rem;
+  margin: 0 auto;
+  width: 100%;
+  position: relative;
+}
+
+/* --- masthead --- */
+.masthead {
+  text-align: center;
+  padding: 2.5rem 1rem 1.75rem;
+  position: relative;
+}
+
+.masthead h1 {
+  font-family: var(--font-calligraphy);
+  font-size: clamp(2.1rem, 8vw, 3.1rem);
+  font-weight: 400;
+  margin: 0;
+  line-height: 1.5;
+  background: linear-gradient(180deg, var(--gold-deep) 10%, var(--gold) 45%, var(--gold-light) 90%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  direction: rtl;
+}
+
+.masthead .reciter {
+  font-family: var(--font-calligraphy);
+  font-size: clamp(1.1rem, 4.5vw, 1.5rem);
+  color: var(--umber);
+  direction: rtl;
+  margin: 0.35rem 0 0;
+  font-weight: 400;
+}
+
+.masthead .sub {
+  font-size: 0.74rem;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--umber-faint);
+  margin-top: 0.7rem;
+}
+
+.ornament {
+  width: 8rem;
+  height: 1px;
+  margin: 1.1rem auto 0;
+  background: var(--rule);
+  opacity: 0.7;
+}
+
+/* --- surah rows --- */
+.surah-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.surah {
+  display: grid;
+  grid-template-columns: 2.6rem 1fr auto;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.85rem 0.7rem;
+  border-bottom: 1px solid var(--parchment-edge);
+  background: none;
+  border-left: 0;
+  border-right: 0;
+  border-top: 0;
+  width: 100%;
+  text-align: inherit;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.surah:hover:not(:disabled) {
+  background: var(--gold-wash);
+}
+
+.surah:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+.surah:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: -2px;
+}
+
+/* Number sits in a lozenge, the way ayah markers do in a printed mushaf. */
+.numeral {
+  width: 2.3rem;
+  height: 2.3rem;
+  display: grid;
+  place-items: center;
+  font-size: 0.8rem;
+  color: var(--gold-deep);
+  border: 1px solid var(--parchment-edge);
+  border-radius: 50%;
+  background: var(--parchment);
+  flex: none;
+}
+
+.surah.is-ready .numeral {
+  border-color: var(--ready);
+  color: var(--ready);
+}
+
+.names {
+  min-width: 0;
+}
+
+.name-ar {
+  font-family: var(--font-quran);
+  font-size: 1.4rem;
+  line-height: 1.35;
+  direction: rtl;
+  display: block;
+  color: var(--umber);
+}
+
+.name-en {
+  font-size: 0.76rem;
+  color: var(--umber-faint);
+  letter-spacing: 0.02em;
+}
+
+.state {
+  font-size: 0.76rem;
+  color: var(--umber-soft);
+  text-align: right;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ready);
+  flex: none;
+}
+
+.tag {
+  font-size: 0.62rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  padding: 0.17rem 0.45rem;
+  border-radius: 2px;
+  border: 1px solid currentColor;
+}
+
+.tag.unverified {
+  color: var(--warn);
+}
+
+/* --- the frontier ---------------------------------------------------
+   The mushaf stops at As-Saffat because it has not been recorded past
+   there. The rule fades out rather than ending, because the recording
+   has not ended either.
+   ------------------------------------------------------------------- */
+.frontier {
+  padding: 2rem 0 1.5rem;
+  text-align: center;
+}
+
+.frontier .fade {
+  height: 1px;
+  background: linear-gradient(90deg, var(--gold-deep), var(--gold-light) 45%, transparent 100%);
+  margin-bottom: 0.9rem;
+}
+
+.frontier p {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--umber-faint);
+  line-height: 1.7;
+}
+
+.frontier .ar {
+  font-family: var(--font-quran);
+  font-size: 1.05rem;
+  color: var(--umber-soft);
+  direction: rtl;
+}
+
+/* --- player dock --- */
+.dock {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: color-mix(in srgb, var(--parchment) 92%, transparent);
+  backdrop-filter: blur(14px);
+  border-top: 1px solid var(--parchment-edge);
+  padding: 0.7rem max(1rem, env(safe-area-inset-left)) calc(0.7rem + env(safe-area-inset-bottom));
+  z-index: 20;
+}
+
+.dock-inner {
+  max-width: 44rem;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1rem;
+  align-items: center;
+}
+
+.dock .now {
+  font-family: var(--font-quran);
+  font-size: 1.15rem;
+  direction: rtl;
+}
+
+.dock .time {
+  font-size: 0.72rem;
+  color: var(--umber-faint);
+}
+
+.controls {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+button.icon {
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 50%;
+  border: 1px solid var(--parchment-edge);
+  background: var(--ivory);
+  color: var(--umber);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0;
+}
+
+button.icon:hover {
+  border-color: var(--gold);
+  color: var(--gold-deep);
+}
+
+button.icon:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+button.icon.primary {
+  background: linear-gradient(160deg, var(--gold-light), var(--gold) 55%, var(--gold-deep));
+  color: #2a1f12;
+  border-color: transparent;
+  width: 3rem;
+  height: 3rem;
+}
+
+/* --- the waveform seek bar ------------------------------------------
+   The card ends in a gold waveform drawn like a skyline. It is the most
+   characteristic mark on the artwork, so it becomes the seek control:
+   played audio is solid gold, unplayed is the faint ridge ahead of you.
+   ------------------------------------------------------------------- */
+.wave {
+  width: 100%;
+  height: 30px;
+  display: block;
+  cursor: pointer;
+  touch-action: none;
+}
+
+.wave .ridge-ahead {
+  fill: var(--gold-deep);
+  opacity: 0.22;
+}
+
+.wave .ridge-played {
+  fill: url(#goldRamp);
+}
+
+/* --- misc --- */
+.bar {
+  height: 3px;
+  background: var(--parchment-edge);
+  border-radius: 2px;
+  overflow: hidden;
+  width: 3.5rem;
+}
+
+.bar span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold-deep), var(--gold-light));
+}
+
+.tabs {
+  display: flex;
+  gap: 0.25rem;
+  justify-content: center;
+  padding: 0 0 1.25rem;
+}
+
+.tabs button {
+  font: inherit;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: none;
+  color: var(--umber-faint);
+  cursor: pointer;
+}
+
+.tabs button[aria-selected='true'] {
+  color: var(--gold-deep);
+  border-color: var(--parchment-edge);
+  background: var(--parchment);
+}
+
+.panel {
+  padding: 1rem 0.3rem;
+}
+
+.panel h2 {
+  font-family: var(--font-calligraphy);
+  font-weight: 400;
+  font-size: 1.5rem;
+  margin: 0 0 0.3rem;
+  color: var(--umber);
+}
+
+.panel p {
+  color: var(--umber-soft);
+  font-size: 0.86rem;
+  line-height: 1.65;
+  margin: 0 0 1rem;
+}
+
+.meter {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--parchment-edge);
+  overflow: hidden;
+  margin: 0.5rem 0 0.35rem;
+}
+
+.meter span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold-deep), var(--gold));
+}
+
+.btn {
+  font: inherit;
+  font-size: 0.84rem;
+  padding: 0.6rem 1.1rem;
+  border-radius: 3px;
+  border: 1px solid var(--gold-deep);
+  background: none;
+  color: var(--gold-deep);
+  cursor: pointer;
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--gold-wash);
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.btn.solid {
+  background: linear-gradient(160deg, var(--gold-light), var(--gold) 55%, var(--gold-deep));
+  color: #2a1f12;
+  border-color: transparent;
+}
+
+.ayah {
+  font-family: var(--font-quran);
+  font-size: 1.6rem;
+  line-height: 2.5;
+  direction: rtl;
+  text-align: right;
+  color: var(--umber);
+}
+
+.ayah-num {
+  font-size: 0.75rem;
+  color: var(--gold-deep);
+  padding: 0 0.35rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
