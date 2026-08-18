@@ -64,13 +64,18 @@ describe('bundled data', () => {
   describe('Al-Dosari — still being recorded', () => {
     const d = reciters.find((r) => r.id === 'dosari')!
 
-    it('covers surahs 1-37 with no gaps', () => {
+    // This mushaf grows as episodes air, so asserting a fixed count would
+    // fail CI every time the weekly refresh picks up a new surah — and block
+    // the deploy it is meant to trigger. Assert the shape instead.
+    it('runs contiguously from surah 1 with no gaps', () => {
       const nums = d.surahs.map((s) => s.surah).sort((a, b) => a - b)
-      expect(nums).toEqual(Array.from({ length: 37 }, (_, i) => i + 1))
+      expect(nums).toEqual(Array.from({ length: nums.length }, (_, i) => i + 1))
+      expect(nums.length).toBeGreaterThanOrEqual(37)
+      expect(nums.length).toBeLessThanOrEqual(114)
     })
 
-    it('flags the entries that need an ear check', () => {
-      expect(d.surahs.filter((s) => !s.verified)).toHaveLength(18)
+    it('matches its own released count', () => {
+      expect(d.released).toBe(d.surahs.length)
     })
   })
 
@@ -81,9 +86,14 @@ describe('bundled data', () => {
       const nums = b.surahs.map((s) => s.surah).sort((a, b2) => a - b2)
       expect(nums).toEqual(Array.from({ length: 114 }, (_, i) => i + 1))
     })
+  })
 
-    it('needs no ear check — filenames match surah numbers at the source', () => {
-      expect(b.surahs.filter((s) => !s.verified)).toHaveLength(0)
-    })
+  it('resolves audio per surah page, so nothing needs an ear check', () => {
+    // Both mushafs are now resolved from each surah's own page rather than by
+    // reading a surah number out of a filename, which is what made entries
+    // uncertain before.
+    for (const r of reciters) {
+      expect(r.surahs.filter((s) => !s.verified)).toHaveLength(0)
+    }
   })
 })

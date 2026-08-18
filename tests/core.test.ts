@@ -14,6 +14,9 @@ import catalog from '../data/catalog.json'
 import meta from '../data/surahs.json'
 
 const dosari = catalog.reciters.find((r) => r.id === 'dosari')!
+// The catalog grows as episodes air, so tests compare against it rather than
+// against a number that goes stale every week.
+const DOSARI_COUNT = dosari.surahs.length
 const R = 'dosari'
 
 describe('audio store', () => {
@@ -67,7 +70,7 @@ describe('catalog view', () => {
   it('falls back to bundled data when the remote refresh fails', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')))
     const rs = await loadCatalog('https://example.com/catalog.json')
-    expect(rs.find((r) => r.id === 'dosari')!.surahs).toHaveLength(37)
+    expect(rs.find((r) => r.id === 'dosari')!.surahs).toHaveLength(DOSARI_COUNT)
     vi.unstubAllGlobals()
   })
 
@@ -78,7 +81,7 @@ describe('catalog view', () => {
     }
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => truncated }))
     const rs = await loadCatalog('https://example.com/catalog.json')
-    expect(rs.find((r) => r.id === 'dosari')!.surahs).toHaveLength(37)
+    expect(rs.find((r) => r.id === 'dosari')!.surahs).toHaveLength(DOSARI_COUNT)
     vi.unstubAllGlobals()
   })
 
@@ -92,7 +95,7 @@ describe('catalog view', () => {
               surahs: [
                 ...r.surahs,
                 {
-                  surah: 38,
+                  surah: 999,
                   name: 'ص',
                   url: 'https://archive.org/download/x/38.mp3',
                   fallbackUrl: null,
@@ -106,14 +109,14 @@ describe('catalog view', () => {
     }
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => grown }))
     const rs = await loadCatalog('https://example.com/catalog.json')
-    expect(rs.find((r) => r.id === 'dosari')!.surahs).toHaveLength(38)
+    expect(rs.find((r) => r.id === 'dosari')!.surahs).toHaveLength(DOSARI_COUNT + 1)
     vi.unstubAllGlobals()
   })
 
   it('keeps each reciter separate', async () => {
     const rs = await loadCatalog()
     expect(rs.find((r) => r.id === 'burhaji-nabawi')!.surahs).toHaveLength(114)
-    expect(rs.find((r) => r.id === 'dosari')!.surahs).toHaveLength(37)
+    expect(rs.find((r) => r.id === 'dosari')!.surahs).toHaveLength(DOSARI_COUNT)
   })
 })
 

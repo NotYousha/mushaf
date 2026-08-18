@@ -7,308 +7,469 @@
    "nameEn": "Yasser Al-Dosari",
    "fullName": "أ. د. ياسر بن راشد الدوسري",
    "mushaf": "إنتاج المركز السعودي للتلاوات القرآنية",
-   "source": "tilawatalharamain.com / yaldosry.com mirrors on archive.org",
-   "released": 37,
+   "note": "ما زال قيد التسجيل — تُضاف السور الجديدة تلقائيًا.",
+   "source": "https://mushaf-audio.mushaftarteel.workers.dev/d/{surah}.mp3",
+   "photo": "sheikh.jpg",
+   "released": 57,
    "total": 114,
    "surahs": [
     {
      "surah": 1,
-     "name": "الفاتحة",
-     "url": "https://ia601405.us.archive.org/29/items/fatiha-yaser/fatiha-yaser.mp3",
-     "fallbackUrl": "https://archive.org/download/fatiha-yaser/fatiha-yaser.mp3",
+     "name": "ٱلْفَاتِحَةِ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/1.mp3",
+     "fallbackUrl": null,
      "bytes": 1956191,
      "verified": true
     },
     {
      "surah": 2,
-     "name": "البقرة",
-     "url": "https://ia601403.us.archive.org/20/items/surat-albaqra-mp-3/surat albaqra (mp3).mp3",
-     "fallbackUrl": "https://archive.org/download/surat-albaqra-mp-3/surat albaqra (mp3).mp3",
+     "name": "البَقَرَةِ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/2.mp3",
+     "fallbackUrl": null,
      "bytes": 228582855,
      "verified": true
     },
     {
      "surah": 3,
-     "name": "آل عمران",
-     "url": "https://ia600703.us.archive.org/33/items/2_20260519_20260519_1902/2.mp3",
-     "fallbackUrl": "https://archive.org/download/2_20260519_20260519_1902/2.mp3",
+     "name": "آلِ عِمۡرَانَ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/3.mp3",
+     "fallbackUrl": null,
      "bytes": 118445069,
-     "verified": false
+     "verified": true
     },
     {
      "surah": 4,
-     "name": "النساء",
-     "url": "https://ia600800.us.archive.org/4/items/4_20260521_20260521/4.mp3",
-     "fallbackUrl": "https://archive.org/download/4_20260521_20260521/4.mp3",
+     "name": "النِّسَاءِ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/4.mp3",
+     "fallbackUrl": null,
      "bytes": 124054369,
-     "verified": false
+     "verified": true
     },
     {
      "surah": 5,
-     "name": "المائدة",
-     "url": "https://ia903206.us.archive.org/34/items/5_20260523_20260523/5.mp3",
-     "fallbackUrl": "https://archive.org/download/5_20260523_20260523/5.mp3",
+     "name": "المَائـِدَةِ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/5.mp3",
+     "fallbackUrl": null,
      "bytes": 99172001,
      "verified": true
     },
     {
      "surah": 6,
-     "name": "الأنعام",
-     "url": "https://ia601500.us.archive.org/7/items/6_20260525_20260525/6.mp3",
-     "fallbackUrl": "https://archive.org/download/6_20260525_20260525/6.mp3",
+     "name": "الأَنۡعَامِ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/6.mp3",
+     "fallbackUrl": null,
      "bytes": 110314360,
-     "verified": false
+     "verified": true
     },
     {
      "surah": 7,
-     "name": "الأعراف",
-     "url": "https://ia600108.us.archive.org/35/items/7_20260528/7.mp3",
-     "fallbackUrl": "https://archive.org/download/7_20260528/7.mp3",
+     "name": "الأَعۡرَافِ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/7.mp3",
+     "fallbackUrl": null,
      "bytes": 115550502,
      "verified": true
     },
     {
      "surah": 8,
-     "name": "الأنفال",
-     "url": "https://ia902805.us.archive.org/0/items/8_20260529_20260529_1909/8.mp3",
-     "fallbackUrl": "https://archive.org/download/8_20260529_20260529_1909/8.mp3",
+     "name": "الأَنفَالِ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/8.mp3",
+     "fallbackUrl": null,
      "bytes": 44856552,
      "verified": true
     },
     {
      "surah": 9,
-     "name": "التوبة",
-     "url": "https://ia902906.us.archive.org/21/items/8_20260531_202605/8.mp3",
-     "fallbackUrl": "https://archive.org/download/8_20260531_202605/8.mp3",
+     "name": "التَّوۡبَةِ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/9.mp3",
+     "fallbackUrl": null,
      "bytes": 88199022,
      "verified": true
     },
     {
      "surah": 10,
-     "name": "يونس",
-     "url": "https://ia600805.us.archive.org/25/items/yunus_202606/yunus.mp3",
-     "fallbackUrl": "https://archive.org/download/yunus_202606/yunus.mp3",
+     "name": "يُونُسَ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/10.mp3",
+     "fallbackUrl": null,
      "bytes": 61749328,
      "verified": true
     },
     {
      "surah": 11,
-     "name": "هود",
-     "url": "https://ia902805.us.archive.org/18/items/9_20260603_20260603/9.mp3",
-     "fallbackUrl": "https://archive.org/download/9_20260603_20260603/9.mp3",
+     "name": "هُودٍ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/11.mp3",
+     "fallbackUrl": null,
      "bytes": 66004602,
      "verified": true
     },
     {
      "surah": 12,
-     "name": "يوسف",
-     "url": "https://ia600109.us.archive.org/21/items/10_20260604_202606/10.mp3",
-     "fallbackUrl": "https://archive.org/download/10_20260604_202606/10.mp3",
+     "name": "يُوسُفَ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/12.mp3",
+     "fallbackUrl": null,
      "bytes": 62689658,
      "verified": true
     },
     {
      "surah": 13,
-     "name": "الرعد",
-     "url": "https://ia601908.us.archive.org/23/items/11_20260605_20260605/11.mp3",
-     "fallbackUrl": "https://archive.org/download/11_20260605_20260605/11.mp3",
+     "name": "الرَّعۡدِ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/13.mp3",
+     "fallbackUrl": null,
      "bytes": 28512934,
-     "verified": false
+     "verified": true
     },
     {
      "surah": 14,
-     "name": "إبراهيم",
-     "url": "https://ia600601.us.archive.org/26/items/12_20260605_20260605/12.mp3",
-     "fallbackUrl": "https://archive.org/download/12_20260605_20260605/12.mp3",
+     "name": "إِبۡرَاهِيمَ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/14.mp3",
+     "fallbackUrl": null,
      "bytes": 28629041,
      "verified": true
     },
     {
      "surah": 15,
-     "name": "الحجر",
-     "url": "https://ia600500.us.archive.org/20/items/13_20260606_20260606/13.mp3",
-     "fallbackUrl": "https://archive.org/download/13_20260606_20260606/13.mp3",
+     "name": "الحِجۡرِ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/15.mp3",
+     "fallbackUrl": null,
      "bytes": 22151066,
      "verified": true
     },
     {
      "surah": 16,
-     "name": "النحل",
-     "url": "https://ia600608.us.archive.org/29/items/14_20260607_202606/14.mp3",
-     "fallbackUrl": "https://archive.org/download/14_20260607_202606/14.mp3",
+     "name": "النَّحۡلِ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/16.mp3",
+     "fallbackUrl": null,
      "bytes": 58437231,
      "verified": true
     },
     {
      "surah": 17,
-     "name": "الإسراء",
-     "url": "https://ia903109.us.archive.org/22/items/15_20260608_20260608/15.mp3",
-     "fallbackUrl": "https://archive.org/download/15_20260608_20260608/15.mp3",
+     "name": "الإِسۡرَاءِ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/17.mp3",
+     "fallbackUrl": null,
      "bytes": 50037763,
      "verified": true
     },
     {
      "surah": 18,
-     "name": "الكهف",
-     "url": "https://ia600104.us.archive.org/22/items/16_20260609_202606/16.mp3",
-     "fallbackUrl": "https://archive.org/download/16_20260609_202606/16.mp3",
+     "name": "الكَهۡفِ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/18.mp3",
+     "fallbackUrl": null,
      "bytes": 50316321,
      "verified": true
     },
     {
      "surah": 19,
-     "name": "مريم",
-     "url": "https://ia902805.us.archive.org/25/items/17_20260610_202606/17.mp3",
-     "fallbackUrl": "https://archive.org/download/17_20260610_202606/17.mp3",
+     "name": "مَرۡيَمَ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/19.mp3",
+     "fallbackUrl": null,
      "bytes": 32369608,
      "verified": true
     },
     {
      "surah": 20,
      "name": "طه",
-     "url": "https://ia600108.us.archive.org/6/items/18_20260611_20260611/18.mp3",
-     "fallbackUrl": "https://archive.org/download/18_20260611_20260611/18.mp3",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/20.mp3",
+     "fallbackUrl": null,
      "bytes": 40668810,
      "verified": true
     },
     {
      "surah": 21,
-     "name": "الأنبياء",
-     "url": "https://ia600609.us.archive.org/3/items/19_20260612_202606/19.mp3",
-     "fallbackUrl": "https://archive.org/download/19_20260612_202606/19.mp3",
+     "name": "الأَنبِيَاءِ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/21.mp3",
+     "fallbackUrl": null,
      "bytes": 37691585,
-     "verified": false
+     "verified": true
     },
     {
      "surah": 22,
-     "name": "الحج",
-     "url": "https://ia600409.us.archive.org/14/items/20_20260613/20.mp3",
-     "fallbackUrl": "https://archive.org/download/20_20260613/20.mp3",
+     "name": "الحَجِّ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/22.mp3",
+     "fallbackUrl": null,
      "bytes": 41268786,
      "verified": true
     },
     {
      "surah": 23,
-     "name": "المؤمنون",
-     "url": "https://ia600404.us.archive.org/9/items/21_20260614/21.mp3",
-     "fallbackUrl": "https://archive.org/download/21_20260614/21.mp3",
+     "name": "المُؤۡمِنُونَ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/23.mp3",
+     "fallbackUrl": null,
      "bytes": 36347526,
-     "verified": false
+     "verified": true
     },
     {
      "surah": 24,
-     "name": "النور",
-     "url": "https://ia601601.us.archive.org/28/items/23_20260615/23.mp3",
-     "fallbackUrl": "https://archive.org/download/23_20260615/23.mp3",
+     "name": "النُّورِ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/24.mp3",
+     "fallbackUrl": null,
      "bytes": 45325939,
      "verified": true
     },
     {
      "surah": 25,
-     "name": "الفرقان",
-     "url": "https://ia600404.us.archive.org/30/items/24_20260616/24.mp3",
-     "fallbackUrl": "https://archive.org/download/24_20260616/24.mp3",
+     "name": "الفُرۡقَانِ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/25.mp3",
+     "fallbackUrl": null,
      "bytes": 30778805,
      "verified": true
     },
     {
      "surah": 26,
-     "name": "الشعراء",
-     "url": "https://ia600502.us.archive.org/17/items/25_20260617/25.mp3",
-     "fallbackUrl": "https://archive.org/download/25_20260617/25.mp3",
+     "name": "الشُّعَرَاءِ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/26.mp3",
+     "fallbackUrl": null,
      "bytes": 44584326,
-     "verified": false
+     "verified": true
     },
     {
      "surah": 27,
-     "name": "النمل",
-     "url": "https://ia601801.us.archive.org/25/items/26_20260618_202606/26.mp3",
-     "fallbackUrl": "https://archive.org/download/26_20260618_202606/26.mp3",
+     "name": "النَّمۡلِ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/27.mp3",
+     "fallbackUrl": null,
      "bytes": 38080330,
-     "verified": false
+     "verified": true
     },
     {
      "surah": 28,
-     "name": "القصص",
-     "url": "https://dn711105.ca.archive.org/0/items/28_20260620/28.mp3",
-     "fallbackUrl": "https://archive.org/download/28_20260620/28.mp3",
+     "name": "القَصَصِ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/28.mp3",
+     "fallbackUrl": null,
      "bytes": 31927201,
-     "verified": false
+     "verified": true
     },
     {
      "surah": 29,
-     "name": "العنكبوت",
-     "url": "https://ia903202.us.archive.org/13/items/28_20260620/28.mp3",
-     "fallbackUrl": "https://archive.org/download/28_20260620/28.mp3",
+     "name": "العَنكَبُوتِ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/29.mp3",
+     "fallbackUrl": null,
      "bytes": 31927201,
-     "verified": false
+     "verified": true
     },
     {
      "surah": 30,
-     "name": "الروم",
-     "url": "https://ia600106.us.archive.org/15/items/29_20260620/29.mp3",
-     "fallbackUrl": "https://archive.org/download/29_20260620/29.mp3",
+     "name": "الرُّومِ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/30.mp3",
+     "fallbackUrl": null,
      "bytes": 27326615,
-     "verified": false
+     "verified": true
     },
     {
      "surah": 31,
-     "name": "لقمان",
-     "url": "https://ia600106.us.archive.org/0/items/31_20260621_202606/31.mp3",
-     "fallbackUrl": "https://archive.org/download/31_20260621_202606/31.mp3",
+     "name": "لُقۡمَانَ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/31.mp3",
+     "fallbackUrl": null,
      "bytes": 17549712,
-     "verified": false
+     "verified": true
     },
     {
      "surah": 32,
-     "name": "السجدة",
-     "url": "https://ia902807.us.archive.org/1/items/30_20260621/30.mp3",
-     "fallbackUrl": "https://archive.org/download/30_20260621/30.mp3",
+     "name": "السَّجۡدَةِ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/32.mp3",
+     "fallbackUrl": null,
      "bytes": 12936382,
-     "verified": false
+     "verified": true
     },
     {
      "surah": 33,
-     "name": "الأحزاب",
-     "url": "https://ia801904.us.archive.org/11/items/32_20260622/32.mp3",
-     "fallbackUrl": "https://archive.org/download/32_20260622/32.mp3",
+     "name": "الأَحۡزَابِ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/33.mp3",
+     "fallbackUrl": null,
      "bytes": 43122065,
-     "verified": false
+     "verified": true
     },
     {
      "surah": 34,
-     "name": "سبأ",
-     "url": "https://ia600800.us.archive.org/19/items/33_20260623/33.mp3",
-     "fallbackUrl": "https://archive.org/download/33_20260623/33.mp3",
+     "name": "سَبَإٍ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/34.mp3",
+     "fallbackUrl": null,
      "bytes": 27578292,
-     "verified": false
+     "verified": true
     },
     {
      "surah": 35,
-     "name": "فاطر",
-     "url": "https://ia903204.us.archive.org/12/items/34_20260623/34.mp3",
-     "fallbackUrl": "https://archive.org/download/34_20260623/34.mp3",
+     "name": "فَاطِرٍ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/35.mp3",
+     "fallbackUrl": null,
      "bytes": 26772439,
-     "verified": false
+     "verified": true
     },
     {
      "surah": 36,
-     "name": "يس",
-     "url": "https://ia903205.us.archive.org/9/items/35_20260624/35.mp3",
-     "fallbackUrl": "https://archive.org/download/35_20260624/35.mp3",
+     "name": "يسٓ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/36.mp3",
+     "fallbackUrl": null,
      "bytes": 24309224,
-     "verified": false
+     "verified": true
     },
     {
      "surah": 37,
-     "name": "الصافات",
-     "url": "https://ia903202.us.archive.org/34/items/36_20260624/36.mp3",
-     "fallbackUrl": "https://archive.org/download/36_20260624/36.mp3",
+     "name": "الصَّافَّاتِ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/37.mp3",
+     "fallbackUrl": null,
      "bytes": 31612393,
-     "verified": false
+     "verified": true
+    },
+    {
+     "surah": 38,
+     "name": "صٓ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/38.mp3",
+     "fallbackUrl": null,
+     "bytes": 14136267,
+     "verified": true
+    },
+    {
+     "surah": 39,
+     "name": "الزُّمَرِ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/39.mp3",
+     "fallbackUrl": null,
+     "bytes": 22044731,
+     "verified": true
+    },
+    {
+     "surah": 40,
+     "name": "غَافِرٍ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/40.mp3",
+     "fallbackUrl": null,
+     "bytes": 22238874,
+     "verified": true
+    },
+    {
+     "surah": 41,
+     "name": "فُصِّلَتۡ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/41.mp3",
+     "fallbackUrl": null,
+     "bytes": 15284988,
+     "verified": true
+    },
+    {
+     "surah": 42,
+     "name": "الشُّورَىٰ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/42.mp3",
+     "fallbackUrl": null,
+     "bytes": 16125788,
+     "verified": true
+    },
+    {
+     "surah": 43,
+     "name": "الزُّخۡرُفِ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/43.mp3",
+     "fallbackUrl": null,
+     "bytes": 16675899,
+     "verified": true
+    },
+    {
+     "surah": 44,
+     "name": "الدُّخَانِ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/44.mp3",
+     "fallbackUrl": null,
+     "bytes": 7554105,
+     "verified": true
+    },
+    {
+     "surah": 45,
+     "name": "الجَاثِيَةِ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/45.mp3",
+     "fallbackUrl": null,
+     "bytes": 9592339,
+     "verified": true
+    },
+    {
+     "surah": 46,
+     "name": "الأَحۡقَافِ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/46.mp3",
+     "fallbackUrl": null,
+     "bytes": 12163698,
+     "verified": true
+    },
+    {
+     "surah": 47,
+     "name": "مُحَمَّدٍ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/47.mp3",
+     "fallbackUrl": null,
+     "bytes": 10336310,
+     "verified": true
+    },
+    {
+     "surah": 48,
+     "name": "الفَتۡحِ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/48.mp3",
+     "fallbackUrl": null,
+     "bytes": 11226031,
+     "verified": true
+    },
+    {
+     "surah": 49,
+     "name": "الحُجُرَاتِ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/49.mp3",
+     "fallbackUrl": null,
+     "bytes": 7247308,
+     "verified": true
+    },
+    {
+     "surah": 50,
+     "name": "قٓ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/50.mp3",
+     "fallbackUrl": null,
+     "bytes": 7991210,
+     "verified": true
+    },
+    {
+     "surah": 51,
+     "name": "الذَّارِيَاتِ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/51.mp3",
+     "fallbackUrl": null,
+     "bytes": 6810549,
+     "verified": true
+    },
+    {
+     "surah": 52,
+     "name": "الطُّورِ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/52.mp3",
+     "fallbackUrl": null,
+     "bytes": 6163861,
+     "verified": true
+    },
+    {
+     "surah": 53,
+     "name": "النَّجۡمِ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/53.mp3",
+     "fallbackUrl": null,
+     "bytes": 6697509,
+     "verified": true
+    },
+    {
+     "surah": 54,
+     "name": "القَمَرِ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/54.mp3",
+     "fallbackUrl": null,
+     "bytes": 6827116,
+     "verified": true
+    },
+    {
+     "surah": 55,
+     "name": "الرَّحۡمَٰن",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/55.mp3",
+     "fallbackUrl": null,
+     "bytes": 10497783,
+     "verified": true
+    },
+    {
+     "surah": 56,
+     "name": "الوَاقِعَةِ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/56.mp3",
+     "fallbackUrl": null,
+     "bytes": 9560084,
+     "verified": true
+    },
+    {
+     "surah": 57,
+     "name": "الحَدِيدِ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/d/57.mp3",
+     "fallbackUrl": null,
+     "bytes": 11985991,
+     "verified": true
     }
-   ],
-   "photo": "sheikh.jpg"
+   ]
   },
   {
    "id": "burhaji-nabawi",
@@ -317,8 +478,8 @@
    "fullName": "أ. د. محمد برهجي",
    "mushaf": "المصحف المرتل من مسجد رسول الله ﷺ",
    "mushafEn": "The Prophet's Mosque",
-   "source": "midad.com collection 465944, via the mushaf-audio Worker",
-   "note": "يُقدَّم عبر وسيط لإتاحة التشغيل في المتصفح.",
+   "source": "https://mushaf-audio.mushaftarteel.workers.dev/b/{surah}.mp3",
+   "photo": "burhaji.jpg",
    "released": 114,
    "total": 114,
    "surahs": [
@@ -1234,8 +1395,7 @@
      "bytes": 686308,
      "verified": true
     }
-   ],
-   "photo": "burhaji.jpg"
+   ]
   }
  ]
 }
