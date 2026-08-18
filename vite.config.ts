@@ -27,6 +27,12 @@ export default defineConfig({
         // App shell only. Audio lives in IndexedDB and must never enter the SW cache.
         globPatterns: ['**/*.{js,css,html,png,svg}'],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+        // Without these, a new build sits behind the old service worker and
+        // only takes effect on some later visit — which is exactly how an
+        // update can appear not to have shipped at all.
+        skipWaiting: true,
+        clientsClaim: true,
+        cleanupOutdatedCaches: true,
       },
     }),
   ],
