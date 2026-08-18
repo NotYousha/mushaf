@@ -307,7 +307,8 @@
      "bytes": 31612393,
      "verified": false
     }
-   ]
+   ],
+   "photo": "sheikh.jpg"
   },
   {
    "id": "burhaji-nabawi",
@@ -1233,7 +1234,8 @@
      "bytes": 686308,
      "verified": true
     }
-   ]
+   ],
+   "photo": "burhaji.jpg"
   }
  ]
 }

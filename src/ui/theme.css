@@ -37,11 +37,12 @@
   --radius-card: 28px;
   --radius-tile: 16px;
 
-  /* Portrait crop — the source is a phone screenshot, so the face is framed
-     out of the full image. Nudge these two if you want it tighter or looser. */
-  --face-zoom: 158%;
-  --face-x: 49%;
-  --face-y: 34%;
+  /* Portrait crop. The source is a 555x764 portrait with the face at roughly
+     55% across and 30% down; these values centre it in the medallion.
+     Raise --face-zoom to crop tighter, lower --face-y to move the face up. */
+  --face-zoom: 160%;
+  --face-x: 63%;
+  --face-y: 13%;
 
   --font-ar: 'Amiri', 'Traditional Arabic', serif;
   --font-ui: 'IBM Plex Sans Arabic', system-ui, -apple-system, sans-serif;
@@ -706,4 +707,13 @@ body {
   font-size: 0.66rem;
   opacity: 0.75;
   direction: ltr;
+}
+
+/* Each portrait is framed differently, so the crop is per reciter.
+   Barhaji's source is 302x662 — much narrower than Al-Dosari's 555x764 —
+   and needs its own zoom and offset to sit correctly in the medallion. */
+.medallion[data-reciter='burhaji-nabawi'] {
+  --face-zoom: 150%;
+  --face-x: 62%;
+  --face-y: 25%;
 }

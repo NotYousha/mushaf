@@ -15,6 +15,8 @@ export type Reciter = {
   mushaf: string
   mushafEn?: string
   note?: string
+  /** File in public/, shown in the player medallion. */
+  photo?: string | null
   source?: string
   released: number
   total: number

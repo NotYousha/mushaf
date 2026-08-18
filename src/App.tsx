@@ -462,11 +462,11 @@ export default function App() {
             <div
               className="medallion"
               aria-hidden="true"
+              data-reciter={reciter.id}
               style={{
-                ['--face-src' as string]:
-                  reciter.id === 'dosari'
-                    ? `url('${import.meta.env.BASE_URL}sheikh.jpg')`
-                    : 'none',
+                ['--face-src' as string]: reciter.photo
+                  ? `url('${import.meta.env.BASE_URL}${reciter.photo}')`
+                  : 'none',
               }}
             />
 
