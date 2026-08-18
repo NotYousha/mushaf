@@ -1,9 +1,15 @@
 import bundled from '../../data/catalog.json'
 import meta from '../../data/surahs.json'
-import type { Catalog, SurahMeta, SurahView } from './types'
+import type { Catalog, Reciter, SurahMeta, SurahView } from './types'
 
-export function buildView(cat: Catalog, m: SurahMeta[]): SurahView[] {
-  const byNum = new Map(cat.surahs.map((s) => [s.surah, s]))
+const catalog = bundled as unknown as Catalog
+
+export function getReciters(): Reciter[] {
+  return catalog.reciters
+}
+
+export function buildView(reciter: Reciter, m: SurahMeta[]): SurahView[] {
+  const byNum = new Map(reciter.surahs.map((s) => [s.surah, s]))
   return m.map((md) => {
     const e = byNum.get(md.surah)
     return {
@@ -24,30 +30,30 @@ export function buildView(cat: Catalog, m: SurahMeta[]): SurahView[] {
 /**
  * Bundled catalog first, then try a remote refresh.
  *
- * The mushaf is still being recorded, so the catalog grows over time. A remote
- * manifest lets newly aired surahs appear without shipping a new build. A
- * remote copy is only accepted when it is a superset — a truncated or corrupt
- * response must never remove surahs the user can already see.
+ * Al-Dosari's mushaf is still being recorded, so his surah list grows over
+ * time. A remote manifest lets newly aired surahs appear without shipping a
+ * new build. A remote copy is only accepted when every reciter it carries is
+ * a superset of the bundled one — a truncated or corrupt response must never
+ * remove surahs the user can already see.
  */
-export async function loadCatalog(remoteUrl?: string): Promise<SurahView[]> {
-  let cat = bundled as unknown as Catalog
-  if (remoteUrl) {
-    try {
-      const res = await fetch(remoteUrl, { cache: 'no-cache' })
-      if (res.ok) {
-        const remote = (await res.json()) as Catalog
-        if (Array.isArray(remote.surahs) && remote.surahs.length >= cat.surahs.length) {
-          cat = remote
-        }
-      }
-    } catch {
-      // Offline or unreachable. The bundled catalog stands.
+export async function loadCatalog(remoteUrl?: string): Promise<Reciter[]> {
+  if (!remoteUrl) return catalog.reciters
+  try {
+    const res = await fetch(remoteUrl, { cache: 'no-cache' })
+    if (!res.ok) return catalog.reciters
+    const remote = (await res.json()) as Catalog
+    if (!Array.isArray(remote.reciters) || !remote.reciters.length) {
+      return catalog.reciters
     }
+    const ok = catalog.reciters.every((local) => {
+      const r = remote.reciters.find((x) => x.id === local.id)
+      return r && Array.isArray(r.surahs) && r.surahs.length >= local.surahs.length
+    })
+    return ok ? remote.reciters : catalog.reciters
+  } catch {
+    // Offline or unreachable. The bundled catalog stands.
+    return catalog.reciters
   }
-  return buildView(cat, meta as SurahMeta[])
 }
 
-export const catalogInfo = {
-  reciter: (bundled as unknown as Catalog).reciter,
-  mushaf: (bundled as unknown as Catalog).mushaf,
-}
+export const surahMeta = meta as SurahMeta[]

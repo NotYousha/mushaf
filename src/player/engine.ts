@@ -25,6 +25,7 @@ export class PlayerEngine {
   readonly el: HTMLAudioElement
   private objectUrl: string | null = null
   private currentSurah: number | null = null
+  private currentReciter: string | null = null
   private lastSaved = 0
   mode: PlaybackMode = 'streaming'
   onError: ((message: string) => void) | null = null
@@ -35,15 +36,15 @@ export class PlayerEngine {
 
     this.el.addEventListener('timeupdate', () => {
       const t = this.el.currentTime
-      if (this.currentSurah !== null && Math.abs(t - this.lastSaved) > 5) {
+      if (this.currentSurah !== null && this.currentReciter && Math.abs(t - this.lastSaved) > 5) {
         this.lastSaved = t
-        void savePosition(this.currentSurah, t)
+        void savePosition(this.currentReciter, this.currentSurah, t)
       }
     })
 
     const flush = () => {
-      if (this.currentSurah !== null) {
-        void savePosition(this.currentSurah, this.el.currentTime)
+      if (this.currentSurah !== null && this.currentReciter) {
+        void savePosition(this.currentReciter, this.currentSurah, this.el.currentTime)
       }
     }
     this.el.addEventListener('pause', flush)
@@ -100,14 +101,16 @@ export class PlayerEngine {
   }
 
   async load(
+    reciterId: string,
     surah: number,
     streamUrl: string | null,
     fallbackUrl: string | null = null,
     startAt = 0,
   ): Promise<LoadResult> {
-    const saved = await getAudio(surah)
+    const saved = await getAudio(reciterId, surah)
     this.releaseObjectUrl()
     this.currentSurah = surah
+    this.currentReciter = reciterId
     this.lastSaved = startAt
 
     const candidates: Array<{ src: string; mode: PlaybackMode }> = []

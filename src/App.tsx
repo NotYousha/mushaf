@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { loadCatalog } from './catalog/load'
-import type { SurahView } from './catalog/types'
+import { loadCatalog, buildView, surahMeta } from './catalog/load'
+import type { Reciter } from './catalog/types'
 import { effectiveVerified, getVerdicts, type Verdict } from './catalog/verification'
 import { listDownloaded, putAudio, deleteAudio } from './db/audio'
 import { loadPosition, getPref, setPref } from './db/prefs'
@@ -13,20 +13,35 @@ import { getQuota, requestPersistence, canDownloadAll } from './storage/quota'
 import { SurahList, plainName } from './ui/SurahList'
 import { formatBytes, formatTime } from './ui/format'
 import {
-  Shuffle, Repeat, RepeatOne, Search, Play, Pause, Back, Forward,
-  Moon, Star, Library, QuranMark, More, Broadcast,
+  Shuffle,
+  Repeat,
+  RepeatOne,
+  Search,
+  Play,
+  Pause,
+  Back,
+  Forward,
+  Moon,
+  Star,
+  Library,
+  QuranMark,
+  More,
+  Broadcast,
 } from './ui/Icons'
 import './ui/theme.css'
 
 type Tab = 'quran' | 'library' | 'text' | 'more'
 const SPEEDS = [1, 1.25, 1.5, 0.75]
 
+const dlKey = (reciterId: string, surah: number) => `${reciterId}:${surah}`
+
 export default function App() {
-  const [surahs, setSurahs] = useState<SurahView[]>([])
-  const [downloaded, setDownloaded] = useState<Set<number>>(new Set())
+  const [reciters, setReciters] = useState<Reciter[]>([])
+  const [reciterId, setReciterId] = useState('dosari')
+  const [downloaded, setDownloaded] = useState<Set<string>>(new Set())
   const [progress, setProgress] = useState<Record<number, number>>({})
-  const [verdicts, setVerdicts] = useState<Record<number, Verdict>>({})
-  const [favourites, setFavourites] = useState<number[]>([])
+  const [verdicts, setVerdicts] = useState<Record<string, Verdict>>({})
+  const [favourites, setFavourites] = useState<string[]>([])
   const [current, setCurrent] = useState<number | null>(null)
   const [playing, setPlaying] = useState(false)
   const [mode, setMode] = useState<PlaybackMode>('streaming')
@@ -46,38 +61,58 @@ export default function App() {
   const engine = useRef<PlayerEngine | null>(null)
   if (!engine.current) engine.current = new PlayerEngine()
 
+  const reciter = useMemo(
+    () => reciters.find((r) => r.id === reciterId) ?? reciters[0] ?? null,
+    [reciters, reciterId],
+  )
+
+  const surahs = useMemo(() => (reciter ? buildView(reciter, surahMeta) : []), [reciter])
+
   const urls = useMemo(
-    () => new Map(surahs.filter((s) => s.url).map((s) => [s.surah, s.url!])),
+    () => new Map(surahs.filter((s) => s.url).map((s) => [s.surah, s.url as string])),
     [surahs],
   )
+
+  // The queue is created once, so it reads the live reciter and URL map
+  // through refs rather than closing over stale values.
+  const urlsRef = useRef(urls)
+  urlsRef.current = urls
+  const reciterIdRef = useRef(reciterId)
+  reciterIdRef.current = reciterId
 
   const queue = useRef<DownloadQueue | null>(null)
   if (!queue.current) {
     queue.current = new DownloadQueue({
       fetcher: (surah, url, onProgress, signal) =>
-        new CatalogSource(urls).fetchSurah(surah, onProgress, signal),
+        new CatalogSource(urlsRef.current).fetchSurah(surah, onProgress, signal),
       save: async (surah, blob) => {
-        await putAudio(surah, blob, 'catalog')
+        await putAudio(reciterIdRef.current, surah, blob, 'catalog')
       },
     })
   }
 
   const refreshDownloaded = useCallback(async () => {
     const list = await listDownloaded()
-    setDownloaded(new Set(list.map((l) => l.surah)))
+    setDownloaded(new Set(list.map((l) => dlKey(l.reciterId, l.surah))))
     setQuota(await getQuota())
   }, [])
 
   useEffect(() => {
     engine.current!.onError = (m) => setError(m)
     void (async () => {
-      setSurahs(await loadCatalog())
+      const rs = await loadCatalog()
+      setReciters(rs)
+      const savedId = await getPref<string>('reciterId', rs[0]?.id ?? 'dosari')
+      setReciterId(rs.some((r) => r.id === savedId) ? savedId : (rs[0]?.id ?? 'dosari'))
       setVerdicts(await getVerdicts())
-      setFavourites(await getPref<number[]>('favourites', []))
+      setFavourites(await getPref<string[]>('favourites', []))
       await refreshDownloaded()
       await requestPersistence()
       const pos = await loadPosition()
-      if (pos) setCurrent(pos.surah)
+      if (pos && rs.some((r) => r.id === pos.reciterId)) {
+        setReciterId(pos.reciterId)
+        setCurrent(pos.surah)
+      }
     })()
   }, [refreshDownloaded])
 
@@ -85,7 +120,7 @@ export default function App() {
     return queue.current!.subscribe((s) => {
       setProgress(s.progress)
       const failed = Object.values(s.failed)[0]
-      if (failed) setError(`Download failed: ${failed}`)
+      if (failed) setError(`تعذّر الحفظ: ${failed}`)
       if (!s.active.length && !s.pending.length) void refreshDownloaded()
     })
   }, [refreshDownloaded])
@@ -94,7 +129,10 @@ export default function App() {
     const el = engine.current!.el
     const onTime = () => setTime(el.currentTime)
     const onMeta = () => setDuration(el.duration || 0)
-    const onPlay = () => { setPlaying(true); setError(null) }
+    const onPlay = () => {
+      setPlaying(true)
+      setError(null)
+    }
     const onPause = () => setPlaying(false)
     el.addEventListener('timeupdate', onTime)
     el.addEventListener('loadedmetadata', onMeta)
@@ -115,15 +153,23 @@ export default function App() {
     [surahs],
   )
 
+  const advanceRef = useRef<(() => Promise<void>) | null>(null)
+
   const playSurah = useCallback(
     async (surah: number, startAt = 0) => {
       const s = surahs.find((x) => x.surah === surah)
-      if (!s?.released) return
+      if (!s?.released || !reciter) return
       setBusy(true)
       setError(null)
       setCurrent(surah)
 
-      const res = await engine.current!.load(surah, s.url, s.fallbackUrl, startAt)
+      const res = await engine.current!.load(
+        reciter.id,
+        surah,
+        s.url,
+        s.fallbackUrl,
+        startAt,
+      )
       setBusy(false)
       if (!res.ok) {
         setError(`${plainName(s.name)}: ${res.reason}`)
@@ -133,7 +179,7 @@ export default function App() {
       engine.current!.setRate(SPEEDS[speedIdx])
       await engine.current!.play()
 
-      updateMediaSession(s, {
+      updateMediaSession(s, reciter.fullName, {
         play: () => void engine.current!.play(),
         pause: () => engine.current!.pause(),
         next: () => void advanceRef.current?.(),
@@ -145,7 +191,7 @@ export default function App() {
       })
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [surahs, playable, speedIdx],
+    [surahs, playable, speedIdx, reciter],
   )
 
   const advance = useCallback(async () => {
@@ -159,8 +205,6 @@ export default function App() {
     const n = nextSurah(current, repeat, playable)
     if (n !== null) await playSurah(n)
   }, [current, repeat, shuffle, playable, playSurah])
-
-  const advanceRef = useRef<typeof advance | null>(null)
   advanceRef.current = advance
 
   useEffect(() => {
@@ -170,15 +214,28 @@ export default function App() {
     return () => el.removeEventListener('ended', onEnded)
   }, [advance])
 
-  // sleep timer
   useEffect(() => {
     if (sleepAt === null) return
-    const id = setTimeout(() => {
-      engine.current!.pause()
-      setSleepAt(null)
-    }, sleepAt * 60_000)
+    const id = setTimeout(
+      () => {
+        engine.current!.pause()
+        setSleepAt(null)
+      },
+      sleepAt * 60_000,
+    )
     return () => clearTimeout(id)
   }, [sleepAt])
+
+  const switchReciter = async (id: string) => {
+    if (id === reciterId) return
+    engine.current!.pause()
+    setReciterId(id)
+    setCurrent(null)
+    setTime(0)
+    setDuration(0)
+    setError(null)
+    await setPref('reciterId', id)
+  }
 
   const toggle = async () => {
     if (current === null) {
@@ -192,6 +249,16 @@ export default function App() {
 
   const currentView = surahs.find((s) => s.surah === current) ?? null
   const releasedTotal = surahs.filter((s) => s.released).reduce((a, s) => a + s.bytes, 0)
+
+  const downloadedHere = useMemo(
+    () =>
+      new Set(
+        [...downloaded]
+          .filter((k) => k.startsWith(`${reciterId}:`))
+          .map((k) => Number(k.split(':')[1])),
+      ),
+    [downloaded, reciterId],
+  )
 
   const filtered = useMemo(() => {
     const q = query.trim()
@@ -213,17 +280,16 @@ export default function App() {
     }
   }
 
+  const favKey = current !== null ? dlKey(reciterId, current) : ''
   const toggleFavourite = async () => {
     if (current === null) return
-    const next = favourites.includes(current)
-      ? favourites.filter((n) => n !== current)
-      : [...favourites, current]
+    const next = favourites.includes(favKey)
+      ? favourites.filter((k) => k !== favKey)
+      : [...favourites, favKey]
     setFavourites(next)
     await setPref('favourites', next)
   }
 
-  // The transport reads left-to-right like a video scrubber, even though the
-  // surah list around it is RTL.
   const seekTo = (e: React.MouseEvent<HTMLDivElement>) => {
     const r = e.currentTarget.getBoundingClientRect()
     const f = (e.clientX - r.left) / r.width
@@ -259,6 +325,23 @@ export default function App() {
           </div>
         </div>
 
+        {reciters.length > 1 && (
+          <div className="reciters" role="tablist" aria-label="القارئ">
+            {reciters.map((r) => (
+              <button
+                key={r.id}
+                role="tab"
+                aria-selected={r.id === reciterId}
+                className="chip"
+                onClick={() => void switchReciter(r.id)}
+              >
+                <span className="chip-name">{r.name}</span>
+                <span className="chip-meta">{r.surahs.length}/114</span>
+              </button>
+            ))}
+          </div>
+        )}
+
         {tab === 'quran' && (
           <div className="search">
             <Search size={20} />
@@ -275,10 +358,10 @@ export default function App() {
           {tab === 'quran' && (
             <SurahList
               surahs={filtered}
-              downloaded={downloaded}
+              downloaded={downloadedHere}
               progress={progress}
               current={current}
-              verified={(s) => effectiveVerified(s, verdicts)}
+              verified={(s) => effectiveVerified(reciterId, s, verdicts)}
               onPlay={(n) => void playSurah(n)}
               onDownload={(n) => {
                 const u = urls.get(n)
@@ -304,10 +387,12 @@ export default function App() {
                 />
               </div>
               <p>
-                {formatBytes(quota.usage)} مستخدَمة من {formatBytes(quota.quota)} · محفوظة:{' '}
-                {downloaded.size} سورة
+                {formatBytes(quota.usage)} مستخدَمة من {formatBytes(quota.quota)} · محفوظة
+                لهذا القارئ: {downloadedHere.size} سورة
               </p>
-              <p>حفظ كل السور المسجَّلة يحتاج {formatBytes(releasedTotal)}.</p>
+              <p>
+                حفظ كل سور {reciter?.name} يحتاج {formatBytes(releasedTotal)}.
+              </p>
               <button
                 className="btn solid"
                 disabled={!canDownloadAll(releasedTotal, quota.free)}
@@ -319,9 +404,9 @@ export default function App() {
               </button>
               <button
                 className="btn"
-                disabled={!downloaded.size}
+                disabled={!downloadedHere.size}
                 onClick={async () => {
-                  for (const n of downloaded) await deleteAudio(n)
+                  for (const n of downloadedHere) await deleteAudio(reciterId, n)
                   await refreshDownloaded()
                 }}
               >
@@ -350,50 +435,55 @@ export default function App() {
 
           {tab === 'more' && (
             <div className="panel">
-              <h2>المزيد</h2>
-              <p>
-                المصحف المرتل للشيخ ياسر بن راشد الدوسري، إنتاج المركز السعودي للتلاوات
-                القرآنية والأحاديث النبوية.
-              </p>
-              <p>
-                مُسجَّل حتى الآن: {playable.length} من 114 سورة. تُضاف السور الجديدة تلقائيًا
-                عند نشرها.
-              </p>
-              <p>
-                بحاجة إلى تأكيد بالسماع:{' '}
-                {surahs.filter((s) => s.released && !effectiveVerified(s, verdicts)).length}{' '}
-                سورة.
-              </p>
+              <h2>القُرّاء</h2>
+              {reciters.map((r) => (
+                <p key={r.id}>
+                  <strong>{r.fullName}</strong>
+                  <br />
+                  {r.mushaf}
+                  <br />
+                  مُسجَّل: {r.surahs.length} من 114
+                  {r.note ? (
+                    <>
+                      <br />
+                      <span style={{ color: 'var(--muted)' }}>{r.note}</span>
+                    </>
+                  ) : null}
+                </p>
+              ))}
             </div>
           )}
         </div>
       </div>
 
-      {currentView && (
+      {currentView && reciter && (
         <div className="player">
           <div className="player-top">
             <div
               className="medallion"
               aria-hidden="true"
               style={{
-                ['--face-src' as string]: `url('${import.meta.env.BASE_URL}sheikh.jpg')`,
+                ['--face-src' as string]:
+                  reciter.id === 'dosari'
+                    ? `url('${import.meta.env.BASE_URL}sheikh.jpg')`
+                    : 'none',
               }}
             />
 
             <div className="now">
               <div className="surah-name">سُورَةُ {currentView.name}</div>
               <div className="label">القارئ</div>
-              <div className="reciter-ar">أ.د. ياسر الدوسري</div>
-              <div className="reciter-en">Yasser Al-Dosari</div>
+              <div className="reciter-ar">{reciter.fullName}</div>
+              <div className="reciter-en">{reciter.nameEn}</div>
             </div>
 
             <button
               className="round"
               aria-label="المفضلة"
-              aria-pressed={favourites.includes(currentView.surah)}
+              aria-pressed={favourites.includes(favKey)}
               onClick={toggleFavourite}
             >
-              <Star size={20} filled={favourites.includes(currentView.surah)} />
+              <Star size={20} filled={favourites.includes(favKey)} />
             </button>
           </div>
 
@@ -421,7 +511,11 @@ export default function App() {
               <Back size={26} />
             </button>
 
-            <button className="ctrl big" aria-label={playing ? 'إيقاف' : 'تشغيل'} onClick={toggle}>
+            <button
+              className="ctrl big"
+              aria-label={playing ? 'إيقاف' : 'تشغيل'}
+              onClick={toggle}
+            >
               {busy ? '…' : playing ? <Pause size={26} /> : <Play size={26} />}
             </button>
 

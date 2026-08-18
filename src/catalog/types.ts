@@ -7,12 +7,23 @@ export type CatalogEntry = {
   verified: boolean
 }
 
-export type Catalog = {
-  reciter: string
+export type Reciter = {
+  id: string
+  name: string
+  nameEn: string
+  fullName: string
   mushaf: string
+  mushafEn?: string
+  note?: string
+  source?: string
   released: number
   total: number
   surahs: CatalogEntry[]
+}
+
+export type Catalog = {
+  generated: string
+  reciters: Reciter[]
 }
 
 export type SurahMeta = {

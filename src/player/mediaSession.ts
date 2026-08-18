@@ -12,7 +12,7 @@ type Handlers = {
  * Lock-screen and headphone controls. Best-effort throughout: playback must
  * never depend on this succeeding, so every call is wrapped.
  */
-export function updateMediaSession(s: SurahView, h: Handlers) {
+export function updateMediaSession(s: SurahView, reciter: string, h: Handlers) {
   const ms = (navigator as unknown as { mediaSession?: MediaSession })?.mediaSession
   if (!ms) return
 
@@ -21,7 +21,7 @@ export function updateMediaSession(s: SurahView, h: Handlers) {
     if (MM) {
       ms.metadata = new MM({
         title: `${s.name} · ${s.nameEn}`,
-        artist: 'ياسر الدوسري',
+        artist: reciter,
         album: 'المصحف المرتل',
         artwork: [
           {

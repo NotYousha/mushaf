@@ -13,49 +13,52 @@ import { CatalogSource } from '../src/sources/CatalogSource'
 import catalog from '../data/catalog.json'
 import meta from '../data/surahs.json'
 
+const dosari = catalog.reciters.find((r) => r.id === 'dosari')!
+const R = 'dosari'
+
 describe('audio store', () => {
   beforeEach(async () => {
-    for (const e of await listDownloaded()) await deleteAudio(e.surah)
+    for (const e of await listDownloaded()) await deleteAudio(e.reciterId, e.surah)
   })
 
   it('round-trips a blob', async () => {
-    await putAudio(18, new Blob([new Uint8Array([1, 2, 3])]), 'catalog')
-    const got = await getAudio(18)
+    await putAudio(R, 18, new Blob([new Uint8Array([1, 2, 3])]), 'catalog')
+    const got = await getAudio(R, 18)
     expect(got?.size).toBe(3)
   })
 
   it('returns null for a surah never stored', async () => {
-    expect(await getAudio(99)).toBeNull()
+    expect(await getAudio(R, 99)).toBeNull()
   })
 
   it('lists sizes and source', async () => {
-    await putAudio(2, new Blob([new Uint8Array(20)]), 'import')
+    await putAudio(R, 2, new Blob([new Uint8Array(20)]), 'import')
     const list = await listDownloaded()
     expect(list.find((e) => e.surah === 2)).toMatchObject({ bytes: 20, sourceId: 'import' })
   })
 
   it('deletes', async () => {
-    await putAudio(5, new Blob([new Uint8Array(4)]), 'catalog')
-    await deleteAudio(5)
-    expect(await getAudio(5)).toBeNull()
+    await putAudio(R, 5, new Blob([new Uint8Array(4)]), 'catalog')
+    await deleteAudio(R, 5)
+    expect(await getAudio(R, 5)).toBeNull()
   })
 })
 
 describe('resume position', () => {
   it('round-trips and overwrites', async () => {
-    await savePosition(2, 10)
-    await savePosition(3, 20.5)
-    expect(await loadPosition()).toEqual({ surah: 3, seconds: 20.5 })
+    await savePosition(R, 2, 10)
+    await savePosition('burhaji', 3, 20.5)
+    expect(await loadPosition()).toEqual({ reciterId: 'burhaji', surah: 3, seconds: 20.5 })
   })
 })
 
 describe('catalog view', () => {
   it('always returns 114 entries', () => {
-    expect(buildView(catalog as never, meta as never)).toHaveLength(114)
+    expect(buildView(dosari as never, meta as never)).toHaveLength(114)
   })
 
   it('marks released vs unrecorded', () => {
-    const v = buildView(catalog as never, meta as never)
+    const v = buildView(dosari as never, meta as never)
     expect(v.find((s) => s.surah === 18)!.released).toBe(true)
     expect(v.find((s) => s.surah === 67)!.released).toBe(false)
     expect(v.find((s) => s.surah === 67)!.url).toBeNull()
@@ -63,31 +66,54 @@ describe('catalog view', () => {
 
   it('falls back to bundled data when the remote refresh fails', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')))
-    const v = await loadCatalog('https://example.com/catalog.json')
-    expect(v.filter((s) => s.released)).toHaveLength(37)
+    const rs = await loadCatalog('https://example.com/catalog.json')
+    expect(rs.find((r) => r.id === 'dosari')!.surahs).toHaveLength(37)
     vi.unstubAllGlobals()
   })
 
   it('refuses a remote catalog that would remove surahs', async () => {
-    const truncated = { ...catalog, surahs: catalog.surahs.slice(0, 5) }
+    const truncated = {
+      ...catalog,
+      reciters: catalog.reciters.map((r) => ({ ...r, surahs: r.surahs.slice(0, 5) })),
+    }
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => truncated }))
-    const v = await loadCatalog('https://example.com/catalog.json')
-    expect(v.filter((s) => s.released)).toHaveLength(37)
+    const rs = await loadCatalog('https://example.com/catalog.json')
+    expect(rs.find((r) => r.id === 'dosari')!.surahs).toHaveLength(37)
     vi.unstubAllGlobals()
   })
 
   it('accepts a remote catalog that adds surahs', async () => {
     const grown = {
       ...catalog,
-      surahs: [
-        ...catalog.surahs,
-        { surah: 38, name: 'ص', url: 'https://archive.org/download/x/38.mp3', bytes: 10, verified: true },
-      ],
+      reciters: catalog.reciters.map((r) =>
+        r.id === 'dosari'
+          ? {
+              ...r,
+              surahs: [
+                ...r.surahs,
+                {
+                  surah: 38,
+                  name: 'ص',
+                  url: 'https://archive.org/download/x/38.mp3',
+                  fallbackUrl: null,
+                  bytes: 10,
+                  verified: true,
+                },
+              ],
+            }
+          : r,
+      ),
     }
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: true, json: async () => grown }))
-    const v = await loadCatalog('https://example.com/catalog.json')
-    expect(v.filter((s) => s.released)).toHaveLength(38)
+    const rs = await loadCatalog('https://example.com/catalog.json')
+    expect(rs.find((r) => r.id === 'dosari')!.surahs).toHaveLength(38)
     vi.unstubAllGlobals()
+  })
+
+  it('keeps each reciter separate', async () => {
+    const rs = await loadCatalog()
+    expect(rs.find((r) => r.id === 'burhaji')!.surahs).toHaveLength(114)
+    expect(rs.find((r) => r.id === 'dosari')!.surahs).toHaveLength(37)
   })
 })
 
@@ -96,18 +122,20 @@ describe('verification', () => {
     ({ surah, verified }) as never
 
   it('uses the catalog flag when there is no verdict', () => {
-    expect(effectiveVerified(view(1, true), {})).toBe(true)
-    expect(effectiveVerified(view(3, false), {})).toBe(false)
+    expect(effectiveVerified(R, view(1, true), {})).toBe(true)
+    expect(effectiveVerified(R, view(3, false), {})).toBe(false)
   })
 
   it('lets a user verdict override in both directions', () => {
-    expect(effectiveVerified(view(3, false), { 3: 'ok' })).toBe(true)
-    expect(effectiveVerified(view(1, true), { 1: 'wrong' })).toBe(false)
+    expect(effectiveVerified(R, view(3, false), { 'dosari:3': 'ok' })).toBe(true)
+    expect(effectiveVerified(R, view(1, true), { 'dosari:1': 'wrong' })).toBe(false)
+    // a verdict for one reciter must not leak to the other
+    expect(effectiveVerified('burhaji', view(3, false), { 'dosari:3': 'ok' })).toBe(false)
   })
 
   it('persists verdicts', async () => {
-    await setVerdict(27, 'ok')
-    expect((await getVerdicts())[27]).toBe('ok')
+    await setVerdict(R, 27, 'ok')
+    expect((await getVerdicts())['dosari:27']).toBe('ok')
   })
 })
 
