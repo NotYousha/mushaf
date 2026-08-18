@@ -23,7 +23,13 @@ export function updateMediaSession(s: SurahView, h: Handlers) {
         title: `${s.name} · ${s.nameEn}`,
         artist: 'ياسر الدوسري',
         album: 'المصحف المرتل',
-        artwork: [{ src: '/icon-512.png', sizes: '512x512', type: 'image/png' }],
+        artwork: [
+          {
+            src: `${import.meta.env.BASE_URL}icon-512.png`,
+            sizes: '512x512',
+            type: 'image/png',
+          },
+        ],
       })
     }
     ms.setActionHandler('play', h.play)

@@ -375,7 +375,9 @@ export default function App() {
             <div
               className="medallion"
               aria-hidden="true"
-              style={{ ['--face-src' as string]: "url('/sheikh.jpg')" }}
+              style={{
+                ['--face-src' as string]: `url('${import.meta.env.BASE_URL}sheikh.jpg')`,
+              }}
             />
 
             <div className="now">
