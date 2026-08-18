@@ -74,7 +74,10 @@ body {
 
 .app {
   direction: rtl;
-  min-height: 100dvh;
+  /* A fixed viewport box, not min-height: the player and tab bar are pinned
+     and only the surah list scrolls, inside its own overflow container. */
+  height: 100dvh;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   max-width: 30rem;
@@ -188,8 +191,10 @@ body {
 .scroll {
   overflow-y: auto;
   flex: 1;
+  min-height: 0;
   padding-bottom: 0.5rem;
   -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 .surah-list {
@@ -365,6 +370,7 @@ body {
   box-shadow: 0 -4px 26px rgba(140, 110, 55, 0.08);
   position: relative;
   z-index: 5;
+  flex: none;
 }
 
 .player-top {
@@ -527,8 +533,7 @@ body {
   background: var(--card);
   border-top: 1px solid var(--divider);
   padding: 0.55rem 0 calc(0.4rem + env(safe-area-inset-bottom));
-  position: sticky;
-  bottom: 0;
+  flex: none;
   z-index: 6;
 }
 
