@@ -46,7 +46,7 @@ export default function App() {
   const [reciters, setReciters] = useState<Reciter[]>([])
   const [reciterId, setReciterId] = useState('dosari')
   const [downloaded, setDownloaded] = useState<Set<string>>(new Set())
-  const [progress, setProgress] = useState<Record<number, number>>({})
+  const [progress, setProgress] = useState<Record<string, number>>({})
   const [verdicts, setVerdicts] = useState<Record<string, Verdict>>({})
   const [favourites, setFavourites] = useState<string[]>([])
   const [current, setCurrent] = useState<number | null>(null)
@@ -80,20 +80,19 @@ export default function App() {
     [surahs],
   )
 
-  // The queue is created once, so it reads the live reciter and URL map
-  // through refs rather than closing over stale values.
-  const urlsRef = useRef(urls)
-  urlsRef.current = urls
-  const reciterIdRef = useRef(reciterId)
-  reciterIdRef.current = reciterId
-
+  // Each job carries its own reciter and URL, so switching reciter while a
+  // download is queued can no longer fetch or file the wrong audio.
   const queue = useRef<DownloadQueue | null>(null)
   if (!queue.current) {
     queue.current = new DownloadQueue({
-      fetcher: (surah, url, onProgress, signal) =>
-        new CatalogSource(urlsRef.current).fetchSurah(surah, onProgress, signal),
-      save: async (surah, blob) => {
-        await putAudio(reciterIdRef.current, surah, blob, 'catalog')
+      fetcher: (job, onProgress, signal) =>
+        new CatalogSource(new Map([[job.surah, job.url]])).fetchSurah(
+          job.surah,
+          onProgress,
+          signal,
+        ),
+      save: async (job, blob) => {
+        await putAudio(job.reciterId, job.surah, blob, 'catalog')
       },
     })
   }
@@ -229,7 +228,10 @@ export default function App() {
     const n = nextSurah(current, repeat, playable)
     if (n !== null) await playSurah(n)
   }, [current, repeat, shuffle, playable, playSurah])
-  advanceRef.current = advance
+
+  useEffect(() => {
+    advanceRef.current = advance
+  }, [advance])
 
   useEffect(() => {
     const el = engine.current!.el
@@ -389,6 +391,7 @@ export default function App() {
           {tab === 'quran' && (
             <SurahList
               surahs={filtered}
+              reciterId={reciterId}
               downloaded={downloadedHere}
               progress={progress}
               current={current}
@@ -396,7 +399,7 @@ export default function App() {
               onPlay={(n) => void playSurah(n)}
               onDownload={(n) => {
                 const u = urls.get(n)
-                if (u) queue.current!.enqueue(n, u)
+                if (u) queue.current!.enqueue({ reciterId, surah: n, url: u })
               }}
             />
           )}
@@ -428,7 +431,9 @@ export default function App() {
                 className="btn solid"
                 disabled={!canDownloadAll(releasedTotal, quota.free)}
                 onClick={() => {
-                  for (const [n, u] of urls) queue.current!.enqueue(n, u)
+                  for (const [n, u] of urls) {
+                    queue.current!.enqueue({ reciterId, surah: n, url: u })
+                  }
                 }}
               >
                 حفظ الكل · {formatBytes(releasedTotal)}
@@ -446,7 +451,6 @@ export default function App() {
 
               {reciter && (
                 <ImportPanel
-                  reciterId={reciterId}
                   reciterName={reciter.name}
                   meta={surahMeta}
                   onSave={saveImported}

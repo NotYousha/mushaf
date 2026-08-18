@@ -1,26 +1,30 @@
+export type Job = { reciterId: string; surah: number; url: string }
+
 export type QueueState = {
-  active: number[]
-  pending: number[]
-  progress: Record<number, number>
-  failed: Record<number, string>
+  /** Composite `reciterId:surah` keys, so two reciters never collide. */
+  active: string[]
+  pending: string[]
+  progress: Record<string, number>
+  failed: Record<string, string>
 }
 
 type Deps = {
   fetcher: (
-    surah: number,
-    url: string,
+    job: Job,
     onProgress: (loaded: number, total: number) => void,
     signal: AbortSignal,
   ) => Promise<Blob>
-  save: (surah: number, blob: Blob) => Promise<void>
+  save: (job: Job, blob: Blob) => Promise<void>
   concurrency?: number
 }
 
+export const jobKey = (reciterId: string, surah: number) => `${reciterId}:${surah}`
+
 export class DownloadQueue {
-  private pending: Array<{ surah: number; url: string }> = []
-  private active = new Map<number, AbortController>()
-  private progress: Record<number, number> = {}
-  private failed: Record<number, string> = {}
+  private pending: Job[] = []
+  private active = new Map<string, AbortController>()
+  private progress: Record<string, number> = {}
+  private failed: Record<string, string> = {}
   private paused = false
   private subs = new Set<(s: QueueState) => void>()
   private running: Promise<void>[] = []
@@ -33,7 +37,7 @@ export class DownloadQueue {
   state(): QueueState {
     return {
       active: [...this.active.keys()],
-      pending: this.pending.map((p) => p.surah),
+      pending: this.pending.map((j) => jobKey(j.reciterId, j.surah)),
       progress: { ...this.progress },
       failed: { ...this.failed },
     }
@@ -51,16 +55,25 @@ export class DownloadQueue {
     this.subs.forEach((f) => f(s))
   }
 
-  enqueue(surah: number, url: string) {
-    if (this.active.has(surah) || this.pending.some((p) => p.surah === surah)) return
-    delete this.failed[surah]
-    this.pending.push({ surah, url })
+  /**
+   * The job carries its own reciter and URL. Resolving either at run time
+   * from whatever the UI currently shows would download the wrong audio when
+   * the reciter is switched while a download is queued.
+   */
+  enqueue(job: Job) {
+    const key = jobKey(job.reciterId, job.surah)
+    if (this.active.has(key) || this.pending.some((j) => jobKey(j.reciterId, j.surah) === key)) {
+      return
+    }
+    delete this.failed[key]
+    this.pending.push(job)
     this.pump()
   }
 
-  cancel(surah: number) {
-    this.active.get(surah)?.abort()
-    this.pending = this.pending.filter((p) => p.surah !== surah)
+  cancel(reciterId: string, surah: number) {
+    const key = jobKey(reciterId, surah)
+    this.active.get(key)?.abort()
+    this.pending = this.pending.filter((j) => jobKey(j.reciterId, j.surah) !== key)
     this.emit()
   }
 
@@ -77,27 +90,27 @@ export class DownloadQueue {
   private pump() {
     while (!this.paused && this.active.size < this.limit && this.pending.length) {
       const job = this.pending.shift()!
+      const key = jobKey(job.reciterId, job.surah)
       const ac = new AbortController()
-      this.active.set(job.surah, ac)
+      this.active.set(key, ac)
 
       const task = (async () => {
         try {
           const blob = await this.deps.fetcher(
-            job.surah,
-            job.url,
+            job,
             (loaded, total) => {
-              this.progress[job.surah] = total ? loaded / total : 0
+              this.progress[key] = total ? loaded / total : 0
               this.emit()
             },
             ac.signal,
           )
-          await this.deps.save(job.surah, blob)
+          await this.deps.save(job, blob)
         } catch (e: unknown) {
           // One surah failing must not stall the rest of the queue.
-          this.failed[job.surah] = e instanceof Error ? e.message : String(e)
+          this.failed[key] = e instanceof Error ? e.message : String(e)
         } finally {
-          this.active.delete(job.surah)
-          delete this.progress[job.surah]
+          this.active.delete(key)
+          delete this.progress[key]
           this.emit()
           this.pump()
         }

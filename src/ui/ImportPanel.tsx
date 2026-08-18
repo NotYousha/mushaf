@@ -7,7 +7,6 @@ import { plainName } from './SurahList'
 type Pending = { file: File; surah: number | null }
 
 type Props = {
-  reciterId: string
   reciterName: string
   meta: SurahMeta[]
   onSave: (items: Array<{ surah: number; file: File }>) => Promise<void>
@@ -23,7 +22,7 @@ type Props = {
  * than guessed at, since filing a recitation under the wrong surah is the
  * worst mistake this app could make.
  */
-export function ImportPanel({ reciterId, reciterName, meta, onSave }: Props) {
+export function ImportPanel({ reciterName, meta, onSave }: Props) {
   const [pending, setPending] = useState<Pending[]>([])
   const [saving, setSaving] = useState(false)
   const [done, setDone] = useState<number | null>(null)

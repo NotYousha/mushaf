@@ -7,8 +7,9 @@ export const plainName = (s: string) =>
 
 type Props = {
   surahs: SurahView[]
+  reciterId: string
   downloaded: Set<number>
-  progress: Record<number, number>
+  progress: Record<string, number>
   current: number | null
   verified: (s: SurahView) => boolean
   onPlay: (surah: number) => void
@@ -17,6 +18,7 @@ type Props = {
 
 export function SurahList({
   surahs,
+  reciterId,
   downloaded,
   progress,
   current,
@@ -29,7 +31,8 @@ export function SurahList({
   const playable = (s: SurahView) => s.released || downloaded.has(s.surah)
   const released = surahs.filter(playable)
   const upcoming = surahs.filter((s) => !playable(s))
-  const last = released[released.length - 1]
+  // Specifically the last broadcast surah — an imported file is not one.
+  const lastRecorded = [...released].reverse().find((s) => s.released)
 
   if (!surahs.length) {
     return <p className="empty">لا توجد نتائج</p>
@@ -41,7 +44,7 @@ export function SurahList({
         {released.map((s) => {
           const active = current === s.surah
           const have = downloaded.has(s.surah)
-          const pct = progress[s.surah]
+          const pct = progress[`${reciterId}:${s.surah}`]
           return (
             <li key={s.surah}>
               <button
@@ -99,11 +102,11 @@ export function SurahList({
         })}
       </ul>
 
-      {last && (
+      {lastRecorded && upcoming.length > 0 && (
         <div className="frontier">
           <div className="fade" />
           <p>
-            آخر سورة مُسجَّلة: {plainName(last.name)}
+            آخر سورة مُسجَّلة: {plainName(lastRecorded.name)}
             <br />
             المصحف ما زال قيد التسجيل — تُضاف السور الجديدة تلقائيًا
           </p>

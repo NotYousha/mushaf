@@ -187,6 +187,12 @@ describe('downloadChunked', () => {
 })
 
 describe('DownloadQueue', () => {
+  const job = (reciterId: string, surah: number, url = `u${surah}`) => ({
+    reciterId,
+    surah,
+    url,
+  })
+
   it('caps concurrency at 3', async () => {
     let started = 0
     let peak = 0
@@ -198,8 +204,6 @@ describe('DownloadQueue', () => {
           started++
           inFlight++
           peak = Math.max(peak, inFlight)
-          // Every job releases itself, including the ones that only start
-          // once an earlier slot frees up.
           release.push(() => {
             inFlight--
             resolve(new Blob([new Uint8Array(1)]))
@@ -208,12 +212,11 @@ describe('DownloadQueue', () => {
       save: async () => {},
     })
 
-    for (let i = 1; i <= 5; i++) q.enqueue(i, `u${i}`)
+    for (let i = 1; i <= 5; i++) q.enqueue(job('dosari', i))
     await new Promise((r) => setTimeout(r, 0))
     expect(started).toBe(3)
     expect(peak).toBe(3)
 
-    // Drain by repeatedly releasing whatever is currently in flight.
     while (release.length) release.shift()!()
     await new Promise((r) => setTimeout(r, 0))
     while (release.length) release.shift()!()
@@ -225,30 +228,78 @@ describe('DownloadQueue', () => {
 
   it('isolates a failure so the queue keeps going', async () => {
     const q = new DownloadQueue({
-      fetcher: async (surah) => {
-        if (surah === 1) throw new Error('boom')
+      fetcher: async (j) => {
+        if (j.surah === 1) throw new Error('boom')
         return new Blob([new Uint8Array(1)])
       },
       save: async () => {},
     })
-    q.enqueue(1, 'a')
-    q.enqueue(2, 'b')
+    q.enqueue(job('dosari', 1))
+    q.enqueue(job('dosari', 2))
     await q.drain()
-    expect(q.state().failed[1]).toContain('boom')
-    expect(q.state().failed[2]).toBeUndefined()
+    expect(q.state().failed['dosari:1']).toContain('boom')
+    expect(q.state().failed['dosari:2']).toBeUndefined()
   })
 
-  it('saves completed downloads', async () => {
-    const saved: number[] = []
+  it('saves completed downloads against the job that asked for them', async () => {
+    const saved: string[] = []
     const q = new DownloadQueue({
       fetcher: async () => new Blob([new Uint8Array(3)]),
-      save: async (surah) => {
-        saved.push(surah)
+      save: async (j) => {
+        saved.push(`${j.reciterId}:${j.surah}`)
       },
     })
-    q.enqueue(9, 'u')
+    q.enqueue(job('burhaji-nabawi', 9))
     await q.drain()
-    expect(saved).toEqual([9])
+    expect(saved).toEqual(['burhaji-nabawi:9'])
+  })
+
+  it('fetches the URL the job carries, not one looked up later', async () => {
+    // Regression: the fetcher used to ignore the job's URL and resolve from
+    // whichever reciter the UI happened to be showing, so switching reciter
+    // mid-download fetched the wrong audio.
+    const seen: string[] = []
+    const q = new DownloadQueue({
+      fetcher: async (j) => {
+        seen.push(j.url)
+        return new Blob([new Uint8Array(1)])
+      },
+      save: async () => {},
+    })
+    q.enqueue(job('dosari', 2, 'https://example.test/d/2.mp3'))
+    await q.drain()
+    expect(seen).toEqual(['https://example.test/d/2.mp3'])
+  })
+
+  it('keeps the same surah separate across reciters', async () => {
+    // Regression: jobs were deduped by surah alone, so one reciter's surah 2
+    // silently blocked the other's.
+    const saved: string[] = []
+    const q = new DownloadQueue({
+      fetcher: async () => new Blob([new Uint8Array(1)]),
+      save: async (j) => {
+        saved.push(`${j.reciterId}:${j.surah}`)
+      },
+    })
+    q.enqueue(job('dosari', 2))
+    q.enqueue(job('burhaji-nabawi', 2))
+    await q.drain()
+    expect(saved.sort()).toEqual(['burhaji-nabawi:2', 'dosari:2'])
+  })
+
+  it('ignores a duplicate enqueue of the same job', async () => {
+    let calls = 0
+    const q = new DownloadQueue({
+      fetcher: async () => {
+        calls++
+        return new Blob([new Uint8Array(1)])
+      },
+      save: async () => {},
+    })
+    q.enqueue(job('dosari', 5))
+    q.enqueue(job('dosari', 5))
+    await q.drain()
+    expect(calls).toBe(1)
   })
 })
 

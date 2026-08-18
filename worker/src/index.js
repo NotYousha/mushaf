@@ -134,7 +134,11 @@ async function resolveDosari(surah, ctx) {
     await memo('dosari-index', DOSARI_INDEX_TTL, ctx, resolveDosariIndex),
   )
   if (surah > ids.length) {
-    throw new Error(`surah ${surah} has not been recorded yet (${ids.length} published)`)
+    const err = new Error(
+      `surah ${surah} has not been recorded yet (${ids.length} published)`,
+    )
+    err.notFound = true
+    throw err
   }
 
   const pageId = ids[surah - 1]
@@ -256,8 +260,10 @@ export default {
 
       return new Response(upstream.body, { status: upstream.status, headers })
     } catch (err) {
-      return new Response(`Could not reach the audio for surah ${surah}: ${err.message}`, {
-        status: 502,
+      // 404 means "does not exist yet", 502 means "we could not reach it".
+      // The refresh job relies on telling those apart.
+      return new Response(`Surah ${surah}: ${err.message}`, {
+        status: err.notFound ? 404 : 502,
         headers: cors,
       })
     }

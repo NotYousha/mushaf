@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
 import type { SurahView } from '../catalog/types'
-import { plainName } from './SurahList'
 import { Play, Pause, Saved } from './Icons'
 
 const PREVIEW_SECONDS = 15
