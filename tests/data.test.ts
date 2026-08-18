@@ -11,12 +11,8 @@ describe('bundled data', () => {
     expect(surahs[17].ayahs).toBe(110)
   })
 
-  it('carries all three reciters', () => {
-    expect(reciters.map((r) => r.id).sort()).toEqual([
-      'burhaji',
-      'burhaji-nabawi',
-      'dosari',
-    ])
+  it('carries both reciters', () => {
+    expect(reciters.map((r) => r.id).sort()).toEqual(['burhaji-nabawi', 'dosari'])
   })
 
   it("routes the Prophet's Mosque mushaf through the CORS proxy", () => {
@@ -79,7 +75,7 @@ describe('bundled data', () => {
   })
 
   describe('Burhaji — complete', () => {
-    const b = reciters.find((r) => r.id === 'burhaji')!
+    const b = reciters.find((r) => r.id === 'burhaji-nabawi')!
 
     it('covers all 114 surahs', () => {
       const nums = b.surahs.map((s) => s.surah).sort((a, b2) => a - b2)
