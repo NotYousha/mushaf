@@ -1,0 +1,6 @@
+name = "mushaf-audio"
+main = "src/index.js"
+compatibility_date = "2026-01-01"
+
+# No KV, no D1, no bindings — the Cache API is enough and keeps this on the
+# free plan with nothing to provision.
