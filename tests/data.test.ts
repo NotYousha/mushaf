@@ -11,8 +11,23 @@ describe('bundled data', () => {
     expect(surahs[17].ayahs).toBe(110)
   })
 
-  it('carries both reciters', () => {
-    expect(reciters.map((r) => r.id).sort()).toEqual(['burhaji', 'dosari'])
+  it('carries all three reciters', () => {
+    expect(reciters.map((r) => r.id).sort()).toEqual([
+      'burhaji',
+      'burhaji-nabawi',
+      'dosari',
+    ])
+  })
+
+  it("routes the Prophet's Mosque mushaf through the CORS proxy", () => {
+    const n = reciters.find((r) => r.id === 'burhaji-nabawi')!
+    expect(n.surahs).toHaveLength(114)
+    for (const s of n.surahs) {
+      // The origin bucket sends no CORS header and signs URLs with a 7-day
+      // expiry, so these must never point straight at it.
+      expect(s.url).toMatch(/workers\.dev\/b\/\d+\.mp3$/)
+      expect(s.url).not.toMatch(/digitaloceanspaces|X-Amz-Signature/)
+    }
   })
 
   it('gives every reciter a distinct id and a full name', () => {
