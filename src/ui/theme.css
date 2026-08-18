@@ -4,25 +4,29 @@
    --------------------------------------------------------------- */
 
 :root {
-  --bg: #f6f0e6;
-  --card: #fdfbf8;
-  --card-2: #fdfaf4;
-  --tile: #f7ebd5;
-  --tile-active-a: #ebd5a4;
-  --tile-active-b: #dcc088;
-  --tile-active-ink: #8a6d2e;
-  --pill: #f5efe4;
+  /* Cream ground, brown type, gold reserved for ornament. */
+  --bg: #f5edda;
+  --card: #fdf9f0;
+  --card-2: #fbf5e9;
+  --tile: #f4e7ce;
+  --tile-active-a: #e6cf9c;
+  --tile-active-b: #d6b87e;
+  --tile-active-ink: #4a3620;
+  --pill: #f3ebdb;
 
   --gold: #c9a961;
   --gold-deep: #b8974f;
-  --gold-ink: #bfa365;
   --gold-soft: #dcc9a8;
-  --gold-line: #eee2cc;
+  --gold-line: #ebdec4;
 
-  --ink: #7d7263;
-  --ink-strong: #5c5142;
-  --muted: #ada08c;
-  --divider: #f0e9dc;
+  /* type */
+  --brown: #5b4227;
+  --brown-strong: #43301a;
+  --brown-soft: #7a5f3d;
+  --ink: #5b4227;
+  --ink-strong: #43301a;
+  --muted: #93795a;
+  --divider: #efe5d2;
 
   --play-a: #ead5a8;
   --play-b: #d2b172;
@@ -105,7 +109,7 @@ body {
   font-size: 1.75rem;
   font-weight: 700;
   margin: 0;
-  color: var(--gold);
+  color: var(--brown-strong);
   line-height: 1.4;
 }
 
@@ -241,7 +245,7 @@ body {
   height: 3.45rem;
   border-radius: var(--radius-tile);
   background: var(--tile);
-  color: var(--gold);
+  color: var(--brown);
   display: grid;
   place-items: center;
   font-size: 1.4rem;
@@ -264,7 +268,7 @@ body {
   font-family: var(--font-ar);
   font-size: 1.5rem;
   line-height: 1.5;
-  color: var(--gold-ink);
+  color: var(--brown);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -331,7 +335,7 @@ body {
   display: grid;
   place-items: center;
   font-size: 0.64rem;
-  color: var(--gold-deep);
+  color: var(--brown-soft);
 }
 
 .frontier {
@@ -398,7 +402,7 @@ body {
 .now .surah-name {
   font-family: var(--font-ar);
   font-size: 1.5rem;
-  color: var(--gold-ink);
+  color: var(--brown);
   line-height: 1.45;
   white-space: nowrap;
   overflow: hidden;
@@ -414,7 +418,7 @@ body {
 .now .reciter-ar {
   font-family: var(--font-ar);
   font-size: 1.22rem;
-  color: var(--gold);
+  color: var(--brown);
   line-height: 1.5;
 }
 
@@ -513,7 +517,7 @@ body {
 
 .times .badge {
   font-size: 0.7rem;
-  color: var(--gold-deep);
+  color: var(--brown-soft);
 }
 
 /* ============ tab bar ============ */
@@ -543,7 +547,7 @@ body {
 }
 
 .tab[aria-selected='true'] {
-  color: var(--gold);
+  color: var(--brown-strong);
 }
 
 .tab[aria-selected='true']::after {
@@ -565,7 +569,7 @@ body {
   font-family: var(--font-ar);
   font-size: 1.4rem;
   font-weight: 700;
-  color: var(--gold);
+  color: var(--brown-strong);
   margin: 0 0 0.5rem;
 }
 
@@ -597,7 +601,7 @@ body {
   border-radius: 999px;
   border: 1px solid var(--gold-soft);
   background: none;
-  color: var(--gold-deep);
+  color: var(--brown);
   cursor: pointer;
   margin: 0 0 0.5rem 0.5rem;
 }
