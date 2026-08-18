@@ -1,7 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { loadCatalog, buildView, surahMeta } from './catalog/load'
 import type { Reciter } from './catalog/types'
-import { effectiveVerified, getVerdicts, type Verdict } from './catalog/verification'
+import {
+  effectiveVerified,
+  getVerdicts,
+  setVerdict,
+  type Verdict,
+} from './catalog/verification'
 import { listDownloaded, putAudio, deleteAudio } from './db/audio'
 import { loadPosition, getPref, setPref } from './db/prefs'
 import { DownloadQueue } from './download/queue'
@@ -11,6 +16,8 @@ import { updateMediaSession } from './player/mediaSession'
 import { nextSurah, prevSurah, type RepeatMode } from './player/playQueue'
 import { getQuota, requestPersistence, canDownloadAll } from './storage/quota'
 import { SurahList, plainName } from './ui/SurahList'
+import { VerifyPanel } from './ui/VerifyPanel'
+import { ImportPanel } from './ui/ImportPanel'
 import { formatBytes, formatTime } from './ui/format'
 import {
   Shuffle,
@@ -148,9 +155,25 @@ export default function App() {
     }
   }, [])
 
+  const downloadedHere = useMemo(
+    () =>
+      new Set(
+        [...downloaded]
+          .filter((k) => k.startsWith(`${reciterId}:`))
+          .map((k) => Number(k.split(':')[1])),
+      ),
+    [downloaded, reciterId],
+  )
+
+  // An imported surah is playable even when the catalog has not published it,
+  // which is the whole point of importing: it fills gaps the source has not
+  // reached yet.
   const playable = useMemo(
-    () => surahs.filter((s) => s.released).map((s) => s.surah),
-    [surahs],
+    () =>
+      surahs
+        .filter((s) => s.released || downloadedHere.has(s.surah))
+        .map((s) => s.surah),
+    [surahs, downloadedHere],
   )
 
   const advanceRef = useRef<(() => Promise<void>) | null>(null)
@@ -158,7 +181,8 @@ export default function App() {
   const playSurah = useCallback(
     async (surah: number, startAt = 0) => {
       const s = surahs.find((x) => x.surah === surah)
-      if (!s?.released || !reciter) return
+      if (!s || !reciter) return
+      if (!s.released && !downloadedHere.has(surah)) return
       setBusy(true)
       setError(null)
       setCurrent(surah)
@@ -191,7 +215,7 @@ export default function App() {
       })
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [surahs, playable, speedIdx, reciter],
+    [surahs, playable, speedIdx, reciter, downloadedHere],
   )
 
   const advance = useCallback(async () => {
@@ -250,16 +274,6 @@ export default function App() {
   const currentView = surahs.find((s) => s.surah === current) ?? null
   const releasedTotal = surahs.filter((s) => s.released).reduce((a, s) => a + s.bytes, 0)
 
-  const downloadedHere = useMemo(
-    () =>
-      new Set(
-        [...downloaded]
-          .filter((k) => k.startsWith(`${reciterId}:`))
-          .map((k) => Number(k.split(':')[1])),
-      ),
-    [downloaded, reciterId],
-  )
-
   const filtered = useMemo(() => {
     const q = query.trim()
     if (!q) return surahs
@@ -295,6 +309,23 @@ export default function App() {
     const f = (e.clientX - r.left) / r.width
     engine.current!.seek(Math.max(0, Math.min(1, f)) * duration)
   }
+
+  const recordVerdict = async (surah: number, verdict: Verdict) => {
+    await setVerdict(reciterId, surah, verdict)
+    setVerdicts(await getVerdicts())
+  }
+
+  const saveImported = async (items: Array<{ surah: number; file: File }>) => {
+    for (const { surah, file } of items) {
+      await putAudio(reciterId, surah, file, 'import')
+    }
+    await refreshDownloaded()
+  }
+
+  const unverified = useMemo(
+    () => surahs.filter((s) => s.released && !effectiveVerified(reciterId, s, verdicts)),
+    [surahs, reciterId, verdicts],
+  )
 
   const pct = duration ? (time / duration) * 100 : 0
 
@@ -412,6 +443,15 @@ export default function App() {
               >
                 حذف المحفوظ
               </button>
+
+              {reciter && (
+                <ImportPanel
+                  reciterId={reciterId}
+                  reciterName={reciter.name}
+                  meta={surahMeta}
+                  onSave={saveImported}
+                />
+              )}
             </div>
           )}
 
@@ -451,6 +491,12 @@ export default function App() {
                   ) : null}
                 </p>
               ))}
+
+              <VerifyPanel
+                reciterId={reciterId}
+                unverified={unverified}
+                onVerdict={(surah, v) => void recordVerdict(surah, v)}
+              />
             </div>
           )}
         </div>

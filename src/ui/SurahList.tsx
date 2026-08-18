@@ -24,8 +24,11 @@ export function SurahList({
   onPlay,
   onDownload,
 }: Props) {
-  const released = surahs.filter((s) => s.released)
-  const upcoming = surahs.filter((s) => !s.released)
+  // A surah saved from your own files is playable even if the catalog has not
+  // published it, so it belongs in the main list rather than the pending one.
+  const playable = (s: SurahView) => s.released || downloaded.has(s.surah)
+  const released = surahs.filter(playable)
+  const upcoming = surahs.filter((s) => !playable(s))
   const last = released[released.length - 1]
 
   if (!surahs.length) {

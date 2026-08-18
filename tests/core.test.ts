@@ -297,6 +297,25 @@ describe('sources', () => {
     expect(r.unmatched.map((u) => u.name)).toEqual(['mystery.mp3'])
   })
 
+  it('handles a realistic mixed batch without guessing', async () => {
+    const f = (n: string) => new File([new Uint8Array(2)], n)
+    const r = await importFiles([
+      f('001.mp3'),
+      f('36.m4a'),
+      f('الكهف.mp3'),
+      f('01 - Al-Fatiha.mp3'),
+      f('recording_final_v2.mp3'),
+      f('track05.mp3'),
+    ])
+    expect(r.matched.map((m) => m.surah).sort((a, b) => a - b)).toEqual([1, 1, 18, 36])
+    // Anything ambiguous is handed back for manual assignment rather than
+    // filed under a guessed surah.
+    expect(r.unmatched.map((u) => u.name).sort()).toEqual([
+      'recording_final_v2.mp3',
+      'track05.mp3',
+    ])
+  })
+
   it('refuses a CORS-blocked host', async () => {
     const src = new CatalogSource(new Map([[2, 'https://media.altilawat.com/x.mp3']]))
     await expect(
