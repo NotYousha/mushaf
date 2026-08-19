@@ -11,8 +11,16 @@ describe('bundled data', () => {
     expect(surahs[17].ayahs).toBe(110)
   })
 
-  it('carries both reciters', () => {
-    expect(reciters.map((r) => r.id).sort()).toEqual(['burhaji-nabawi', 'dosari'])
+  // Asserts that no expected reciter has disappeared, without failing merely
+  // because another has been added.
+  it.each(['dosari', 'burhaji-nabawi', 'turki'])('still carries %s', (id) => {
+    expect(reciters.find((r) => r.id === id)).toBeDefined()
+  })
+
+  it('gives every reciter a photo field, even when there is no photo', () => {
+    for (const r of reciters) {
+      expect(Object.prototype.hasOwnProperty.call(r, 'photo')).toBe(true)
+    }
   })
 
   it("routes the Prophet's Mosque mushaf through the CORS proxy", () => {

@@ -24,13 +24,22 @@ const catalog = JSON.parse(readFileSync('data/catalog.json', 'utf8'))
 const SOURCES = {
   dosari: {
     route: 'd',
-    countPath: '/count/d',
+    countPath: '/count/d?fresh=1',
     name: 'ياسر الدوسري',
     nameEn: 'Yasser Al-Dosari',
     fullName: 'أ. د. ياسر بن راشد الدوسري',
     mushaf: 'إنتاج المركز السعودي للتلاوات القرآنية',
     photo: 'sheikh.jpg',
     note: 'ما زال قيد التسجيل — تُضاف السور الجديدة تلقائيًا.',
+  },
+  turki: {
+    route: 't',
+    countPath: '/count/t?fresh=1',
+    name: 'بدر التركي',
+    nameEn: 'Badr Al-Turki',
+    fullName: 'الشيخ بدر التركي',
+    mushaf: 'إنتاج المركز السعودي للتلاوات القرآنية',
+    photo: null,
   },
   'burhaji-nabawi': {
     route: 'b',
@@ -47,6 +56,8 @@ const SOURCES = {
 
 async function publishedCount(src) {
   if (src.fixedCount) return src.fixedCount
+  // Always ask past the Worker's index cache. A stale count would make the
+  // job conclude "nothing new" and skip surahs that have already aired.
   const res = await fetch(`${WORKER}${src.countPath}`, {
     signal: AbortSignal.timeout(60_000),
   })

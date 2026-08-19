@@ -28,11 +28,16 @@ const MIDAD_FIRST_ID = 287659
 // Signatures last 7 days; refresh well before that.
 const MIDAD_TTL = 4 * 24 * 60 * 60
 
-/* ---------------- Al-Dosari: tilawatalharamain ---------------- */
-const DOSARI_INDEX = 'https://tilawatalharamain.com/quran/c/64'
-// The index grows as new surahs air, so it is cached for hours, not days.
-const DOSARI_INDEX_TTL = 6 * 60 * 60
-const DOSARI_PAGE_TTL = 7 * 24 * 60 * 60
+/* ---------------- tilawatalharamain collections ----------------
+ * Each collection lists one page per surah, in order. A mushaf still being
+ * recorded grows over time, so the index is cached for hours, not days.
+ */
+const HARAMAIN = {
+  d: { collection: 64, name: 'Al-Dosari — Saudi Center' },
+  t: { collection: 52, name: 'Badr Al-Turki — Saudi Center' },
+}
+const HARAMAIN_INDEX_TTL = 6 * 60 * 60
+const HARAMAIN_PAGE_TTL = 7 * 24 * 60 * 60
 
 const ALLOWED_ORIGINS = [
   'https://notyousha.github.io',
@@ -63,10 +68,12 @@ const pageFetch = (url) =>
   })
 
 /** Small Cache-API-backed memo for resolved strings. */
-async function memo(key, ttl, ctx, produce) {
+async function memo(key, ttl, ctx, produce, { fresh = false } = {}) {
   const req = new Request(`https://mushaf.internal/${key}`)
-  const hit = await caches.default.match(req)
-  if (hit) return await hit.text()
+  if (!fresh) {
+    const hit = await caches.default.match(req)
+    if (hit) return await hit.text()
+  }
 
   const value = await produce()
   ctx.waitUntil(
@@ -129,10 +136,11 @@ async function resolveMidad(surah) {
 
 /**
  * The index lists one page per surah in order, so position N is surah N.
- * Returns a JSON array of page ids.
+ * Verified across every published surah for both collections by comparing
+ * page titles against surah names. Returns a JSON array of page ids.
  */
-async function resolveDosariIndex() {
-  const res = await pageFetch(DOSARI_INDEX)
+async function resolveHaramainIndex(collection) {
+  const res = await pageFetch(`https://tilawatalharamain.com/quran/c/${collection}`)
   if (!res.ok) throw new Error(`index returned ${res.status}`)
   const html = await res.text()
 
@@ -150,9 +158,11 @@ async function resolveDosariIndex() {
   return JSON.stringify(ids)
 }
 
-async function resolveDosari(surah, ctx) {
+async function resolveHaramain(collection, surah, ctx) {
   const ids = JSON.parse(
-    await memo('dosari-index', DOSARI_INDEX_TTL, ctx, resolveDosariIndex),
+    await memo(`haramain-index-${collection}`, HARAMAIN_INDEX_TTL, ctx, () =>
+      resolveHaramainIndex(collection),
+    ),
   )
   if (surah > ids.length) {
     const err = new Error(
@@ -181,9 +191,14 @@ const ROUTES = {
     name: "Burhaji — Prophet's Mosque",
   },
   d: {
-    ttl: DOSARI_PAGE_TTL,
-    resolve: (surah, ctx) => resolveDosari(surah, ctx),
-    name: 'Al-Dosari — Saudi Center',
+    ttl: HARAMAIN_PAGE_TTL,
+    resolve: (surah, ctx) => resolveHaramain(HARAMAIN.d.collection, surah, ctx),
+    name: HARAMAIN.d.name,
+  },
+  t: {
+    ttl: HARAMAIN_PAGE_TTL,
+    resolve: (surah, ctx) => resolveHaramain(HARAMAIN.t.collection, surah, ctx),
+    name: HARAMAIN.t.name,
   },
 }
 
@@ -208,19 +223,28 @@ export default {
           routes: {
             '/b/{1-114}.mp3': ROUTES.b.name,
             '/d/{1-114}.mp3': ROUTES.d.name,
+            '/t/{1-114}.mp3': ROUTES.t.name,
           },
-          '/count/d': 'how many Al-Dosari surahs are published',
+          '/count/{d,t}': 'how many surahs are published',
         }),
         { headers: { ...cors, 'Content-Type': 'application/json' } },
       )
     }
 
-    // Lets the refresh job ask how far the recording has got without
-    // scraping the index itself.
-    if (url.pathname === '/count/d') {
+    // Lets the refresh job ask how far a recording has got without scraping
+    // the index itself.
+    const countMatch = /^\/count\/([dt])$/.exec(url.pathname)
+    if (countMatch) {
+      const collection = HARAMAIN[countMatch[1]].collection
       try {
         const ids = JSON.parse(
-          await memo('dosari-index', DOSARI_INDEX_TTL, ctx, resolveDosariIndex),
+          await memo(
+            `haramain-index-${collection}`,
+            HARAMAIN_INDEX_TTL,
+            ctx,
+            () => resolveHaramainIndex(collection),
+            { fresh: url.searchParams.get('fresh') === '1' },
+          ),
         )
         return new Response(JSON.stringify({ published: ids.length, total: SURAH_COUNT }), {
           headers: { ...cors, 'Content-Type': 'application/json' },
@@ -233,9 +257,9 @@ export default {
       }
     }
 
-    const match = /^\/([bd])\/(\d{1,3})\.mp3$/.exec(url.pathname)
+    const match = /^\/([bdt])\/(\d{1,3})\.mp3$/.exec(url.pathname)
     if (!match) {
-      return new Response('Not found. Use /b/{1-114}.mp3 or /d/{1-114}.mp3', {
+      return new Response('Not found. Use /b, /d or /t + /{1-114}.mp3', {
         status: 404,
         headers: cors,
       })
