@@ -25,7 +25,7 @@ describe('bundled data', () => {
 
   it("routes the Prophet's Mosque mushaf through the CORS proxy", () => {
     const n = reciters.find((r) => r.id === 'burhaji-nabawi')!
-    expect(n.surahs).toHaveLength(114)
+    expect(n.surahs.length).toBeGreaterThan(100)
     for (const s of n.surahs) {
       // The origin bucket sends no CORS header and signs URLs with a 7-day
       // expiry, so these must never point straight at it.
@@ -87,12 +87,21 @@ describe('bundled data', () => {
     })
   })
 
-  describe('Burhaji — complete', () => {
+  describe('Burhaji', () => {
     const b = reciters.find((r) => r.id === 'burhaji-nabawi')!
 
-    it('covers all 114 surahs', () => {
-      const nums = b.surahs.map((s) => s.surah).sort((a, b2) => a - b2)
-      expect(nums).toEqual(Array.from({ length: 114 }, (_, i) => i + 1))
+    // The source's files for these four hold a different surah's recitation.
+    // They are left out rather than served, because playing the wrong surah
+    // is worse than the surah being absent.
+    it('omits the four surahs whose source files are wrong', () => {
+      for (const n of [96, 98, 99, 100]) {
+        expect(b.surahs.find((s) => s.surah === n)).toBeUndefined()
+      }
+      expect(b.surahs).toHaveLength(110)
+    })
+
+    it('says why they are missing', () => {
+      expect(b.note).toBeTruthy()
     })
   })
 
