@@ -8,6 +8,8 @@ export const plainName = (s: string) =>
 type Props = {
   surahs: SurahView[]
   reciterId: string
+  /** Marked by the listener as playing the wrong recitation. */
+  rejected?: Set<number>
   downloaded: Set<number>
   progress: Record<string, number>
   current: number | null
@@ -19,6 +21,7 @@ type Props = {
 export function SurahList({
   surahs,
   reciterId,
+  rejected,
   downloaded,
   progress,
   current,
@@ -28,7 +31,8 @@ export function SurahList({
 }: Props) {
   // A surah saved from your own files is playable even if the catalog has not
   // published it, so it belongs in the main list rather than the pending one.
-  const playable = (s: SurahView) => s.released || downloaded.has(s.surah)
+  const playable = (s: SurahView) =>
+    (s.released || downloaded.has(s.surah)) && !rejected?.has(s.surah)
   const released = surahs.filter(playable)
   const upcoming = surahs.filter((s) => !playable(s))
   // Specifically the last broadcast surah — an imported file is not one.
@@ -122,7 +126,9 @@ export function SurahList({
                 <span className="name-ar">سُورَةُ {s.name}</span>
                 <span className="name-plain">{plainName(s.name)}</span>
               </span>
-              <span className="row-end" />
+              <span className="row-end">
+                {rejected?.has(s.surah) ? 'مستبعَدة' : ''}
+              </span>
             </button>
           </li>
         ))}

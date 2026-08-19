@@ -103,7 +103,13 @@ const SOURCES = {
     mushaf: 'المصحف المرتل من مسجد رسول الله ﷺ',
     mushafEn: "The Prophet's Mosque",
     photo: 'burhaji.jpg',
-    note: 'أربع سور غير متاحة: ملفاتها لدى المصدر تحتوي تلاوة سورة أخرى.',
+    // Surahs 96-101 are corrupt at the source. The duration check catches
+    // 96, 98, 99 and 100, but 100 and 101 are within seconds of each other in
+    // length, so a swap between them is invisible to measurement and was only
+    // caught by ear. The whole band is excluded rather than the part that
+    // happens to be measurable.
+    exclude: [96, 97, 98, 99, 100, 101],
+    note: 'ست سور غير متاحة (٩٦–١٠١): ملفاتها لدى المصدر تحتوي تلاوة سور أخرى.',
   },
 }
 
@@ -206,6 +212,12 @@ async function refresh(id) {
     `  measured ${measured.length}/${results.size}` +
       (unreadable ? ` (${unreadable} not MP3, length not checked)` : ''),
   )
+  for (const surah of src.exclude ?? []) {
+    if (results.delete(surah)) {
+      console.warn(`  ! surah ${surah}: excluded — source files in this range are shuffled`)
+    }
+  }
+
   for (const x of mismatched) {
     console.warn(
       `  ! surah ${x.surah}: audio length is ${x.factor.toFixed(2)}x what the text implies — excluded`,

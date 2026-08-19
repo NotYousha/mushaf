@@ -182,15 +182,28 @@ export default function App() {
     [downloaded, reciterId],
   )
 
+  // Surahs the listener has marked as playing the wrong recitation. Sources
+  // do ship shuffled files, and where two surahs are close in length no
+  // measurement can tell — only an ear can.
+  const rejected = useMemo(
+    () =>
+      new Set(
+        Object.entries(verdicts)
+          .filter(([k, v]) => v === 'wrong' && k.startsWith(`${reciterId}:`))
+          .map(([k]) => Number(k.split(':')[1])),
+      ),
+    [verdicts, reciterId],
+  )
+
   // An imported surah is playable even when the catalog has not published it,
   // which is the whole point of importing: it fills gaps the source has not
-  // reached yet.
+  // reached yet. A rejected one never is.
   const playable = useMemo(
     () =>
       surahs
-        .filter((s) => s.released || downloadedHere.has(s.surah))
+        .filter((s) => (s.released || downloadedHere.has(s.surah)) && !rejected.has(s.surah))
         .map((s) => s.surah),
-    [surahs, downloadedHere],
+    [surahs, downloadedHere, rejected],
   )
 
   const advanceRef = useRef<(() => Promise<void>) | null>(null)
@@ -200,6 +213,7 @@ export default function App() {
       const s = surahs.find((x) => x.surah === surah)
       if (!s || !reciter) return
       if (!s.released && !downloadedHere.has(surah)) return
+      if (rejected.has(surah)) return
       setBusy(true)
       setError(null)
       setCurrent(surah)
@@ -232,7 +246,7 @@ export default function App() {
       })
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [surahs, playable, speedIdx, reciter, downloadedHere],
+    [surahs, playable, speedIdx, reciter, downloadedHere, rejected],
   )
 
   const advance = useCallback(async () => {
@@ -342,10 +356,7 @@ export default function App() {
     await refreshDownloaded()
   }
 
-  const unverified = useMemo(
-    () => surahs.filter((s) => s.released && !effectiveVerified(reciterId, s, verdicts)),
-    [surahs, reciterId, verdicts],
-  )
+  const checkable = useMemo(() => surahs.filter((s) => s.released), [surahs])
 
   const pct = duration ? (time / duration) * 100 : 0
 
@@ -414,6 +425,7 @@ export default function App() {
               progress={progress}
               current={current}
               verified={(s) => effectiveVerified(reciterId, s, verdicts)}
+              rejected={rejected}
               onPlay={(n) => void playSurah(n)}
               onDownload={(n) => {
                 const u = urls.get(n)
@@ -516,7 +528,8 @@ export default function App() {
 
               <VerifyPanel
                 reciterId={reciterId}
-                unverified={unverified}
+                surahs={checkable}
+                verdicts={verdicts}
                 onVerdict={(surah, v) => void recordVerdict(surah, v)}
               />
             </div>

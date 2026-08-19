@@ -90,14 +90,15 @@ describe('bundled data', () => {
   describe('Burhaji', () => {
     const b = reciters.find((r) => r.id === 'burhaji-nabawi')!
 
-    // The source's files for these four hold a different surah's recitation.
-    // They are left out rather than served, because playing the wrong surah
-    // is worse than the surah being absent.
-    it('omits the four surahs whose source files are wrong', () => {
-      for (const n of [96, 98, 99, 100]) {
+    // The source's files across 96-101 hold other surahs' recitations. The
+    // whole band goes, not just the part a length check can detect: surahs
+    // 100 and 101 are seconds apart, so a swap between them is measurable by
+    // nobody and audible to anybody.
+    it('omits the band whose source files are shuffled', () => {
+      for (const n of [96, 97, 98, 99, 100, 101]) {
         expect(b.surahs.find((s) => s.surah === n)).toBeUndefined()
       }
-      expect(b.surahs).toHaveLength(110)
+      expect(b.surahs).toHaveLength(108)
     })
 
     it('says why they are missing', () => {

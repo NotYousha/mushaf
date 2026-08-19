@@ -934,9 +934,10 @@
    "fullName": "أ. د. محمد برهجي",
    "mushaf": "المصحف المرتل من مسجد رسول الله ﷺ",
    "mushafEn": "The Prophet's Mosque",
+   "note": "ست سور غير متاحة (٩٦–١٠١): ملفاتها لدى المصدر تحتوي تلاوة سور أخرى.",
    "source": "https://mushaf-audio.mushaftarteel.workers.dev/b/{surah}.mp3",
    "photo": "burhaji.jpg",
-   "released": 110,
+   "released": 108,
    "total": 114,
    "surahs": [
     {
@@ -1700,22 +1701,6 @@
      "verified": true
     },
     {
-     "surah": 97,
-     "name": "القَدۡرِ",
-     "url": "https://mushaf-audio.mushaftarteel.workers.dev/b/97.mp3",
-     "fallbackUrl": null,
-     "bytes": 808372,
-     "verified": true
-    },
-    {
-     "surah": 101,
-     "name": "القَارِعَةِ",
-     "url": "https://mushaf-audio.mushaftarteel.workers.dev/b/101.mp3",
-     "fallbackUrl": null,
-     "bytes": 907882,
-     "verified": true
-    },
-    {
      "surah": 102,
      "name": "التَّكَاثُرِ",
      "url": "https://mushaf-audio.mushaftarteel.workers.dev/b/102.mp3",
@@ -1819,8 +1804,7 @@
      "bytes": 686308,
      "verified": true
     }
-   ],
-   "note": "أربع سور غير متاحة (٩٦، ٩٨، ٩٩، ١٠٠): ملفاتها لدى المصدر تحتوي تلاوة سورة أخرى."
+   ]
   },
   {
    "id": "turki",
