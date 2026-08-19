@@ -74,8 +74,7 @@ async function refresh(id) {
   if (!src) throw new Error(`unknown reciter: ${id}`)
 
   const count = await publishedCount(src)
-  const existing = catalog.reciters.find((r) => r.id === id)
-  const had = existing?.surahs.length ?? 0
+  const had = catalog.reciters.find((r) => r.id === id)?.surahs.length ?? 0
   console.log(`${id}: ${count} published (catalog has ${had})`)
 
   const results = new Map()
@@ -86,12 +85,11 @@ async function refresh(id) {
     for (;;) {
       const surah = queue.shift()
       if (surah === undefined) return
-      // Reuse a known size rather than re-measuring what has not changed.
-      const known = existing?.surahs.find((s) => s.surah === surah)
-      if (known?.bytes) {
-        results.set(surah, known.bytes)
-        continue
-      }
+      // Every surah is measured, never carried over. The catalog URL is
+      // always `${WORKER}/${route}/${surah}.mp3`, so a "has the URL changed"
+      // check can never fire — reusing sizes silently kept five surahs in the
+      // catalog whose audio had been 404ing since they moved to the proxy.
+      // Measuring is the only thing that proves a surah is actually reachable.
       try {
         results.set(surah, await sizeOf(src.route, surah))
       } catch (e) {

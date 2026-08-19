@@ -87,6 +87,27 @@ async function invalidate(key, value, ttl, ctx) {
   )
 }
 
+/**
+ * Decode HTML entities in an extracted URL.
+ *
+ * Filenames on these sites contain apostrophes — an-Naba', al-An'am,
+ * ash-Shu'ara — which the pages emit as &#039;. Unescaping only &amp; leaves
+ * the literal entity in the path and the request 404s. Six Al-Dosari surahs
+ * were broken this way.
+ */
+function decodeEntities(str) {
+  return str
+    .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(Number(code)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, code) => String.fromCharCode(parseInt(code, 16)))
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&nbsp;/g, ' ')
+    // &amp; last, so a double-escaped entity does not decode twice.
+    .replace(/&amp;/g, '&')
+}
+
 /* ---------------- resolvers ---------------- */
 
 async function resolveMidad(surah) {
@@ -103,7 +124,7 @@ async function resolveMidad(surah) {
   const matches = html.match(re)
   if (!matches?.length) throw new Error(`no audio URL for surah ${surah}`)
   const url = matches.find((m) => !m.includes('&amp;')) ?? matches[0]
-  return url.replace(/&amp;/g, '&')
+  return decodeEntities(url)
 }
 
 /**
@@ -148,7 +169,7 @@ async function resolveDosari(surah, ctx) {
   const html = await res.text()
   const m = /<source[^>]+src="([^"]+)"/i.exec(html)
   if (!m) throw new Error(`no audio URL for surah ${surah}`)
-  return m[1].replace(/&amp;/g, '&')
+  return decodeEntities(m[1])
 }
 
 /* ---------------- request handling ---------------- */

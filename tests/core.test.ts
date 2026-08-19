@@ -62,9 +62,17 @@ describe('catalog view', () => {
 
   it('marks released vs unrecorded', () => {
     const v = buildView(dosari as never, meta as never)
-    expect(v.find((s) => s.surah === 18)!.released).toBe(true)
-    expect(v.find((s) => s.surah === 67)!.released).toBe(false)
-    expect(v.find((s) => s.surah === 67)!.url).toBeNull()
+    expect(v).toHaveLength(114)
+    // Derived from the catalog, not hardcoded: this mushaf is still being
+    // recorded, so any fixed surah number eventually flips from unreleased to
+    // released and breaks the test for no good reason.
+    expect(v.find((s) => s.surah === 1)!.released).toBe(true)
+    expect(v.find((s) => s.surah === DOSARI_COUNT)!.released).toBe(true)
+    if (DOSARI_COUNT < 114) {
+      const beyond = v.find((s) => s.surah === DOSARI_COUNT + 1)!
+      expect(beyond.released).toBe(false)
+      expect(beyond.url).toBeNull()
+    }
   })
 
   it('falls back to bundled data when the remote refresh fails', async () => {
