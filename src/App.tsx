@@ -7,7 +7,12 @@ import {
   setVerdict,
   type Verdict,
 } from './catalog/verification'
-import { listDownloaded, putAudio, deleteAudio } from './db/audio'
+import {
+  listDownloaded,
+  putAudio,
+  deleteAudio,
+  purgeSuspectAudio,
+} from './db/audio'
 import { loadPosition, getPref, setPref } from './db/prefs'
 import { DownloadQueue } from './download/queue'
 import { CatalogSource } from './sources/CatalogSource'
@@ -112,6 +117,19 @@ export default function App() {
       setReciterId(rs.some((r) => r.id === savedId) ? savedId : (rs[0]?.id ?? 'dosari'))
       setVerdicts(await getVerdicts())
       setFavourites(await getPref<string[]>('favourites', []))
+
+      // Runs once: clears audio a since-fixed queue bug may have filed under
+      // the wrong reciter, which made the wrong surah play from a saved copy.
+      if (!(await getPref('purgedSuspectAudio', false))) {
+        const removed = await purgeSuspectAudio()
+        await setPref('purgedSuspectAudio', true)
+        if (removed) {
+          setError(
+            `أُزيلت ${removed} سورة محفوظة قد تكون خاطئة — يمكنك حفظها من جديد.`,
+          )
+        }
+      }
+
       await refreshDownloaded()
       await requestPersistence()
       const pos = await loadPosition()

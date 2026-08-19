@@ -1,5 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { putAudio, getAudio, deleteAudio, listDownloaded } from '../src/db/audio'
+import {
+  putAudio,
+  getAudio,
+  deleteAudio,
+  listDownloaded,
+  purgeSuspectAudio,
+} from '../src/db/audio'
 import { savePosition, loadPosition } from '../src/db/prefs'
 import { buildView, loadCatalog } from '../src/catalog/load'
 import { effectiveVerified, setVerdict, getVerdicts } from '../src/catalog/verification'
@@ -44,6 +50,20 @@ describe('audio store', () => {
     await putAudio(R, 5, new Blob([new Uint8Array(4)]), 'catalog')
     await deleteAudio(R, 5)
     expect(await getAudio(R, 5)).toBeNull()
+  })
+
+  it('purges audio saved before the queue fix, keeping newer entries', async () => {
+    // Entries written while the queue could file audio under the wrong
+    // reciter cannot be told apart from good ones, so all of them go.
+    await putAudio(R, 10, new Blob([new Uint8Array(4)]), 'catalog')
+    const cutoff = Date.now() + 1000
+    const removed = await purgeSuspectAudio(cutoff)
+    expect(removed).toBeGreaterThanOrEqual(1)
+    expect(await getAudio(R, 10)).toBeNull()
+
+    await putAudio(R, 11, new Blob([new Uint8Array(4)]), 'catalog')
+    expect(await purgeSuspectAudio(0)).toBe(0)
+    expect(await getAudio(R, 11)).not.toBeNull()
   })
 })
 

@@ -69,3 +69,34 @@ export async function listDownloaded() {
     }
   })
 }
+
+/**
+ * One-time cleanup of audio saved before the download queue was fixed.
+ *
+ * Until 2026-08-18 the queue resolved a job's URL and its reciter from
+ * whatever the UI was showing at the moment the download ran, not from the
+ * job itself. Switching reciter with downloads queued therefore stored one
+ * reciter's audio under another's key — and because playback prefers a saved
+ * copy over streaming, the wrong surah keeps playing even after the code was
+ * fixed. Nothing in the record says which entries are affected, so every
+ * entry written before the fix is removed and can be saved again from a
+ * source that is now correct.
+ */
+export const QUEUE_FIX_AT = Date.parse('2026-08-18T21:20:00Z')
+
+export async function purgeSuspectAudio(before = QUEUE_FIX_AT): Promise<number> {
+  const db = await getDB()
+  const keys = await db.getAllKeys('audio')
+  const vals = (await db.getAll('audio')) as AudioRecord[]
+
+  let removed = 0
+  for (let i = 0; i < keys.length; i++) {
+    const rec = vals[i]
+    // A record with no timestamp predates the field, so it is also suspect.
+    if (!rec?.storedAt || rec.storedAt < before) {
+      await db.delete('audio', keys[i])
+      removed++
+    }
+  }
+  return removed
+}

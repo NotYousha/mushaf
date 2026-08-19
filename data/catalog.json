@@ -1858,7 +1858,7 @@
    "name": "بدر التركي",
    "nameEn": "Badr Al-Turki",
    "fullName": "الشيخ بدر التركي",
-   "mushaf": "إنتاج المركز السعودي للتلاوات القرآنية",
+   "mushaf": "المصحف المرتل برواية حفص عن عاصم",
    "source": "https://mushaf-audio.mushaftarteel.workers.dev/t/{surah}.mp3",
    "photo": null,
    "released": 114,
@@ -2776,7 +2776,8 @@
      "bytes": 726287,
      "verified": true
     }
-   ]
+   ],
+   "note": "المصدر: تلاوات الحرمين. لم يُؤكَّد أنه إنتاج المركز السعودي."
   }
  ]
 }
