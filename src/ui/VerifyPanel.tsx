@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { SurahView } from '../catalog/types'
 import type { Verdict } from '../catalog/verification'
+import type { Strings } from '../i18n'
 import { Play, Pause, Saved } from './Icons'
 
 const PREVIEW_SECONDS = 20
@@ -9,6 +10,7 @@ type Props = {
   reciterId: string
   surahs: SurahView[]
   verdicts: Record<string, Verdict>
+  t: Strings
   onVerdict: (surah: number, verdict: Verdict) => void
 }
 
@@ -21,7 +23,7 @@ type Props = {
  * between them is invisible to any measurement and only an ear will notice.
  * Marking one wrong removes it from playback immediately.
  */
-export function VerifyPanel({ reciterId, surahs, verdicts, onVerdict }: Props) {
+export function VerifyPanel({ reciterId, surahs, verdicts, t, onVerdict }: Props) {
   const [playing, setPlaying] = useState<number | null>(null)
   const [failed, setFailed] = useState<Record<number, string>>({})
   const [showAll, setShowAll] = useState(false)
@@ -78,7 +80,7 @@ export function VerifyPanel({ reciterId, surahs, verdicts, onVerdict }: Props) {
         setPlaying(null)
       }, PREVIEW_SECONDS * 1000)
     } catch {
-      setFailed((f) => ({ ...f, [s.surah]: 'تعذّر التشغيل' }))
+      setFailed((f) => ({ ...f, [s.surah]: t.cannotPlay }))
       setPlaying(null)
     }
   }
@@ -90,24 +92,20 @@ export function VerifyPanel({ reciterId, surahs, verdicts, onVerdict }: Props) {
 
   return (
     <div className="panel">
-      <h2>التحقق بالسماع</h2>
-      <p>
-        قد يحتوي ملف عند المصدر تلاوة سورة أخرى. إن سمعت سورة غير التي اخترتها، علِّمها
-        «خطأ» فتُستبعَد من التشغيل فورًا. استمع إلى أول {PREVIEW_SECONDS} ثانية — لا يُحفَظ
-        شيء على جهازك.
-      </p>
+      <h2>{t.verify}</h2>
+      <p>{t.verifyIntro}</p>
 
       <p className="count">
-        مستبعَدة: {rejected.length} · لم تُراجَع بعد: {unjudged.length}
+        {t.verifyExcluded(rejected.length)} · {t.verifyUnjudged(unjudged.length)}
       </p>
 
       <button className="btn" onClick={() => setShowAll(!showAll)}>
-        {showAll ? 'عرض المستبعَدة فقط' : `عرض كل السور (${surahs.length})`}
+        {showAll ? t.showExcluded : t.showAll(surahs.length)}
       </button>
 
       {!listed.length && (
         <p className="all-clear">
-          <Saved size={20} /> لا توجد سور مستبعَدة لهذا القارئ.
+          <Saved size={20} /> {t.allClear}
         </p>
       )}
 
@@ -119,19 +117,19 @@ export function VerifyPanel({ reciterId, surahs, verdicts, onVerdict }: Props) {
               <button
                 className="mini preview"
                 onClick={() => void preview(s)}
-                aria-label={playing === s.surah ? 'إيقاف' : 'سماع'}
+                aria-label={playing === s.surah ? t.pause : t.play}
               >
                 {playing === s.surah ? <Pause size={18} /> : <Play size={18} />}
               </button>
 
               <span className="verify-names">
                 <span className="name-ar">
-                  {s.surah}. سُورَةُ {s.name}
+                  {s.surah}. {t.surahWord} {s.name}
                 </span>
                 <span className="name-plain">
                   {s.nameEn} · {s.translation}
                 </span>
-                {v === 'wrong' && <span className="verify-err">مستبعَدة من التشغيل</span>}
+                {v === 'wrong' && <span className="verify-err">{t.removedFromPlayback}</span>}
                 {failed[s.surah] && <span className="verify-err">{failed[s.surah]}</span>}
               </span>
 
@@ -141,14 +139,14 @@ export function VerifyPanel({ reciterId, surahs, verdicts, onVerdict }: Props) {
                   aria-pressed={v === 'ok'}
                   onClick={() => decide(s, 'ok')}
                 >
-                  صحيح
+                  {t.correct}
                 </button>
                 <button
                   className="btn tiny no"
                   aria-pressed={v === 'wrong'}
                   onClick={() => decide(s, 'wrong')}
                 >
-                  خطأ
+                  {t.wrong}
                 </button>
               </span>
             </li>

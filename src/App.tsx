@@ -40,6 +40,7 @@ import {
   More,
   Broadcast,
 } from './ui/Icons'
+import { stringsFor, type Lang } from './i18n'
 import './ui/theme.css'
 
 type Tab = 'quran' | 'library' | 'text' | 'more'
@@ -69,6 +70,9 @@ export default function App() {
   const [text, setText] = useState<Record<string, string[]> | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [lang, setLang] = useState<Lang>('ar')
+  const [confirmAll, setConfirmAll] = useState(false)
+  const [queued, setQueued] = useState(0)
 
   const engine = useRef<PlayerEngine | null>(null)
   if (!engine.current) engine.current = new PlayerEngine()
@@ -117,6 +121,7 @@ export default function App() {
       setReciterId(rs.some((r) => r.id === savedId) ? savedId : (rs[0]?.id ?? 'dosari'))
       setVerdicts(await getVerdicts())
       setFavourites(await getPref<string[]>('favourites', []))
+      setLang(await getPref<Lang>('lang', 'ar'))
 
       // Runs once: clears audio a since-fixed queue bug may have filed under
       // the wrong reciter, which made the wrong surah play from a saved copy.
@@ -143,6 +148,7 @@ export default function App() {
   useEffect(() => {
     return queue.current!.subscribe((s) => {
       setProgress(s.progress)
+      setQueued(s.active.length + s.pending.length)
       const failed = Object.values(s.failed)[0]
       if (failed) setError(`تعذّر الحفظ: ${failed}`)
       if (!s.active.length && !s.pending.length) void refreshDownloaded()
@@ -358,18 +364,43 @@ export default function App() {
 
   const checkable = useMemo(() => surahs.filter((s) => s.released), [surahs])
 
+  const t = stringsFor(lang)
+
+  const changeLang = async (next: Lang) => {
+    setLang(next)
+    await setPref('lang', next)
+  }
+
+  /** Everything not already saved for this reciter. */
+  const missing = useMemo(
+    () => [...urls.entries()].filter(([n]) => !downloadedHere.has(n)),
+    [urls, downloadedHere],
+  )
+  const missingBytes = useMemo(
+    () =>
+      surahs
+        .filter((s) => s.released && !downloadedHere.has(s.surah))
+        .reduce((a, s) => a + s.bytes, 0),
+    [surahs, downloadedHere],
+  )
+
+  const startDownloadAll = () => {
+    for (const [n, u] of missing) queue.current!.enqueue({ reciterId, surah: n, url: u })
+    setConfirmAll(false)
+  }
+
   const pct = duration ? (time / duration) * 100 : 0
 
   return (
-    <div className="app">
+    <div className="app" dir={t.dir}>
       <div className="sheet">
         <div className="sheet-head">
-          <h1>المُتابَعة</h1>
+          <h1>{t.appTitle}</h1>
           <div className="head-actions">
             <button
               className="round"
               aria-pressed={shuffle}
-              aria-label="ترتيب عشوائي"
+              aria-label={t.shuffle}
               onClick={() => setShuffle(!shuffle)}
             >
               <Shuffle size={20} />
@@ -377,7 +408,7 @@ export default function App() {
             <button
               className="round"
               aria-pressed={repeat !== 'off'}
-              aria-label="تكرار"
+              aria-label={t.repeat}
               onClick={() =>
                 setRepeat(repeat === 'off' ? 'all' : repeat === 'all' ? 'one' : 'off')
               }
@@ -410,8 +441,8 @@ export default function App() {
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="البحث في السور"
-              aria-label="البحث في السور"
+              placeholder={t.search}
+              aria-label={t.search}
             />
           </div>
         )}
@@ -421,6 +452,8 @@ export default function App() {
             <SurahList
               surahs={filtered}
               reciterId={reciterId}
+              lang={lang}
+              t={t}
               downloaded={downloadedHere}
               progress={progress}
               current={current}
@@ -436,11 +469,9 @@ export default function App() {
 
           {tab === 'library' && (
             <div className="panel">
-              <h2>المكتبة</h2>
-              <p>
-                تُشغَّل السور مباشرةً عبر الإنترنت، ولا يُحفَظ شيء على جهازك إلا إذا اخترت
-                ذلك. السور المحفوظة تعمل بدون اتصال.
-              </p>
+              <h2>{t.storage}</h2>
+              <p>{t.storageIntro}</p>
+
               <div className="meter">
                 <span
                   style={{
@@ -451,23 +482,47 @@ export default function App() {
                 />
               </div>
               <p>
-                {formatBytes(quota.usage)} مستخدَمة من {formatBytes(quota.quota)} · محفوظة
-                لهذا القارئ: {downloadedHere.size} سورة
+                {t.usedOf(formatBytes(quota.usage), formatBytes(quota.quota))} ·{' '}
+                {t.savedCount(downloadedHere.size)}
               </p>
-              <p>
-                حفظ كل سور {reciter?.name} يحتاج {formatBytes(releasedTotal)}.
-              </p>
-              <button
-                className="btn solid"
-                disabled={!canDownloadAll(releasedTotal, quota.free)}
-                onClick={() => {
-                  for (const [n, u] of urls) {
-                    queue.current!.enqueue({ reciterId, surah: n, url: u })
-                  }
-                }}
-              >
-                حفظ الكل · {formatBytes(releasedTotal)}
-              </button>
+
+              {queued > 0 ? (
+                <>
+                  <p className="count">
+                    {t.downloading(
+                      surahs.filter((s) => s.released).length - queued,
+                      surahs.filter((s) => s.released).length,
+                    )}
+                  </p>
+                  <button
+                    className="btn"
+                    onClick={() => {
+                      // cancel() aborts an active download and drops a pending
+                      // one, so this alone empties the queue.
+                      for (const n of urls.keys()) queue.current!.cancel(reciterId, n)
+                      setQueued(0)
+                      void refreshDownloaded()
+                    }}
+                  >
+                    {t.cancelAll}
+                  </button>
+                </>
+              ) : (
+                <button
+                  className="btn solid"
+                  disabled={!missing.length}
+                  onClick={() => setConfirmAll(true)}
+                >
+                  {t.downloadAllSize(formatBytes(missingBytes))}
+                </button>
+              )}
+
+              {!canDownloadAll(missingBytes, quota.free) && missing.length > 0 && (
+                <p className="verify-err">
+                  {t.notEnoughSpace(formatBytes(missingBytes), formatBytes(quota.free))}
+                </p>
+              )}
+
               <button
                 className="btn"
                 disabled={!downloadedHere.size}
@@ -476,13 +531,14 @@ export default function App() {
                   await refreshDownloaded()
                 }}
               >
-                حذف المحفوظ
+                {t.deleteSaved}
               </button>
 
               {reciter && (
                 <ImportPanel
                   reciterName={reciter.name}
                   meta={surahMeta}
+                  t={t}
                   onSave={saveImported}
                 />
               )}
@@ -491,9 +547,9 @@ export default function App() {
 
           {tab === 'text' && (
             <div className="panel">
-              <h2>{currentView ? `سُورَةُ ${currentView.name}` : 'النص'}</h2>
-              {!currentView && <p>اختر سورة لعرض نصها.</p>}
-              {!text && currentView && <p>جارٍ التحميل…</p>}
+              <h2>{currentView ? `${t.surahWord} ${currentView.name}` : t.tabText}</h2>
+              {!currentView && <p>{t.pickSurahForText}</p>}
+              {!text && currentView && <p>{t.loading}</p>}
               {text && currentView && (
                 <div className="ayah">
                   {(text[String(currentView.surah)] ?? []).map((a, i) => (
@@ -509,14 +565,31 @@ export default function App() {
 
           {tab === 'more' && (
             <div className="panel">
-              <h2>القُرّاء</h2>
+              <h2>{t.settings}</h2>
+              <p>{t.language}</p>
+              <div className="seg" role="group" aria-label={t.language}>
+                <button
+                  aria-pressed={lang === 'ar'}
+                  onClick={() => void changeLang('ar')}
+                >
+                  {t.arabic}
+                </button>
+                <button
+                  aria-pressed={lang === 'en'}
+                  onClick={() => void changeLang('en')}
+                >
+                  {t.english}
+                </button>
+              </div>
+
+              <h2 style={{ marginTop: '1.6rem' }}>{t.reciters}</h2>
               {reciters.map((r) => (
                 <p key={r.id}>
                   <strong>{r.fullName}</strong>
                   <br />
                   {r.mushaf}
                   <br />
-                  مُسجَّل: {r.surahs.length} من 114
+                  {t.recorded(r.surahs.length)}
                   {r.note ? (
                     <>
                       <br />
@@ -530,6 +603,7 @@ export default function App() {
                 reciterId={reciterId}
                 surahs={checkable}
                 verdicts={verdicts}
+                t={t}
                 onVerdict={(surah, v) => void recordVerdict(surah, v)}
               />
             </div>
@@ -553,14 +627,14 @@ export default function App() {
 
             <div className="now">
               <div className="surah-name">سُورَةُ {currentView.name}</div>
-              <div className="label">القارئ</div>
+              <div className="label">{t.reciter}</div>
               <div className="reciter-ar">{reciter.fullName}</div>
               <div className="reciter-en">{reciter.nameEn}</div>
             </div>
 
             <button
               className="round"
-              aria-label="المفضلة"
+              aria-label={t.favourite}
               aria-pressed={favourites.includes(favKey)}
               onClick={toggleFavourite}
             >
@@ -571,7 +645,7 @@ export default function App() {
           <div className="controls">
             <button
               className="ctrl"
-              aria-label="سرعة التشغيل"
+              aria-label={t.speed}
               onClick={() => {
                 const i = (speedIdx + 1) % SPEEDS.length
                 setSpeedIdx(i)
@@ -583,7 +657,7 @@ export default function App() {
 
             <button
               className="ctrl"
-              aria-label="السابق"
+              aria-label={t.prev}
               onClick={() => {
                 const p = prevSurah(currentView.surah, playable)
                 if (p) void playSurah(p)
@@ -594,19 +668,19 @@ export default function App() {
 
             <button
               className="ctrl big"
-              aria-label={playing ? 'إيقاف' : 'تشغيل'}
+              aria-label={playing ? t.pause : t.play}
               onClick={toggle}
             >
               {busy ? '…' : playing ? <Pause size={26} /> : <Play size={26} />}
             </button>
 
-            <button className="ctrl" aria-label="التالي" onClick={() => void advance()}>
+            <button className="ctrl" aria-label={t.next} onClick={() => void advance()}>
               <Forward size={26} />
             </button>
 
             <button
               className="ctrl"
-              aria-label="مؤقت النوم"
+              aria-label={t.sleep}
               aria-pressed={sleepAt !== null}
               onClick={() => setSleepAt(sleepAt === null ? 30 : sleepAt === 30 ? 60 : null)}
             >
@@ -620,7 +694,7 @@ export default function App() {
               onClick={seekTo}
               role="slider"
               tabIndex={0}
-              aria-label="موضع التشغيل"
+              aria-label={t.position}
               aria-valuemin={0}
               aria-valuemax={Math.round(duration)}
               aria-valuenow={Math.round(time)}
@@ -635,7 +709,7 @@ export default function App() {
             <div className="times">
               <span>{formatTime(time)}</span>
               <span className="badge">
-                {mode === 'offline' ? 'محفوظة' : 'بث'}
+                {mode === 'offline' ? t.saved : t.streaming}
                 {sleepAt ? ` · ${sleepAt}د` : ''}
               </span>
               <span>-{formatTime(Math.max(0, duration - time))}</span>
@@ -643,6 +717,29 @@ export default function App() {
           </div>
 
           {error && <p className="err">{error}</p>}
+        </div>
+      )}
+
+      {confirmAll && reciter && (
+        <div
+          className="scrim"
+          role="dialog"
+          aria-modal="true"
+          aria-label={t.confirmTitle}
+          onClick={() => setConfirmAll(false)}
+        >
+          <div className="dialog" onClick={(e) => e.stopPropagation()}>
+            <h3>{t.confirmTitle}</h3>
+            <p>{t.confirmBody(reciter.name, missing.length, formatBytes(missingBytes))}</p>
+            <div className="dialog-actions">
+              <button className="btn" onClick={() => setConfirmAll(false)}>
+                {t.confirmNo}
+              </button>
+              <button className="btn solid" onClick={startDownloadAll}>
+                {t.confirmYes}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
@@ -654,7 +751,7 @@ export default function App() {
           onClick={() => setTab('library')}
         >
           <Library size={23} />
-          المكتبة
+          {t.tabLibrary}
         </button>
         <button
           className="tab"
@@ -663,11 +760,11 @@ export default function App() {
           onClick={() => setTab('quran')}
         >
           <QuranMark size={23} />
-          القرآن
+          {t.tabQuran}
         </button>
         <button className="tab" role="tab" aria-selected={tab === 'text'} onClick={openText}>
           <Broadcast size={23} />
-          النص
+          {t.tabText}
         </button>
         <button
           className="tab"
@@ -676,7 +773,7 @@ export default function App() {
           onClick={() => setTab('more')}
         >
           <More size={23} />
-          المزيد
+          {t.tabMore}
         </button>
       </nav>
     </div>

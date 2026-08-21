@@ -139,7 +139,7 @@ body {
 
 .round:focus-visible,
 .tab:focus-visible,
-.row:focus-visible,
+.row-main:focus-visible,
 .ctrl:focus-visible,
 .track:focus-visible {
   outline: 2px solid var(--gold);
@@ -204,24 +204,48 @@ body {
   padding: 0 0.75rem;
 }
 
+/* The row is a container; the tap target and the save control are siblings
+   inside it, never nested, so both receive taps reliably. */
 .row {
-  width: 100%;
-  display: grid;
-  grid-template-columns: 3.5rem 1fr auto;
+  display: flex;
   align-items: center;
-  gap: 0.85rem;
+  gap: 0.5rem;
   padding: 0.75rem 0.6rem;
-  background: none;
   border: 1px solid transparent;
   border-radius: 18px;
+  position: relative;
+}
+
+.row-main {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 3.5rem 1fr;
+  align-items: center;
+  gap: 0.85rem;
+  background: none;
+  border: 0;
+  padding: 0;
   font: inherit;
   color: inherit;
   text-align: inherit;
   cursor: pointer;
-  position: relative;
 }
 
-.surah-list li + li .row::after {
+.row.is-off {
+  opacity: 0.42;
+}
+
+.row.is-off .row-main {
+  cursor: default;
+}
+
+.row-end.small {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.surah-list li + li.row::after {
   content: '';
   position: absolute;
   top: 0;
@@ -239,11 +263,6 @@ body {
 
 .row.active::after {
   display: none;
-}
-
-.row:disabled {
-  cursor: default;
-  opacity: 0.42;
 }
 
 .numeral {
@@ -312,8 +331,8 @@ body {
 }
 
 .mini {
-  width: 2rem;
-  height: 2rem;
+  width: 2.6rem;
+  height: 2.6rem;
   border-radius: 50%;
   border: 0;
   background: none;
@@ -324,8 +343,17 @@ body {
   padding: 0;
 }
 
-.mini:hover {
+.mini:hover:not(:disabled) {
   color: var(--gold-deep);
+}
+
+.mini:disabled {
+  cursor: default;
+}
+
+.mini:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
 }
 
 .mini.is-saved {
@@ -866,4 +894,81 @@ body {
   border-radius: 4px;
   direction: ltr;
   display: inline-block;
+}
+
+
+/* ============ confirm dialog ============ */
+.scrim {
+  position: fixed;
+  inset: 0;
+  background: rgba(60, 44, 22, 0.42);
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+  z-index: 40;
+}
+
+.dialog {
+  background: var(--card);
+  border-radius: 22px;
+  padding: 1.4rem 1.3rem 1rem;
+  max-width: 22rem;
+  width: 100%;
+  box-shadow: 0 12px 40px rgba(80, 60, 25, 0.28);
+}
+
+.dialog h3 {
+  font-family: var(--font-ar);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--brown-strong);
+  margin: 0 0 0.5rem;
+}
+
+.dialog p {
+  font-size: 0.88rem;
+  line-height: 1.7;
+  color: var(--ink);
+  margin: 0 0 1.1rem;
+}
+
+.dialog-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.dialog-actions .btn {
+  margin: 0;
+}
+
+/* ============ settings ============ */
+.seg {
+  display: inline-flex;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border-radius: 999px;
+  background: var(--pill);
+  border: 1px solid var(--gold-line);
+}
+
+.seg button {
+  font: inherit;
+  font-size: 0.84rem;
+  padding: 0.45rem 1.1rem;
+  border-radius: 999px;
+  border: 0;
+  background: none;
+  color: var(--brown-soft);
+  cursor: pointer;
+}
+
+.seg button[aria-pressed='true'] {
+  background: linear-gradient(160deg, var(--tile-active-a), var(--tile-active-b));
+  color: var(--tile-active-ink);
+}
+
+.seg button:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
 }

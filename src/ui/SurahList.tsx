@@ -1,13 +1,15 @@
 import type { SurahView } from '../catalog/types'
+import type { Strings, Lang } from '../i18n'
 import { Play, Handle, Download, Saved } from './Icons'
 
-/** Bare surah name, diacritics removed, for the small line under the title. */
-export const plainName = (s: string) =>
-  s.replace(/[ؐ-ًؚ-ٰٟۖ-ۭ]/g, '').trim()
+/** Bare surah name, diacritics removed. */
+export const plainName = (s: string) => s.replace(/[ؐ-ًؚ-ٰٟۖ-ۭ]/g, '').trim()
 
 type Props = {
   surahs: SurahView[]
   reciterId: string
+  lang: Lang
+  t: Strings
   /** Marked by the listener as playing the wrong recitation. */
   rejected?: Set<number>
   downloaded: Set<number>
@@ -21,6 +23,8 @@ type Props = {
 export function SurahList({
   surahs,
   reciterId,
+  lang,
+  t,
   rejected,
   downloaded,
   progress,
@@ -33,74 +37,67 @@ export function SurahList({
   // published it, so it belongs in the main list rather than the pending one.
   const playable = (s: SurahView) =>
     (s.released || downloaded.has(s.surah)) && !rejected?.has(s.surah)
-  const released = surahs.filter(playable)
+  const listed = surahs.filter(playable)
   const upcoming = surahs.filter((s) => !playable(s))
   // Specifically the last broadcast surah — an imported file is not one.
-  const lastRecorded = [...released].reverse().find((s) => s.released)
+  const lastRecorded = [...listed].reverse().find((s) => s.released)
 
-  if (!surahs.length) {
-    return <p className="empty">لا توجد نتائج</p>
-  }
+  if (!surahs.length) return <p className="empty">{t.noResults}</p>
 
   return (
     <>
       <ul className="surah-list">
-        {released.map((s) => {
+        {listed.map((s) => {
           const active = current === s.surah
           const have = downloaded.has(s.surah)
           const pct = progress[`${reciterId}:${s.surah}`]
           return (
-            <li key={s.surah}>
+            <li key={s.surah} className={`row${active ? ' active' : ''}`}>
+              {/* The row and the save control are siblings, never nested. A
+                  button inside a button is invalid markup and swallows taps,
+                  which is why saving a surah did nothing on a phone. */}
               <button
-                className={`row${active ? ' active' : ''}`}
+                type="button"
+                className="row-main"
                 onClick={() => onPlay(s.surah)}
                 aria-current={active ? 'true' : undefined}
               >
                 <span className="numeral">{s.surah}</span>
-
                 <span className="names">
-                  <span className="name-ar">سُورَةُ {s.name}</span>
-                  <span className="name-plain">
-                    {s.nameEn} · {s.translation}
+                  <span className="name-ar">
+                    {t.surahWord} {s.name}
                   </span>
-                </span>
-
-                <span className="row-end">
-                  {pct !== undefined ? (
-                    <span className="ring">{Math.round(pct * 100)}%</span>
-                  ) : (
-                    <span
-                      role="button"
-                      tabIndex={0}
-                      aria-label={have ? 'Saved offline' : 'Save for offline'}
-                      className={`mini${have ? ' is-saved' : ''}${
-                        !verified(s) ? ' needs-check' : ''
-                      }`}
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        if (!have) onDownload(s.surah)
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.stopPropagation()
-                          e.preventDefault()
-                          if (!have) onDownload(s.surah)
-                        }
-                      }}
-                    >
-                      {have ? <Saved size={19} /> : <Download size={19} />}
+                  {lang === 'en' && (
+                    <span className="name-plain">
+                      {s.nameEn} · {s.translation}
                     </span>
-                  )}
-
-                  {active ? (
-                    <span className="play-dot">
-                      <Play size={20} />
-                    </span>
-                  ) : (
-                    <Handle size={20} />
                   )}
                 </span>
               </button>
+
+              <span className="row-end">
+                {pct !== undefined ? (
+                  <span className="ring">{Math.round(pct * 100)}%</span>
+                ) : (
+                  <button
+                    type="button"
+                    className={`mini${have ? ' is-saved' : ''}${!verified(s) ? ' needs-check' : ''}`}
+                    aria-label={have ? t.saved : t.save}
+                    disabled={have}
+                    onClick={() => onDownload(s.surah)}
+                  >
+                    {have ? <Saved size={20} /> : <Download size={20} />}
+                  </button>
+                )}
+
+                {active ? (
+                  <span className="play-dot" aria-hidden="true">
+                    <Play size={20} />
+                  </span>
+                ) : (
+                  <Handle size={20} />
+                )}
+              </span>
             </li>
           )
         })}
@@ -110,26 +107,32 @@ export function SurahList({
         <div className="frontier">
           <div className="fade" />
           <p>
-            آخر سورة مُسجَّلة: {plainName(lastRecorded.name)}
-            <br />
-            المصحف ما زال قيد التسجيل — تُضاف السور الجديدة تلقائيًا
+            {lang === 'ar'
+              ? `آخر سورة متاحة: ${plainName(lastRecorded.name)}`
+              : `Last available: ${lastRecorded.nameEn}`}
           </p>
         </div>
       )}
 
       <ul className="surah-list">
         {upcoming.map((s) => (
-          <li key={s.surah}>
-            <button className="row" disabled>
+          <li key={s.surah} className="row is-off">
+            <span className="row-main">
               <span className="numeral">{s.surah}</span>
               <span className="names">
-                <span className="name-ar">سُورَةُ {s.name}</span>
-                <span className="name-plain">{plainName(s.name)}</span>
+                <span className="name-ar">
+                  {t.surahWord} {s.name}
+                </span>
+                {lang === 'en' && (
+                  <span className="name-plain">
+                    {s.nameEn} · {s.translation}
+                  </span>
+                )}
               </span>
-              <span className="row-end">
-                {rejected?.has(s.surah) ? 'مستبعَدة' : ''}
-              </span>
-            </button>
+            </span>
+            <span className="row-end small">
+              {rejected?.has(s.surah) ? t.excluded : t.notRecorded}
+            </span>
           </li>
         ))}
       </ul>

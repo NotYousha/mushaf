@@ -1,6 +1,7 @@
 import { useMemo, useRef, useState } from 'react'
 import { importFiles } from '../sources/ImportSource'
 import type { SurahMeta } from '../catalog/types'
+import type { Strings } from '../i18n'
 import { formatBytes } from './format'
 import { plainName } from './SurahList'
 
@@ -9,6 +10,7 @@ type Pending = { file: File; surah: number | null }
 type Props = {
   reciterName: string
   meta: SurahMeta[]
+  t: Strings
   onSave: (items: Array<{ surah: number; file: File }>) => Promise<void>
 }
 
@@ -22,7 +24,7 @@ type Props = {
  * than guessed at, since filing a recitation under the wrong surah is the
  * worst mistake this app could make.
  */
-export function ImportPanel({ reciterName, meta, onSave }: Props) {
+export function ImportPanel({ reciterName, meta, t, onSave }: Props) {
   const [pending, setPending] = useState<Pending[]>([])
   const [saving, setSaving] = useState(false)
   const [done, setDone] = useState<number | null>(null)
@@ -74,11 +76,10 @@ export function ImportPanel({ reciterName, meta, onSave }: Props) {
 
   return (
     <div className="panel">
-      <h2>إضافة ملفات</h2>
+      <h2>{t.importTitle}</h2>
       <p>
-        أضِف تسجيلات من جهازك لتُحفَظ ضمن <strong>{reciterName}</strong> وتعمل بدون
-        اتصال. تُقرأ أرقام السور من أسماء الملفات مثل <code>018.mp3</code> أو{' '}
-        <code>Al-Kahf.mp3</code> أو <code>الكهف.mp3</code>؛ وما تعذّر تحديده يُترك لك.
+        {t.importIntro(reciterName)} <code>018.mp3</code> · <code>Al-Kahf.mp3</code> ·{' '}
+        <code>الكهف.mp3</code>
       </p>
 
       <input
@@ -88,22 +89,22 @@ export function ImportPanel({ reciterName, meta, onSave }: Props) {
         multiple
         className="file-input"
         onChange={(e) => void pick(e.target.files)}
-        aria-label="اختيار ملفات صوتية"
+        aria-label={t.importPick}
       />
 
       {done !== null && (
-        <p className="saved-note">حُفِظت {done} سورة ضمن {reciterName}.</p>
+        <p className="saved-note">{t.importSaved(done, reciterName)}</p>
       )}
 
       {pending.length > 0 && (
         <>
           <p className="count">
-            {ready.length} جاهزة من {pending.length} · {formatBytes(totalBytes)}
+            {t.importReady(ready.length, pending.length, formatBytes(totalBytes))}
           </p>
 
           {clashes.length > 0 && (
             <p className="verify-err">
-              أكثر من ملف لنفس السورة: {clashes.join('، ')} — سيُحفَظ الأخير فقط.
+              {t.importClash(clashes.join(', '))}
             </p>
           )}
 
@@ -121,9 +122,9 @@ export function ImportPanel({ reciterName, meta, onSave }: Props) {
                     className="surah-select"
                     value={p.surah ?? ''}
                     onChange={(e) => assign(i, e.target.value ? Number(e.target.value) : null)}
-                    aria-label={`السورة لملف ${p.file.name}`}
+                    aria-label={p.file.name}
                   >
-                    <option value="">— اختر السورة —</option>
+                    <option value="">{t.importChoose}</option>
                     {meta.map((s) => (
                       <option key={s.surah} value={s.surah}>
                         {s.surah}. {plainName(s.name)}
@@ -134,7 +135,7 @@ export function ImportPanel({ reciterName, meta, onSave }: Props) {
                   <button
                     className="mini"
                     onClick={() => remove(i)}
-                    aria-label={`إزالة ${p.file.name}`}
+                    aria-label={t.remove}
                   >
                     ✕
                   </button>
@@ -150,10 +151,10 @@ export function ImportPanel({ reciterName, meta, onSave }: Props) {
             disabled={!ready.length || saving}
             onClick={() => void save()}
           >
-            {saving ? 'جارٍ الحفظ…' : `حفظ ${ready.length} سورة`}
+            {saving ? t.importSaving : t.importSave(ready.length)}
           </button>
           <button className="btn" disabled={saving} onClick={() => setPending([])}>
-            إلغاء
+            {t.cancel}
           </button>
         </>
       )}
