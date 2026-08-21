@@ -934,10 +934,9 @@
    "fullName": "أ. د. محمد برهجي",
    "mushaf": "المصحف المرتل من مسجد رسول الله ﷺ",
    "mushafEn": "The Prophet's Mosque",
-   "note": "سورة القدر غير متاحة: ملفها لدى المصدر يحتوي تلاوة سورة أخرى.",
    "source": "https://mushaf-audio.mushaftarteel.workers.dev/b/{surah}.mp3",
    "photo": "burhaji.jpg",
-   "released": 113,
+   "released": 114,
    "total": 114,
    "surahs": [
     {
@@ -1707,6 +1706,14 @@
      "fallbackUrl": null,
      "bytes": 1425700,
      "verified": false
+    },
+    {
+     "surah": 97,
+     "name": "القَدۡرِ",
+     "url": "audio/burhaji-097.mp3",
+     "fallbackUrl": null,
+     "bytes": 587181,
+     "verified": true
     },
     {
      "surah": 98,

@@ -28,8 +28,9 @@ describe('bundled data', () => {
     expect(n.surahs.length).toBeGreaterThan(100)
     for (const s of n.surahs) {
       // The origin bucket sends no CORS header and signs URLs with a 7-day
-      // expiry, so these must never point straight at it.
-      expect(s.url).toMatch(/workers\.dev\/b\/\d+\.mp3$/)
+      // expiry, so these must never point straight at it. Audio shipped with
+      // the app is same-origin and needs no proxy.
+      expect(s.url).toMatch(/(workers\.dev\/b\/\d+\.mp3$|^audio\/)/)
       expect(s.url).not.toMatch(/digitaloceanspaces|X-Amz-Signature/)
     }
   })
@@ -47,7 +48,8 @@ describe('bundled data', () => {
     for (const r of reciters) {
       for (const s of r.surahs) {
         expect(s.url).not.toMatch(/altilawat/)
-        expect(s.url).toMatch(/^https:\/\//)
+        // Either a remote URL, or a path to audio shipped with the app.
+        expect(s.url).toMatch(/^(https:\/\/|audio\/)/)
       }
     }
   })
@@ -101,16 +103,18 @@ describe('bundled data', () => {
       }
     })
 
-    // Only Al-Qadr remains out; its audio is not in the source at all.
-    it('omits only what the source does not contain', () => {
-      expect(b.surahs.find((s) => s.surah === 97)).toBeUndefined()
-      expect(b.surahs).toHaveLength(113)
+    // Al-Qadr is not in the source collection, so a copy of the same
+    // recording ships with the app instead.
+    it('is complete, with Al-Qadr served from a local copy', () => {
+      expect(b.surahs).toHaveLength(114)
+      const qadr = b.surahs.find((s) => s.surah === 97)!
+      expect(qadr.url).toBe('audio/burhaji-097.mp3')
     })
 
     // Az-Zalzala and Al-Qaari'a are two tenths of a second apart, so they
     // were identified by ear rather than by measurement, and count as settled.
     it('treats ear-identified surahs as settled and the rest as needing a check', () => {
-      for (const n of [99, 100, 101]) {
+      for (const n of [97, 99, 100, 101]) {
         expect(b.surahs.find((s) => s.surah === n)!.verified).toBe(true)
       }
       for (const n of [94, 95, 96, 98, 102]) {
@@ -118,9 +122,6 @@ describe('bundled data', () => {
       }
     })
 
-    it('says why they are missing', () => {
-      expect(b.note).toBeTruthy()
-    })
   })
 
   it('flags only remapped entries as needing an ear check', () => {

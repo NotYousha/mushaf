@@ -119,11 +119,16 @@ const SOURCES = {
      * second. No measurement separates them, so these were identified by
      * listening, as was 100 when Al-Qaari'a was heard playing Al-Aadiyaat.
      */
-    earConfirmed: [99, 100, 101],
-    // Al-Qadr is absent: the one unplaced file matches surahs already served
-    // better than it matches Al-Qadr.
-    exclude: [97],
-    note: 'سورة القدر غير متاحة: ملفها لدى المصدر يحتوي تلاوة سورة أخرى.',
+    earConfirmed: [99, 100, 101, 97],
+    /**
+     * Al-Qadr is not in the source collection at all — the one unplaced file
+     * matches surahs already being served better than it matches Al-Qadr. It
+     * is supplied instead from a copy of the same recording, hosted with the
+     * app. Measured at 36.70s against the reference 36.94s, at the same
+     * 128 kbps as the rest of this mushaf.
+     */
+    localFiles: { 97: 'audio/burhaji-097.mp3' },
+    exclude: [],
   },
 }
 
@@ -183,6 +188,12 @@ async function refresh(id) {
       // check can never fire — reusing sizes silently kept five surahs in the
       // catalog whose audio had been 404ing since they moved to the proxy.
       // Measuring is the only thing that proves a surah is actually reachable.
+      // A locally hosted file is measured from disk, not over the network.
+      if (src.localFiles?.[surah]) {
+        const buf = readFileSync(`public/${src.localFiles[surah]}`)
+        results.set(surah, { bytes: buf.length, seconds: durationOf(buf, buf.length) })
+        continue
+      }
       try {
         results.set(surah, await measure(src.route, src.remap?.[surah] ?? surah))
       } catch (e) {
@@ -261,8 +272,11 @@ async function refresh(id) {
         return {
         surah,
         name: meta[surah - 1].name,
-        // A remapped surah is fetched from the file that actually holds it.
-        url: `${WORKER}/${src.route}/${src.remap?.[surah] ?? surah}.mp3`,
+        // A locally hosted file wins; otherwise a remapped surah is fetched
+        // from the file that actually holds it.
+        url: src.localFiles?.[surah]
+          ? src.localFiles[surah]
+          : `${WORKER}/${src.route}/${src.remap?.[surah] ?? surah}.mp3`,
         fallbackUrl: null,
         bytes: results.get(surah).bytes,
         // Files are resolved from each surah's own page, so the name-to-audio

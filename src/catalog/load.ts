@@ -2,6 +2,9 @@ import bundled from '../../data/catalog.json'
 import meta from '../../data/surahs.json'
 import type { Catalog, Reciter, SurahMeta, SurahView } from './types'
 
+/** Deployment base, so audio shipped with the app resolves from a subpath. */
+const BASE = import.meta.env?.BASE_URL ?? '/'
+
 const catalog = bundled as unknown as Catalog
 
 export function getReciters(): Reciter[] {
@@ -20,7 +23,10 @@ export function buildView(reciter: Reciter, m: SurahMeta[]): SurahView[] {
       ayahs: md.ayahs,
       released: !!e,
       verified: e?.verified ?? false,
-      url: e?.url ?? null,
+      // A catalog entry may hold a relative path for audio shipped with the
+      // app; resolve it against the deployment base so it survives being
+      // served from a subpath.
+      url: e?.url ? (/^https?:\/\//.test(e.url) ? e.url : `${BASE}${e.url}`) : null,
       fallbackUrl: e?.fallbackUrl ?? null,
       bytes: e?.bytes ?? 0,
     }
