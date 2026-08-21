@@ -110,14 +110,20 @@ const SOURCES = {
      * are recoverable by pointing the surah at the file that actually
      * contains it rather than the one named after it.
      *
-     * `surah: file`. Verified by duration to within 1%, and 100 <- 101 is
-     * confirmed by ear: Al-Qaari'a was playing Al-Aadiyaat.
+     * `surah: file`, verified by duration to within 1%.
      */
-    remap: { 94: 96, 95: 97, 96: 98, 98: 100, 100: 101, 102: 95 },
-    // 97, 99 and 101 stay out: their audio sits in files 94 and 102, whose
-    // candidates differ by under 1% and cannot be told apart by measurement.
-    exclude: [97, 99, 101],
-    note: 'ثلاث سور غير متاحة (٩٧، ٩٩، ١٠١): ملفاتها لدى المصدر تحتوي تلاوة سور أخرى.',
+    remap: { 94: 96, 95: 97, 96: 98, 98: 100, 99: 94, 100: 101, 101: 102, 102: 95 },
+    /**
+     * Az-Zalzala and Al-Qaari'a run 51.4s and 51.2s here — two tenths of a
+     * second apart, against trailing silence that varies by more than a
+     * second. No measurement separates them, so these were identified by
+     * listening, as was 100 when Al-Qaari'a was heard playing Al-Aadiyaat.
+     */
+    earConfirmed: [99, 100, 101],
+    // Al-Qadr is absent: the one unplaced file matches surahs already served
+    // better than it matches Al-Qadr.
+    exclude: [97],
+    note: 'سورة القدر غير متاحة: ملفها لدى المصدر يحتوي تلاوة سورة أخرى.',
   },
 }
 
@@ -262,7 +268,7 @@ async function refresh(id) {
         // Files are resolved from each surah's own page, so the name-to-audio
         // association comes from the source rather than from a filename guess.
         // A remapped one is identified by duration, so it asks for an ear check.
-        verified: !src.remap?.[surah],
+        verified: !src.remap?.[surah] || !!src.earConfirmed?.includes(surah),
       }
     }),
   }

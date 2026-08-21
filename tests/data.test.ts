@@ -94,24 +94,26 @@ describe('bundled data', () => {
     // are recovered by pointing the surah at the file that actually contains
     // it, identified by duration against a reference for this same recording.
     it('recovers remapped surahs from the file that holds them', () => {
-      for (const [surah, file] of [[94, 96], [95, 97], [96, 98], [98, 100], [100, 101], [102, 95]]) {
+      for (const [surah, file] of [[94, 96], [95, 97], [96, 98], [98, 100], [99, 94], [100, 101], [101, 102], [102, 95]]) {
         const e = b.surahs.find((s) => s.surah === surah)
         expect(e, `surah ${surah} should be present`).toBeDefined()
         expect(e!.url).toContain(`/b/${file}.mp3`)
       }
     })
 
-    // 97, 99 and 101 remain out: their audio is in files whose candidates
-    // differ by under 1%, which measurement cannot separate.
-    it('omits only what cannot be identified', () => {
-      for (const n of [97, 99, 101]) {
-        expect(b.surahs.find((s) => s.surah === n)).toBeUndefined()
-      }
-      expect(b.surahs).toHaveLength(111)
+    // Only Al-Qadr remains out; its audio is not in the source at all.
+    it('omits only what the source does not contain', () => {
+      expect(b.surahs.find((s) => s.surah === 97)).toBeUndefined()
+      expect(b.surahs).toHaveLength(113)
     })
 
-    it('asks for an ear check on every remapped surah', () => {
-      for (const n of [94, 95, 96, 98, 100, 102]) {
+    // Az-Zalzala and Al-Qaari'a are two tenths of a second apart, so they
+    // were identified by ear rather than by measurement, and count as settled.
+    it('treats ear-identified surahs as settled and the rest as needing a check', () => {
+      for (const n of [99, 100, 101]) {
+        expect(b.surahs.find((s) => s.surah === n)!.verified).toBe(true)
+      }
+      for (const n of [94, 95, 96, 98, 102]) {
         expect(b.surahs.find((s) => s.surah === n)!.verified).toBe(false)
       }
     })
@@ -127,7 +129,7 @@ describe('bundled data', () => {
     for (const r of reciters) {
       const unverified = r.surahs.filter((s) => !s.verified).map((s) => s.surah)
       if (r.id === 'burhaji-nabawi') {
-        expect(unverified.sort((a, b2) => a - b2)).toEqual([94, 95, 96, 98, 100, 102])
+        expect(unverified.sort((a, b2) => a - b2)).toEqual([94, 95, 96, 98, 102])
       } else {
         expect(unverified).toHaveLength(0)
       }

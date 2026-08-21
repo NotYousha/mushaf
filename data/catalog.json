@@ -934,10 +934,10 @@
    "fullName": "أ. د. محمد برهجي",
    "mushaf": "المصحف المرتل من مسجد رسول الله ﷺ",
    "mushafEn": "The Prophet's Mosque",
-   "note": "ثلاث سور غير متاحة (٩٧، ٩٩، ١٠١): ملفاتها لدى المصدر تحتوي تلاوة سور أخرى.",
+   "note": "سورة القدر غير متاحة: ملفها لدى المصدر يحتوي تلاوة سورة أخرى.",
    "source": "https://mushaf-audio.mushaftarteel.workers.dev/b/{surah}.mp3",
    "photo": "burhaji.jpg",
-   "released": 111,
+   "released": 113,
    "total": 114,
    "surahs": [
     {
@@ -1717,12 +1717,28 @@
      "verified": false
     },
     {
+     "surah": 99,
+     "name": "الزَّلۡزَلَةِ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/b/94.mp3",
+     "fallbackUrl": null,
+     "bytes": 850444,
+     "verified": true
+    },
+    {
      "surah": 100,
      "name": "العَادِيَاتِ",
      "url": "https://mushaf-audio.mushaftarteel.workers.dev/b/101.mp3",
      "fallbackUrl": null,
      "bytes": 907882,
-     "verified": false
+     "verified": true
+    },
+    {
+     "surah": 101,
+     "name": "القَارِعَةِ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/b/102.mp3",
+     "fallbackUrl": null,
+     "bytes": 836840,
+     "verified": true
     },
     {
      "surah": 102,
