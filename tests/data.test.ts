@@ -90,15 +90,30 @@ describe('bundled data', () => {
   describe('Burhaji', () => {
     const b = reciters.find((r) => r.id === 'burhaji-nabawi')!
 
-    // The source's files across 96-101 hold other surahs' recitations. The
-    // whole band goes, not just the part a length check can detect: surahs
-    // 100 and 101 are seconds apart, so a swap between them is measurable by
-    // nobody and audible to anybody.
-    it('omits the band whose source files are shuffled', () => {
-      for (const n of [96, 97, 98, 99, 100, 101]) {
+    // The source's files around 94-102 hold each other's recitations. Most
+    // are recovered by pointing the surah at the file that actually contains
+    // it, identified by duration against a reference for this same recording.
+    it('recovers remapped surahs from the file that holds them', () => {
+      for (const [surah, file] of [[94, 96], [95, 97], [96, 98], [98, 100], [100, 101], [102, 95]]) {
+        const e = b.surahs.find((s) => s.surah === surah)
+        expect(e, `surah ${surah} should be present`).toBeDefined()
+        expect(e!.url).toContain(`/b/${file}.mp3`)
+      }
+    })
+
+    // 97, 99 and 101 remain out: their audio is in files whose candidates
+    // differ by under 1%, which measurement cannot separate.
+    it('omits only what cannot be identified', () => {
+      for (const n of [97, 99, 101]) {
         expect(b.surahs.find((s) => s.surah === n)).toBeUndefined()
       }
-      expect(b.surahs).toHaveLength(108)
+      expect(b.surahs).toHaveLength(111)
+    })
+
+    it('asks for an ear check on every remapped surah', () => {
+      for (const n of [94, 95, 96, 98, 100, 102]) {
+        expect(b.surahs.find((s) => s.surah === n)!.verified).toBe(false)
+      }
     })
 
     it('says why they are missing', () => {
@@ -106,12 +121,16 @@ describe('bundled data', () => {
     })
   })
 
-  it('resolves audio per surah page, so nothing needs an ear check', () => {
-    // Both mushafs are now resolved from each surah's own page rather than by
-    // reading a surah number out of a filename, which is what made entries
-    // uncertain before.
+  it('flags only remapped entries as needing an ear check', () => {
+    // Everything else is resolved from its own source page, so the
+    // name-to-audio association comes from the source, not a guess.
     for (const r of reciters) {
-      expect(r.surahs.filter((s) => !s.verified)).toHaveLength(0)
+      const unverified = r.surahs.filter((s) => !s.verified).map((s) => s.surah)
+      if (r.id === 'burhaji-nabawi') {
+        expect(unverified.sort((a, b2) => a - b2)).toEqual([94, 95, 96, 98, 100, 102])
+      } else {
+        expect(unverified).toHaveLength(0)
+      }
     }
   })
 })

@@ -934,10 +934,10 @@
    "fullName": "أ. د. محمد برهجي",
    "mushaf": "المصحف المرتل من مسجد رسول الله ﷺ",
    "mushafEn": "The Prophet's Mosque",
-   "note": "ست سور غير متاحة (٩٦–١٠١): ملفاتها لدى المصدر تحتوي تلاوة سور أخرى.",
+   "note": "ثلاث سور غير متاحة (٩٧، ٩٩، ١٠١): ملفاتها لدى المصدر تحتوي تلاوة سور أخرى.",
    "source": "https://mushaf-audio.mushaftarteel.workers.dev/b/{surah}.mp3",
    "photo": "burhaji.jpg",
-   "released": 108,
+   "released": 111,
    "total": 114,
    "surahs": [
     {
@@ -1687,26 +1687,50 @@
     {
      "surah": 94,
      "name": "الشَّرۡحِ",
-     "url": "https://mushaf-audio.mushaftarteel.workers.dev/b/94.mp3",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/b/96.mp3",
      "fallbackUrl": null,
-     "bytes": 850444,
-     "verified": true
+     "bytes": 593572,
+     "verified": false
     },
     {
      "surah": 95,
      "name": "التِّينِ",
-     "url": "https://mushaf-audio.mushaftarteel.workers.dev/b/95.mp3",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/b/97.mp3",
      "fallbackUrl": null,
-     "bytes": 767668,
-     "verified": true
+     "bytes": 808372,
+     "verified": false
+    },
+    {
+     "surah": 96,
+     "name": "العَلَقِ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/b/98.mp3",
+     "fallbackUrl": null,
+     "bytes": 1425700,
+     "verified": false
+    },
+    {
+     "surah": 98,
+     "name": "البَيِّنَةِ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/b/100.mp3",
+     "fallbackUrl": null,
+     "bytes": 1751288,
+     "verified": false
+    },
+    {
+     "surah": 100,
+     "name": "العَادِيَاتِ",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/b/101.mp3",
+     "fallbackUrl": null,
+     "bytes": 907882,
+     "verified": false
     },
     {
      "surah": 102,
      "name": "التَّكَاثُرِ",
-     "url": "https://mushaf-audio.mushaftarteel.workers.dev/b/102.mp3",
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/b/95.mp3",
      "fallbackUrl": null,
-     "bytes": 836840,
-     "verified": true
+     "bytes": 767668,
+     "verified": false
     },
     {
      "surah": 103,

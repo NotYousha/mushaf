@@ -103,13 +103,21 @@ const SOURCES = {
     mushaf: 'المصحف المرتل من مسجد رسول الله ﷺ',
     mushafEn: "The Prophet's Mosque",
     photo: 'burhaji.jpg',
-    // Surahs 96-101 are corrupt at the source. The duration check catches
-    // 96, 98, 99 and 100, but 100 and 101 are within seconds of each other in
-    // length, so a swap between them is invisible to measurement and was only
-    // caught by ear. The whole band is excluded rather than the part that
-    // happens to be measurable.
-    exclude: [96, 97, 98, 99, 100, 101],
-    note: 'ست سور غير متاحة (٩٦–١٠١): ملفاتها لدى المصدر تحتوي تلاوة سور أخرى.',
+    /**
+     * The source's files in the 94-102 range hold each other's recitations.
+     * Comparing our exact durations against the QUA reference timings for
+     * this same recording identifies which file holds which surah, so most
+     * are recoverable by pointing the surah at the file that actually
+     * contains it rather than the one named after it.
+     *
+     * `surah: file`. Verified by duration to within 1%, and 100 <- 101 is
+     * confirmed by ear: Al-Qaari'a was playing Al-Aadiyaat.
+     */
+    remap: { 94: 96, 95: 97, 96: 98, 98: 100, 100: 101, 102: 95 },
+    // 97, 99 and 101 stay out: their audio sits in files 94 and 102, whose
+    // candidates differ by under 1% and cannot be told apart by measurement.
+    exclude: [97, 99, 101],
+    note: 'ثلاث سور غير متاحة (٩٧، ٩٩، ١٠١): ملفاتها لدى المصدر تحتوي تلاوة سور أخرى.',
   },
 }
 
@@ -170,7 +178,7 @@ async function refresh(id) {
       // catalog whose audio had been 404ing since they moved to the proxy.
       // Measuring is the only thing that proves a surah is actually reachable.
       try {
-        results.set(surah, await measure(src.route, surah))
+        results.set(surah, await measure(src.route, src.remap?.[surah] ?? surah))
       } catch (e) {
         failures.push({ surah, error: e.message })
       }
@@ -212,6 +220,10 @@ async function refresh(id) {
     `  measured ${measured.length}/${results.size}` +
       (unreadable ? ` (${unreadable} not MP3, length not checked)` : ''),
   )
+  for (const surah of Object.keys(src.remap ?? {}).map(Number)) {
+    console.log(`  remapped surah ${surah} -> file ${src.remap[surah]}`)
+  }
+
   for (const surah of src.exclude ?? []) {
     if (results.delete(surah)) {
       console.warn(`  ! surah ${surah}: excluded — source files in this range are shuffled`)
@@ -243,12 +255,14 @@ async function refresh(id) {
         return {
         surah,
         name: meta[surah - 1].name,
-        url: `${WORKER}/${src.route}/${surah}.mp3`,
+        // A remapped surah is fetched from the file that actually holds it.
+        url: `${WORKER}/${src.route}/${src.remap?.[surah] ?? surah}.mp3`,
         fallbackUrl: null,
         bytes: results.get(surah).bytes,
         // Files are resolved from each surah's own page, so the name-to-audio
         // association comes from the source rather than from a filename guess.
-        verified: true,
+        // A remapped one is identified by duration, so it asks for an ear check.
+        verified: !src.remap?.[surah],
       }
     }),
   }
