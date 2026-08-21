@@ -17,7 +17,7 @@ export const STRINGS = {
 
     tabLibrary: 'المكتبة',
     tabQuran: 'القرآن',
-    tabText: 'النص',
+    tabText: 'المصحف',
     tabMore: 'المزيد',
 
     reciter: 'القارئ',
@@ -93,7 +93,9 @@ export const STRINGS = {
     cancel: 'إلغاء',
     noResults: 'لا توجد نتائج',
     loading: 'جارٍ التحميل…',
-    pickSurahForText: 'اختر سورة لعرض نصها.',
+    pickSurahForText: 'اختر سورة لعرض المصحف.',
+    noTimings: 'تتبُّع الكلمات متاح لهذا القارئ فقط عند توفّر توقيتات التلاوة.',
+    page: 'صفحة',
   },
 
   en: {
@@ -104,7 +106,7 @@ export const STRINGS = {
 
     tabLibrary: 'Library',
     tabQuran: 'Quran',
-    tabText: 'Text',
+    tabText: 'Mushaf',
     tabMore: 'More',
 
     reciter: 'Reciter',
@@ -181,7 +183,9 @@ export const STRINGS = {
     cancel: 'Cancel',
     noResults: 'No results',
     loading: 'Loading…',
-    pickSurahForText: 'Pick a surah to read its text.',
+    pickSurahForText: 'Pick a surah to open the mushaf.',
+    noTimings: 'Word tracking needs recitation timings, which are not published for this reciter.',
+    page: 'Page',
   },
 } as const
 

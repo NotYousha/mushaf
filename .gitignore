@@ -5,3 +5,4 @@ dev-dist/
 .DS_Store
 worker/node_modules/
 worker/.wrangler/
+.cache/

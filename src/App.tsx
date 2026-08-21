@@ -22,6 +22,7 @@ import { nextSurah, prevSurah, type RepeatMode } from './player/playQueue'
 import { getQuota, requestPersistence, canDownloadAll } from './storage/quota'
 import { SurahList, plainName } from './ui/SurahList'
 import { VerifyPanel } from './ui/VerifyPanel'
+import { MushafView } from './ui/MushafView'
 import { ImportPanel } from './ui/ImportPanel'
 import { formatBytes, formatTime } from './ui/format'
 import {
@@ -67,7 +68,6 @@ export default function App() {
   const [tab, setTab] = useState<Tab>('quran')
   const [query, setQuery] = useState('')
   const [quota, setQuota] = useState({ usage: 0, quota: 0, free: 0 })
-  const [text, setText] = useState<Record<string, string[]> | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [lang, setLang] = useState<Lang>('ar')
@@ -326,13 +326,7 @@ export default function App() {
     )
   }, [surahs, query])
 
-  const openText = async () => {
-    setTab('text')
-    if (!text) {
-      const mod = await import('../data/quran-text.json')
-      setText(mod.default as unknown as Record<string, string[]>)
-    }
-  }
+  const openText = () => setTab('text')
 
   const favKey = current !== null ? dlKey(reciterId, current) : ''
   const toggleFavourite = async () => {
@@ -547,18 +541,16 @@ export default function App() {
 
           {tab === 'text' && (
             <div className="panel">
-              <h2>{currentView ? `${t.surahWord} ${currentView.name}` : t.tabText}</h2>
-              {!currentView && <p>{t.pickSurahForText}</p>}
-              {!text && currentView && <p>{t.loading}</p>}
-              {text && currentView && (
-                <div className="ayah">
-                  {(text[String(currentView.surah)] ?? []).map((a, i) => (
-                    <span key={i}>
-                      {a}
-                      <span className="ayah-num">﴿{i + 1}﴾</span>{' '}
-                    </span>
-                  ))}
-                </div>
+              {!currentView ? (
+                <p className="empty">{t.pickSurahForText}</p>
+              ) : (
+                <MushafView
+                  surah={currentView.surah}
+                  time={time}
+                  reciterId={reciterId}
+                  t={t}
+                  onSeek={(sec) => engine.current!.seek(sec)}
+                />
               )}
             </div>
           )}
