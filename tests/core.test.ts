@@ -398,11 +398,34 @@ describe('sources', () => {
     ])
   })
 
-  it('refuses a CORS-blocked host', async () => {
+  it('refuses a host verified to send no CORS header', async () => {
     const src = new CatalogSource(new Map([[2, 'https://media.altilawat.com/x.mp3']]))
     await expect(
       src.fetchSurah(2, () => {}, new AbortController().signal),
     ).rejects.toThrow(/CORS-blocked/)
+  })
+
+  it('allows the proxy that exists to supply CORS', async () => {
+    // Regression: the guard was an allowlist naming only archive.org, so once
+    // audio moved behind the Worker every download was refused.
+    const url = 'https://mushaf-audio.mushaftarteel.workers.dev/d/1.mp3'
+    const src = new CatalogSource(new Map([[1, url]]))
+    let requested: string | null = null
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (u: string) => {
+        requested = u
+        return {
+          ok: true,
+          status: 206,
+          headers: { get: () => 'bytes 0-1/2' },
+          arrayBuffer: async () => new Uint8Array(2).buffer,
+        }
+      }),
+    )
+    await src.fetchSurah(1, () => {}, new AbortController().signal)
+    expect(requested).toBe(url)
+    vi.unstubAllGlobals()
   })
 
   it('reports an unreleased surah clearly', async () => {
