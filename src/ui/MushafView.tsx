@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { Strings } from '../i18n'
 import {
   loadLayout,
@@ -7,6 +7,7 @@ import {
   type Layout,
   type Timings,
 } from '../mushaf/data'
+import surahMeta from '../../data/surahs.json'
 
 type Props = {
   surah: number | null
@@ -20,6 +21,15 @@ type Props = {
   /** True while the reciter is silent and it is your turn to recite. */
   yourTurn?: boolean
 }
+
+const AR_DIGITS = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩']
+const arabicNumber = (n: number) =>
+  String(n)
+    .split('')
+    .map((d) => AR_DIGITS[Number(d)] ?? d)
+    .join('')
+
+const NAMES = new Map((surahMeta as { surah: number; name: string }[]).map((m) => [m.surah, m.name]))
 
 export { ayahStartsFor } from '../mushaf/data'
 
@@ -38,6 +48,7 @@ export function MushafView({
   const [page, setPage] = useState(0)
   const [manual, setManual] = useState(false)
   const activeRef = useRef<HTMLSpanElement | null>(null)
+  const pageRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     let alive = true
@@ -116,6 +127,66 @@ export function MushafView({
     activeRef.current?.scrollIntoView({ block: 'center', behavior: 'smooth' })
   }, [activeKey])
 
+  /**
+   * Size the page so its widest line just fits.
+   *
+   * A mushaf line is set to a fixed measure, and all fifteen share one type
+   * size — so the page needs a single scale, taken from the line that needs
+   * the most room. Without this the long lines run off the side of a phone,
+   * which is most of why the page was unreadable.
+   */
+  const fitPage = useCallback(() => {
+    const el = pageRef.current
+    if (!el) return
+    // clientWidth counts the page's own padding, which the text may not use.
+    // Measuring against it lets every line run a few millimetres past the
+    // frame — which is exactly what it looked like.
+    const cs = getComputedStyle(el)
+    const avail =
+      el.clientWidth - parseFloat(cs.paddingInlineStart) - parseFloat(cs.paddingInlineEnd) - 1
+    if (avail <= 0) return
+    // Measure at a known size, then scale, so the result does not depend on
+    // whatever scale the previous page happened to land on.
+    el.style.setProperty('--fit', '1')
+    const base = parseFloat(cs.fontSize) || 16
+    // The lines are justified, so a line that fits reports the container's
+    // width rather than its own. The natural width has to be added up from
+    // the words themselves, plus the tightest spacing they may be set at.
+    let widest = 0
+    for (const line of Array.from(el.querySelectorAll('.mushaf-line'))) {
+      const words = Array.from(line.children)
+      let w = 0
+      for (const word of words) w += word.getBoundingClientRect().width
+      w += Math.max(0, words.length - 1) * base * 0.2
+      widest = Math.max(widest, w)
+    }
+    if (!widest) return
+    // Clamped: never so small it cannot be read, never larger than a page of
+    // print would be on this width.
+    const fit = Math.max(0.62, Math.min(1.9, (avail / widest) * 0.995))
+    el.style.setProperty('--fit', String(fit))
+  }, [])
+
+  useLayoutEffect(() => {
+    fitPage()
+  }, [fitPage, page, layout])
+
+  useEffect(() => {
+    if (typeof ResizeObserver === 'undefined') return
+    const el = pageRef.current
+    if (!el) return
+    const ro = new ResizeObserver(() => fitPage())
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [fitPage])
+
+  // The first measurement happens in the fallback face, which is a different
+  // width from Amiri Quran. Without measuring again once the real font has
+  // arrived, the page keeps a scale computed for a font it is not using.
+  useEffect(() => {
+    void document.fonts?.ready.then(fitPage)
+  }, [fitPage])
+
   if (loading) return <p className="empty">{t.loading}</p>
   if (!layout) return <p className="empty">{t.noResults}</p>
 
@@ -131,13 +202,34 @@ export function MushafView({
   // while it is your turn, veiled, because reading it back defeats the point.
   const drillLine = activeLine?.page === page ? activeLine.line : null
 
+  /** The surah that begins on a given line, if one does. */
+  const opensWith = (line: (typeof lines)[number]) => {
+    for (const w of line.w) {
+      const key = w[1]
+      if (!key) continue
+      const [sn, ayah, word] = key.split(':').map(Number)
+      // A surah's very first word is where its heading belongs.
+      if (ayah === 1 && word === 1) return sn
+    }
+    return null
+  }
+
   return (
     <div className={`mushaf${yourTurn ? ' your-turn' : ''}`}>
-      <div className="mushaf-page">
-        {lines.map((line) => (
+      <div className="mushaf-page" ref={pageRef}>
+        {lines.map((line) => {
+          const opens = opensWith(line)
+          return (
+        <div className="mushaf-row" key={line.n}>
+          {opens !== null && (
+            <span className="surah-band">
+              <span className="surah-band-name">سُورَةُ {NAMES.get(opens)}</span>
+            </span>
+          )}
           <p
-            className={`mushaf-line${line.n === drillLine ? ' is-drill' : ''}`}
-            key={line.n}
+            className={`mushaf-line${line.n === drillLine ? ' is-drill' : ''}${
+              line.w.length <= 3 ? ' is-short' : ''
+            }`}
           >
             {line.w.map((w, i) => {
               const key = w[1]
@@ -150,6 +242,7 @@ export function MushafView({
                   className={
                     isEnd ? 'ayah-mark' : `mw${active ? ' is-now' : ''}${onSeek ? ' tap' : ''}`
                   }
+                  aria-hidden={isEnd ? 'true' : undefined}
                   onClick={key && onSeek ? () => jumpTo(key) : undefined}
                 >
                   {w[0]}
@@ -157,7 +250,9 @@ export function MushafView({
               )
             })}
           </p>
-        ))}
+        </div>
+          )
+        })}
       </div>
 
       <div className="mushaf-bar">
@@ -171,7 +266,7 @@ export function MushafView({
         >
           ‹
         </button>
-        <span className="mushaf-num">{page + 1} / {layout.pages.length}</span>
+        <span className="mushaf-num">{arabicNumber(page + 1)}</span>
         <button
           className="btn"
           onClick={() => {

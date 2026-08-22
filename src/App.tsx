@@ -358,6 +358,12 @@ export default function App() {
     engine.current!.handlers.current = h
   }, [current, playable, reciterId, playSurah])
 
+  const selectedChip = useRef<HTMLButtonElement | null>(null)
+
+  useEffect(() => {
+    selectedChip.current?.scrollIntoView({ inline: 'center', block: 'nearest' })
+  }, [reciterId, reciters.length, tab])
+
   const talqeenRef = useRef<Talqeen | null>(null)
 
   /**
@@ -555,6 +561,10 @@ export default function App() {
                 role="tab"
                 aria-selected={r.id === reciterId}
                 className="chip"
+                // The strip scrolls, and the reciter you are listening to is
+                // the one that has to be on screen — otherwise it sits off
+                // the edge and the row looks arbitrary.
+                ref={r.id === reciterId ? selectedChip : undefined}
                 onClick={() => void switchReciter(r.id)}
               >
                 <span className="chip-name">{r.name}</span>

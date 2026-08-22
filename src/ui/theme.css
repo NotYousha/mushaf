@@ -13,6 +13,7 @@
   --tile-active-b: #d6b87e;
   --tile-active-ink: #4a3620;
   --pill: #f3ebdb;
+  --page: #fffdf6;
 
   --gold: #c9a961;
   --gold-deep: #b8974f;
@@ -45,6 +46,8 @@
   --face-y: 13%;
 
   --font-ar: 'Amiri', 'Traditional Arabic', serif;
+  /* Uthmani text, with the Quranic marks Amiri proper does not carry. */
+  --font-quran: 'Amiri Quran', 'Amiri', 'Traditional Arabic', serif;
   --font-ui: 'IBM Plex Sans Arabic', system-ui, -apple-system, sans-serif;
 
   /* This design is cream-and-gold only. There is deliberately no dark
@@ -1000,30 +1003,56 @@ body {
   padding: 0.5rem 0 1rem;
 }
 
+/* The page itself: a printed leaf, framed in gold the way a Madani mushaf is,
+   on a warmer ground than the surrounding card so it reads as paper. */
 .mushaf-page {
-  background: var(--card-2);
-  border: 1px solid var(--gold-line);
-  border-radius: 14px;
-  padding: 1.1rem 0.9rem;
+  background: var(--page);
+  border: 1px solid var(--gold);
+  border-radius: 10px;
+  padding: 1.1rem 0.5rem;
   direction: rtl;
+  box-shadow:
+    inset 0 0 0 1px var(--page),
+    inset 0 0 0 4px var(--gold-line),
+    0 1px 10px rgba(150, 120, 60, 0.07);
+  /* --fit is measured once per page so the widest line just fits; every line
+     then shares one size, as they do in print. */
+  font-size: calc(var(--fit, 1) * 1rem);
 }
 
 /* Each line of the printed page is one line here: the break positions come
-   from the Madani layout, so the page reads as it does in print. */
+   from the Madani layout, so the page reads as it does in print.
+   Justified edge to edge, because a mushaf line always fills its measure. */
 .mushaf-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  /* A floor under the word spacing, matching what the fit measurement sets
+     aside, so a line that fills its measure never runs its words together. */
+  gap: 0.2em;
   margin: 0;
-  padding: 0.34rem 0;
-  font-family: 'Amiri Quran', var(--font-quran);
-  font-size: 1.55rem;
-  line-height: 2.15;
-  text-align: center;
+  padding: 0.1rem 0;
+  font-family: var(--font-quran);
+  font-size: 1em;
+  /* Uthmani text stacks marks well above and below the baseline, so it needs
+     far more leading than ordinary Arabic or the rows collide. */
+  line-height: 2.5;
   color: var(--ink-strong);
-  text-wrap: nowrap;
+  white-space: nowrap;
+}
+
+/* A line with only a word or two — the end of a surah — should not have its
+   words flung to opposite edges. */
+.mushaf-line.is-short {
+  justify-content: center;
+  gap: 0.5em;
 }
 
 .mw {
   border-radius: 5px;
-  padding: 0 0.06em;
+  /* No horizontal padding: across nine words a line it costs real width,
+     and width is what the type size is traded against. */
+  padding: 0;
   transition: background-color 120ms linear, color 120ms linear;
 }
 
@@ -1037,10 +1066,50 @@ body {
   color: var(--tile-active-ink);
 }
 
+/* The ayah number, set in a rosette as a printed mushaf does, rather than
+   as a bare digit sitting in the line of text. */
 .ayah-mark {
-  color: var(--gold);
-  font-size: 0.92em;
-  padding: 0 0.12em;
+  display: inline-grid;
+  place-items: center;
+  width: 1.5em;
+  height: 1.5em;
+  flex: none;
+  margin: 0 0.12em;
+  font-family: var(--font-ar);
+  font-size: 0.6em;
+  line-height: 1;
+  color: var(--gold-deep);
+  border: 1px solid var(--gold);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 50%, var(--page) 58%, var(--tile) 100%);
+  box-shadow: 0 0 0 1.5px var(--page), 0 0 0 2.5px var(--gold-line);
+}
+
+/* A row is one printed line, plus the surah heading when one opens here. */
+.mushaf-row {
+  display: flex;
+  flex-direction: column;
+}
+
+/* The band a mushaf sets a surah's name in. */
+.surah-band {
+  display: block;
+  margin: 0.5rem 0 0.35rem;
+  padding: 0.32rem 0.6rem;
+  text-align: center;
+  border: 1px solid var(--gold);
+  border-radius: 6px;
+  background: linear-gradient(180deg, var(--tile), var(--card-2));
+  box-shadow: inset 0 0 0 2px var(--page);
+}
+
+.surah-band-name {
+  font-family: var(--font-ar);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--brown-strong);
+  letter-spacing: 0.01em;
 }
 
 /* ============ Talqeen Mode ============ */
@@ -1130,11 +1199,12 @@ body {
 }
 
 .mushaf-num {
-  font-size: 0.82rem;
-  color: var(--muted);
+  font-family: var(--font-ar);
+  font-size: 1.05rem;
+  color: var(--gold-deep);
   min-width: 5rem;
   text-align: center;
-  direction: ltr;
+  direction: rtl;
 }
 
 .mushaf-note {
