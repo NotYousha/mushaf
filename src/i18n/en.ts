@@ -155,7 +155,8 @@ export const en = {
   storageSafe: 'Storage is persistent: the browser will not delete what you save.',
   storageAtRisk:
     'The browser may delete saved audio when your device runs low. Add this app to your Home Screen to protect it.',
-  differentRiwayah: (r: string) => `This reciter reads ${r}. The wording differs from the Hafs text this mushaf shows, so the page is hidden rather than shown disagreeing with the voice.`
+  differentRiwayah: (r: string) => `This reciter reads ${r}. The wording differs from the Hafs text this mushaf shows, so the page is hidden rather than shown disagreeing with the voice.`,
+  riwayahPages: (r: string) => `Printed in ${r}, the reading this reciter follows. Word-by-word following is not available for it.`
 }
 
 export type Strings = typeof en

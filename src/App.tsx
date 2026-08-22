@@ -31,6 +31,7 @@ import { VerifyPanel } from './ui/VerifyPanel'
 import { MushafView, ayahStartsFor } from './ui/MushafView'
 import { HifzBoard } from './ui/HifzBoard'
 import { ForkDrill } from './ui/ForkDrill'
+import { PagedMushaf } from './ui/PagedMushaf'
 import { Talqeen, type TalqeenState } from './player/talqeen'
 import {
   hasTimings,
@@ -802,7 +803,14 @@ export default function App() {
 
           {tab === 'text' && (
             <div className="panel">
-              {!currentView ? (
+              {!isHafs(reciter) ? (
+                <PagedMushaf
+                  t={t}
+                  riwayah={riwayahLabel(reciter, lang) ?? ''}
+                  gotoPage={gotoPage}
+                  onWentToPage={() => setGotoPage(null)}
+                />
+              ) : !currentView ? (
                 <p className="empty">{t.pickSurahForText}</p>
               ) : (
                 <MushafView

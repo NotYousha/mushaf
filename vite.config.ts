@@ -35,11 +35,25 @@ export default defineConfig({
         globIgnores: ['**/mushaf-layout-*.js', '**/timings-*.js', '**/forks-*.js'],
         runtimeCaching: [
           {
-            urlPattern: /\/assets\/(mushaf-layout|timings)-[\w-]+\.js$/,
+            urlPattern: /\/assets\/(mushaf-layout|timings|forks)-[\w-]+\.js$/,
             handler: 'CacheFirst',
             options: {
               cacheName: 'mushaf-data',
               expiration: { maxEntries: 8 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
+            // Printed pages of the Ad-Duri mushaf. All 604 weigh 79 MB, far
+            // too much to precache, but a page the reader has actually opened
+            // should still be there on a train with no signal. Kept to a few
+            // hundred so a whole juz of reading survives offline without the
+            // cache growing without bound.
+            urlPattern: /\/duri\/\d{3}\.webp$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'duri-pages',
+              expiration: { maxEntries: 320, maxAgeSeconds: 60 * 60 * 24 * 180 },
               cacheableResponse: { statuses: [0, 200] },
             },
           },
