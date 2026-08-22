@@ -59,6 +59,10 @@ export default function App() {
   const [reciters, setReciters] = useState<Reciter[]>([])
   const [reciterId, setReciterId] = useState('dosari')
   const [downloaded, setDownloaded] = useState<Set<string>>(new Set())
+  /** Interrupted downloads, keyed the same way, with the bytes still owed. */
+  const [partials, setPartials] = useState<Map<string, { done: number; total: number }>>(
+    new Map(),
+  )
   const [progress, setProgress] = useState<Record<string, number>>({})
   const [verdicts, setVerdicts] = useState<Record<string, Verdict>>({})
   const [favourites, setFavourites] = useState<string[]>([])
@@ -77,6 +81,7 @@ export default function App() {
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [lang, setLang] = useState<Lang>('ar')
+  const t = stringsFor(lang)
   const [confirmAll, setConfirmAll] = useState(false)
   const [queued, setQueued] = useState(0)
   const [canCast, setCanCast] = useState(false)
@@ -103,20 +108,36 @@ export default function App() {
   if (!queue.current) {
     queue.current = new DownloadQueue({
       fetcher: (job, onProgress, signal) =>
-        new CatalogSource(new Map([[job.surah, job.url]])).fetchSurah(
+        new CatalogSource(job.reciterId, new Map([[job.surah, job.url]])).fetchSurah(
           job.surah,
           onProgress,
           signal,
         ),
-      save: async (job, blob) => {
-        await putAudio(job.reciterId, job.surah, blob, 'catalog')
-      },
+      // The download persists its own chunks as they arrive, so there is
+      // nothing left to save. Writing the assembled blob again here would
+      // store every surah twice and rebuild a 200 MB buffer to do it.
+      save: async () => {},
     })
   }
 
   const refreshDownloaded = useCallback(async () => {
     const list = await listDownloaded()
-    setDownloaded(new Set(list.map((l) => dlKey(l.reciterId, l.surah))))
+    // A partial download has no playable audio behind it, so counting it as
+    // saved would hide a surah that cannot play and drop it from
+    // "download all" — leaving it stuck part-finished forever.
+    setDownloaded(
+      new Set(list.filter((l) => !l.partial).map((l) => dlKey(l.reciterId, l.surah))),
+    )
+    setPartials(
+      new Map(
+        list
+          .filter((l) => l.partial)
+          .map((l) => [
+            dlKey(l.reciterId, l.surah),
+            { done: l.bytes, total: l.totalBytes ?? 0 },
+          ]),
+      ),
+    )
     setQuota(await getQuota())
   }, [])
 
@@ -157,11 +178,16 @@ export default function App() {
     return queue.current!.subscribe((s) => {
       setProgress(s.progress)
       setQueued(s.active.length + s.pending.length)
-      const failed = Object.values(s.failed)[0]
-      if (failed) setError(`تعذّر الحفظ: ${failed}`)
+      // Running out of room stops the whole queue, so say that plainly
+      // rather than repeating one surah's error message.
+      if (queue.current!.outOfSpace) setError(t.outOfSpaceStopped)
+      else {
+        const failed = Object.values(s.failed)[0]
+        if (failed) setError(t.saveFailed(failed))
+      }
       if (!s.active.length && !s.pending.length) void refreshDownloaded()
     })
-  }, [refreshDownloaded])
+  }, [refreshDownloaded, t])
 
   // A cast target may appear or vanish at any time, so this is a live watch
   // rather than a one-off check.
@@ -199,6 +225,16 @@ export default function App() {
       ),
     [downloaded, reciterId],
   )
+
+  /** Surah number to the fraction already stored, for the resume label. */
+  const partialsHere = useMemo(() => {
+    const out = new Map<number, number>()
+    for (const [k, v] of partials) {
+      if (!k.startsWith(`${reciterId}:`) || !v.total) continue
+      out.set(Number(k.split(':')[1]), v.done / v.total)
+    }
+    return out
+  }, [partials, reciterId])
 
   // Surahs the listener has marked as playing the wrong recitation. Sources
   // do ship shuffled files, and where two surahs are close in length no
@@ -404,8 +440,6 @@ export default function App() {
 
   const checkable = useMemo(() => surahs.filter((s) => s.released), [surahs])
 
-  const t = stringsFor(lang)
-
   const changeLang = async (next: Lang) => {
     setLang(next)
     await setPref('lang', next)
@@ -416,12 +450,15 @@ export default function App() {
     () => [...urls.entries()].filter(([n]) => !downloadedHere.has(n)),
     [urls, downloadedHere],
   )
+  // What the download will actually pull over the network. A surah that is
+  // half stored only needs its remainder, so quoting the full size would
+  // overstate the cost and could refuse a download that comfortably fits.
   const missingBytes = useMemo(
     () =>
       surahs
         .filter((s) => s.released && !downloadedHere.has(s.surah))
-        .reduce((a, s) => a + s.bytes, 0),
-    [surahs, downloadedHere],
+        .reduce((a, s) => a + s.bytes * (1 - (partialsHere.get(s.surah) ?? 0)), 0),
+    [surahs, downloadedHere, partialsHere],
   )
 
   const startDownloadAll = () => {
@@ -495,6 +532,7 @@ export default function App() {
               lang={lang}
               t={t}
               downloaded={downloadedHere}
+              partials={partialsHere}
               progress={progress}
               current={current}
               verified={(s) => effectiveVerified(reciterId, s, verdicts)}
@@ -502,7 +540,10 @@ export default function App() {
               onPlay={(n) => void playSurah(n)}
               onDownload={(n) => {
                 const u = urls.get(n)
-                if (u) queue.current!.enqueue({ reciterId, surah: n, url: u })
+                if (u) {
+                  const bytes = surahs.find((x) => x.surah === n)?.bytes
+                  queue.current!.enqueue({ reciterId, surah: n, url: u, bytes })
+                }
               }}
             />
           )}

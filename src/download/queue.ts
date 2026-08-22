@@ -1,4 +1,10 @@
-export type Job = { reciterId: string; surah: number; url: string }
+export type Job = {
+  reciterId: string
+  surah: number
+  url: string
+  /** Known size, used to decide whether to run this one on its own. */
+  bytes?: number
+}
 
 export type QueueState = {
   /** Composite `reciterId:surah` keys, so two reciters never collide. */
@@ -20,12 +26,23 @@ type Deps = {
 
 export const jobKey = (reciterId: string, surah: number) => `${reciterId}:${surah}`
 
+/**
+ * Above this, downloads run one at a time.
+ *
+ * Three 200 MB files over a slow link means three things stuck at 30% and
+ * nothing playable. Serialised, the listener has a usable surah in a third of
+ * the time. Short surahs still run three abreast.
+ */
+const LARGE_FILE_BYTES = 50 * 1024 * 1024
+
 export class DownloadQueue {
   private pending: Job[] = []
   private active = new Map<string, AbortController>()
+  private activeJobs = new Map<string, Job>()
   private progress: Record<string, number> = {}
   private failed: Record<string, string> = {}
   private paused = false
+  outOfSpace = false
   private subs = new Set<(s: QueueState) => void>()
   private running: Promise<void>[] = []
   private limit: number
@@ -66,6 +83,9 @@ export class DownloadQueue {
       return
     }
     delete this.failed[key]
+    // Asking for a download again means the listener has dealt with the full
+    // disk. Leaving the flag set would keep showing the warning forever.
+    this.outOfSpace = false
     this.pending.push(job)
     this.pump()
   }
@@ -87,12 +107,21 @@ export class DownloadQueue {
     this.pump()
   }
 
+  /** One at a time while anything large is in flight or waiting. */
+  private currentLimit() {
+    const large = [...this.activeJobs.values(), ...this.pending].some(
+      (j) => (j.bytes ?? 0) >= LARGE_FILE_BYTES,
+    )
+    return large ? 1 : this.limit
+  }
+
   private pump() {
-    while (!this.paused && this.active.size < this.limit && this.pending.length) {
+    while (!this.paused && this.active.size < this.currentLimit() && this.pending.length) {
       const job = this.pending.shift()!
       const key = jobKey(job.reciterId, job.surah)
       const ac = new AbortController()
       this.active.set(key, ac)
+      this.activeJobs.set(key, job)
 
       const task = (async () => {
         try {
@@ -106,10 +135,21 @@ export class DownloadQueue {
           )
           await this.deps.save(job, blob)
         } catch (e: unknown) {
-          // One surah failing must not stall the rest of the queue.
-          this.failed[key] = e instanceof Error ? e.message : String(e)
+          // Running out of space is not this surah's problem — every queued
+          // download will hit it too, so stop rather than failing 113 times.
+          if ((e as { name?: string })?.name === 'OutOfSpaceError') {
+            this.pending = []
+            // The flag speaks for the whole queue. Filing the same error
+            // against one arbitrary surah as well would leave a stale
+            // "out of space" beside it after the listener frees room.
+            this.outOfSpace = true
+          } else {
+            // One surah failing must not stall the rest of the queue.
+            this.failed[key] = e instanceof Error ? e.message : String(e)
+          }
         } finally {
           this.active.delete(key)
+          this.activeJobs.delete(key)
           delete this.progress[key]
           this.emit()
           this.pump()

@@ -22,6 +22,7 @@ export const STRINGS = {
 
     reciter: 'القارئ',
     saved: 'محفوظة',
+    resumeAt: (p: number) => `متابعة التحميل من ${p}%`,
     streaming: 'بث',
     notRecorded: 'لم تُسجَّل بعد',
     excluded: 'مستبعَدة',
@@ -51,6 +52,11 @@ export const STRINGS = {
     cancelAll: 'إيقاف التحميل',
     notEnoughSpace: (need: string, free: string) =>
       `المساحة غير كافية: يحتاج ${need} ومتاح ${free}`,
+    saveFailed: (why: string) => `تعذّر الحفظ: ${why}`,
+    // The device filled up mid-download, so the queue stopped on its own.
+    // What is already saved stays saved and can be continued later.
+    outOfSpaceStopped:
+      'امتلأت مساحة الجهاز، فتوقّف التحميل. احذف بعض الملفات ثم تابع؛ ما حُمِّل محفوظ.',
 
     confirmTitle: 'تحميل المصحف كاملًا؟',
     confirmBody: (reciter: string, count: number, size: string) =>
@@ -116,6 +122,7 @@ export const STRINGS = {
 
     reciter: 'Reciter',
     saved: 'saved',
+    resumeAt: (p: number) => `Resume from ${p}%`,
     streaming: 'streaming',
     notRecorded: 'not recorded yet',
     excluded: 'excluded',
@@ -145,6 +152,9 @@ export const STRINGS = {
     cancelAll: 'Stop downloading',
     notEnoughSpace: (need: string, free: string) =>
       `Not enough space: needs ${need}, ${free} free`,
+    saveFailed: (why: string) => `Could not save: ${why}`,
+    outOfSpaceStopped:
+      'Your device ran out of space, so downloading stopped. Free some up and continue — what already downloaded is kept.',
 
     confirmTitle: 'Download the whole Quran?',
     confirmBody: (reciter: string, count: number, size: string) =>

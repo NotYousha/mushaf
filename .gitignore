@@ -6,3 +6,4 @@ dev-dist/
 worker/node_modules/
 worker/.wrangler/
 .cache/
+tsconfig.tsbuildinfo

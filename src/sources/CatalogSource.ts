@@ -8,7 +8,10 @@ export class CatalogSource implements AudioSource {
   id = 'catalog'
   name = 'المصحف المرتل'
 
-  constructor(private urls: Map<number, string>) {}
+  constructor(
+    private reciterId: string,
+    private urls: Map<number, string>,
+  ) {}
 
   async fetchSurah(
     surah: number,
@@ -29,6 +32,7 @@ export class CatalogSource implements AudioSource {
       throw new Error(`Refusing CORS-blocked host: ${url}`)
     }
 
-    return downloadChunked(url, { onProgress, signal })
+    // Chunks are persisted as they arrive, so this both fetches and stores.
+    return downloadChunked(this.reciterId, surah, url, { onProgress, signal })
   }
 }

@@ -13,6 +13,8 @@ type Props = {
   /** Marked by the listener as playing the wrong recitation. */
   rejected?: Set<number>
   downloaded: Set<number>
+  /** Interrupted downloads: surah number to the fraction already stored. */
+  partials?: Map<number, number>
   progress: Record<string, number>
   current: number | null
   verified: (s: SurahView) => boolean
@@ -27,6 +29,7 @@ export function SurahList({
   t,
   rejected,
   downloaded,
+  partials,
   progress,
   current,
   verified,
@@ -51,6 +54,9 @@ export function SurahList({
           const active = current === s.surah
           const have = downloaded.has(s.surah)
           const pct = progress[`${reciterId}:${s.surah}`]
+          // Stored but unfinished: tapping continues from where it stopped
+          // rather than starting the file over.
+          const held = partials?.get(s.surah)
           return (
             <li key={s.surah} className={`row${active ? ' active' : ''}`}>
               {/* The row and the save control are siblings, never nested. A
@@ -81,12 +87,21 @@ export function SurahList({
                 ) : (
                   <button
                     type="button"
-                    className={`mini${have ? ' is-saved' : ''}${!verified(s) ? ' needs-check' : ''}`}
-                    aria-label={have ? t.saved : t.save}
+                    className={`mini${have ? ' is-saved' : ''}${held !== undefined ? ' is-partial' : ''}${!verified(s) ? ' needs-check' : ''}`}
+                    aria-label={
+                      have
+                        ? t.saved
+                        : held !== undefined
+                          ? t.resumeAt(Math.round(held * 100))
+                          : t.save
+                    }
                     disabled={have}
                     onClick={() => onDownload(s.surah)}
                   >
                     {have ? <Saved size={20} /> : <Download size={20} />}
+                    {held !== undefined && (
+                      <span className="mini-pct">{Math.round(held * 100)}%</span>
+                    )}
                   </button>
                 )}
 
