@@ -28,6 +28,12 @@ type Props = {
   /** A page to turn to, 1-based, sent from the hifz board. */
   gotoPage?: number | null
   onWentToPage?: () => void
+  /**
+   * The reading this reciter follows, when it is not Hafs. The bundled text
+   * and page layout are Hafs, so a different riwayah means the page on screen
+   * is not the wording being recited.
+   */
+  riwayah?: string | null
 }
 
 /**
@@ -73,6 +79,7 @@ export function MushafView({
   onStumble,
   gotoPage,
   onWentToPage,
+  riwayah,
 }: Props) {
   const [layout, setLayout] = useState<Layout | null>(null)
   const [timings, setTimings] = useState<Timings | null>(null)
@@ -272,6 +279,10 @@ export function MushafView({
     void document.fonts?.ready.then(fitPage)
   }, [fitPage])
 
+  // Showing Hafs words under a recitation of a different riwayah would be
+  // worse than showing nothing: the reader would follow along and find the
+  // page disagreeing with the voice, with no explanation.
+  if (riwayah) return <p className="empty">{t.differentRiwayah(riwayah)}</p>
   if (loading) return <p className="empty">{t.loading}</p>
   if (!layout) return <p className="empty">{t.noResults}</p>
 

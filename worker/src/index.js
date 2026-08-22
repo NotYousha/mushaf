@@ -7,11 +7,16 @@
  *                   after seven days.
  *
  *   /d/{1-114}.mp3  Al-Dosari, produced by the Saudi Center
- *                   (tilawatalharamain.com). The audio host sends no CORS
- *                   header either, and this mushaf is still being recorded, so
- *                   the surah list grows as episodes air.
+ *   /t/{1-114}.mp3  Al-Turki, same producer (tilawatalharamain.com). The audio
+ *                   host sends no CORS header either, and these mushafs are
+ *                   still being recorded, so the lists grow as episodes air.
  *
- * Both routes resolve the real audio URL on demand, cache that resolution, and
+ *   /j/{1-114}.mp3  Al-Juhany, in the riwayah of Ad-Duri from Abu Amr
+ *                   (abdullahjuhany.com). Its files sit on top4top.io, which
+ *                   sends no CORS header and is unreachable from some
+ *                   networks entirely — the proxy fixes both.
+ *
+ * Every route resolves the real audio URL on demand, caches that resolution, and
  * stream the file back with CORS attached. Range requests pass through, so
  * seeking works without pulling a whole surah.
  */
@@ -28,13 +33,30 @@ const MIDAD_FIRST_ID = 287659
 // Signatures last 7 days; refresh well before that.
 const MIDAD_TTL = 4 * 24 * 60 * 60
 
-/* ---------------- tilawatalharamain collections ----------------
- * Each collection lists one page per surah, in order. A mushaf still being
- * recorded grows over time, so the index is cached for hours, not days.
+/* ---------------- indexed collections ----------------
+ * Three collections on two sites that happen to share a shape: a collection
+ * page listing one /quran/{id} page per surah in order, each holding a single
+ * <source> tag. One resolver serves all of them.
+ *
+ * A mushaf still being recorded grows over time, so an index is cached for
+ * hours, not days.
  */
 const HARAMAIN = {
-  d: { collection: 64, name: 'Al-Dosari — Saudi Center' },
-  t: { collection: 52, name: 'Badr Al-Turki — Saudi Center' },
+  d: {
+    host: 'https://tilawatalharamain.com',
+    collection: 64,
+    name: 'Al-Dosari — Saudi Center',
+  },
+  t: {
+    host: 'https://tilawatalharamain.com',
+    collection: 52,
+    name: 'Badr Al-Turki — Saudi Center',
+  },
+  j: {
+    host: 'https://abdullahjuhany.com',
+    collection: 5,
+    name: 'Al-Juhany — Ad-Duri from Abu Amr',
+  },
 }
 const HARAMAIN_INDEX_TTL = 6 * 60 * 60
 const HARAMAIN_PAGE_TTL = 7 * 24 * 60 * 60
@@ -141,8 +163,8 @@ async function resolveMidad(surah) {
  * Verified across every published surah for both collections by comparing
  * page titles against surah names. Returns a JSON array of page ids.
  */
-async function resolveHaramainIndex(collection) {
-  const res = await pageFetch(`https://tilawatalharamain.com/quran/c/${collection}`)
+async function resolveHaramainIndex(host, collection) {
+  const res = await pageFetch(`${host}/quran/c/${collection}`)
   if (!res.ok) throw new Error(`index returned ${res.status}`)
   const html = await res.text()
 
@@ -160,10 +182,11 @@ async function resolveHaramainIndex(collection) {
   return JSON.stringify(ids)
 }
 
-async function resolveHaramain(collection, surah, ctx) {
+async function resolveHaramain(site, surah, ctx) {
+  const { host, collection } = site
   const ids = JSON.parse(
-    await memo(`haramain-index-${collection}`, HARAMAIN_INDEX_TTL, ctx, () =>
-      resolveHaramainIndex(collection),
+    await memo(`haramain-index-${host}-${collection}`, HARAMAIN_INDEX_TTL, ctx, () =>
+      resolveHaramainIndex(host, collection),
     ),
   )
   if (surah > ids.length) {
@@ -175,7 +198,7 @@ async function resolveHaramain(collection, surah, ctx) {
   }
 
   const pageId = ids[surah - 1]
-  const res = await pageFetch(`https://tilawatalharamain.com/quran/${pageId}`)
+  const res = await pageFetch(`${host}/quran/${pageId}`)
   if (!res.ok) throw new Error(`surah page ${pageId} returned ${res.status}`)
 
   const html = await res.text()
@@ -194,13 +217,18 @@ const ROUTES = {
   },
   d: {
     ttl: HARAMAIN_PAGE_TTL,
-    resolve: (surah, ctx) => resolveHaramain(HARAMAIN.d.collection, surah, ctx),
+    resolve: (surah, ctx) => resolveHaramain(HARAMAIN.d, surah, ctx),
     name: HARAMAIN.d.name,
   },
   t: {
     ttl: HARAMAIN_PAGE_TTL,
-    resolve: (surah, ctx) => resolveHaramain(HARAMAIN.t.collection, surah, ctx),
+    resolve: (surah, ctx) => resolveHaramain(HARAMAIN.t, surah, ctx),
     name: HARAMAIN.t.name,
+  },
+  j: {
+    ttl: HARAMAIN_PAGE_TTL,
+    resolve: (surah, ctx) => resolveHaramain(HARAMAIN.j, surah, ctx),
+    name: HARAMAIN.j.name,
   },
 }
 
@@ -235,16 +263,16 @@ export default {
 
     // Lets the refresh job ask how far a recording has got without scraping
     // the index itself.
-    const countMatch = /^\/count\/([dt])$/.exec(url.pathname)
+    const countMatch = /^\/count\/([dtj])$/.exec(url.pathname)
     if (countMatch) {
-      const collection = HARAMAIN[countMatch[1]].collection
+      const { host, collection } = HARAMAIN[countMatch[1]]
       try {
         const ids = JSON.parse(
           await memo(
-            `haramain-index-${collection}`,
+            `haramain-index-${host}-${collection}`,
             HARAMAIN_INDEX_TTL,
             ctx,
-            () => resolveHaramainIndex(collection),
+            () => resolveHaramainIndex(host, collection),
             { fresh: url.searchParams.get('fresh') === '1' },
           ),
         )
@@ -259,9 +287,9 @@ export default {
       }
     }
 
-    const match = /^\/([bdt])\/(\d{1,3})\.mp3$/.exec(url.pathname)
+    const match = /^\/([bdtj])\/(\d{1,3})\.mp3$/.exec(url.pathname)
     if (!match) {
-      return new Response('Not found. Use /b, /d or /t + /{1-114}.mp3', {
+      return new Response('Not found. Use /b, /d, /t or /j + /{1-114}.mp3', {
         status: 404,
         headers: cors,
       })

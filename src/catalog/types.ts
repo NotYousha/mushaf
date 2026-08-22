@@ -14,6 +14,16 @@ export type Reciter = {
   fullName: string
   mushaf: string
   mushafEn?: string
+  /**
+   * The reading this mushaf follows, when it is not Hafs.
+   *
+   * Absent means Hafs from Asim, which is what the app's Quran text and every
+   * other reciter here assume. A reciter who carries this field is reading
+   * different wording, so anything that pairs audio with the bundled text has
+   * to stand down rather than show a page that does not match.
+   */
+  riwayah?: string
+  riwayahEn?: string
   note?: string
   /** File in public/, shown in the player medallion. */
   photo?: string | null

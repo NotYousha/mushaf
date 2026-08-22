@@ -14,8 +14,8 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
-        name: 'Mushaf — ياسر الدوسري',
-        short_name: 'Mushaf',
+        name: "Al-Mau'iza — الموعظة",
+        short_name: "Al-Mau'iza",
         start_url: base,
         scope: base,
         display: 'standalone',

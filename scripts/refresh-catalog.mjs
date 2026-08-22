@@ -67,7 +67,7 @@ function durationOf(buf, total) {
 }
 
 const WORKER = process.env.WORKER_URL ?? 'https://mushaf-audio.mushaftarteel.workers.dev'
-const CONCURRENCY = 4
+const CONCURRENCY = Number(process.env.REFRESH_CONCURRENCY ?? 4)
 const only = process.argv[2] ?? null
 
 const meta = JSON.parse(readFileSync('data/surahs.json', 'utf8'))
@@ -130,6 +130,27 @@ const SOURCES = {
     localFiles: { 97: 'audio/burhaji-097.mp3' },
     exclude: [],
   },
+  /**
+   * The only reciter here who is not reading Hafs.
+   *
+   * Ad-Duri from Abu Amr al-Basri is a different riwayah, so the wording
+   * itself differs from the Hafs text the rest of the app is built on. The
+   * riwayah is therefore carried on the reciter and shown wherever the name
+   * is, and the mushaf page refuses to display Hafs text under it.
+   */
+  juhany: {
+    route: 'j',
+    countPath: '/count/j?fresh=1',
+    name: 'عبد الله الجهني',
+    nameEn: 'Abdullah Al-Juhany',
+    fullName: 'الشيخ عبد الله بن علي الجهني',
+    riwayah: 'رواية الدوري عن أبي عمرو البصري',
+    riwayahEn: 'Ad-Duri from Abu Amr al-Basri',
+    mushaf: 'مصحف برواية الدوري عن أبي عمرو البصري',
+    mushafEn: 'Mushaf in the riwayah of Ad-Duri',
+    photo: null,
+    exclude: [],
+  },
 }
 
 async function publishedCount(src) {
@@ -146,6 +167,35 @@ async function publishedCount(src) {
 }
 
 /**
+ * One range request, retried when the far end simply does not answer.
+ *
+ * Al-Juhany's files sit on a host that drops connections under any real
+ * concurrency — a first pass over 114 surahs saw a third of them come back
+ * 522 from the proxy. Those are not missing recordings and must not be
+ * treated as holes in the catalog, so a few patient retries stand between a
+ * flaky host and a wrong conclusion.
+ */
+async function fetchWithRetry(url, attempts = 4) {
+  let last = null
+  for (let i = 0; i < attempts; i++) {
+    try {
+      const res = await fetch(url, {
+        headers: { Range: 'bytes=0-131071' },
+        signal: AbortSignal.timeout(120_000),
+      })
+      // 5xx from the proxy means it could not reach the origin, which is
+      // worth another go; a 4xx is a real answer and is not retried.
+      if (res.status < 500) return res
+      last = new Error(`HTTP ${res.status}`)
+    } catch (e) {
+      last = e
+    }
+    if (i < attempts - 1) await new Promise((r) => setTimeout(r, 2000 * 2 ** i))
+  }
+  throw last ?? new Error('unreachable')
+}
+
+/**
  * Measures a surah and checks the audio is plausibly that surah.
  *
  * midad's files for four Burhaji surahs hold the wrong recitation — their
@@ -155,10 +205,7 @@ async function publishedCount(src) {
  * warning. Reads the first 128 KB, which is enough for the frame header.
  */
 async function measure(route, surah) {
-  const res = await fetch(`${WORKER}/${route}/${surah}.mp3`, {
-    headers: { Range: 'bytes=0-131071' },
-    signal: AbortSignal.timeout(120_000),
-  })
+  const res = await fetchWithRetry(`${WORKER}/${route}/${surah}.mp3`)
   if (!res.ok && res.status !== 206) throw new Error(`HTTP ${res.status}`)
   const cr = res.headers.get('content-range')
   const total = cr ? Number(/\/(\d+)\s*$/.exec(cr)?.[1]) : 0
@@ -261,6 +308,8 @@ async function refresh(id) {
     fullName: src.fullName,
     mushaf: src.mushaf,
     ...(src.mushafEn ? { mushafEn: src.mushafEn } : {}),
+    // Absent means Hafs, which is what everything else assumes.
+    ...(src.riwayah ? { riwayah: src.riwayah, riwayahEn: src.riwayahEn } : {}),
     ...(src.note ? { note: src.note } : {}),
     source: `${WORKER}/${src.route}/{surah}.mp3`,
     photo: src.photo,

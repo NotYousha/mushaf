@@ -62,6 +62,9 @@ import {
   Stumble,
 } from './ui/Icons'
 import { stringsFor, type Lang } from './i18n'
+import { brandName, brandSecondary } from './brand'
+import { LangPicker } from './ui/LangPicker'
+import { isHafs, riwayahLabel } from './catalog/riwayah'
 import './ui/theme.css'
 
 type Tab = 'quran' | 'library' | 'text' | 'hifz' | 'more'
@@ -625,7 +628,12 @@ export default function App() {
     <div className="app" dir={t.dir}>
       <div className="sheet">
         <div className="sheet-head">
-          <h1>{t.appTitle}</h1>
+          <h1 className="wordmark">
+            <span className="wordmark-main">{brandName(lang)}</span>
+            <span className="wordmark-alt">
+              {brandSecondary(lang)} · {t.appTitle}
+            </span>
+          </h1>
           <div className="head-actions">
             <button
               className="round"
@@ -663,6 +671,9 @@ export default function App() {
                 onClick={() => void switchReciter(r.id)}
               >
                 <span className="chip-name">{r.name}</span>
+                {riwayahLabel(r, lang) && (
+                  <span className="chip-riwayah">({riwayahLabel(r, lang)})</span>
+                )}
                 <span className="chip-meta">{r.surahs.length}/114</span>
               </button>
             ))}
@@ -802,6 +813,7 @@ export default function App() {
                   onSeek={(sec) => engine.current!.seek(sec)}
                   activeLine={drill?.segment ?? null}
                   yourTurn={drill?.phase === 'echo'}
+                  riwayah={riwayahLabel(reciter, lang)}
                   gotoPage={gotoPage}
                   onWentToPage={() => setGotoPage(null)}
                   onPeek={(pg, ms) => void addPeek(pg, ms, Date.now())}
@@ -827,21 +839,11 @@ export default function App() {
           {tab === 'more' && (
             <div className="panel">
               <h2>{t.settings}</h2>
-              <p>{t.language}</p>
-              <div className="seg" role="group" aria-label={t.language}>
-                <button
-                  aria-pressed={lang === 'ar'}
-                  onClick={() => void changeLang('ar')}
-                >
-                  {t.arabic}
-                </button>
-                <button
-                  aria-pressed={lang === 'en'}
-                  onClick={() => void changeLang('en')}
-                >
-                  {t.english}
-                </button>
-              </div>
+              <LangPicker
+                lang={lang}
+                label={t.language}
+                onChange={(next) => void changeLang(next)}
+              />
 
               <h2 style={{ marginTop: '1.6rem' }}>{t.reciters}</h2>
               {reciters.map((r) => (
@@ -891,6 +893,9 @@ export default function App() {
               <div className="label">{t.reciter}</div>
               <div className="reciter-ar">{reciter.fullName}</div>
               <div className="reciter-en">{reciter.nameEn}</div>
+              {riwayahLabel(reciter, lang) && (
+                <div className="reciter-riwayah">({riwayahLabel(reciter, lang)})</div>
+              )}
             </div>
 
             <div className="player-actions">

@@ -1610,3 +1610,72 @@ body {
   width: 100%;
   margin: 0;
 }
+
+/* ============ wordmark ============ */
+.wordmark {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+  margin: 0;
+  line-height: 1.25;
+}
+
+.wordmark-main {
+  font-family: var(--font-ar);
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: var(--brown-strong);
+}
+
+/* The other script, small: the name is new, and each half teaches the other. */
+.wordmark-alt {
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--gold-deep);
+}
+
+/* ============ language picker ============ */
+.lang-label {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--muted);
+  margin-bottom: 0.4rem;
+}
+
+/* A strip, not a dropdown: the list keeps growing and the current choice
+   should never be hidden behind a tap. */
+.lang-strip {
+  display: flex;
+  gap: 0.4rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 0.2rem;
+}
+
+.lang-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.chip.lang-chip {
+  padding: 0.5rem 0.9rem;
+  font-size: 0.95rem;
+  white-space: nowrap;
+}
+
+/* ============ riwayah ============ */
+/* Which reading this is, wherever the reciter's name appears. Someone must
+   never be left unsure which wording they are hearing. */
+.chip-riwayah {
+  font-size: 0.6rem;
+  color: var(--gold-deep);
+  line-height: 1.2;
+  max-width: 9rem;
+  text-align: center;
+}
+
+.reciter-riwayah {
+  font-size: 0.72rem;
+  color: var(--gold-deep);
+  margin-top: 0.1rem;
+}
