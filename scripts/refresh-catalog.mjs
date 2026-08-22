@@ -146,6 +146,9 @@ const SOURCES = {
     fullName: 'الشيخ عبد الله بن علي الجهني',
     riwayah: 'رواية الدوري عن أبي عمرو البصري',
     riwayahEn: 'Ad-Duri from Abu Amr al-Basri',
+    // Its audio is spread over top4top subdomains, several of which are
+    // currently down. Ship what plays; the weekly job collects the rest.
+    partialOk: true,
     mushaf: 'مصحف برواية الدوري عن أبي عمرو البصري',
     mushafEn: 'Mushaf in the riwayah of Ad-Duri',
     photo: null,
@@ -175,7 +178,7 @@ async function publishedCount(src) {
  * treated as holes in the catalog, so a few patient retries stand between a
  * flaky host and a wrong conclusion.
  */
-async function fetchWithRetry(url, attempts = 4) {
+async function fetchWithRetry(url, attempts = Number(process.env.REFRESH_ATTEMPTS ?? 4)) {
   let last = null
   for (let i = 0; i < attempts; i++) {
     try {
@@ -190,7 +193,7 @@ async function fetchWithRetry(url, attempts = 4) {
     } catch (e) {
       last = e
     }
-    if (i < attempts - 1) await new Promise((r) => setTimeout(r, 2000 * 2 ** i))
+    if (i < attempts - 1) await new Promise((r) => setTimeout(r, Math.min(30_000, 2000 * 2 ** i)))
   }
   throw last ?? new Error('unreachable')
 }
@@ -252,8 +255,32 @@ async function refresh(id) {
 
   if (failures.length) {
     console.error(`  ${failures.length} failed:`)
-    for (const f of failures.slice(0, 8)) console.error(`    ${f.surah}: ${f.error}`)
-    throw new Error(`${id}: refusing to write a catalog with holes`)
+    for (const f of failures.slice(0, 12)) console.error(`    ${f.surah}: ${f.error}`)
+
+    /**
+     * A source may simply not have every surah available.
+     *
+     * Al-Juhany's files are spread across a dozen top4top subdomains and
+     * several of those are down — the same surahs fail every time, at the
+     * connect timeout, while their neighbours answer in a second. Refusing
+     * the whole mushaf over that would ship nothing rather than the 83 surahs
+     * that do play, and the weekly refresh picks up the rest whenever those
+     * hosts return.
+     *
+     * This stays opt-in per source, because for every other reciter a failed
+     * measurement means something is wrong with our end and a hole would hide
+     * it. A source that opts in must still deliver most of what it claims.
+     */
+    if (!src.partialOk) throw new Error(`${id}: refusing to write a catalog with holes`)
+    const got = count - failures.length
+    if (got < count * 0.5) {
+      throw new Error(
+        `${id}: only ${got} of ${count} surahs are reachable — too few to publish`,
+      )
+    }
+    console.error(
+      `  ${id}: publishing ${got} of ${count}; the rest are unreachable at the source`,
+    )
   }
 
   // Seconds per letter should be roughly constant across a mushaf. Where it

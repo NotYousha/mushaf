@@ -157,3 +157,47 @@ all three a second voice; see Phase 1 above for what that takes.
 
 Initial download is 921 KB. Layout, timings and the fork index are lazy
 chunks kept out of the precache.
+
+---
+
+## A second riwayah — Al-Juhany in Ad-Duri (2026-08-22)
+
+Every other reciter here reads **Hafs from Asim**, and so does everything
+built on top: the bundled Quran text, the 15-line page layout, the word
+timings, and the fork index.
+
+**Abdullah Al-Juhany** reads **Ad-Duri from Abu Amr al-Basri**. That is not a
+different voice saying the same words — it is different wording. So:
+
+- A reciter may now declare a `riwayah`, and it is shown in brackets beside
+  their name everywhere the name appears. Absent means Hafs.
+- The Hafs mushaf page refuses to render under a non-Hafs reciter, and that
+  riwayah's own printed pages are shown instead.
+
+### Why there is no word highlighting for it
+
+The only source for the Ad-Duri text is a PDF whose glyphs are **vector
+drawings** — `get_text()` returns nothing, `get_fonts()` returns nothing, and
+a page is 18 path objects and 770 KB of content stream. There is no text
+layer to extract and nothing to address a single word by.
+
+Even with perfect OCR it would not be enough: highlighting also needs
+word-level audio timings for *this* recording, and none are published.
+
+So the pages are rendered as images — 604 of them at 850px, grayscale WebP,
+79 MB total and 128 KB each, fetched one at a time and kept by the service
+worker once opened. The reader gets the correct text on the page it is
+actually being recited from, and manual page turning.
+
+### The audio
+
+`abdullahjuhany.com` has the same shape as `tilawatalharamain.com` — a
+collection page listing one `/quran/{id}` per surah, each with a single
+`<source>` — so one Worker resolver serves all three collections now.
+
+Its files sit on `top4top.io`, which sends no CORS header and is unreachable
+from some networks entirely. It also drops connections under any concurrency:
+a first pass over 114 surahs saw a third come back 522 from the proxy, which
+is why the catalog refresh retries and can be told to run serially
+(`REFRESH_CONCURRENCY=1 REFRESH_ATTEMPTS=7`). Those 522s are a flaky host,
+not missing recordings, and must never be mistaken for holes in the catalog.

@@ -1667,10 +1667,13 @@ body {
 /* Which reading this is, wherever the reciter's name appears. Someone must
    never be left unsure which wording they are hearing. */
 .chip-riwayah {
-  font-size: 0.6rem;
+  font-size: 0.58rem;
   color: var(--gold-deep);
-  line-height: 1.2;
-  max-width: 9rem;
+  /* Wraps rather than clips: a riwayah half-shown is worse than none, since
+     the whole point is to say exactly which reading this is. */
+  white-space: normal;
+  line-height: 1.25;
+  max-width: 8.5rem;
   text-align: center;
 }
 
