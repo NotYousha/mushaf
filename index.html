@@ -7,12 +7,28 @@
          auto-darkens the page on phones set to dark mode. -->
     <meta name="color-scheme" content="light only" />
     <meta name="theme-color" content="#f6f0e6" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Aref+Ruqaa:wght@400;700&family=Amiri:wght@400;700&family=Amiri+Quran&family=IBM+Plex+Sans+Arabic:wght@400;500;600&display=swap"
-      rel="stylesheet"
+    <!--
+      Everything this page may talk to, enforced by the browser rather than
+      promised in a policy document. Audio is the only outside origin, and it
+      is our own proxy. There is no analytics, ad, or font vendor to allow —
+      which is why this policy can be written at all.
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self';
+               script-src 'self';
+               style-src 'self' 'unsafe-inline';
+               font-src 'self';
+               img-src 'self' data:;
+               media-src 'self' blob: https://mushaf-audio.mushaftarteel.workers.dev;
+               connect-src 'self' https://mushaf-audio.mushaftarteel.workers.dev;
+               worker-src 'self';
+               manifest-src 'self';
+               object-src 'none';
+               base-uri 'none';
+               form-action 'none'"
     />
+    <link rel="stylesheet" href="./fonts/fonts.css" />
     <title>المصحف المرتل</title>
   </head>
   <body>

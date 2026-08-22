@@ -25,7 +25,25 @@ export default defineConfig({
       },
       workbox: {
         // App shell only. Audio lives in IndexedDB and must never enter the SW cache.
-        globPatterns: ['**/*.{js,css,html,png,svg}'],
+        // Fonts are precached now that they are ours: the mushaf must render
+        // correctly offline, not fall back to a system face.
+        globPatterns: ['**/*.{js,css,html,png,svg,woff2}'],
+        // The mushaf layout and the word timings are lazy chunks worth about
+        // 3 MB. Precaching them would pull the whole lot down at install,
+        // which is exactly what lazy-loading them was meant to avoid. They are
+        // fetched when the Mushaf tab is first opened and cached at runtime.
+        globIgnores: ['**/mushaf-layout-*.js', '**/timings-*.js'],
+        runtimeCaching: [
+          {
+            urlPattern: /\/assets\/(mushaf-layout|timings)-[\w-]+\.js$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'mushaf-data',
+              expiration: { maxEntries: 8 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+        ],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         // Without these, a new build sits behind the old service worker and
         // only takes effect on some later visit — which is exactly how an
@@ -33,24 +51,7 @@ export default defineConfig({
         skipWaiting: true,
         clientsClaim: true,
         cleanupOutdatedCaches: true,
-        // The mushaf is set in a Quranic font served by Google. Cache it at
-        // runtime so the page still renders correctly with no connection.
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/fonts\.googleapis\.com\//,
-            handler: 'StaleWhileRevalidate',
-            options: { cacheName: 'google-fonts-css' },
-          },
-          {
-            urlPattern: /^https:\/\/fonts\.gstatic\.com\//,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'google-fonts-files',
-              expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 * 24 * 365 },
-              cacheableResponse: { statuses: [0, 200] },
-            },
-          },
-        ],
+
       },
     }),
   ],
