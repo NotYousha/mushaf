@@ -1043,6 +1043,77 @@ body {
   padding: 0 0.12em;
 }
 
+/* ============ Talqeen Mode ============ */
+
+/* The line being drilled, so you can see where to pick up. */
+.mushaf-line.is-drill {
+  background: var(--tile);
+  border-radius: 10px;
+  box-shadow: 0 0 0 1px var(--gold-line);
+}
+
+/* Your turn: the line goes under a veil, because reading it back is not
+   reciting it back. Press and hold to peek. */
+.mushaf.your-turn .mushaf-line.is-drill .mw {
+  color: transparent;
+  background: var(--gold-line);
+  border-radius: 4px;
+  user-select: none;
+}
+
+.mushaf.your-turn .mushaf-line.is-drill:active .mw {
+  color: var(--ink-strong);
+  background: none;
+}
+
+.mushaf.your-turn .mushaf-line.is-drill .mw.is-now {
+  background: var(--gold-soft);
+}
+
+.talqeen-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin: 0 1.1rem 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 12px;
+  background: var(--pill);
+  border: 1px solid transparent;
+}
+
+/* The one cue that matters when the phone is face down is whose turn it is,
+   so the whole bar changes, not just a word. */
+.talqeen-bar.is-yours {
+  background: linear-gradient(160deg, var(--tile-active-a), var(--tile-active-b));
+  border-color: var(--gold-soft);
+}
+
+.talqeen-who {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--brown-strong);
+}
+
+.talqeen-bar.is-yours .talqeen-who {
+  color: var(--tile-active-ink);
+}
+
+.talqeen-acts {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.talqeen-acts .btn {
+  font-size: 0.78rem;
+  padding: 0.3rem 0.6rem;
+}
+
+.talqeen-acts .btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
 .mushaf-bar {
   display: flex;
   align-items: center;

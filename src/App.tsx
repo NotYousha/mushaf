@@ -28,6 +28,8 @@ import { getQuota, requestPersistence, canDownloadAll } from './storage/quota'
 import { SurahList, plainName } from './ui/SurahList'
 import { VerifyPanel } from './ui/VerifyPanel'
 import { MushafView, ayahStartsFor } from './ui/MushafView'
+import { Talqeen, type TalqeenState } from './player/talqeen'
+import { hasTimings, lineSegments, loadLayout, loadTimings } from './mushaf/data'
 import { ImportPanel } from './ui/ImportPanel'
 import { formatBytes, formatTime } from './ui/format'
 import {
@@ -46,6 +48,7 @@ import {
   QuranMark,
   More,
   Broadcast,
+  Talqeen as TalqeenIcon,
 } from './ui/Icons'
 import { stringsFor, type Lang } from './i18n'
 import './ui/theme.css'
@@ -86,6 +89,8 @@ export default function App() {
   const [queued, setQueued] = useState(0)
   const [canCast, setCanCast] = useState(false)
   const [persisted, setPersisted] = useState<boolean | null>(null)
+  const [talqeen, setTalqeen] = useState(false)
+  const [drill, setDrill] = useState<TalqeenState | null>(null)
 
   const engine = useRef<PlayerEngine | null>(null)
   if (!engine.current) engine.current = new PlayerEngine()
@@ -353,9 +358,56 @@ export default function App() {
     engine.current!.handlers.current = h
   }, [current, playable, reciterId, playSurah])
 
+  const talqeenRef = useRef<Talqeen | null>(null)
+
+  /**
+   * Talqeen Mode runs off the printed lines of the current surah, so it needs
+   * the layout and this reciter's word timings. Both are lazy chunks; until
+   * they arrive there is nothing to drill.
+   */
+  useEffect(() => {
+    if (!talqeen || current === null || !duration) {
+      talqeenRef.current?.stop()
+      talqeenRef.current = null
+      setDrill(null)
+      return
+    }
+    let alive = true
+    let started: Talqeen | null = null
+    void (async () => {
+      const [layout, timings] = await Promise.all([loadLayout(), loadTimings(reciterId)])
+      if (!alive) return
+      const el = engine.current!.el
+      const segments = lineSegments(layout, timings, current, el.duration || 0)
+      if (!segments.length) return
+      started = new Talqeen({
+        el,
+        segments,
+        onState: setDrill,
+        onFinished: () => void advanceRef.current?.(),
+      })
+      talqeenRef.current = started
+      started.start()
+    })()
+    return () => {
+      alive = false
+      started?.stop()
+      if (talqeenRef.current === started) talqeenRef.current = null
+    }
+    // `advance` is read through its ref so a change of queue does not restart
+    // the drill mid-line.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [talqeen, current, reciterId, duration])
+
   useEffect(() => {
     const el = engine.current!.el
-    const onEnded = () => void advance()
+    const onEnded = () => {
+      // The last line of a surah ends exactly where the audio does, so
+      // Talqeen takes the ending over to give that line its turn before
+      // anything moves on.
+      if (talqeenRef.current?.handleEnded()) return
+      void advance()
+    }
     el.addEventListener('ended', onEnded)
     return () => el.removeEventListener('ended', onEnded)
   }, [advance])
@@ -643,6 +695,8 @@ export default function App() {
                   reciterId={reciterId}
                   t={t}
                   onSeek={(sec) => engine.current!.seek(sec)}
+                  activeLine={drill?.segment ?? null}
+                  yourTurn={drill?.phase === 'echo'}
                 />
               )}
             </div>
@@ -718,6 +772,20 @@ export default function App() {
             </div>
 
             <div className="player-actions">
+              <button
+                className="round"
+                aria-label={t.talqeen}
+                aria-pressed={talqeen}
+                onClick={() => {
+                  if (!hasTimings(reciterId)) {
+                    setError(t.talqeenNeedsTimings)
+                    return
+                  }
+                  setTalqeen(!talqeen)
+                }}
+              >
+                <TalqeenIcon size={20} />
+              </button>
               {canCast && (
                 <button
                   className="round"
@@ -737,6 +805,31 @@ export default function App() {
               </button>
             </div>
           </div>
+
+          {talqeen && drill && (
+            <div className={`talqeen-bar${drill.phase === 'echo' ? ' is-yours' : ''}`}>
+              <span className="talqeen-who">
+                {drill.phase === 'echo' ? t.yourTurn : t.listenNow}
+              </span>
+              <span className="talqeen-acts">
+                <button
+                  type="button"
+                  className="btn"
+                  onClick={() => talqeenRef.current?.repeat()}
+                >
+                  {t.hearAgain}
+                </button>
+                <button
+                  type="button"
+                  className="btn"
+                  onClick={() => talqeenRef.current?.skipEcho()}
+                  disabled={drill.phase !== 'echo'}
+                >
+                  {t.skipTurn}
+                </button>
+              </span>
+            </div>
+          )}
 
           <div className="controls">
             <button

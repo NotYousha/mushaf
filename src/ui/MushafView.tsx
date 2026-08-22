@@ -1,13 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Strings } from '../i18n'
-
-/** One word: its Uthmani text, and the key timings address it by. An ayah-end
- *  marker has no key. */
-type Word = [string] | [string, string]
-type Line = { n: number; w: Word[] }
-type Layout = { version: string; pages: Line[][] }
-/** Per surah: [ayah, [word start times in ms]] */
-type Timings = { unit: string; source: string; surahs: Record<string, [number, number[]][]> }
+import {
+  loadLayout,
+  loadTimings,
+  wordSchedule,
+  type Layout,
+  type Timings,
+} from '../mushaf/data'
 
 type Props = {
   surah: number | null
@@ -16,48 +15,23 @@ type Props = {
   reciterId: string
   t: Strings
   onSeek?: (seconds: number) => void
+  /** The line Talqeen is working on, so the page can show it. */
+  activeLine?: { page: number; line: number } | null
+  /** True while the reciter is silent and it is your turn to recite. */
+  yourTurn?: boolean
 }
 
-let layoutPromise: Promise<Layout> | null = null
-const timingCache = new Map<string, Promise<Timings | null>>()
-/** Resolved timings, once loaded, so other parts of the app can step by ayah
- *  without forcing the download themselves. */
-const loadedTimings = new Map<string, Timings>()
+export { ayahStartsFor } from '../mushaf/data'
 
-/** Ayah start times in ms for a surah, or null if timings are not loaded. */
-export function ayahStartsFor(reciterId: string, surah: number): number[] | null {
-  const t = loadedTimings.get(reciterId)
-  const verses = t?.surahs[String(surah)]
-  if (!verses) return null
-  return verses.map(([, starts]) => starts[0]).filter((n) => typeof n === 'number')
-}
-
-const loadLayout = () => {
-  layoutPromise ??= import('../../data/mushaf-layout.json').then(
-    (m) => m.default as unknown as Layout,
-  )
-  return layoutPromise
-}
-
-/** Only reciters with published word timings can be followed word by word. */
-const loadTimings = (reciterId: string) => {
-  if (!timingCache.has(reciterId)) {
-    timingCache.set(
-      reciterId,
-      reciterId === 'burhaji-nabawi'
-        ? import('../../data/timings-burhaji-nabawi.json').then(
-            (m) => m.default as unknown as Timings,
-          )
-        : Promise.resolve(null),
-    )
-    void timingCache.get(reciterId)!.then((t) => {
-      if (t) loadedTimings.set(reciterId, t)
-    })
-  }
-  return timingCache.get(reciterId)!
-}
-
-export function MushafView({ surah, time, reciterId, t, onSeek }: Props) {
+export function MushafView({
+  surah,
+  time,
+  reciterId,
+  t,
+  onSeek,
+  activeLine,
+  yourTurn,
+}: Props) {
   const [layout, setLayout] = useState<Layout | null>(null)
   const [timings, setTimings] = useState<Timings | null>(null)
   const [loading, setLoading] = useState(true)
@@ -80,16 +54,7 @@ export function MushafView({ surah, time, reciterId, t, onSeek }: Props) {
   }, [reciterId])
 
   /** Every word of this surah in order, with the time it begins. */
-  const schedule = useMemo(() => {
-    if (!timings || !surah) return []
-    const verses = timings.surahs[String(surah)]
-    if (!verses) return []
-    const out: { at: number; key: string }[] = []
-    for (const [ayah, starts] of verses) {
-      starts.forEach((at, i) => out.push({ at, key: `${surah}:${ayah}:${i + 1}` }))
-    }
-    return out.sort((a, b) => a.at - b.at)
-  }, [timings, surah])
+  const schedule = useMemo(() => wordSchedule(timings, surah), [timings, surah])
 
   /** First page on which this surah appears. */
   const surahFirstPage = useMemo(() => {
@@ -162,11 +127,18 @@ export function MushafView({ surah, time, reciterId, t, onSeek }: Props) {
     if (hit) onSeek(hit.at / 1000)
   }
 
+  // The line Talqeen is on, marked so you can see where to pick up — and,
+  // while it is your turn, veiled, because reading it back defeats the point.
+  const drillLine = activeLine?.page === page ? activeLine.line : null
+
   return (
-    <div className="mushaf">
+    <div className={`mushaf${yourTurn ? ' your-turn' : ''}`}>
       <div className="mushaf-page">
         {lines.map((line) => (
-          <p className="mushaf-line" key={line.n}>
+          <p
+            className={`mushaf-line${line.n === drillLine ? ' is-drill' : ''}`}
+            key={line.n}
+          >
             {line.w.map((w, i) => {
               const key = w[1]
               const isEnd = !key

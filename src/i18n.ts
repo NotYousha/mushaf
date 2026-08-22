@@ -53,6 +53,14 @@ export const STRINGS = {
     notEnoughSpace: (need: string, free: string) =>
       `المساحة غير كافية: يحتاج ${need} ومتاح ${free}`,
     saveFailed: (why: string) => `تعذّر الحفظ: ${why}`,
+    talqeen: 'وضع التلقين',
+    yourTurn: 'أعِد أنت',
+    listenNow: 'استمع',
+    hearAgain: 'أعِد التلاوة',
+    skipTurn: 'تخطَّ',
+    talqeenOn: 'التلقين يعمل — يتلو الشيخ سطرًا ثم يصمت بقدره لتُعيده.',
+    talqeenNeedsTimings:
+      'وضع التلقين يحتاج توقيت الكلمات، وهو متاح للشيخ محمد برهجي فقط حاليًا.',
     // The device filled up mid-download, so the queue stopped on its own.
     // What is already saved stays saved and can be continued later.
     outOfSpaceStopped:
@@ -153,6 +161,14 @@ export const STRINGS = {
     notEnoughSpace: (need: string, free: string) =>
       `Not enough space: needs ${need}, ${free} free`,
     saveFailed: (why: string) => `Could not save: ${why}`,
+    talqeen: 'Talqeen Mode',
+    yourTurn: 'Your turn',
+    listenNow: 'Listen',
+    hearAgain: 'Hear it again',
+    skipTurn: 'Skip',
+    talqeenOn: 'Talqeen is on — the reciter reads a line, then leaves exactly that long for you.',
+    talqeenNeedsTimings:
+      'Talqeen needs word timings, which so far exist only for Muhammad Barhaji.',
     outOfSpaceStopped:
       'Your device ran out of space, so downloading stopped. Free some up and continue — what already downloaded is kept.',
 

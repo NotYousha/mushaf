@@ -130,3 +130,14 @@ export const Cast = ({ size }: P) => (
     <path d="M8 5.5V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4" />
   </svg>
 )
+
+/** Talqeen: a voice speaking, and the same phrase answering back. */
+export const Talqeen = ({ size }: P) => (
+  <svg {...s(size)} stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 9v6" />
+    <path d="M7.5 6.5v11" />
+    <path d="M11 9.5v5" />
+    <path d="M15.5 4.5A7.5 7.5 0 0 1 15.5 19.5" />
+    <path d="M18.5 7.5a4.5 4.5 0 0 1 0 9" />
+  </svg>
+)
