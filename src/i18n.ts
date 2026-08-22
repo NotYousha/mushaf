@@ -61,6 +61,9 @@ export const STRINGS = {
     talqeenOn: 'التلقين يعمل — يتلو الشيخ سطرًا ثم يصمت بقدره لتُعيده.',
     talqeenNeedsTimings:
       'وضع التلقين يحتاج توقيت الكلمات، وهو متاح للشيخ محمد برهجي فقط حاليًا.',
+    textSmaller: 'تصغير الخط',
+    textLarger: 'تكبير الخط',
+    zoomedNote: 'الخط مكبَّر، فتلتفّ الأسطر ولا تبقى الصفحة خمسة عشر سطرًا.',
     // The device filled up mid-download, so the queue stopped on its own.
     // What is already saved stays saved and can be continued later.
     outOfSpaceStopped:
@@ -169,6 +172,9 @@ export const STRINGS = {
     talqeenOn: 'Talqeen is on — the reciter reads a line, then leaves exactly that long for you.',
     talqeenNeedsTimings:
       'Talqeen needs word timings, which so far exist only for Muhammad Barhaji.',
+    textSmaller: 'Smaller text',
+    textLarger: 'Larger text',
+    zoomedNote: 'Text is enlarged, so lines wrap and the page is no longer fifteen lines.',
     outOfSpaceStopped:
       'Your device ran out of space, so downloading stopped. Free some up and continue — what already downloaded is kept.',
 

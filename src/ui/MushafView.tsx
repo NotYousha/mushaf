@@ -8,6 +8,7 @@ import {
   type Timings,
 } from '../mushaf/data'
 import surahMeta from '../../data/surahs.json'
+import { getPref, setPref } from '../db/prefs'
 
 type Props = {
   surah: number | null
@@ -21,6 +22,15 @@ type Props = {
   /** True while the reciter is silent and it is your turn to recite. */
   yourTurn?: boolean
 }
+
+/**
+ * Text sizes, as multiples of the size at which a page fits exactly.
+ *
+ * 1 is the printed page: fifteen lines, each filling its measure. Above it
+ * the lines have to wrap, so the page stops being fifteen lines — which is
+ * the trade, and worth it on a small screen.
+ */
+const ZOOMS = [1, 1.2, 1.45, 1.75, 2.1]
 
 const AR_DIGITS = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩']
 const arabicNumber = (n: number) =>
@@ -49,6 +59,21 @@ export function MushafView({
   const [manual, setManual] = useState(false)
   const activeRef = useRef<HTMLSpanElement | null>(null)
   const pageRef = useRef<HTMLDivElement | null>(null)
+  const [zoomIdx, setZoomIdx] = useState(0)
+  const zoomRef = useRef(0)
+  zoomRef.current = zoomIdx
+
+  useEffect(() => {
+    void getPref<number>('mushafZoom', 0).then((z) => setZoomIdx(Math.min(ZOOMS.length - 1, Math.max(0, z))))
+  }, [])
+
+  const changeZoom = (delta: number) => {
+    setZoomIdx((i) => {
+      const next = Math.min(ZOOMS.length - 1, Math.max(0, i + delta))
+      void setPref('mushafZoom', next)
+      return next
+    })
+  }
 
   useEffect(() => {
     let alive = true
@@ -148,6 +173,7 @@ export function MushafView({
     // Measure at a known size, then scale, so the result does not depend on
     // whatever scale the previous page happened to land on.
     el.style.setProperty('--fit', '1')
+    el.style.setProperty('--zoom', '1')
     const base = parseFloat(cs.fontSize) || 16
     // The lines are justified, so a line that fits reports the container's
     // width rather than its own. The natural width has to be added up from
@@ -165,11 +191,12 @@ export function MushafView({
     // print would be on this width.
     const fit = Math.max(0.62, Math.min(1.9, (avail / widest) * 0.995))
     el.style.setProperty('--fit', String(fit))
+    el.style.setProperty('--zoom', String(ZOOMS[zoomRef.current]))
   }, [])
 
   useLayoutEffect(() => {
     fitPage()
-  }, [fitPage, page, layout])
+  }, [fitPage, page, layout, zoomIdx])
 
   useEffect(() => {
     if (typeof ResizeObserver === 'undefined') return
@@ -216,7 +243,10 @@ export function MushafView({
 
   return (
     <div className={`mushaf${yourTurn ? ' your-turn' : ''}`}>
-      <div className="mushaf-page" ref={pageRef}>
+      <div
+        className={`mushaf-page${zoomIdx > 0 ? ' is-zoomed' : ''}`}
+        ref={pageRef}
+      >
         {lines.map((line) => {
           const opens = opensWith(line)
           return (
@@ -277,7 +307,28 @@ export function MushafView({
         >
           ›
         </button>
+
+        <span className="text-size">
+          <button
+            className="btn size"
+            aria-label={t.textSmaller}
+            onClick={() => changeZoom(-1)}
+            disabled={zoomIdx <= 0}
+          >
+            ا
+          </button>
+          <button
+            className="btn size big"
+            aria-label={t.textLarger}
+            onClick={() => changeZoom(1)}
+            disabled={zoomIdx >= ZOOMS.length - 1}
+          >
+            ا
+          </button>
+        </span>
       </div>
+
+      {zoomIdx > 0 && <p className="mushaf-note">{t.zoomedNote}</p>}
 
       {!timings && (
         <p className="mushaf-note">{t.noTimings}</p>

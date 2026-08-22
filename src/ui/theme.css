@@ -1016,8 +1016,18 @@ body {
     inset 0 0 0 4px var(--gold-line),
     0 1px 10px rgba(150, 120, 60, 0.07);
   /* --fit is measured once per page so the widest line just fits; every line
-     then shares one size, as they do in print. */
-  font-size: calc(var(--fit, 1) * 1rem);
+     then shares one size, as they do in print. --zoom is the reader's own
+     choice on top of that. */
+  font-size: calc(var(--fit, 1) * var(--zoom, 1) * 1rem);
+}
+
+/* Past the printed size a line cannot fit its measure, so it wraps. The page
+   stops being fifteen lines — that is the trade for text you can read. */
+.mushaf-page.is-zoomed .mushaf-line {
+  flex-wrap: wrap;
+  justify-content: center;
+  white-space: normal;
+  row-gap: 0;
 }
 
 /* Each line of the printed page is one line here: the break positions come
@@ -1187,7 +1197,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 1rem;
+  flex-wrap: wrap;
+  gap: 0.6rem;
   padding-top: 0.9rem;
 }
 
@@ -1196,6 +1207,34 @@ body {
   min-width: 3rem;
   font-size: 1.1rem;
   padding: 0.35rem 0.9rem;
+}
+
+.text-size {
+  display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
+  margin-inline-start: 0.5rem;
+}
+
+/* An alif at two sizes: the clearest way to say "text size" on an Arabic
+   page, and it needs no translating. */
+.btn.size {
+  font-family: var(--font-quran);
+  /* Sized as a touch target first: these are tapped while reading, often
+     one-handed. */
+  min-width: 2.7rem;
+  min-height: 2.5rem;
+  padding: 0.2rem 0.55rem;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.btn.size.big {
+  font-size: 1.5rem;
+}
+
+.btn.size:disabled {
+  opacity: 0.35;
 }
 
 .mushaf-num {
