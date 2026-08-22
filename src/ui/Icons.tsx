@@ -141,3 +141,11 @@ export const Talqeen = ({ size }: P) => (
     <path d="M18.5 7.5a4.5 4.5 0 0 1 0 9" />
   </svg>
 )
+
+/** Marking a stumble: a flag planted at the place you lost the thread. */
+export const Stumble = ({ size }: P) => (
+  <svg {...s(size)} stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M5 21V4" />
+    <path d="M5 4h11l-2 3.5L16 11H5" />
+  </svg>
+)

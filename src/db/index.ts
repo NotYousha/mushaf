@@ -4,7 +4,7 @@ let dbPromise: Promise<IDBPDatabase> | null = null
 
 export function getDB(): Promise<IDBPDatabase> {
   if (!dbPromise) {
-    dbPromise = openDB('mushaf', 2, {
+    dbPromise = openDB('mushaf', 3, {
       upgrade(db) {
         // 'audio' predates chunked downloads. It is kept so surahs saved by
         // an earlier build keep playing rather than needing a re-download.
@@ -14,6 +14,13 @@ export function getDB(): Promise<IDBPDatabase> {
         // chunks stored separately so an interruption costs one chunk.
         if (!db.objectStoreNames.contains('downloads')) db.createObjectStore('downloads')
         if (!db.objectStoreNames.contains('chunks')) db.createObjectStore('chunks')
+        // Practice history, added in v3. 'stumbles' is a log rather than a
+        // per-word counter because the same word can be tapped more than
+        // once and every occurrence should count toward the heat map.
+        // 'pages' is kept separate from 'stumbles' because it summarises
+        // review outcomes (streaks) that outlive any individual stumble.
+        if (!db.objectStoreNames.contains('stumbles')) db.createObjectStore('stumbles')
+        if (!db.objectStoreNames.contains('pages')) db.createObjectStore('pages')
       },
     })
   }

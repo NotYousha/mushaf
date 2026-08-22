@@ -21,6 +21,10 @@ type Props = {
   activeLine?: { page: number; line: number } | null
   /** True while the reciter is silent and it is your turn to recite. */
   yourTurn?: boolean
+  /** Called when the page is uncovered under the veil, and for how long. */
+  onPeek?: (page: number, ms: number) => void
+  /** Called when the listener marks a stumble on the word being recited. */
+  onStumble?: (key: string, page: number) => void
 }
 
 /**
@@ -31,6 +35,17 @@ type Props = {
  * the trade, and worth it on a small screen.
  */
 const ZOOMS = [1, 1.2, 1.45, 1.75, 2.1]
+
+/**
+ * The veil: the page is taken away a layer at a time.
+ *
+ * Every level keeps the page's geometry exactly — the words still occupy
+ * their positions, they are only made invisible. Where a phrase sits on the
+ * page is part of what a hafiz has memorised, so collapsing the layout would
+ * remove the very cue the drill is meant to test.
+ */
+const VEILS = ['off', 'faded', 'firsts', 'blank'] as const
+export type Veil = (typeof VEILS)[number]
 
 const AR_DIGITS = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩']
 const arabicNumber = (n: number) =>
@@ -51,6 +66,8 @@ export function MushafView({
   onSeek,
   activeLine,
   yourTurn,
+  onPeek,
+  onStumble,
 }: Props) {
   const [layout, setLayout] = useState<Layout | null>(null)
   const [timings, setTimings] = useState<Timings | null>(null)
@@ -60,12 +77,39 @@ export function MushafView({
   const activeRef = useRef<HTMLSpanElement | null>(null)
   const pageRef = useRef<HTMLDivElement | null>(null)
   const [zoomIdx, setZoomIdx] = useState(0)
+  const [veil, setVeil] = useState<Veil>('off')
+  const [peeking, setPeeking] = useState(false)
+  const peekStart = useRef(0)
   const zoomRef = useRef(0)
   zoomRef.current = zoomIdx
 
   useEffect(() => {
     void getPref<number>('mushafZoom', 0).then((z) => setZoomIdx(Math.min(ZOOMS.length - 1, Math.max(0, z))))
   }, [])
+
+  /**
+   * Press and hold to peek.
+   *
+   * The peek is reported rather than hidden, because how often you had to
+   * look is the honest measure of whether the page is held — far better than
+   * anything the app could infer on its own.
+   */
+  const startPeek = () => {
+    if (veil === 'off') return
+    peekStart.current = performance.now()
+    setPeeking(true)
+  }
+
+  const endPeek = () => {
+    if (!peeking) return
+    setPeeking(false)
+    onPeek?.(page + 1, Math.round(performance.now() - peekStart.current))
+  }
+
+  /** End a peek without counting it: the touch turned out to mean something
+   *  else, and charging the reader for a peek they did not ask for would put
+   *  noise into the one honest signal here. */
+  const cancelPeek = () => setPeeking(false)
 
   const changeZoom = (delta: number) => {
     setZoomIdx((i) => {
@@ -244,8 +288,24 @@ export function MushafView({
   return (
     <div className={`mushaf${yourTurn ? ' your-turn' : ''}`}>
       <div
-        className={`mushaf-page${zoomIdx > 0 ? ' is-zoomed' : ''}`}
+        className={`mushaf-page${zoomIdx > 0 ? ' is-zoomed' : ''}${
+          veil === 'off' ? '' : ` veil-${veil}`
+        }${peeking ? ' is-peeking' : ''}`}
         ref={pageRef}
+        onPointerDown={startPeek}
+        onPointerUp={endPeek}
+        onPointerCancel={endPeek}
+        onPointerLeave={endPeek}
+        // Two fingers means "I stumbled here" — the whole input, deliberately.
+        // Anything cleverer would need to listen to the reciter, which this
+        // app will not do.
+        onTouchStart={(e) => {
+          if (e.touches.length < 2) return
+          // The first finger already started a peek; two fingers means this
+          // was a stumble mark all along.
+          cancelPeek()
+          if (e.touches.length === 2 && activeKey) onStumble?.(activeKey, page + 1)
+        }}
       >
         {lines.map((line) => {
           const opens = opensWith(line)
@@ -264,13 +324,20 @@ export function MushafView({
             {line.w.map((w, i) => {
               const key = w[1]
               const isEnd = !key
+              // A line can open with an ayah rosette, so "first word" is not
+              // the same as first child.
+              const isLead = i === line.w.findIndex((x) => x[1])
               const active = key !== undefined && key === activeKey
               return (
                 <span
                   key={`${line.n}-${i}`}
                   ref={active ? activeRef : undefined}
                   className={
-                    isEnd ? 'ayah-mark' : `mw${active ? ' is-now' : ''}${onSeek ? ' tap' : ''}`
+                    isEnd
+                      ? 'ayah-mark'
+                      : `mw${active ? ' is-now' : ''}${onSeek ? ' tap' : ''}${
+                          isLead ? ' is-lead' : ''
+                        }`
                   }
                   aria-hidden={isEnd ? 'true' : undefined}
                   onClick={key && onSeek ? () => jumpTo(key) : undefined}
@@ -306,6 +373,14 @@ export function MushafView({
           disabled={page <= 0}
         >
           ›
+        </button>
+
+        <button
+          className={`btn veil-btn${veil === 'off' ? '' : ' on'}`}
+          onClick={() => setVeil(VEILS[(VEILS.indexOf(veil) + 1) % VEILS.length])}
+          aria-label={t.veil}
+        >
+          {t.veilName[veil]}
         </button>
 
         <span className="text-size">

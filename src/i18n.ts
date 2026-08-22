@@ -64,6 +64,11 @@ export const STRINGS = {
     textSmaller: 'تصغير الخط',
     textLarger: 'تكبير الخط',
     zoomedNote: 'الخط مكبَّر، فتلتفّ الأسطر ولا تبقى الصفحة خمسة عشر سطرًا.',
+    veil: 'الحجب',
+    veilName: { off: 'كاملة', faded: 'باهتة', firsts: 'أوّل كلمة', blank: 'مخفية' },
+    veilHint: 'اضغط مع الاستمرار للكشف.',
+    stumbleMarked: 'سُجِّلت وقفة.',
+    stumble: 'تسجيل وقفة',
     // The device filled up mid-download, so the queue stopped on its own.
     // What is already saved stays saved and can be continued later.
     outOfSpaceStopped:
@@ -175,6 +180,11 @@ export const STRINGS = {
     textSmaller: 'Smaller text',
     textLarger: 'Larger text',
     zoomedNote: 'Text is enlarged, so lines wrap and the page is no longer fifteen lines.',
+    veil: 'Veil',
+    veilName: { off: 'Full', faded: 'Faded', firsts: 'First word', blank: 'Hidden' },
+    veilHint: 'Press and hold to peek.',
+    stumbleMarked: 'Stumble marked.',
+    stumble: 'Mark a stumble',
     outOfSpaceStopped:
       'Your device ran out of space, so downloading stopped. Free some up and continue — what already downloaded is kept.',
 

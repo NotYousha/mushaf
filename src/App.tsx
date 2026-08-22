@@ -14,6 +14,7 @@ import {
   purgeSuspectAudio,
 } from './db/audio'
 import { loadPosition, getPref, setPref } from './db/prefs'
+import { addPeek, addStumble } from './db/practice'
 import { DownloadQueue } from './download/queue'
 import { CatalogSource } from './sources/CatalogSource'
 import { PlayerEngine, type PlaybackMode } from './player/engine'
@@ -29,7 +30,13 @@ import { SurahList, plainName } from './ui/SurahList'
 import { VerifyPanel } from './ui/VerifyPanel'
 import { MushafView, ayahStartsFor } from './ui/MushafView'
 import { Talqeen, type TalqeenState } from './player/talqeen'
-import { hasTimings, lineSegments, loadLayout, loadTimings } from './mushaf/data'
+import {
+  hasTimings,
+  lineSegments,
+  loadLayout,
+  loadTimings,
+  pageForKey,
+} from './mushaf/data'
 import { ImportPanel } from './ui/ImportPanel'
 import { formatBytes, formatTime } from './ui/format'
 import {
@@ -49,6 +56,7 @@ import {
   More,
   Broadcast,
   Talqeen as TalqeenIcon,
+  Stumble,
 } from './ui/Icons'
 import { stringsFor, type Lang } from './i18n'
 import './ui/theme.css'
@@ -357,6 +365,40 @@ export default function App() {
     }
     engine.current!.handlers.current = h
   }, [current, playable, reciterId, playSurah])
+
+  /**
+   * The word being recited right now, to ayah precision.
+   *
+   * The page view knows the exact word, but a stumble can also be marked from
+   * the player with the mushaf closed, and there the ayah is as fine as the
+   * position gets — which is precise enough to find the place again.
+   */
+  const currentWordKey = useCallback((): string | null => {
+    if (current === null) return null
+    const starts = ayahStartsFor(reciterId, current)
+    if (!starts?.length) return null
+    const ms = time * 1000
+    let ayah = 1
+    for (let i = 0; i < starts.length; i++) if (starts[i] <= ms) ayah = i + 1
+    return `${current}:${ayah}:1`
+  }, [current, reciterId, time])
+
+  const markStumble = useCallback(
+    async (key: string, page?: number) => {
+      if (current === null) return
+      await addStumble({
+        key,
+        surah: current,
+        page: page ?? (await pageForKey(key)),
+        at: Date.now(),
+      })
+      // Recording a stumble has to cost nothing, so it confirms briefly and
+      // gets out of the way rather than opening anything to dismiss.
+      setError(t.stumbleMarked)
+      window.setTimeout(() => setError(null), 1200)
+    },
+    [current, t],
+  )
 
   const selectedChip = useRef<HTMLButtonElement | null>(null)
 
@@ -707,6 +749,8 @@ export default function App() {
                   onSeek={(sec) => engine.current!.seek(sec)}
                   activeLine={drill?.segment ?? null}
                   yourTurn={drill?.phase === 'echo'}
+                  onPeek={(pg, ms) => void addPeek(pg, ms, Date.now())}
+                  onStumble={(key, pg) => void markStumble(key, pg)}
                 />
               )}
             </div>
@@ -875,6 +919,18 @@ export default function App() {
 
             <button className="ctrl" aria-label={t.next} onClick={() => void advance()}>
               <Forward size={26} />
+            </button>
+
+            <button
+              className="ctrl"
+              aria-label={t.stumble}
+              disabled={current === null}
+              onClick={() => {
+                const key = currentWordKey()
+                if (key) void markStumble(key)
+              }}
+            >
+              <Stumble size={22} />
             </button>
 
             <button

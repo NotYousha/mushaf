@@ -148,3 +148,24 @@ export function segmentAt(segments: Segment[], seconds: number): number {
   }
   return found
 }
+
+/**
+ * Which printed page a word sits on, 1-based as the mushaf numbers them.
+ *
+ * Built once from the layout and kept, because practice records are written
+ * from the player as well as from the page view, and the player has no other
+ * way to know where in the mushaf it currently is.
+ */
+let pageIndex: Map<string, number> | null = null
+
+export async function pageForKey(key: string): Promise<number> {
+  if (!pageIndex) {
+    const layout = await loadLayout()
+    const m = new Map<string, number>()
+    layout.pages.forEach((lines, p) => {
+      for (const line of lines) for (const w of line.w) if (w[1]) m.set(w[1], p + 1)
+    })
+    pageIndex = m
+  }
+  return pageIndex.get(key) ?? 0
+}

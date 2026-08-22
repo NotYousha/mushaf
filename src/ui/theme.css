@@ -1209,6 +1209,69 @@ body {
   padding: 0.35rem 0.9rem;
 }
 
+/* ============ the veil ============ */
+
+/*
+ * Every level hides the words with `color: transparent` rather than by
+ * removing or collapsing them. The glyph boxes stay exactly where they were,
+ * so the shape of the page — which is part of what a hafiz has memorised —
+ * survives being covered.
+ */
+.mushaf-page.veil-faded .mw {
+  color: color-mix(in srgb, var(--ink-strong) 22%, transparent);
+}
+
+.mushaf-page.veil-firsts .mw:not(.is-lead) {
+  color: transparent;
+}
+
+.mushaf-page.veil-blank .mw {
+  color: transparent;
+}
+
+/* The rosettes stay through the faded and first-word levels: an ayah count is
+   scaffolding, not the text you are trying to recall. A hidden page takes
+   them too. */
+.mushaf-page.veil-blank .ayah-mark {
+  color: transparent;
+  border-color: var(--gold-line);
+  background: none;
+  box-shadow: none;
+}
+
+/* Press and hold lifts the veil entirely, whatever level it was at. */
+.mushaf-page.is-peeking .mw,
+.mushaf-page.is-peeking .ayah-mark {
+  color: var(--ink-strong);
+}
+
+.mushaf-page.is-peeking .ayah-mark {
+  color: var(--gold-deep);
+  border-color: var(--gold);
+  background: radial-gradient(circle at 50% 50%, var(--page) 58%, var(--tile) 100%);
+}
+
+/* A veiled page must not offer to select the text it is hiding. */
+.mushaf-page.veil-faded,
+.mushaf-page.veil-firsts,
+.mushaf-page.veil-blank {
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: pointer;
+}
+
+.btn.veil-btn {
+  min-height: 2.5rem;
+  padding: 0.2rem 0.7rem;
+  font-size: 0.8rem;
+}
+
+.btn.veil-btn.on {
+  background: linear-gradient(160deg, var(--tile-active-a), var(--tile-active-b));
+  border-color: transparent;
+  color: var(--tile-active-ink);
+}
+
 .text-size {
   display: flex;
   align-items: baseline;
