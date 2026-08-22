@@ -25,6 +25,9 @@ type Props = {
   onPeek?: (page: number, ms: number) => void
   /** Called when the listener marks a stumble on the word being recited. */
   onStumble?: (key: string, page: number) => void
+  /** A page to turn to, 1-based, sent from the hifz board. */
+  gotoPage?: number | null
+  onWentToPage?: () => void
 }
 
 /**
@@ -68,6 +71,8 @@ export function MushafView({
   yourTurn,
   onPeek,
   onStumble,
+  gotoPage,
+  onWentToPage,
 }: Props) {
   const [layout, setLayout] = useState<Layout | null>(null)
   const [timings, setTimings] = useState<Timings | null>(null)
@@ -191,6 +196,15 @@ export function MushafView({
   useEffect(() => {
     if (!manual && surahFirstPage && !activeKey) setPage(surahFirstPage)
   }, [surahFirstPage, manual, activeKey])
+
+  // Arriving from the hifz board. This counts as turning the page by hand, so
+  // playback does not immediately drag the view back to where the audio is.
+  useEffect(() => {
+    if (!gotoPage) return
+    setManual(true)
+    setPage(Math.max(0, Math.min(603, gotoPage - 1)))
+    onWentToPage?.()
+  }, [gotoPage, onWentToPage])
 
   useEffect(() => {
     activeRef.current?.scrollIntoView({ block: 'center', behavior: 'smooth' })

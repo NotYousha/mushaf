@@ -583,7 +583,9 @@ body {
 /* ============ tab bar ============ */
 .tabbar {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  /* Five tabs. Explicitly equal columns rather than a count, so adding one
+     never silently wraps a tab onto a second row. */
+  grid-template-columns: repeat(5, 1fr);
   background: var(--card);
   border-top: 1px solid var(--divider);
   padding: 0.55rem 0 calc(0.4rem + env(safe-area-inset-bottom));
@@ -600,7 +602,12 @@ body {
   padding: 0.3rem 0;
   color: var(--muted);
   font: inherit;
-  font-size: 0.73rem;
+  font-size: 0.68rem;
+  /* A label must never be the thing that widens a column past its fifth. */
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   cursor: pointer;
   position: relative;
 }
@@ -1327,4 +1334,279 @@ body {
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
+}
+
+/* ============ hifz board ============ */
+.hifz {
+  padding: 0.25rem 0 1rem;
+}
+
+.hifz-h {
+  font-family: var(--font-ar);
+  font-size: 1.15rem;
+  color: var(--brown-strong);
+  margin: 1.4rem 0 0.5rem;
+}
+
+.hifz-note {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin: 0 0 0.6rem;
+  line-height: 1.6;
+}
+
+.hifz-tiers {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+.tier {
+  display: grid;
+  justify-items: center;
+  gap: 0.15rem;
+  padding: 0.85rem 0.4rem;
+  border-radius: 14px;
+  background: var(--card-2);
+  border: 1px solid var(--gold-line);
+}
+
+.tier-n {
+  font-size: 1.6rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--brown-strong);
+}
+
+.tier-name {
+  font-family: var(--font-ar);
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.due-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.due-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.due-row {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: 12px;
+  border: 1px solid var(--gold-line);
+  background: var(--card-2);
+  font: inherit;
+  color: var(--ink-strong);
+  cursor: pointer;
+}
+
+.due-page {
+  font-variant-numeric: tabular-nums;
+}
+
+.due-tier {
+  font-family: var(--font-ar);
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.due-act {
+  font-size: 0.78rem;
+  color: var(--gold-deep);
+}
+
+.btn.tiny {
+  font-size: 0.72rem;
+  padding: 0.45rem 0.6rem;
+  margin: 0;
+}
+
+/*
+ * All 604 pages at once. Small enough to fit a phone in one view, because the
+ * point is the shape of the whole mushaf rather than any single page.
+ */
+.heat {
+  display: grid;
+  grid-template-columns: repeat(28, 1fr);
+  gap: 2px;
+  direction: rtl;
+}
+
+.heat-cell {
+  aspect-ratio: 1;
+  border: 0;
+  padding: 0;
+  border-radius: 2px;
+  /* An untouched page is not a failure, so it reads as blank paper rather
+     than as a gap in a scorecard. */
+  background: var(--tile);
+  cursor: pointer;
+}
+
+.heat-cell.seen {
+  background: var(--warn);
+}
+
+.heat-cell:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 1px;
+}
+
+.wird-plans {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.wird-plans .btn.on,
+.btn.on {
+  background: linear-gradient(160deg, var(--tile-active-a), var(--tile-active-b));
+  border-color: transparent;
+  color: var(--tile-active-ink);
+}
+
+.wird-state {
+  margin-top: 0.7rem;
+  padding: 0.8rem 0.9rem;
+  border-radius: 14px;
+  background: var(--card-2);
+  border: 1px solid var(--gold-line);
+}
+
+.wird-day {
+  margin: 0 0 0.3rem;
+  font-size: 0.9rem;
+  color: var(--ink-strong);
+}
+
+.wird-owed {
+  margin: 0 0 0.6rem;
+  font-size: 0.95rem;
+  color: var(--warn);
+}
+
+.wird-clear {
+  margin: 0 0 0.6rem;
+  font-size: 0.95rem;
+  color: var(--ready);
+}
+
+.wird-acts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.empty.small {
+  font-size: 0.85rem;
+  padding: 0.6rem 0;
+}
+
+/* ============ fork drill ============ */
+.fork {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.fork-shared {
+  padding: 0.85rem 0.9rem;
+  border-radius: 14px;
+  background: var(--page);
+  border: 1px solid var(--gold);
+  box-shadow: inset 0 0 0 3px var(--gold-line);
+}
+
+.fork-count {
+  display: block;
+  font-size: 0.7rem;
+  color: var(--muted);
+  margin-bottom: 0.35rem;
+}
+
+.fork-text {
+  margin: 0;
+  font-family: var(--font-quran);
+  font-size: 1.15rem;
+  line-height: 2.2;
+  color: var(--ink-strong);
+  direction: rtl;
+}
+
+.fork-cue {
+  margin: 0;
+  text-align: center;
+  font-family: var(--font-ar);
+  font-size: 1.05rem;
+  color: var(--muted);
+  padding: 0.6rem 0;
+}
+
+/* The pause is the drill, so it is the loudest thing on the screen. */
+.fork-cue.is-yours {
+  color: var(--tile-active-ink);
+  background: linear-gradient(160deg, var(--tile-active-a), var(--tile-active-b));
+  border-radius: 12px;
+  font-size: 1.2rem;
+}
+
+.fork-branches {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.fork-branches li {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: 12px;
+  border: 1px solid var(--gold-line);
+  background: var(--card-2);
+}
+
+/* The branch you were asked for, so the answer is unambiguous. */
+.fork-branches li.was-asked {
+  border-color: var(--gold);
+  background: var(--tile);
+}
+
+.fork-next {
+  flex: 1;
+  font-family: var(--font-quran);
+  font-size: 1.25rem;
+  color: var(--ink-strong);
+  direction: rtl;
+}
+
+.fork-where {
+  font-size: 0.75rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  direction: ltr;
+}
+
+.fork-acts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.btn.wide {
+  width: 100%;
+  margin: 0;
 }

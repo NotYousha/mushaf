@@ -29,6 +29,8 @@ import { getQuota, requestPersistence, canDownloadAll } from './storage/quota'
 import { SurahList, plainName } from './ui/SurahList'
 import { VerifyPanel } from './ui/VerifyPanel'
 import { MushafView, ayahStartsFor } from './ui/MushafView'
+import { HifzBoard } from './ui/HifzBoard'
+import { ForkDrill } from './ui/ForkDrill'
 import { Talqeen, type TalqeenState } from './player/talqeen'
 import {
   hasTimings,
@@ -54,6 +56,7 @@ import {
   Library,
   QuranMark,
   More,
+  Heart,
   Broadcast,
   Talqeen as TalqeenIcon,
   Stumble,
@@ -61,7 +64,7 @@ import {
 import { stringsFor, type Lang } from './i18n'
 import './ui/theme.css'
 
-type Tab = 'quran' | 'library' | 'text' | 'more'
+type Tab = 'quran' | 'library' | 'text' | 'hifz' | 'more'
 const SPEEDS = [1, 1.25, 1.5, 0.75]
 
 const dlKey = (reciterId: string, surah: number) => `${reciterId}:${surah}`
@@ -399,6 +402,56 @@ export default function App() {
     },
     [current, t],
   )
+
+  /**
+   * Play one stretch of a surah and resolve when it reaches the end.
+   *
+   * The Fork Drill needs playback that stops on a word rather than at the end
+   * of a file, so it watches the clock and pauses itself. It loads the surah
+   * only when that is not already what is playing, because a fork's two
+   * branches are often in the same surah and reloading between them would put
+   * a gap exactly where the drill needs none.
+   */
+  const playRange = useCallback(
+    async (surah: number, from: number, to: number) => {
+      const s = surahs.find((x) => x.surah === surah)
+      if (!s || !reciter) return
+      const el = engine.current!.el
+      if (current !== surah) {
+        const res = await engine.current!.load(reciter.id, surah, s.url, s.fallbackUrl, from)
+        if (!res.ok) {
+          setError(`${plainName(s.name)}: ${res.reason}`)
+          return
+        }
+        setCurrent(surah)
+      }
+      engine.current!.seek(from)
+      await engine.current!.play()
+      await new Promise<void>((resolve) => {
+        const check = () => {
+          if (el.currentTime >= to || el.ended) {
+            el.removeEventListener('timeupdate', check)
+            clearInterval(id)
+            engine.current!.pause()
+            resolve()
+          }
+        }
+        // timeupdate alone fires about four times a second, which can overrun
+        // a cut by a syllable; the interval tightens that up.
+        const id = setInterval(check, 40)
+        el.addEventListener('timeupdate', check)
+      })
+    },
+    [surahs, reciter, current],
+  )
+
+  /** Page the mushaf view should jump to, set when the board sends us there. */
+  const [gotoPage, setGotoPage] = useState<number | null>(null)
+
+  const openMushafAtPage = (page: number) => {
+    setGotoPage(page)
+    setTab('text')
+  }
 
   const selectedChip = useRef<HTMLButtonElement | null>(null)
 
@@ -749,10 +802,25 @@ export default function App() {
                   onSeek={(sec) => engine.current!.seek(sec)}
                   activeLine={drill?.segment ?? null}
                   yourTurn={drill?.phase === 'echo'}
+                  gotoPage={gotoPage}
+                  onWentToPage={() => setGotoPage(null)}
                   onPeek={(pg, ms) => void addPeek(pg, ms, Date.now())}
                   onStumble={(key, pg) => void markStumble(key, pg)}
                 />
               )}
+            </div>
+          )}
+
+          {tab === 'hifz' && (
+            <div className="panel">
+              <HifzBoard t={t} onOpenPage={(p) => openMushafAtPage(p)} />
+              <h3 className="hifz-h">{t.forkDrill}</h3>
+              <ForkDrill
+                t={t}
+                reciterId={reciterId}
+                playRange={playRange}
+                stop={() => engine.current!.pause()}
+              />
             </div>
           )}
 
@@ -1023,6 +1091,15 @@ export default function App() {
         <button className="tab" role="tab" aria-selected={tab === 'text'} onClick={openText}>
           <Broadcast size={23} />
           {t.tabText}
+        </button>
+        <button
+          className="tab"
+          role="tab"
+          aria-selected={tab === 'hifz'}
+          onClick={() => setTab('hifz')}
+        >
+          <Heart size={23} />
+          {t.tabHifz}
         </button>
         <button
           className="tab"

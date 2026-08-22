@@ -149,3 +149,10 @@ export const Stumble = ({ size }: P) => (
     <path d="M5 4h11l-2 3.5L16 11H5" />
   </svg>
 )
+
+/** Hifz: what is held in the heart. */
+export const Heart = ({ size }: P) => (
+  <svg {...s(size)} stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12 20s-7-4.6-7-9.3A4.1 4.1 0 0 1 12 8a4.1 4.1 0 0 1 7 2.7C19 15.4 12 20 12 20Z" />
+  </svg>
+)

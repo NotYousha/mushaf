@@ -32,7 +32,7 @@ export default defineConfig({
         // 3 MB. Precaching them would pull the whole lot down at install,
         // which is exactly what lazy-loading them was meant to avoid. They are
         // fetched when the Mushaf tab is first opened and cached at runtime.
-        globIgnores: ['**/mushaf-layout-*.js', '**/timings-*.js'],
+        globIgnores: ['**/mushaf-layout-*.js', '**/timings-*.js', '**/forks-*.js'],
         runtimeCaching: [
           {
             urlPattern: /\/assets\/(mushaf-layout|timings)-[\w-]+\.js$/,
