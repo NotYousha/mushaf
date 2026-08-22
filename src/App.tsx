@@ -484,7 +484,14 @@ export default function App() {
       if (!alive) return
       const el = engine.current!.el
       const segments = lineSegments(layout, timings, current, el.duration || 0)
-      if (!segments.length) return
+      if (!segments.length) {
+        // The reciter is timed, but not for this surah — coverage grows one
+        // surah at a time. Say so and switch back off, rather than leaving a
+        // mode that is on and doing nothing.
+        setError(t.talqeenNeedsTimings)
+        setTalqeen(false)
+        return
+      }
       started = new Talqeen({
         el,
         segments,

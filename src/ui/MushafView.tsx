@@ -430,9 +430,10 @@ export function MushafView({
 
       {zoomIdx > 0 && <p className="mushaf-note">{t.zoomedNote}</p>}
 
-      {!timings && (
-        <p className="mushaf-note">{t.noTimings}</p>
-      )}
+      {/* Coverage is per surah: a reciter can be timed for one and not the
+          next, so this asks about the surah on screen rather than the
+          reciter. */}
+      {!schedule.length && <p className="mushaf-note">{t.noTimings}</p>}
     </div>
   )
 }

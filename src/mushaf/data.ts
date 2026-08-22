@@ -31,17 +31,28 @@ export const loadLayout = () => {
   return layoutPromise
 }
 
-/** Only reciters with published word timings can be followed word by word. */
+/**
+ * Reciters we have word timings for.
+ *
+ * Barhaji's come from the Quranic Universal Audio project. Al-Dosari's are
+ * our own, produced by forced alignment against the Uthmani text, and cover
+ * only the surahs that have been through it so far — a full mushaf is more
+ * than a day of compute on a laptop, so coverage grows rather than arriving
+ * complete.
+ */
+const TIMED: Record<string, () => Promise<Timings>> = {
+  'burhaji-nabawi': () =>
+    import('../../data/timings-burhaji-nabawi.json').then(
+      (m) => m.default as unknown as Timings,
+    ),
+  dosari: () =>
+    import('../../data/timings-dosari.json').then((m) => m.default as unknown as Timings),
+}
+
 export const loadTimings = (reciterId: string) => {
   if (!timingCache.has(reciterId)) {
-    timingCache.set(
-      reciterId,
-      reciterId === 'burhaji-nabawi'
-        ? import('../../data/timings-burhaji-nabawi.json').then(
-            (m) => m.default as unknown as Timings,
-          )
-        : Promise.resolve(null),
-    )
+    const load = TIMED[reciterId]
+    timingCache.set(reciterId, load ? load() : Promise.resolve(null))
     void timingCache.get(reciterId)!.then((t) => {
       if (t) loadedTimings.set(reciterId, t)
     })
@@ -49,7 +60,20 @@ export const loadTimings = (reciterId: string) => {
   return timingCache.get(reciterId)!
 }
 
-export const hasTimings = (reciterId: string) => reciterId === 'burhaji-nabawi'
+export const hasTimings = (reciterId: string) => reciterId in TIMED
+
+/**
+ * Whether a particular surah is timed.
+ *
+ * Coverage is per surah, not per reciter, so anything that needs word
+ * positions has to ask about the surah in hand rather than assuming a timed
+ * reciter is timed everywhere.
+ */
+export function surahTimed(reciterId: string, surah: number | null): boolean {
+  if (surah === null) return false
+  const t = loadedTimings.get(reciterId)
+  return !!t?.surahs[String(surah)]
+}
 
 /** Ayah start times in ms for a surah, or null if timings are not loaded. */
 export function ayahStartsFor(reciterId: string, surah: number): number[] | null {
