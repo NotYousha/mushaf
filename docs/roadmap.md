@@ -69,43 +69,43 @@ verified 114-surah set.
 
 ---
 
-## Phase 2 — The practice primitives
+## Phase 2 — The practice primitives — **done**
 
-**Talqeen Mode.** The reciter reads a line, then goes silent *for exactly as
+**Talqeen Mode** — shipped. The reciter reads a line, then goes silent *for exactly as
 long as that line took*, so you recite it back, then continues. This is how
 every halaqa on earth teaches. Muallim recordings exist for one reciter at one
 fixed chunk size; we can generate it for any reciter and any chunk, because we
 have the timings. This is the feature that makes someone tell a friend, and it
 works with the screen off.
 
-**The Veil.** Progressive removal of the text on the real page: full → faded →
+**The Veil** — shipped. Progressive removal of the text on the real page: full → faded →
 first word of each line → blank, with the page geometry preserved, because
 position on the page *is* part of what a hafiz memorises. Press and hold to
 peek; every peek is silently recorded.
 
-**Stumble marks.** Two-finger tap means "I stumbled here." That is the whole
+**Stumble marks** — shipped. Two-finger tap means "I stumbled here." That is the whole
 input. It replaces AI recitation-checking, which is the single most-complained-
 about feature of the funded competitor, and which would break the no-server
 promise.
 
 ---
 
-## Phase 3 — The memorisation system
+## Phase 3 — The memorisation system — **done**
 
-**Sabaq board.** The three tiers real students use: sabaq (new), sabqi
+**Sabaq board** — shipped. The three tiers real students use: sabaq (new), sabqi
 (recent), manzil (everything older, on rotation). Pages, not percentages. **The
 app never sets your curriculum** — your teacher does; the app remembers and
 schedules. That restraint is what makes teachers tolerate an app.
 
-**Wird engine.** One dial: finish in 7 days (the seven manazil), 30 days (a juz
+**Wird engine** — shipped. One dial: finish in 7 days (the seven manazil), 30 days (a juz
 a night), or Ramadan. Reading and listening share one position.
 
-**Mushaf heat map.** All 604 pages on one screen, shaded by how well you hold
+**Mushaf heat map** — shipped. All 604 pages on one screen, shaded by how well you hold
 them. Navigation surface and gut-punch in one.
 
 ---
 
-## Phase 4 — The Fork Drill
+## Phase 4 — The Fork Drill — **done**
 
 The most common hifz error is taking the wrong branch: a phrase appears twice,
 and your mouth continues into the wrong surah. Every existing tool shows this
@@ -137,3 +137,23 @@ and still wrong for us. Export/import of a single file solves the real need —
 
 **Prayer times, qibla, athan.** This is precisely the bloat people cite when
 leaving the big all-in-one apps. Stay a mushaf.
+
+---
+
+## Where it stands (2026-08-22)
+
+Everything above is built and deployed except more synced voices, which
+is Phase 1 and is a data problem rather than a code one.
+
+The repetition index behind the Fork Drill holds **1335 shared phrases**
+of four words or more that diverge — generated from the Uthmani text by
+`scripts/build-forks.mjs`, so it can be regenerated rather than trusted.
+
+**The one thing still gating the practice features:** Talqeen Mode, the
+Veil's usefulness, and the Fork Drill all need word-level timings, and
+only Barhaji has them. Each says so plainly rather than appearing
+broken. Adding a fourth reciter from QUL's 41 segmented sets would give
+all three a second voice; see Phase 1 above for what that takes.
+
+Initial download is 921 KB. Layout, timings and the fork index are lazy
+chunks kept out of the precache.
