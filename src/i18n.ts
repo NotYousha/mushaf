@@ -96,6 +96,11 @@ export const STRINGS = {
     pickSurahForText: 'اختر سورة لعرض المصحف.',
     noTimings: 'تتبُّع الكلمات متاح لهذا القارئ فقط عند توفّر توقيتات التلاوة.',
     page: 'صفحة',
+    cast: 'التشغيل على جهاز آخر',
+    castOffline: 'البث إلى جهاز آخر يتم عبر الإنترنت؛ النسخة المحفوظة تبقى على هذا الجهاز.',
+    storageSafe: 'التخزين دائم: لن يحذف المتصفح ما حفظته.',
+    storageAtRisk:
+      'قد يحذف المتصفح ما حفظته عند امتلاء الجهاز. أضِف التطبيق إلى الشاشة الرئيسية لحمايته.',
   },
 
   en: {
@@ -186,6 +191,11 @@ export const STRINGS = {
     pickSurahForText: 'Pick a surah to open the mushaf.',
     noTimings: 'Word tracking needs recitation timings, which are not published for this reciter.',
     page: 'Page',
+    cast: 'Play on another device',
+    castOffline: 'Casting streams over the internet; your saved copy stays on this phone.',
+    storageSafe: 'Storage is persistent: the browser will not delete what you save.',
+    storageAtRisk:
+      'The browser may delete saved audio when your device runs low. Add this app to your Home Screen to protect it.',
   },
 } as const
 

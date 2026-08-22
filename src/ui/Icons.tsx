@@ -123,3 +123,10 @@ export const More = ({ size }: P) => (
     <circle cx="4.6" cy="17.5" r="1" fill="currentColor" stroke="none" />
   </svg>
 )
+
+export const Cast = ({ size }: P) => (
+  <svg {...s(size)} stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 17.5a3.5 3.5 0 0 1 3.5 3.5M3 13a8 8 0 0 1 8 8M3 8.5A12.5 12.5 0 0 1 15.5 21" />
+    <path d="M8 5.5V5a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4" />
+  </svg>
+)

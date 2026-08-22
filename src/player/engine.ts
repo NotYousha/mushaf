@@ -188,6 +188,42 @@ export class PlayerEngine {
     this.el.playbackRate = rate
   }
 
+  /**
+   * Hand playback to a TV, speaker or car via AirPlay or Cast.
+   *
+   * Supported on Safari, Chrome and Chrome Android, and it costs about ten
+   * lines because the browser owns the device picker. A native app would need
+   * the Cast SDK, a receiver application, and AirPlay handled separately.
+   *
+   * The receiver fetches the URL itself, so a surah saved to this device
+   * cannot be cast — the caller warns about that rather than failing quietly.
+   */
+  get remote(): RemotePlayback | null {
+    return (this.el as HTMLMediaElement & { remote?: RemotePlayback }).remote ?? null
+  }
+
+  watchRemoteAvailability(fn: (available: boolean) => void): () => void {
+    const r = this.remote
+    if (!r?.watchAvailability) return () => {}
+    let id: number | null = null
+    r.watchAvailability((available) => fn(available))
+      .then((watchId) => {
+        id = watchId
+      })
+      .catch(() => {})
+    return () => {
+      if (id !== null) r.cancelWatchAvailability(id).catch(() => {})
+    }
+  }
+
+  async promptRemote() {
+    try {
+      await this.remote?.prompt()
+    } catch {
+      // The picker was dismissed, or no device was chosen. Not an error.
+    }
+  }
+
   get surah() {
     return this.currentSurah
   }

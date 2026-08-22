@@ -36,6 +36,7 @@ import {
   Forward,
   Moon,
   Star,
+  Cast,
   Library,
   QuranMark,
   More,
@@ -73,6 +74,8 @@ export default function App() {
   const [lang, setLang] = useState<Lang>('ar')
   const [confirmAll, setConfirmAll] = useState(false)
   const [queued, setQueued] = useState(0)
+  const [canCast, setCanCast] = useState(false)
+  const [persisted, setPersisted] = useState<boolean | null>(null)
 
   const engine = useRef<PlayerEngine | null>(null)
   if (!engine.current) engine.current = new PlayerEngine()
@@ -136,7 +139,7 @@ export default function App() {
       }
 
       await refreshDownloaded()
-      await requestPersistence()
+      setPersisted(await requestPersistence())
       const pos = await loadPosition()
       if (pos && rs.some((r) => r.id === pos.reciterId)) {
         setReciterId(pos.reciterId)
@@ -154,6 +157,10 @@ export default function App() {
       if (!s.active.length && !s.pending.length) void refreshDownloaded()
     })
   }, [refreshDownloaded])
+
+  // A cast target may appear or vanish at any time, so this is a live watch
+  // rather than a one-off check.
+  useEffect(() => engine.current!.watchRemoteAvailability(setCanCast), [])
 
   useEffect(() => {
     const el = engine.current!.el
@@ -480,6 +487,12 @@ export default function App() {
                 {t.savedCount(downloadedHere.size)}
               </p>
 
+              {persisted !== null && (
+                <p className={persisted ? 'saved-note' : 'verify-err'}>
+                  {persisted ? t.storageSafe : t.storageAtRisk}
+                </p>
+              )}
+
               {queued > 0 ? (
                 <>
                   <p className="count">
@@ -624,14 +637,25 @@ export default function App() {
               <div className="reciter-en">{reciter.nameEn}</div>
             </div>
 
-            <button
-              className="round"
-              aria-label={t.favourite}
-              aria-pressed={favourites.includes(favKey)}
-              onClick={toggleFavourite}
-            >
-              <Star size={20} filled={favourites.includes(favKey)} />
-            </button>
+            <div className="player-actions">
+              {canCast && (
+                <button
+                  className="round"
+                  aria-label={t.cast}
+                  onClick={() => void engine.current!.promptRemote()}
+                >
+                  <Cast size={20} />
+                </button>
+              )}
+              <button
+                className="round"
+                aria-label={t.favourite}
+                aria-pressed={favourites.includes(favKey)}
+                onClick={toggleFavourite}
+              >
+                <Star size={20} filled={favourites.includes(favKey)} />
+              </button>
+            </div>
           </div>
 
           <div className="controls">
@@ -698,6 +722,9 @@ export default function App() {
               <div className="fill" style={{ width: `${pct}%` }} />
               <div className="knob" style={{ left: `${pct}%` }} />
             </div>
+            {canCast && mode === 'offline' && (
+              <p className="mushaf-note">{t.castOffline}</p>
+            )}
             <div className="times">
               <span>{formatTime(time)}</span>
               <span className="badge">

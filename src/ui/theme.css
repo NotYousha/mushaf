@@ -1057,3 +1057,9 @@ body {
     transition: none;
   }
 }
+
+.player-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
