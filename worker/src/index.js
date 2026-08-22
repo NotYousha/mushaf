@@ -50,9 +50,11 @@ function corsHeaders(origin) {
   return {
     'Access-Control-Allow-Origin': allow,
     'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
-    'Access-Control-Allow-Headers': 'Range, Content-Type',
+    'Access-Control-Allow-Headers': 'Range, If-Range, If-None-Match, Content-Type',
+    // ETag and Last-Modified must be exposed, not merely sent: without this a
+    // cross-origin caller reads null and cannot validate a resumed download.
     'Access-Control-Expose-Headers':
-      'Content-Length, Content-Range, Accept-Ranges, Content-Type',
+      'Content-Length, Content-Range, Accept-Ranges, Content-Type, ETag, Last-Modified',
     'Access-Control-Max-Age': '86400',
     Vary: 'Origin',
   }
@@ -276,11 +278,20 @@ export default {
     try {
       let target = await memo(cacheKey, route.ttl, ctx, () => route.resolve(surah, ctx))
 
-      const range = request.headers.get('Range')
-      const upstreamHeaders = range ? { Range: range } : {}
+      // Forward the conditional headers too. Passing Range alone meant an
+      // If-Range resume validated nothing while still returning 206 — a
+      // resume that looks correct and silently splices two different files.
+      const upstreamHeaders = {}
+      for (const h of ['Range', 'If-Range', 'If-None-Match']) {
+        const v = request.headers.get(h)
+        if (v) upstreamHeaders[h] = v
+      }
       let upstream = await fetch(target, { method: request.method, headers: upstreamHeaders })
 
       // A cached URL that has expired, rotated, or been moved: resolve again.
+      // A 200 here is not a failure — it is the server telling a conditional
+      // range request that the content changed — so it must not trigger a
+      // re-resolve loop.
       if (upstream.status === 403 || upstream.status === 404) {
         target = await route.resolve(surah, ctx)
         await invalidate(cacheKey, target, route.ttl, ctx)
@@ -300,7 +311,13 @@ export default {
         if (v) headers.set(h, v)
       }
       if (!headers.has('Content-Type')) headers.set('Content-Type', 'audio/mpeg')
-      if (!headers.has('Accept-Ranges')) headers.set('Accept-Ranges', 'bytes')
+      // Only claim range support when the upstream actually honoured a range.
+      // Advertising it unconditionally means a player issues a Range request,
+      // receives a 200 with the whole body, and either restarts from zero or
+      // stalls the seek — which on iOS breaks scrubbing outright.
+      if (!headers.has('Accept-Ranges') && upstream.status === 206) {
+        headers.set('Accept-Ranges', 'bytes')
+      }
       headers.set('Cache-Control', 'public, max-age=86400')
 
       return new Response(upstream.body, { status: upstream.status, headers })

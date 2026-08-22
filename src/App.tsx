@@ -17,12 +17,17 @@ import { loadPosition, getPref, setPref } from './db/prefs'
 import { DownloadQueue } from './download/queue'
 import { CatalogSource } from './sources/CatalogSource'
 import { PlayerEngine, type PlaybackMode } from './player/engine'
-import { updateMediaSession } from './player/mediaSession'
+import {
+  clearMetadata,
+  setNavAvailability,
+  updateMetadata,
+  type MediaHandlers,
+} from './player/mediaSession'
 import { nextSurah, prevSurah, type RepeatMode } from './player/playQueue'
 import { getQuota, requestPersistence, canDownloadAll } from './storage/quota'
 import { SurahList, plainName } from './ui/SurahList'
 import { VerifyPanel } from './ui/VerifyPanel'
-import { MushafView } from './ui/MushafView'
+import { MushafView, ayahStartsFor } from './ui/MushafView'
 import { ImportPanel } from './ui/ImportPanel'
 import { formatBytes, formatTime } from './ui/format'
 import {
@@ -247,16 +252,8 @@ export default function App() {
       engine.current!.setRate(SPEEDS[speedIdx])
       await engine.current!.play()
 
-      updateMediaSession(s, reciter.fullName, {
-        play: () => void engine.current!.play(),
-        pause: () => engine.current!.pause(),
-        next: () => void advanceRef.current?.(),
-        prev: () => {
-          const p = prevSurah(surah, playable)
-          if (p) void playSurah(p)
-        },
-        seek: (t) => engine.current!.seek(t),
-      })
+      updateMetadata(s, reciter.fullName, import.meta.env.BASE_URL)
+      setNavAvailability(prevSurah(surah, playable) !== null, nextSurah(surah, repeat, playable) !== null)
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [surahs, playable, speedIdx, reciter, downloadedHere, rejected],
@@ -278,6 +275,48 @@ export default function App() {
     advanceRef.current = advance
   }, [advance])
 
+  // The handlers are registered once at construction and read through this
+  // reference, so the lock-screen buttons can never act on a stale surah.
+  useEffect(() => {
+    const h: MediaHandlers = {
+      play: () => void engine.current!.play(),
+      pause: () => engine.current!.pause(),
+      stop: () => {
+        engine.current!.stop()
+        clearMetadata()
+      },
+      next: () => void advanceRef.current?.(),
+      prev: () => {
+        // A driver who overshoots should get the start of this surah back,
+        // not be thrown into the previous one — the podcast convention.
+        if (engine.current!.el.currentTime > 3) {
+          engine.current!.seek(0)
+          return
+        }
+        if (current === null) return
+        const p = prevSurah(current, playable)
+        if (p) void playSurah(p)
+      },
+      seek: (sec) => engine.current!.seek(sec),
+      step: (dir) => {
+        const el = engine.current!.el
+        const starts = current !== null ? ayahStartsFor(reciterId, current) : null
+        if (!starts?.length) {
+          // No timings loaded for this reciter: a plain skip is still useful.
+          el.currentTime = Math.max(0, el.currentTime + dir * 15)
+          return
+        }
+        const now = el.currentTime * 1000
+        const target =
+          dir > 0
+            ? starts.find((t) => t > now + 250)
+            : [...starts].reverse().find((t) => t < now - 1250)
+        el.currentTime = (target ?? (dir > 0 ? now : 0)) / 1000
+      },
+    }
+    engine.current!.handlers.current = h
+  }, [current, playable, reciterId, playSurah])
+
   useEffect(() => {
     const el = engine.current!.el
     const onEnded = () => void advance()
@@ -289,7 +328,7 @@ export default function App() {
     if (sleepAt === null) return
     const id = setTimeout(
       () => {
-        engine.current!.pause()
+        engine.current!.stop()
         setSleepAt(null)
       },
       sleepAt * 60_000,

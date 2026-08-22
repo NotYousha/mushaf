@@ -20,6 +20,17 @@ type Props = {
 
 let layoutPromise: Promise<Layout> | null = null
 const timingCache = new Map<string, Promise<Timings | null>>()
+/** Resolved timings, once loaded, so other parts of the app can step by ayah
+ *  without forcing the download themselves. */
+const loadedTimings = new Map<string, Timings>()
+
+/** Ayah start times in ms for a surah, or null if timings are not loaded. */
+export function ayahStartsFor(reciterId: string, surah: number): number[] | null {
+  const t = loadedTimings.get(reciterId)
+  const verses = t?.surahs[String(surah)]
+  if (!verses) return null
+  return verses.map(([, starts]) => starts[0]).filter((n) => typeof n === 'number')
+}
 
 const loadLayout = () => {
   layoutPromise ??= import('../../data/mushaf-layout.json').then(
@@ -39,6 +50,9 @@ const loadTimings = (reciterId: string) => {
           )
         : Promise.resolve(null),
     )
+    void timingCache.get(reciterId)!.then((t) => {
+      if (t) loadedTimings.set(reciterId, t)
+    })
   }
   return timingCache.get(reciterId)!
 }

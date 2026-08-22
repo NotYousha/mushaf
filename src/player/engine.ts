@@ -1,5 +1,12 @@
 import { getAudio } from '../db/audio'
 import { savePosition } from '../db/prefs'
+import {
+  clearPosition,
+  registerMediaHandlers,
+  setPlaybackState,
+  setPosition,
+  type MediaHandlers,
+} from './mediaSession'
 
 export type PlaybackMode = 'offline' | 'streaming'
 
@@ -29,6 +36,9 @@ export class PlayerEngine {
   private lastSaved = 0
   mode: PlaybackMode = 'streaming'
   onError: ((message: string) => void) | null = null
+  /** Read by the media session handlers, which are registered once. */
+  readonly handlers: { current: MediaHandlers | null } = { current: null }
+  private rate = 1
 
   constructor() {
     this.el = new Audio()
@@ -51,6 +61,33 @@ export class PlayerEngine {
     if (typeof document !== 'undefined') {
       document.addEventListener('visibilitychange', flush)
     }
+
+    // Keep the OS in step. The system extrapolates position between updates,
+    // so it must be corrected whenever the rate, the position, or the play
+    // state changes — not only while ticking.
+    const sync = () => setPosition(this.el)
+    this.el.addEventListener('loadedmetadata', () => {
+      // A resource load resets playbackRate to defaultPlaybackRate, which
+      // silently dropped the listener's chosen speed back to 1x on every
+      // surah change. Reassert it here as well as setting both on change.
+      this.el.playbackRate = this.rate
+      sync()
+    })
+    this.el.addEventListener('durationchange', sync)
+    this.el.addEventListener('seeked', sync)
+    this.el.addEventListener('ratechange', sync)
+    this.el.addEventListener('timeupdate', sync)
+    this.el.addEventListener('play', () => {
+      setPlaybackState('playing')
+      sync()
+    })
+    this.el.addEventListener('pause', () => {
+      setPlaybackState('paused')
+      sync()
+    })
+    this.el.addEventListener('ended', () => clearPosition())
+
+    registerMediaHandlers(this.handlers)
   }
 
   /** Resolves once the element can play the given src, or rejects. */
@@ -78,8 +115,10 @@ export class PlayerEngine {
       this.el.addEventListener('loadedmetadata', ok)
       this.el.addEventListener('canplay', ok)
       this.el.addEventListener('error', bad)
+      // Assigning src already starts the resource selection algorithm. An
+      // explicit load() on top of it throws away everything buffered and
+      // re-fetches, which on a two-hour surah costs the listener real data.
       this.el.src = src
-      this.el.load()
     })
   }
 
@@ -185,7 +224,19 @@ export class PlayerEngine {
   }
 
   setRate(rate: number) {
+    this.rate = rate
+    // Both, deliberately: defaultPlaybackRate is what a resource load restores
+    // playbackRate from, so setting only the latter loses the setting on the
+    // next surah.
+    this.el.defaultPlaybackRate = rate
     this.el.playbackRate = rate
+  }
+
+  /** Pause, and tell the OS the session is over rather than merely paused. */
+  stop() {
+    this.el.pause()
+    clearPosition()
+    setPlaybackState('none')
   }
 
   /**
