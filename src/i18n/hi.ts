@@ -159,5 +159,10 @@ export const hi: Strings = {
     theme: 'थीम',
     modeName: { light: 'उजला', dark: 'गहरा', system: 'सिस्टम' },
     bestAtNight: 'रात के लिए बनी',
-    openPlayer: 'प्लेयर खोलें'
+    openPlayer: 'प्लेयर खोलें',
+    photoFraming: 'क़ारियों की तस्वीरें',
+    surfaceName: { player: 'प्लेयर', card: 'डॉक कार्ड' },
+    dragToPosition: 'तस्वीर को खींचकर हिलाएँ।',
+    zoom: 'ज़ूम',
+    resetFraming: 'रीसेट'
 }

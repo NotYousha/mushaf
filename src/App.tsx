@@ -67,6 +67,13 @@ import { stringsFor, type Lang } from './i18n'
 import { brandName, brandSecondary } from './brand'
 import { LangPicker } from './ui/LangPicker'
 import { ThemePicker } from './ui/ThemePicker'
+import {
+  PhotoFramer,
+  frameOf,
+  frameStyle,
+  type Frame,
+  type Frames,
+} from './ui/PhotoFramer'
 import { Dock, type DockTab } from './ui/Dock'
 import {
   applyNativeInsets,
@@ -127,6 +134,8 @@ export default function App() {
   const [persisted, setPersisted] = useState<boolean | null>(null)
   const [talqeen, setTalqeen] = useState(false)
   const [drill, setDrill] = useState<TalqeenState | null>(null)
+  /** How each reciter's photo is cropped, per surface, set by the reader. */
+  const [frames, setFrames] = useState<Frames>({})
   /** The player folded down to a strip, so the list has the screen. */
   /** The full player is a sheet over the app; the dock capsule is its
    *  collapsed form, so it starts closed. */
@@ -201,6 +210,7 @@ export default function App() {
       setPlayerMin(await getPref<boolean>('playerMin', true))
       setTheme(await getPref<ThemeId>('theme', DEFAULT_THEME))
       setAppearance(await getPref<Mode>('appearance', 'system'))
+      setFrames(await getPref<Frames>('photoFrames', {}))
 
       // Runs once: clears audio a since-fixed queue bug may have filed under
       // the wrong reciter, which made the wrong surah play from a saved copy.
@@ -510,6 +520,23 @@ export default function App() {
 
   const scrollRef = useRef<HTMLDivElement | null>(null)
   const searchRef = useRef<HTMLInputElement | null>(null)
+  const setFrame = useCallback((key: string, frame: Frame) => {
+    setFrames((prev) => {
+      const next = { ...prev, [key]: frame }
+      void setPref('photoFrames', next)
+      return next
+    })
+  }, [])
+
+  const clearFrame = useCallback((key: string) => {
+    setFrames((prev) => {
+      const next = { ...prev }
+      delete next[key]
+      void setPref('photoFrames', next)
+      return next
+    })
+  }, [])
+
   const selectedChip = useRef<HTMLButtonElement | null>(null)
 
   useEffect(() => {
@@ -1010,6 +1037,14 @@ export default function App() {
                 onChange={(next) => void changeLang(next)}
               />
 
+              <PhotoFramer
+                t={t}
+                reciters={reciters}
+                frames={frames}
+                onChange={setFrame}
+                onReset={clearFrame}
+              />
+
               <ThemePicker
                 t={t}
                 lang={lang}
@@ -1095,6 +1130,7 @@ export default function App() {
                 ['--face-src' as string]: reciter.photo
                   ? `url('${import.meta.env.BASE_URL}${reciter.photo}')`
                   : 'none',
+                ...frameStyle(frameOf(frames, reciter.id, 'player')),
               }}
             />
 
@@ -1301,6 +1337,8 @@ export default function App() {
             ? {
                 title: `${t.surahWord} ${currentView.name}`,
                 reciter: reciter.nameEn,
+                reciterId: reciter.id,
+                frame: frameStyle(frameOf(frames, reciter.id, 'card')),
                 artwork: reciter.photo
                   ? `${import.meta.env.BASE_URL}${reciter.photo}`
                   : null,

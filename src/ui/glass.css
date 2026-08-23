@@ -139,11 +139,11 @@
   border-radius: 50%;
   flex: none;
   background-color: var(--tile);
-  /* `cover` rather than the medallion's tuned zoom: these are already square
-     crops, and cover is right whether the frame is a circle on a phone or a
-     rounded square on the rail. */
-  background-size: cover;
-  background-position: center;
+  /* Framed by the same variables as the medallion, so the crop is something
+     the reader sets rather than something baked into a stylesheet. For a
+     square portrait the defaults are exactly `cover` and `center`. */
+  background-size: var(--face-zoom, 100%) auto;
+  background-position: var(--face-x, 50%) var(--face-y, 50%);
   background-repeat: no-repeat;
   box-shadow: 0 0 0 1px var(--glass-ring);
 }

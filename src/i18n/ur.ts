@@ -159,5 +159,10 @@ export const ur: Strings = {
     theme: 'تھیم',
     modeName: { light: 'روشن', dark: 'تاریک', system: 'سسٹم' },
     bestAtNight: 'رات کے لیے بنائی گئی',
-    openPlayer: 'پلیئر کھولیں'
+    openPlayer: 'پلیئر کھولیں',
+    photoFraming: 'قاریوں کی تصاویر',
+    surfaceName: { player: 'پلیئر', card: 'ڈاک کارڈ' },
+    dragToPosition: 'تصویر کو کھینچ کر منتقل کریں۔',
+    zoom: 'زوم',
+    resetFraming: 'ری سیٹ'
 }

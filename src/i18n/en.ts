@@ -163,7 +163,12 @@ export const en = {
     theme: 'Theme',
     modeName: { light: 'Light', dark: 'Dark', system: 'System' },
     bestAtNight: 'Made for the dark',
-    openPlayer: 'Open the player'
+    openPlayer: 'Open the player',
+    photoFraming: 'Reciter photos',
+    surfaceName: { player: 'Player', card: 'Dock card' },
+    dragToPosition: 'Drag the photo to move it.',
+    zoom: 'Zoom',
+    resetFraming: 'Reset'
 }
 
 export type Strings = typeof en

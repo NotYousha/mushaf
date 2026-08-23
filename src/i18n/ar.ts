@@ -159,5 +159,10 @@ export const ar: Strings = {
     theme: 'السِّمة',
     modeName: { light: 'فاتح', dark: 'داكن', system: 'النظام' },
     bestAtNight: 'صُمِّمت لليل',
-    openPlayer: 'فتح المشغّل'
+    openPlayer: 'فتح المشغّل',
+    photoFraming: 'صور القرّاء',
+    surfaceName: { player: 'المشغّل', card: 'بطاقة الشريط' },
+    dragToPosition: 'اسحب الصورة لتحريكها.',
+    zoom: 'تكبير',
+    resetFraming: 'إعادة'
 }

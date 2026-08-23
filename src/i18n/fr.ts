@@ -159,5 +159,10 @@ export const fr: Strings = {
     theme: 'Thème',
     modeName: { light: 'Clair', dark: 'Sombre', system: 'Système' },
     bestAtNight: 'Pensé pour la nuit',
-    openPlayer: 'Ouvrir le lecteur'
+    openPlayer: 'Ouvrir le lecteur',
+    photoFraming: 'Photos des récitateurs',
+    surfaceName: { player: 'Lecteur', card: 'Carte du dock' },
+    dragToPosition: 'Faites glisser la photo pour la déplacer.',
+    zoom: 'Zoom',
+    resetFraming: 'Réinitialiser'
 }
