@@ -20,8 +20,6 @@ type Props = {
     reciter: string
     /** Which reciter, so a photo that is not pre-cropped can be framed. */
     reciterId: string
-    /** The reader's framing for this surface, as CSS custom properties. */
-    frame: React.CSSProperties
     artwork: string | null
     playing: boolean
   } | null
@@ -125,11 +123,7 @@ export function Dock({
               className="cap-art"
               aria-hidden="true"
               data-reciter={now.reciterId}
-              style={
-                now.artwork
-                  ? { ...now.frame, backgroundImage: `url('${now.artwork}')` }
-                  : now.frame
-              }
+              style={now.artwork ? { backgroundImage: `url('${now.artwork}')` } : undefined}
             />
             <span className="cap-text">
               <span className="cap-title">{now.title}</span>

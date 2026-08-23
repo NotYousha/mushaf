@@ -139,11 +139,11 @@
   border-radius: 50%;
   flex: none;
   background-color: var(--tile);
-  /* Framed by the same variables as the medallion, so the crop is something
-     the reader sets rather than something baked into a stylesheet. For a
-     square portrait the defaults are exactly `cover` and `center`. */
-  background-size: var(--face-zoom, 100%) auto;
-  background-position: var(--face-x, 50%) var(--face-y, 50%);
+  /* The portraits are cropped square on the face before they ship, so cover
+     and centre are exactly right — in a circle on a phone or a rounded card
+     on the rail. */
+  background-size: cover;
+  background-position: center;
   background-repeat: no-repeat;
   box-shadow: 0 0 0 1px var(--glass-ring);
 }
@@ -409,4 +409,14 @@
 /* Its own layer, so scrolling underneath never repaints it. */
 .dock .glass {
   will-change: transform;
+}
+
+/*
+ * Al-Dosari's is the one photograph still shipping as an uncropped original,
+ * with his head high in a 555x764 frame. Centred, `cover` takes a band from
+ * the middle and cuts the top of the ghutra off; sitting it higher shows the
+ * whole headdress.
+ */
+.cap-art[data-reciter='dosari'] {
+  background-position: 50% 20%;
 }
