@@ -152,5 +152,7 @@ export const fr: Strings = {
   storageAtRisk:
     "Le navigateur peut supprimer l'audio enregistré quand l'espace de votre appareil est faible. Ajoutez cette application à votre écran d'accueil pour la protéger.",
   differentRiwayah: (r: string) => `Ce récitateur lit en ${r}. Les mots diffèrent du texte Hafs affiché ici, donc la page est masquée plutôt que de contredire la voix.`,
-  riwayahPages: (r: string) => `Imprimé en ${r}, la lecture suivie par ce récitateur. Le suivi mot à mot n'est pas disponible pour elle.`
+  riwayahPages: (r: string) => `Imprimé en ${r}, la lecture suivie par ce récitateur. Le suivi mot à mot n'est pas disponible pour elle.`,
+  collapsePlayer: 'Réduire le lecteur',
+  expandPlayer: 'Afficher le lecteur'
 }

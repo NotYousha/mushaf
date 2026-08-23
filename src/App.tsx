@@ -61,6 +61,7 @@ import {
   Broadcast,
   Talqeen as TalqeenIcon,
   Stumble,
+  Chevron,
 } from './ui/Icons'
 import { stringsFor, type Lang } from './i18n'
 import { brandName, brandSecondary } from './brand'
@@ -108,6 +109,8 @@ export default function App() {
   const [persisted, setPersisted] = useState<boolean | null>(null)
   const [talqeen, setTalqeen] = useState(false)
   const [drill, setDrill] = useState<TalqeenState | null>(null)
+  /** The player folded down to a strip, so the list has the screen. */
+  const [playerMin, setPlayerMin] = useState(false)
 
   const engine = useRef<PlayerEngine | null>(null)
   if (!engine.current) engine.current = new PlayerEngine()
@@ -173,6 +176,7 @@ export default function App() {
       setVerdicts(await getVerdicts())
       setFavourites(await getPref<string[]>('favourites', []))
       setLang(await getPref<Lang>('lang', 'ar'))
+      setPlayerMin(await getPref<boolean>('playerMin', false))
 
       // Runs once: clears audio a since-fixed queue bug may have filed under
       // the wrong reciter, which made the wrong surah play from a saved copy.
@@ -893,7 +897,27 @@ export default function App() {
       </div>
 
       {currentView && reciter && (
-        <div className="player">
+        <div className={`player${playerMin ? ' is-min' : ''}`}>
+          {/* The grabber. Folding the player away is the difference between
+              seeing four surahs and seeing ten, so it is a full-width target
+              rather than a small chevron in a corner. */}
+          <button
+            className="player-handle"
+            aria-expanded={!playerMin}
+            aria-label={playerMin ? t.expandPlayer : t.collapsePlayer}
+            onClick={() => {
+              const next = !playerMin
+              setPlayerMin(next)
+              void setPref('playerMin', next)
+            }}
+          >
+            <span className="handle-bar" aria-hidden="true" />
+            <Chevron size={18} />
+            <span className="mini-now">سُورَةُ {currentView.name}</span>
+          </button>
+
+          <div className="player-fold">
+            <div className="player-fold-inner">
           <div className="player-top">
             <div
               className="medallion"
@@ -975,6 +999,8 @@ export default function App() {
               </span>
             </div>
           )}
+            </div>
+          </div>
 
           <div className="controls">
             <button
@@ -1008,7 +1034,13 @@ export default function App() {
               {busy ? '…' : playing ? <Pause size={26} /> : <Play size={26} />}
             </button>
 
-            <button className="ctrl" aria-label={t.next} onClick={() => void advance()}>
+            {/* Kept when folded: moving to the next surah is the one thing
+                besides play you reach for without opening the player. */}
+            <button
+              className="ctrl keep-min"
+              aria-label={t.next}
+              onClick={() => void advance()}
+            >
               <Forward size={26} />
             </button>
 

@@ -156,3 +156,10 @@ export const Heart = ({ size }: P) => (
     <path d="M12 20s-7-4.6-7-9.3A4.1 4.1 0 0 1 12 8a4.1 4.1 0 0 1 7 2.7C19 15.4 12 20 12 20Z" />
   </svg>
 )
+
+/** Points down to fold the player away; flipped by CSS to point back up. */
+export const Chevron = ({ size }: P) => (
+  <svg {...s(size)} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M6 9l6 6 6-6" />
+  </svg>
+)

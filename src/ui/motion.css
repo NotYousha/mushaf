@@ -342,3 +342,219 @@
     scroll-behavior: auto;
   }
 }
+
+/* ============ folding the player away ============ */
+
+/*
+ * The player is pinned, so it costs the list a third of the screen whether
+ * you are looking at it or not. Folded, it keeps only what you reach for
+ * while reading — play, next, and where you are — and gives the rest back.
+ */
+.player-handle {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  /* A full-width target: this is tapped mid-recitation, often one-handed. */
+  min-height: 2.5rem;
+  padding: 0.55rem 1.1rem 0.15rem;
+  border: 0;
+  background: none;
+  color: var(--gold-deep);
+  font: inherit;
+  cursor: pointer;
+}
+
+/* The grabber, so the strip reads as something that moves. */
+.handle-bar {
+  position: absolute;
+  top: 0.35rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 2.2rem;
+  height: 3px;
+  border-radius: 3px;
+  background: var(--gold-line);
+}
+
+.player-handle svg {
+  transition: transform var(--t-slow) var(--ease-out);
+}
+
+/* Down folds it away; up brings it back. One icon, rotated. */
+.player.is-min .player-handle svg {
+  transform: rotate(180deg);
+}
+
+/* The surah only needs naming once the block that names it has gone. */
+.mini-now {
+  min-width: 0;
+  text-align: start;
+  font-family: var(--font-ar);
+  font-size: 1.05rem;
+  color: var(--brown-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 0;
+  opacity: 0;
+  transition:
+    max-width var(--t-slow) var(--ease-out),
+    opacity var(--t-base) var(--ease-out);
+}
+
+.player.is-min .mini-now {
+  /* Takes whatever the transport leaves rather than a fixed share of the
+     viewport, which cut the name off long before it had to be. */
+  flex: 1 1 auto;
+  max-width: 100%;
+  opacity: 1;
+}
+
+/*
+ * Collapsed with grid rather than max-height: `1fr` to `0fr` animates the
+ * row's real height, so the fold matches the content exactly instead of
+ * easing towards a guessed maximum and snapping at the end.
+ */
+.player-fold {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows var(--t-slow) var(--ease-out);
+}
+
+.player.is-min .player-fold {
+  grid-template-rows: 0fr;
+}
+
+.player-fold-inner {
+  overflow: hidden;
+  min-height: 0;
+  transition: opacity var(--t-base) var(--ease-out);
+}
+
+.player.is-min .player-fold-inner {
+  opacity: 0;
+  /* Nothing inside a folded panel should take a tab stop. */
+  visibility: hidden;
+}
+
+/*
+ * Folded, the transport keeps play and next. Speed, previous, the stumble
+ * mark and the sleep timer are all things you set deliberately, and setting
+ * them is a reason to open the player again.
+ */
+.player.is-min .controls {
+  gap: 0.4rem;
+  padding-top: 0.1rem;
+}
+
+.player.is-min .controls .ctrl:not(.big):not(.keep-min) {
+  max-width: 0;
+  margin: 0;
+  padding: 0;
+  opacity: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.controls .ctrl {
+  max-width: 4rem;
+  transition:
+    max-width var(--t-slow) var(--ease-out),
+    opacity var(--t-base) var(--ease-out),
+    transform var(--t-fast) var(--ease-out);
+}
+
+/* The play button shrinks rather than vanishing: it is still the one control
+   the thumb goes to without looking. */
+.ctrl.big {
+  transition:
+    width var(--t-slow) var(--ease-out),
+    height var(--t-slow) var(--ease-out),
+    transform var(--t-fast) var(--ease-out);
+}
+
+.player.is-min .ctrl.big {
+  width: 3rem;
+  height: 3rem;
+}
+
+/*
+ * Folded, it becomes a strip: the position line along the top edge, and one
+ * row underneath with the surah, play and next. Reordering with flex rather
+ * than moving the markup keeps a single DOM for both states, so nothing
+ * remounts mid-recitation when it folds.
+ */
+.player.is-min {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.player.is-min .progress {
+  order: 0;
+  width: 100%;
+  padding: 0;
+}
+
+.player.is-min .player-fold {
+  order: 1;
+  width: 100%;
+}
+
+.player.is-min .player-handle {
+  order: 2;
+  flex: 1;
+  min-width: 0;
+  justify-content: flex-start;
+  padding-block: 0.35rem;
+}
+
+.player.is-min .controls {
+  order: 3;
+  flex: none;
+  width: auto;
+  padding: 0.25rem 0.9rem 0.35rem 0;
+}
+
+/* A line, not a slider: the handle would be a fiddly target on a 3px bar,
+   and the open player is one tap away for scrubbing. */
+.player.is-min .track {
+  height: 3px;
+  border-radius: 0;
+}
+
+.player.is-min .knob {
+  opacity: 0;
+}
+
+/* The bar already says where you are; the digits are detail for the open
+   player and would cost the strip a third row. */
+.player.is-min .times {
+  display: none;
+}
+
+/* The grabber belongs to the sheet, not to a strip. */
+.player.is-min .handle-bar {
+  opacity: 0;
+}
+
+/* Times stay — knowing how far in you are is half of why the bar is there —
+   but the streaming/saved note is detail for the open player. */
+.player.is-min .progress .mushaf-note,
+.player.is-min .times .badge {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .player-fold,
+  .player-fold-inner,
+  .player-handle svg,
+  .mini-now,
+  .controls .ctrl,
+  .ctrl.big {
+    transition: none;
+  }
+}
