@@ -30,8 +30,11 @@ export type Theme = {
   /** What the palette is taken from, for the picker's second line. */
   ofAr: string
   ofEn: string
-  /** Swatch: ground, accent, and the ink over them, per mode. */
-  swatch: { light: [string, string, string]; dark: [string, string, string] }
+  /** Swatch: ground, accent, ink, and the card's own hairline, per mode. */
+  swatch: {
+    light: [string, string, string, string]
+    dark: [string, string, string, string]
+  }
   /** Themes that only make sense after dark still have a day palette, but
    *  this is the one they are meant to be seen in. */
   prefers?: 'dark'
@@ -44,7 +47,7 @@ export const THEMES: Theme[] = [
     latin: 'Mushaf',
     ofAr: 'كريمي وذهبي',
     ofEn: 'Cream and gold',
-    swatch: { light: ['#f5edda', '#c9a961', '#43301a'], dark: ['#17120c', '#d8b871', '#f8f1e1'] },
+    swatch: { light: ['#f5edda', '#c9a961', '#43301a', '#ebdec4'], dark: ['#17120c', '#d8b871', '#f8f1e1', '#33291a'] },
   },
   {
     id: 'kiswah',
@@ -52,7 +55,7 @@ export const THEMES: Theme[] = [
     latin: 'Kiswah',
     ofAr: 'سواد الكعبة وذهبها',
     ofEn: "The Kaaba's covering",
-    swatch: { light: ['#f1efe8', '#8a6c18', '#121110'], dark: ['#000000', '#c9a227', '#fffaef'] },
+    swatch: { light: ['#f2f0ea', '#8a6c18', '#100f0c', '#e2dcc4'], dark: ['#000000', '#c9a227', '#fffaef', '#241f0e'] },
     prefers: 'dark',
   },
   {
@@ -61,7 +64,7 @@ export const THEMES: Theme[] = [
     latin: 'Lapis',
     ofAr: 'زخرفة المصاحف',
     ofEn: 'Illuminated manuscript',
-    swatch: { light: ['#eaeff8', '#2f5fa8', '#101e39'], dark: ['#0a1324', '#86b0e6', '#f1f6ff'] },
+    swatch: { light: ['#e7edf9', '#24568f', '#0b1526', '#d3e1f5'], dark: ['#0a1324', '#86b0e6', '#f1f6ff', '#1d3253'] },
   },
   {
     id: 'zellij',
@@ -69,7 +72,7 @@ export const THEMES: Theme[] = [
     latin: 'Zellij',
     ofAr: 'خزف فاس',
     ofEn: 'Glazed tilework',
-    swatch: { light: ['#eef1ea', '#0d7d79', '#122524'], dark: ['#061513', '#3ec0b8', '#eefaf9'] },
+    swatch: { light: ['#eaf3f1', '#0d7d79', '#0a1a18', '#cdeae5'], dark: ['#061513', '#3ec0b8', '#eefaf9', '#123330'] },
   },
   {
     id: 'rawdah',
@@ -77,7 +80,7 @@ export const THEMES: Theme[] = [
     latin: 'Rawdah',
     ofAr: 'خُضرة المسجد النبوي',
     ofEn: "The Prophet's Mosque",
-    swatch: { light: ['#edf2ea', '#2f6b45', '#12241a'], dark: ['#08150e', '#63b183', '#eefaf1'] },
+    swatch: { light: ['#eef5f0', '#1f5c3b', '#0c1712', '#d8ebe0'], dark: ['#08150e', '#63b183', '#eefaf1', '#14301f'] },
   },
   {
     id: 'vellum',
@@ -85,7 +88,7 @@ export const THEMES: Theme[] = [
     latin: 'Vellum',
     ofAr: 'مخطوط قديم',
     ofEn: 'Parchment and rubric',
-    swatch: { light: ['#e9dfc7', '#9c3826', '#261e15'], dark: ['#141009', '#d97a5e', '#f7eeda'] },
+    swatch: { light: ['#e9dfc7', '#9c3826', '#261e15', '#e0cdae'], dark: ['#141009', '#d97a5e', '#f7eeda', '#30251a'] },
   },
   {
     id: 'tahajjud',
@@ -93,7 +96,7 @@ export const THEMES: Theme[] = [
     latin: 'Tahajjud',
     ofAr: 'قبيل الفجر',
     ofEn: 'The hour before Fajr',
-    swatch: { light: ['#f2ece4', '#9e6526', '#241c13'], dark: ['#0a0806', '#d99a4e', '#f7e9cf'] },
+    swatch: { light: ['#f3ece8', '#a8552a', '#241811', '#ecdccb'], dark: ['#0a0806', '#d99a4e', '#f7e9cf', '#241c12'] },
     prefers: 'dark',
   },
 ]

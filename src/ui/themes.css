@@ -14,6 +14,16 @@
 
    In a dark palette --accent-deep is *lighter* than --accent, not darker:
    it marks emphasis, and on a dark ground emphasis means more light.
+
+   A light theme is a near-neutral surface — bg, card and card-2 separated by
+   real luminance and only a whisper of hue, never one tint at three
+   strengths — with a single saturated hue for ornament, and a dark-saturated
+   fill carrying a light tint of that hue as its text for the controls. Dark
+   fill with light text is what reads expensive; a pale fill with dark text on
+   it is what makes a palette look like a filter. If a new theme's light mode
+   could be produced by find-and-replacing one hue in Mushaf, it is not a
+   material yet: go back to the object — dye, ink, glaze, metal — and ask what
+   in it is actually near-white and what is actually saturated.
    ===================================================================== */
 
 /* ============ مصحف · Mushaf — cream and gold ============ */
@@ -59,38 +69,42 @@
    costs nothing on an OLED screen and the gold is the only thing lit. */
 
 [data-theme='kiswah'] {
+  /* the lozenge lattice of the kiswah's embroidery */
+  --pattern-size: 48px 48px;
+  --pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48'%3E%3Cg fill='none' stroke='%23000' stroke-width='0.8'%3E%3Cpath d='M0 24 24 0 48 24 24 48Z'/%3E%3Cpath d='M24 12 36 24 24 36 12 24Z'/%3E%3C/g%3E%3Ccircle cx='24' cy='24' r='1.4' fill='%23000'/%3E%3C/svg%3E");
+
   color-scheme: light;
-  --bg: #f1efe8;
-  --card: #fbfaf6;
-  --card-2: #f6f4ed;
-  --tile: #e8e4d6;
-  --tile-active-a: #3a3730;
-  --tile-active-b: #1c1a16;
-  --tile-active-ink: #d9bf72;
-  --pill: #eeebe2;
+  --bg: #f2f0ea;
+  --card: #fbfaf7;
+  --card-2: #f5f3ed;
+  --tile: #e7e2d3;
+  --tile-active-a: #2e2b25;
+  --tile-active-b: #141310;
+  --tile-active-ink: #d9bb66;
+  --pill: #eeece3;
   --page: #fdfcf8;
 
   --accent: #8a6c18;
-  --accent-deep: #6f5714;
-  --accent-soft: #d3c493;
-  --accent-line: #e4dcc4;
+  --accent-deep: #5c4710;
+  --accent-soft: #cbb87e;
+  --accent-line: #e2dcc4;
   --on-accent: #ffffff;
 
-  --ink: #26241f;
-  --ink-strong: #121110;
-  --ink-soft: #4d4a41;
-  --muted: #6f6b5f;
-  --divider: #e6e2d6;
+  --ink: #201e19;
+  --ink-strong: #100f0c;
+  --ink-soft: #4a4740;
+  --muted: #6b675b;
+  --divider: #e4e0d2;
 
   --play-a: #2c2925;
-  --play-b: #16150f;
-  --on-play: #d9bf72;
+  --play-b: #141310;
+  --on-play: #d9bb66;
 
   --ready: #3f7a58;
   --warn: #a1622c;
 
   --shadow-rgb: 40 36 24;
-  --pattern-opacity: 0.06;
+  --pattern-opacity: 0.032;
 }
 
 [data-theme='kiswah'][data-mode='dark'] {
@@ -133,28 +147,32 @@
    they were spent on Qurans. Gold stays, on the buttons, where it was. */
 
 [data-theme='lapis'] {
+  /* the overlapping-circle grid every Islamic star pattern is constructed on */
+  --pattern-size: 64px 64px;
+  --pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Cg fill='none' stroke='%23000' stroke-width='0.8'%3E%3Ccircle cx='0' cy='0' r='32'/%3E%3Ccircle cx='64' cy='0' r='32'/%3E%3Ccircle cx='0' cy='64' r='32'/%3E%3Ccircle cx='64' cy='64' r='32'/%3E%3Ccircle cx='32' cy='32' r='32'/%3E%3C/g%3E%3C/svg%3E");
+
   color-scheme: light;
-  --bg: #eaeff8;
-  --card: #fbfcfe;
-  --card-2: #f3f6fc;
-  --tile: #dde6f5;
-  --tile-active-a: #2f5fa8;
-  --tile-active-b: #21447a;
-  --tile-active-ink: #f3f7ff;
-  --pill: #e8eef9;
+  --bg: #e7edf9;
+  --card: #ffffff;
+  --card-2: #f0f4fb;
+  --tile: #dbe6f7;
+  --tile-active-a: #23508f;
+  --tile-active-b: #143462;
+  --tile-active-ink: #f6ecd2;
+  --pill: #eaf0fa;
   --page: #ffffff;
 
-  --accent: #2f5fa8;
-  --accent-deep: #1f4179;
-  --accent-soft: #a6bfe3;
-  --accent-line: #d3e0f3;
+  --accent: #24568f;
+  --accent-deep: #163a68;
+  --accent-soft: #a9c3e8;
+  --accent-line: #d3e1f5;
   --on-accent: #ffffff;
 
-  --ink: #1f3050;
-  --ink-strong: #101e39;
-  --ink-soft: #44608c;
-  --muted: #5d7291;
-  --divider: #e0e8f5;
+  --ink: #17223a;
+  --ink-strong: #0b1526;
+  --ink-soft: #3c507a;
+  --muted: #4f6690;
+  --divider: #dee7f6;
 
   --play-a: #e6cd92;
   --play-b: #c6a253;
@@ -163,8 +181,8 @@
   --ready: #2e7d5b;
   --warn: #b06a2a;
 
-  --shadow-rgb: 30 55 105;
-  --pattern-opacity: 0.05;
+  --shadow-rgb: 20 40 80;
+  --pattern-opacity: 0.032;
 }
 
 [data-theme='lapis'][data-mode='dark'] {
@@ -207,28 +225,32 @@
    warm cuts. The one theme where the accent is cool and the action is hot. */
 
 [data-theme='zellij'] {
+  /* stars and crosses interlocking, as the tiles actually cut */
+  --pattern-size: 32px 32px;
+  --pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Cdefs%3E%3Cpath id='c' d='M-2.5-7H2.5V-2.5H7V2.5H2.5V7H-2.5V2.5H-7V-2.5H-2.5Z'/%3E%3C/defs%3E%3Cg fill='%23000'%3E%3Crect x='9' y='9' width='14' height='14'/%3E%3Crect x='9' y='9' width='14' height='14' transform='rotate(45 16 16)'/%3E%3Cuse href='%23c'/%3E%3Cuse href='%23c' x='32'/%3E%3Cuse href='%23c' y='32'/%3E%3Cuse href='%23c' x='32' y='32'/%3E%3C/g%3E%3C/svg%3E");
+
   color-scheme: light;
-  --bg: #eef1ea;
-  --card: #fcfdfa;
-  --card-2: #f4f8f4;
-  --tile: #d9ebe7;
+  --bg: #eaf3f1;
+  --card: #ffffff;
+  --card-2: #f1f8f6;
+  --tile: #d7ece8;
   --tile-active-a: #0f8a86;
-  --tile-active-b: #0a6360;
+  --tile-active-b: #095f5c;
   --tile-active-ink: #ffffff;
-  --pill: #eaf2ef;
-  --page: #fdfefb;
+  --pill: #eaf4f2;
+  --page: #fdfefd;
 
   --accent: #0d7d79;
-  --accent-deep: #085956;
-  --accent-soft: #98cdc8;
-  --accent-line: #d2e8e5;
-  --on-accent: #f6fdfc;
+  --accent-deep: #075350;
+  --accent-soft: #9fd4cf;
+  --accent-line: #cdeae5;
+  --on-accent: #ffffff;
 
-  --ink: #233a38;
-  --ink-strong: #122524;
-  --ink-soft: #47605e;
-  --muted: #5c7674;
-  --divider: #dfe9e5;
+  --ink: #16302d;
+  --ink-strong: #0a1a18;
+  --ink-soft: #3c5a57;
+  --muted: #567270;
+  --divider: #dcece8;
 
   --play-a: #e79f68;
   --play-b: #c86f3c;
@@ -237,8 +259,8 @@
   --ready: #0d7d79;
   --warn: #c05f28;
 
-  --shadow-rgb: 15 70 68;
-  --pattern-opacity: 0.05;
+  --shadow-rgb: 10 45 43;
+  --pattern-opacity: 0.032;
 }
 
 [data-theme='zellij'][data-mode='dark'] {
@@ -281,38 +303,42 @@
    so it reads as dye and carpet, not as a success message. */
 
 [data-theme='rawdah'] {
+  /* the repeating pointed arch of the arcade */
+  --pattern-size: 40px 58px;
+  --pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='58'%3E%3Cg fill='none' stroke='%23000' stroke-width='1'%3E%3Cpath d='M6 50A28 28 0 0 1 20 25.75A28 28 0 0 1 34 50'/%3E%3Cpath d='M6 50V56M34 50V56'/%3E%3C/g%3E%3C/svg%3E");
+
   color-scheme: light;
-  --bg: #edf2ea;
-  --card: #fbfdf9;
-  --card-2: #f3f8f1;
-  --tile: #dbe9d9;
-  --tile-active-a: #2f6b45;
-  --tile-active-b: #1e4b30;
-  --tile-active-ink: #f4faf3;
-  --pill: #e9f0e6;
-  --page: #fdfefc;
+  --bg: #eef5f0;
+  --card: #ffffff;
+  --card-2: #f2f8f4;
+  --tile: #e2f0e8;
+  --tile-active-a: #17472c;
+  --tile-active-b: #0d2e1c;
+  --tile-active-ink: #b9f0d1;
+  --pill: #eef6f1;
+  --page: #fefffd;
 
-  --accent: #2f6b45;
-  --accent-deep: #1d4a2e;
-  --accent-soft: #a4c8b0;
-  --accent-line: #d6e6d8;
-  --on-accent: #f7fcf6;
+  --accent: #1f5c3b;
+  --accent-deep: #123c26;
+  --accent-soft: #bfe4cf;
+  --accent-line: #d8ebe0;
+  --on-accent: #f5fff9;
 
-  --ink: #223529;
-  --ink-strong: #12241a;
-  --ink-soft: #465c4e;
-  --muted: #607767;
-  --divider: #dee9db;
+  --ink: #16261d;
+  --ink-strong: #0c1712;
+  --ink-soft: #3f5a4a;
+  --muted: #54705f;
+  --divider: #e2ede6;
 
-  --play-a: #e2c887;
-  --play-b: #bf9f52;
-  --on-play: #291f07;
+  --play-a: #1d5236;
+  --play-b: #123c26;
+  --on-play: #c9f4dc;
 
-  --ready: #2f6b45;
-  --warn: #b06a2a;
+  --ready: #1f5c3b;
+  --warn: #b3592a;
 
-  --shadow-rgb: 20 60 38;
-  --pattern-opacity: 0.05;
+  --shadow-rgb: 20 55 38;
+  --pattern-opacity: 0.032;
 }
 
 [data-theme='rawdah'][data-mode='dark'] {
@@ -356,6 +382,10 @@
    colour by nature, which is exactly why it is used so sparingly. */
 
 [data-theme='vellum'] {
+  /* laid paper: close laid lines crossed by a wide-spaced chain line */
+  --pattern-size: 96px 6px;
+  --pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='6'%3E%3Cg stroke='%23000' fill='none'%3E%3Cpath d='M0 3H96' stroke-width='0.5'/%3E%3Cpath d='M3 0V6' stroke-width='0.9'/%3E%3C/g%3E%3C/svg%3E");
+
   color-scheme: light;
   --bg: #e9dfc7;
   --card: #f6efdc;
@@ -387,7 +417,7 @@
   --warn: #9c3826;
 
   --shadow-rgb: 90 70 40;
-  --pattern-opacity: 0.06;
+  --pattern-opacity: 0.032;
 }
 
 [data-theme='vellum'][data-mode='dark'] {
@@ -432,38 +462,42 @@
    screenshot. Its light side is the sky a few minutes later. */
 
 [data-theme='tahajjud'] {
+  /* a few points of a night sky, spread over a wide tile so none of them cluster */
+  --pattern-size: 160px 160px;
+  --pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cg fill='%23000'%3E%3Ccircle cx='20' cy='30' r='1'/%3E%3Ccircle cx='90' cy='15' r='0.8'/%3E%3Ccircle cx='130' cy='60' r='1.2'/%3E%3Ccircle cx='50' cy='100' r='0.8'/%3E%3Ccircle cx='110' cy='130' r='1'/%3E%3Ccircle cx='145' cy='110' r='0.7'/%3E%3Ccircle cx='70' cy='60' r='0.6'/%3E%3C/g%3E%3Cg stroke='%23000' stroke-width='0.6'%3E%3Cpath d='M20 24V36M14 30H26'/%3E%3C/g%3E%3C/svg%3E");
+
   color-scheme: light;
-  --bg: #f2ece4;
-  --card: #fbf7f1;
-  --card-2: #f6f0e8;
-  --tile: #ebe0d2;
-  --tile-active-a: #d99a4e;
-  --tile-active-b: #b0742f;
-  --tile-active-ink: #231708;
-  --pill: #f0e9df;
-  --page: #fdfaf5;
+  --bg: #f3ece8;
+  --card: #fffbf8;
+  --card-2: #f8f1ec;
+  --tile: #f0e2d8;
+  --tile-active-a: #bd6c3a;
+  --tile-active-b: #93502a;
+  --tile-active-ink: #fff3e6;
+  --pill: #f5ede6;
+  --page: #fffdfa;
 
-  --accent: #9e6526;
-  --accent-deep: #85531d;
-  --accent-soft: #dcbb92;
-  --accent-line: #e8dac6;
-  --on-accent: #ffffff;
+  --accent: #a8552a;
+  --accent-deep: #7c3d1a;
+  --accent-soft: #e3bfa0;
+  --accent-line: #ecdccb;
+  --on-accent: #fff8f2;
 
-  --ink: #3a2f24;
-  --ink-strong: #241c13;
-  --ink-soft: #5d4e3e;
-  --muted: #7d6b57;
-  --divider: #e6dbcc;
+  --ink: #3a2a22;
+  --ink-strong: #241811;
+  --ink-soft: #5e483c;
+  --muted: #7a6255;
+  --divider: #ecdfd3;
 
-  --play-a: #e7c08a;
-  --play-b: #c2924c;
-  --on-play: #2a1d08;
+  --play-a: #d68a52;
+  --play-b: #9c5a2a;
+  --on-play: #2c1608;
 
   --ready: #4b7a52;
   --warn: #b0722c;
 
-  --shadow-rgb: 110 80 45;
-  --pattern-opacity: 0.05;
+  --shadow-rgb: 90 55 35;
+  --pattern-opacity: 0.032;
 }
 
 [data-theme='tahajjud'][data-mode='dark'] {

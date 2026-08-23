@@ -38,7 +38,7 @@ export function ThemePicker({ t, lang, theme, mode, onTheme, onMode }: Props) {
       <p className="lang-label theme-label">{t.theme}</p>
       <div className="theme-grid" role="radiogroup" aria-label={t.theme}>
         {THEMES.map((th) => {
-          const [ground, accent, ink] = th.swatch[resolved]
+          const [ground, accent, ink, line] = th.swatch[resolved]
           const active = th.id === theme
           return (
             <button
@@ -52,6 +52,7 @@ export function ThemePicker({ t, lang, theme, mode, onTheme, onMode }: Props) {
                 ['--sw-ground' as string]: ground,
                 ['--sw-accent' as string]: accent,
                 ['--sw-ink' as string]: ink,
+                ['--sw-line' as string]: line,
               }}
             >
               <span className="theme-swatch" aria-hidden="true">

@@ -42,8 +42,45 @@
      dark palette look like a light one with the lights off. */
   --shadow-rgb: 150 120 60;
 
-  --radius-card: 28px;
-  --radius-tile: 16px;
+  /*
+   * One scale for spacing, corners and shadow. These are the values already
+   * dominant in the file; naming them stops the next component inventing a
+   * thirteenth radius.
+   */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+
+  --radius-xs: 10px;
+  --radius-sm: 14px;
+  --radius-md: 16px;
+  --radius-lg: 22px;
+  --radius-xl: 28px;
+  --radius-pill: 999px;
+  /* Kept as aliases: the sheet and the numeral tile were named before the
+     scale existed and are referenced widely. */
+  --radius-card: var(--radius-xl);
+  --radius-tile: var(--radius-md);
+
+  --shadow-sm: 0 1px 8px rgb(var(--shadow-rgb) / 0.05);
+  --shadow-md: 0 4px 20px rgb(var(--shadow-rgb) / 0.08);
+  --shadow-lg: 0 12px 36px rgb(var(--shadow-rgb) / 0.24);
+  --ring: 0 0 0 2px var(--accent-soft);
+
+  /*
+   * Controls are neutral at rest.
+   *
+   * Gold used to be the resting colour of every icon, button and figure,
+   * which left nothing for it to be emphatic *against* — the whole screen
+   * read as one tinted wash. The accent now marks three things only: what is
+   * playing, the play control itself, and printed ornament. Everything else
+   * is ink.
+   */
+  --control: var(--ink-soft);
+  --control-quiet: var(--muted);
 
   /* Portrait crop. The source is a 555x764 portrait with the face at roughly
      55% across and 30% down; these values centre it in the medallion.
@@ -108,8 +145,10 @@ body {
   opacity: var(--pattern-opacity, 0.05);
   -webkit-mask-image: var(--pattern);
   mask-image: var(--pattern);
-  -webkit-mask-size: 96px 96px;
-  mask-size: 96px 96px;
+  /* Two lengths, because an arcade of arches and a sheet of laid paper are
+     not square tiles. */
+  -webkit-mask-size: var(--pattern-size, 96px 96px);
+  mask-size: var(--pattern-size, 96px 96px);
 }
 
 :root {
@@ -121,7 +160,7 @@ body {
   background: var(--card);
   border-radius: var(--radius-card);
   margin: 0.85rem 0.75rem 0;
-  box-shadow: 0 2px 22px rgb(var(--shadow-rgb) / 0.06);
+  box-shadow: var(--shadow-md);
   overflow: hidden;
   flex: 1;
   display: flex;
@@ -150,9 +189,9 @@ body {
   width: 2.7rem;
   height: 2.7rem;
   border-radius: 50%;
-  border: 1.5px solid var(--accent-line);
+  border: 1.5px solid var(--divider);
   background: var(--card);
-  color: var(--accent);
+  color: var(--control);
   display: grid;
   place-items: center;
   cursor: pointer;
@@ -287,7 +326,7 @@ body {
 .row.active {
   background: var(--card-2);
   border-color: var(--accent-line);
-  box-shadow: 0 1px 8px rgb(var(--shadow-rgb) / 0.05);
+  box-shadow: var(--shadow-sm);
 }
 
 .row.active::after {
@@ -344,7 +383,7 @@ body {
   display: flex;
   align-items: center;
   gap: 0.45rem;
-  color: var(--accent-soft);
+  color: var(--control-quiet);
   flex: none;
 }
 
@@ -365,7 +404,7 @@ body {
   border-radius: 50%;
   border: 0;
   background: none;
-  color: var(--accent-soft);
+  color: var(--control-quiet);
   display: grid;
   place-items: center;
   cursor: pointer;
@@ -526,7 +565,7 @@ body {
 .ctrl {
   border: 0;
   background: none;
-  color: var(--accent);
+  color: var(--control);
   cursor: pointer;
   display: grid;
   place-items: center;
@@ -1391,10 +1430,10 @@ body {
   display: grid;
   justify-items: center;
   gap: 0.15rem;
-  padding: 0.85rem 0.4rem;
-  border-radius: 14px;
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
   background: var(--card-2);
-  border: 1px solid var(--accent-line);
+  border: 1px solid transparent;
 }
 
 .tier-n {
@@ -1429,9 +1468,9 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
-  padding: 0.6rem 0.8rem;
-  border-radius: 12px;
-  border: 1px solid var(--accent-line);
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
   background: var(--card-2);
   font: inherit;
   color: var(--ink-strong);
@@ -1505,10 +1544,10 @@ body {
 
 .wird-state {
   margin-top: 0.7rem;
-  padding: 0.8rem 0.9rem;
-  border-radius: 14px;
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
   background: var(--card-2);
-  border: 1px solid var(--accent-line);
+  border: 1px solid transparent;
 }
 
 .wird-day {
@@ -1547,8 +1586,8 @@ body {
 }
 
 .fork-shared {
-  padding: 0.85rem 0.9rem;
-  border-radius: 14px;
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
   background: var(--page);
   border: 1px solid var(--accent);
   box-shadow: inset 0 0 0 3px var(--accent-line);
@@ -1599,9 +1638,9 @@ body {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  padding: 0.6rem 0.8rem;
-  border-radius: 12px;
-  border: 1px solid var(--accent-line);
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
   background: var(--card-2);
 }
 
@@ -1758,10 +1797,12 @@ body {
   gap: 0.4rem;
 }
 
+/* Two columns, fixed. auto-fill leaves the seventh card stretched across a
+   row on its own, which reads as a layout bug rather than a choice. */
 .theme-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
-  gap: 0.6rem;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-2);
 }
 
 /*
@@ -1773,9 +1814,12 @@ body {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  padding: 0.7rem 0.75rem;
-  border-radius: 16px;
-  border: 1px solid var(--accent-line);
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  /* The card's own hairline, not the live theme's: a Kiswah preview framed
+     in whatever line colour happens to be active undercuts the whole point
+     of painting the card in its palette. */
+  border: 1px solid var(--sw-line);
   background: var(--sw-ground);
   color: var(--sw-ink);
   font: inherit;
