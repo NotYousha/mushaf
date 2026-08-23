@@ -21,7 +21,17 @@ export default defineConfig({
         display: 'standalone',
         background_color: '#f6f0e6',
         theme_color: '#f6f0e6',
-        icons: [{ src: `${base}icon-512.png`, sizes: '512x512', type: 'image/png' }],
+        icons: [
+          { src: `${base}icon-192.png`, sizes: '192x192', type: 'image/png' },
+          { src: `${base}icon-512.png`, sizes: '512x512', type: 'image/png' },
+          {
+            // Padded so the calligraphy survives Android's circle crop.
+            src: `${base}icon-maskable-512.png`,
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable',
+          },
+        ],
       },
       workbox: {
         // App shell only. Audio lives in IndexedDB and must never enter the SW cache.
@@ -32,7 +42,16 @@ export default defineConfig({
         // 3 MB. Precaching them would pull the whole lot down at install,
         // which is exactly what lazy-loading them was meant to avoid. They are
         // fetched when the Mushaf tab is first opened and cached at runtime.
-        globIgnores: ['**/mushaf-layout-*.js', '**/timings-*.js', '**/forks-*.js'],
+        globIgnores: [
+          '**/mushaf-layout-*.js',
+          '**/timings-*.js',
+          '**/forks-*.js',
+          // Installer artwork. The OS fetches these when the app is added to
+          // a home screen; the running app never asks for them, so precaching
+          // costs a quarter of a megabyte for nothing.
+          '**/icon-512.png',
+          '**/icon-maskable-512.png',
+        ],
         runtimeCaching: [
           {
             urlPattern: /\/assets\/(mushaf-layout|timings|forks)-[\w-]+\.js$/,

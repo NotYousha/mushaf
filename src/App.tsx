@@ -66,7 +66,9 @@ import { stringsFor, type Lang } from './i18n'
 import { brandName, brandSecondary } from './brand'
 import { LangPicker } from './ui/LangPicker'
 import { isHafs, riwayahLabel } from './catalog/riwayah'
+import { Splash } from './ui/Splash'
 import './ui/theme.css'
+import './ui/motion.css'
 
 type Tab = 'quran' | 'library' | 'text' | 'hifz' | 'more'
 const SPEEDS = [1, 1.25, 1.5, 0.75]
@@ -634,6 +636,7 @@ export default function App() {
 
   return (
     <div className="app" dir={t.dir}>
+      <Splash lang={lang} />
       <div className="sheet">
         <div className="sheet-head">
           <h1 className="wordmark">

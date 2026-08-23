@@ -1,0 +1,66 @@
+import { useEffect, useState } from 'react'
+import { brandSecondary } from '../brand'
+import type { Lang } from '../i18n'
+
+/**
+ * The opening.
+ *
+ * The wordmark settles, a sheen crosses the gold once, and the app is already
+ * behind it — the splash never gates rendering, it only covers a load that was
+ * going to happen anyway. If the app is ready sooner the splash still finishes
+ * its beat, because a flash of something half-formed reads worse than a moment
+ * of stillness.
+ *
+ * Shown once per launch rather than on every mount, so moving between tabs
+ * never replays it. Under reduced motion it is a plain fade: same beat, none
+ * of the travel.
+ */
+
+const SEEN = 'mushaf:launched'
+const BASE = import.meta.env?.BASE_URL ?? '/'
+
+export function Splash({ lang }: { lang: Lang }) {
+  const [state, setState] = useState<'hidden' | 'running' | 'leaving'>(() => {
+    if (typeof sessionStorage === 'undefined') return 'running'
+    try {
+      return sessionStorage.getItem(SEEN) ? 'hidden' : 'running'
+    } catch {
+      // Private windows can throw on access; a splash is not worth failing over.
+      return 'running'
+    }
+  })
+
+  useEffect(() => {
+    if (state !== 'running') return
+    try {
+      sessionStorage.setItem(SEEN, '1')
+    } catch {
+      /* nothing to do */
+    }
+    const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    const hold = reduced ? 400 : 1650
+    const leave = window.setTimeout(() => setState('leaving'), hold)
+    // Matches the fade in CSS; unmounting sooner would cut it off.
+    const done = window.setTimeout(() => setState('hidden'), hold + 420)
+    return () => {
+      window.clearTimeout(leave)
+      window.clearTimeout(done)
+    }
+  }, [state])
+
+  if (state === 'hidden') return null
+
+  return (
+    <div
+      className={`splash${state === 'leaving' ? ' is-leaving' : ''}`}
+      // The app underneath is the real content; this is a curtain over it.
+      aria-hidden="true"
+    >
+      <div className="splash-mark">
+        <img src={`${BASE}logo.webp`} alt="" width={168} height={168} />
+        <span className="splash-sheen" />
+      </div>
+      <span className="splash-alt">{brandSecondary(lang)}</span>
+    </div>
+  )
+}
