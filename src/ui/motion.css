@@ -98,7 +98,7 @@
   font-size: 0.72rem;
   letter-spacing: 0.3em;
   text-transform: uppercase;
-  color: var(--gold-deep);
+  color: var(--accent-deep);
   /* Tracking pushes the text off-centre, so the last letter's space is
      given back on the other side. */
   padding-inline-start: 0.3em;
@@ -172,7 +172,7 @@
   bottom: 14%;
   width: 3px;
   border-radius: 3px;
-  background: linear-gradient(var(--gold), var(--gold-deep));
+  background: linear-gradient(var(--accent), var(--accent-deep));
   transform-origin: center;
   animation: rail-in var(--t-base) var(--ease-out);
 }
@@ -214,7 +214,7 @@
 .scroll {
   scroll-behavior: smooth;
   scrollbar-width: thin;
-  scrollbar-color: var(--gold-soft) transparent;
+  scrollbar-color: var(--accent-soft) transparent;
 }
 
 .scroll::-webkit-scrollbar {
@@ -222,7 +222,7 @@
 }
 
 .scroll::-webkit-scrollbar-thumb {
-  background: var(--gold-soft);
+  background: var(--accent-soft);
   border-radius: 3px;
 }
 
@@ -279,7 +279,7 @@
   width: 1.4rem;
   height: 2px;
   border-radius: 2px;
-  background: var(--gold-deep);
+  background: var(--accent-deep);
   transform: translateX(-50%) scaleX(0);
   animation: tab-underline var(--t-base) var(--ease-out) forwards;
 }
@@ -362,7 +362,7 @@
   padding: 0.55rem 1.1rem 0.15rem;
   border: 0;
   background: none;
-  color: var(--gold-deep);
+  color: var(--accent-deep);
   font: inherit;
   cursor: pointer;
 }
@@ -376,7 +376,7 @@
   width: 2.2rem;
   height: 3px;
   border-radius: 3px;
-  background: var(--gold-line);
+  background: var(--accent-line);
 }
 
 .player-handle svg {
@@ -394,7 +394,7 @@
   text-align: start;
   font-family: var(--font-ar);
   font-size: 1.05rem;
-  color: var(--brown-strong);
+  color: var(--ink-strong);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

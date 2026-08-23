@@ -15,25 +15,32 @@
   --pill: #f3ebdb;
   --page: #fffdf6;
 
-  --gold: #c9a961;
-  --gold-deep: #b8974f;
-  --gold-soft: #dcc9a8;
-  --gold-line: #ebdec4;
+  --accent: #c9a961;
+  --accent-deep: #b8974f;
+  --accent-soft: #dcc9a8;
+  --accent-line: #ebdec4;
+  /* What sits on top of a filled accent. */
+  --on-accent: #fffdf8;
 
   /* type */
-  --brown: #5b4227;
-  --brown-strong: #43301a;
-  --brown-soft: #7a5f3d;
   --ink: #5b4227;
   --ink-strong: #43301a;
+  --ink-soft: #7a5f3d;
   --muted: #93795a;
   --divider: #efe5d2;
 
   --play-a: #ead5a8;
   --play-b: #d2b172;
+  --on-play: #6b5019;
 
   --ready: #4f8a6b;
   --warn: #b3703c;
+
+  /* Shadows are the theme's own darkness, as a channel triple so each use
+     can pick its own weight. A cream theme shadows warm; a night theme
+     shadows almost black, and reusing one brown everywhere is what makes a
+     dark palette look like a light one with the lights off. */
+  --shadow-rgb: 150 120 60;
 
   --radius-card: 28px;
   --radius-tile: 16px;
@@ -50,11 +57,9 @@
   --font-quran: 'Amiri Quran', 'Amiri', 'Traditional Arabic', serif;
   --font-ui: 'IBM Plex Sans Arabic', system-ui, -apple-system, sans-serif;
 
-  /* This design is cream-and-gold only. There is deliberately no dark
-     variant: the reference artwork is a light mushaf card, and swapping it
-     for dark browns on a phone set to dark mode was simply wrong. Pinning
-     `light` stops the browser auto-darkening form controls and backgrounds. */
-  color-scheme: light only;
+  /* Set per theme in themes.css, so form controls and scrollbars follow the
+     palette rather than the browser's guess. */
+  color-scheme: light;
 }
 
 * {
@@ -87,7 +92,28 @@ body {
   max-width: 30rem;
   margin: 0 auto;
   position: relative;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96'%3E%3Cg fill='none' stroke='%23c9a961' stroke-opacity='0.045'%3E%3Cpath d='M48 6 56 30 80 22 66 44 90 48 66 52 80 74 56 66 48 90 40 66 16 74 30 52 6 48 30 44 16 22 40 30Z'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/*
+ * The khatim tiling. Painted as a mask over the accent rather than baked
+ * into the SVG, so the ornament is whatever colour the current theme's gold
+ * is — a data URI with a hex in it can only ever be one theme's.
+ */
+.app::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: var(--accent);
+  opacity: var(--pattern-opacity, 0.05);
+  -webkit-mask-image: var(--pattern);
+  mask-image: var(--pattern);
+  -webkit-mask-size: 96px 96px;
+  mask-size: 96px 96px;
+}
+
+:root {
+  --pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96'%3E%3Cg fill='none' stroke='%23000' stroke-width='1'%3E%3Cpath d='M48 6 56 30 80 22 66 44 90 48 66 52 80 74 56 66 48 90 40 66 16 74 30 52 6 48 30 44 16 22 40 30Z'/%3E%3C/g%3E%3C/svg%3E");
 }
 
 /* ============ list card ============ */
@@ -95,7 +121,7 @@ body {
   background: var(--card);
   border-radius: var(--radius-card);
   margin: 0.85rem 0.75rem 0;
-  box-shadow: 0 2px 22px rgba(140, 110, 55, 0.06);
+  box-shadow: 0 2px 22px rgb(var(--shadow-rgb) / 0.06);
   overflow: hidden;
   flex: 1;
   display: flex;
@@ -116,7 +142,7 @@ body {
   font-size: 1.75rem;
   font-weight: 700;
   margin: 0;
-  color: var(--brown-strong);
+  color: var(--ink-strong);
   line-height: 1.4;
 }
 
@@ -124,9 +150,9 @@ body {
   width: 2.7rem;
   height: 2.7rem;
   border-radius: 50%;
-  border: 1.5px solid var(--gold-line);
+  border: 1.5px solid var(--accent-line);
   background: var(--card);
-  color: var(--gold);
+  color: var(--accent);
   display: grid;
   place-items: center;
   cursor: pointer;
@@ -136,8 +162,8 @@ body {
 
 .round[aria-pressed='true'] {
   background: var(--tile);
-  color: var(--gold-deep);
-  border-color: var(--gold-soft);
+  color: var(--accent-deep);
+  border-color: var(--accent-soft);
 }
 
 .round:focus-visible,
@@ -145,7 +171,7 @@ body {
 .row-main:focus-visible,
 .ctrl:focus-visible,
 .track:focus-visible {
-  outline: 2px solid var(--gold);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
@@ -168,7 +194,7 @@ body {
 }
 
 .search:focus-within {
-  border-color: var(--gold-soft);
+  border-color: var(--accent-soft);
 }
 
 .search svg {
@@ -260,8 +286,8 @@ body {
 
 .row.active {
   background: var(--card-2);
-  border-color: var(--gold-line);
-  box-shadow: 0 1px 8px rgba(150, 120, 60, 0.05);
+  border-color: var(--accent-line);
+  box-shadow: 0 1px 8px rgb(var(--shadow-rgb) / 0.05);
 }
 
 .row.active::after {
@@ -273,7 +299,7 @@ body {
   height: 3.45rem;
   border-radius: var(--radius-tile);
   background: var(--tile);
-  color: var(--brown);
+  color: var(--ink);
   display: grid;
   place-items: center;
   font-size: 1.4rem;
@@ -296,7 +322,7 @@ body {
   font-family: var(--font-ar);
   font-size: 1.5rem;
   line-height: 1.5;
-  color: var(--brown);
+  color: var(--ink);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -318,7 +344,7 @@ body {
   display: flex;
   align-items: center;
   gap: 0.45rem;
-  color: var(--gold-soft);
+  color: var(--accent-soft);
   flex: none;
 }
 
@@ -327,10 +353,10 @@ body {
   height: 3.1rem;
   border-radius: 50%;
   background: linear-gradient(160deg, var(--play-a), var(--play-b));
-  color: #fff;
+  color: var(--on-accent);
   display: grid;
   place-items: center;
-  box-shadow: 0 2px 9px rgba(170, 135, 60, 0.28);
+  box-shadow: 0 2px 9px rgb(var(--shadow-rgb) / 0.28);
 }
 
 .mini {
@@ -339,7 +365,7 @@ body {
   border-radius: 50%;
   border: 0;
   background: none;
-  color: var(--gold-soft);
+  color: var(--accent-soft);
   display: grid;
   place-items: center;
   cursor: pointer;
@@ -347,7 +373,7 @@ body {
 }
 
 .mini:hover:not(:disabled) {
-  color: var(--gold-deep);
+  color: var(--accent-deep);
 }
 
 .mini:disabled {
@@ -355,7 +381,7 @@ body {
 }
 
 .mini:focus-visible {
-  outline: 2px solid var(--gold);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
@@ -370,7 +396,7 @@ body {
 /* A download that stopped part way. The arrow keeps its meaning — tapping
    downloads — and the figure says how much is already on the phone. */
 .mini.is-partial {
-  color: var(--gold-deep);
+  color: var(--accent-deep);
   position: relative;
 }
 
@@ -386,7 +412,7 @@ body {
   padding: 0.05rem 0.2rem;
   border-radius: 0.4rem;
   background: var(--card-2);
-  color: var(--gold-deep);
+  color: var(--accent-deep);
 }
 
 .ring {
@@ -394,7 +420,7 @@ body {
   display: grid;
   place-items: center;
   font-size: 0.64rem;
-  color: var(--brown-soft);
+  color: var(--ink-soft);
 }
 
 .frontier {
@@ -404,7 +430,7 @@ body {
 
 .frontier .fade {
   height: 1px;
-  background: linear-gradient(270deg, var(--gold-soft), transparent);
+  background: linear-gradient(270deg, var(--accent-soft), transparent);
   margin-bottom: 0.8rem;
 }
 
@@ -421,7 +447,7 @@ body {
   border-radius: var(--radius-card) var(--radius-card) 0 0;
   margin: -1.5rem 0.3rem 0;
   padding: 1.15rem 1.25rem 0.5rem;
-  box-shadow: 0 -4px 26px rgba(140, 110, 55, 0.08);
+  box-shadow: 0 -4px 26px rgb(var(--shadow-rgb) / 0.08);
   position: relative;
   z-index: 5;
   flex: none;
@@ -446,12 +472,12 @@ body {
   background-size: var(--face-zoom) auto;
   background-position: var(--face-x) var(--face-y);
   background-repeat: no-repeat;
-  border: 2.5px solid #fff;
-  box-shadow: 0 0 0 2px var(--gold-soft), 0 2px 10px rgba(150, 120, 60, 0.18);
+  border: 2.5px solid var(--card);
+  box-shadow: 0 0 0 2px var(--accent-soft), 0 2px 10px rgb(var(--shadow-rgb) / 0.18);
   display: grid;
   place-items: center;
   overflow: hidden;
-  color: var(--gold);
+  color: var(--accent);
 }
 
 .now {
@@ -462,7 +488,7 @@ body {
 .now .surah-name {
   font-family: var(--font-ar);
   font-size: 1.5rem;
-  color: var(--brown);
+  color: var(--ink);
   line-height: 1.45;
   white-space: nowrap;
   overflow: hidden;
@@ -478,7 +504,7 @@ body {
 .now .reciter-ar {
   font-family: var(--font-ar);
   font-size: 1.22rem;
-  color: var(--brown);
+  color: var(--ink);
   line-height: 1.5;
 }
 
@@ -500,7 +526,7 @@ body {
 .ctrl {
   border: 0;
   background: none;
-  color: var(--gold);
+  color: var(--accent);
   cursor: pointer;
   display: grid;
   place-items: center;
@@ -513,7 +539,7 @@ body {
 }
 
 .ctrl:hover {
-  color: var(--gold-deep);
+  color: var(--accent-deep);
 }
 
 .ctrl.big {
@@ -521,13 +547,13 @@ body {
   height: 4.2rem;
   border-radius: 50%;
   background: linear-gradient(160deg, var(--play-a), var(--play-b));
-  color: #fffdf8;
+  color: var(--on-accent);
   border: 3px solid var(--card);
-  box-shadow: 0 0 0 2.5px var(--gold-soft), 0 4px 14px rgba(170, 135, 60, 0.22);
+  box-shadow: 0 0 0 2.5px var(--accent-soft), 0 4px 14px rgb(var(--shadow-rgb) / 0.22);
 }
 
 .ctrl[aria-pressed='true'] {
-  color: var(--gold-deep);
+  color: var(--accent-deep);
 }
 
 /* ============ progress — left to right, like a video scrubber ============ */
@@ -539,7 +565,7 @@ body {
 .track {
   height: 4px;
   border-radius: 2px;
-  background: var(--gold-line);
+  background: var(--accent-line);
   position: relative;
   cursor: pointer;
   touch-action: none;
@@ -551,7 +577,7 @@ body {
   left: 0;
   top: 0;
   bottom: 0;
-  background: var(--gold);
+  background: var(--accent);
   border-radius: 2px;
 }
 
@@ -561,9 +587,9 @@ body {
   width: 13px;
   height: 13px;
   border-radius: 50%;
-  background: var(--gold);
+  background: var(--accent);
   transform: translate(-50%, -50%);
-  box-shadow: 0 1px 4px rgba(140, 110, 50, 0.35);
+  box-shadow: 0 1px 4px rgb(var(--shadow-rgb) / 0.35);
 }
 
 .times {
@@ -577,7 +603,7 @@ body {
 
 .times .badge {
   font-size: 0.7rem;
-  color: var(--brown-soft);
+  color: var(--ink-soft);
 }
 
 /* ============ tab bar ============ */
@@ -613,7 +639,7 @@ body {
 }
 
 .tab[aria-selected='true'] {
-  color: var(--brown-strong);
+  color: var(--ink-strong);
 }
 
 .tab[aria-selected='true']::after {
@@ -623,7 +649,7 @@ body {
   width: 1.6rem;
   height: 2.5px;
   border-radius: 2px;
-  background: var(--gold);
+  background: var(--accent);
 }
 
 /* ============ panels ============ */
@@ -635,7 +661,7 @@ body {
   font-family: var(--font-ar);
   font-size: 1.4rem;
   font-weight: 700;
-  color: var(--brown-strong);
+  color: var(--ink-strong);
   margin: 0 0 0.5rem;
 }
 
@@ -649,7 +675,7 @@ body {
 .meter {
   height: 8px;
   border-radius: 4px;
-  background: var(--gold-line);
+  background: var(--accent-line);
   overflow: hidden;
   margin: 0.6rem 0;
 }
@@ -657,7 +683,7 @@ body {
 .meter span {
   display: block;
   height: 100%;
-  background: var(--gold);
+  background: var(--accent);
 }
 
 .btn {
@@ -665,16 +691,16 @@ body {
   font-size: 0.88rem;
   padding: 0.7rem 1.2rem;
   border-radius: 999px;
-  border: 1px solid var(--gold-soft);
+  border: 1px solid var(--accent-soft);
   background: none;
-  color: var(--brown);
+  color: var(--ink);
   cursor: pointer;
   margin: 0 0 0.5rem 0.5rem;
 }
 
 .btn.solid {
   background: linear-gradient(160deg, var(--play-a), var(--play-b));
-  color: #6b5019;
+  color: var(--on-play);
   border-color: transparent;
 }
 
@@ -693,7 +719,7 @@ body {
 
 .ayah-num {
   font-size: 0.8rem;
-  color: var(--gold);
+  color: var(--accent);
   padding: 0 0.3rem;
 }
 
@@ -739,9 +765,9 @@ body {
   justify-items: center;
   padding: 0.5rem 0.95rem;
   border-radius: 999px;
-  border: 1px solid var(--gold-line);
+  border: 1px solid var(--accent-line);
   background: var(--card-2);
-  color: var(--brown-soft);
+  color: var(--ink-soft);
   font: inherit;
   cursor: pointer;
 }
@@ -753,7 +779,7 @@ body {
 }
 
 .chip:focus-visible {
-  outline: 2px solid var(--gold);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
@@ -817,8 +843,8 @@ body {
 }
 
 .mini.preview {
-  border: 1px solid var(--gold-line);
-  color: var(--gold-deep);
+  border: 1px solid var(--accent-line);
+  color: var(--accent-deep);
   background: var(--card-2);
 }
 
@@ -859,10 +885,10 @@ body {
   width: 100%;
   font: inherit;
   font-size: 0.82rem;
-  color: var(--brown-soft);
+  color: var(--ink-soft);
   padding: 0.9rem;
   margin-bottom: 0.9rem;
-  border: 1px dashed var(--gold-soft);
+  border: 1px dashed var(--accent-soft);
   border-radius: 14px;
   background: var(--card-2);
 }
@@ -873,9 +899,9 @@ body {
   margin-inline-end: 0.7rem;
   padding: 0.45rem 0.9rem;
   border-radius: 999px;
-  border: 1px solid var(--gold-soft);
+  border: 1px solid var(--accent-soft);
   background: var(--tile);
-  color: var(--brown);
+  color: var(--ink);
   cursor: pointer;
 }
 
@@ -908,9 +934,9 @@ body {
   font-size: 0.8rem;
   padding: 0.4rem 0.5rem;
   border-radius: 10px;
-  border: 1px solid var(--gold-line);
+  border: 1px solid var(--accent-line);
   background: var(--card);
-  color: var(--brown);
+  color: var(--ink);
   max-width: 10rem;
 }
 
@@ -933,7 +959,7 @@ body {
 .scrim {
   position: fixed;
   inset: 0;
-  background: rgba(60, 44, 22, 0.42);
+  background: rgb(var(--shadow-rgb) / 0.42);
   display: grid;
   place-items: center;
   padding: 1.5rem;
@@ -946,14 +972,14 @@ body {
   padding: 1.4rem 1.3rem 1rem;
   max-width: 22rem;
   width: 100%;
-  box-shadow: 0 12px 40px rgba(80, 60, 25, 0.28);
+  box-shadow: 0 12px 40px rgb(var(--shadow-rgb) / 0.28);
 }
 
 .dialog h3 {
   font-family: var(--font-ar);
   font-size: 1.3rem;
   font-weight: 700;
-  color: var(--brown-strong);
+  color: var(--ink-strong);
   margin: 0 0 0.5rem;
 }
 
@@ -981,7 +1007,7 @@ body {
   padding: 0.25rem;
   border-radius: 999px;
   background: var(--pill);
-  border: 1px solid var(--gold-line);
+  border: 1px solid var(--accent-line);
 }
 
 .seg button {
@@ -991,7 +1017,7 @@ body {
   border-radius: 999px;
   border: 0;
   background: none;
-  color: var(--brown-soft);
+  color: var(--ink-soft);
   cursor: pointer;
 }
 
@@ -1001,7 +1027,7 @@ body {
 }
 
 .seg button:focus-visible {
-  outline: 2px solid var(--gold);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 
@@ -1014,14 +1040,14 @@ body {
    on a warmer ground than the surrounding card so it reads as paper. */
 .mushaf-page {
   background: var(--page);
-  border: 1px solid var(--gold);
+  border: 1px solid var(--accent);
   border-radius: 10px;
   padding: 1.1rem 0.5rem;
   direction: rtl;
   box-shadow:
     inset 0 0 0 1px var(--page),
-    inset 0 0 0 4px var(--gold-line),
-    0 1px 10px rgba(150, 120, 60, 0.07);
+    inset 0 0 0 4px var(--accent-line),
+    0 1px 10px rgb(var(--shadow-rgb) / 0.07);
   /* --fit is measured once per page so the widest line just fits; every line
      then shares one size, as they do in print. --zoom is the reader's own
      choice on top of that. */
@@ -1095,12 +1121,12 @@ body {
   font-family: var(--font-ar);
   font-size: 0.6em;
   line-height: 1;
-  color: var(--gold-deep);
-  border: 1px solid var(--gold);
+  color: var(--accent-deep);
+  border: 1px solid var(--accent);
   border-radius: 50%;
   background:
     radial-gradient(circle at 50% 50%, var(--page) 58%, var(--tile) 100%);
-  box-shadow: 0 0 0 1.5px var(--page), 0 0 0 2.5px var(--gold-line);
+  box-shadow: 0 0 0 1.5px var(--page), 0 0 0 2.5px var(--accent-line);
 }
 
 /* A row is one printed line, plus the surah heading when one opens here. */
@@ -1115,7 +1141,7 @@ body {
   margin: 0.5rem 0 0.35rem;
   padding: 0.32rem 0.6rem;
   text-align: center;
-  border: 1px solid var(--gold);
+  border: 1px solid var(--accent);
   border-radius: 6px;
   background: linear-gradient(180deg, var(--tile), var(--card-2));
   box-shadow: inset 0 0 0 2px var(--page);
@@ -1125,7 +1151,7 @@ body {
   font-family: var(--font-ar);
   font-size: 0.95rem;
   font-weight: 700;
-  color: var(--brown-strong);
+  color: var(--ink-strong);
   letter-spacing: 0.01em;
 }
 
@@ -1135,14 +1161,14 @@ body {
 .mushaf-line.is-drill {
   background: var(--tile);
   border-radius: 10px;
-  box-shadow: 0 0 0 1px var(--gold-line);
+  box-shadow: 0 0 0 1px var(--accent-line);
 }
 
 /* Your turn: the line goes under a veil, because reading it back is not
    reciting it back. Press and hold to peek. */
 .mushaf.your-turn .mushaf-line.is-drill .mw {
   color: transparent;
-  background: var(--gold-line);
+  background: var(--accent-line);
   border-radius: 4px;
   user-select: none;
 }
@@ -1153,7 +1179,7 @@ body {
 }
 
 .mushaf.your-turn .mushaf-line.is-drill .mw.is-now {
-  background: var(--gold-soft);
+  background: var(--accent-soft);
 }
 
 .talqeen-bar {
@@ -1172,13 +1198,13 @@ body {
    so the whole bar changes, not just a word. */
 .talqeen-bar.is-yours {
   background: linear-gradient(160deg, var(--tile-active-a), var(--tile-active-b));
-  border-color: var(--gold-soft);
+  border-color: var(--accent-soft);
 }
 
 .talqeen-who {
   font-size: 0.95rem;
   font-weight: 600;
-  color: var(--brown-strong);
+  color: var(--ink-strong);
 }
 
 .talqeen-bar.is-yours .talqeen-who {
@@ -1241,7 +1267,7 @@ body {
    them too. */
 .mushaf-page.veil-blank .ayah-mark {
   color: transparent;
-  border-color: var(--gold-line);
+  border-color: var(--accent-line);
   background: none;
   box-shadow: none;
 }
@@ -1253,8 +1279,8 @@ body {
 }
 
 .mushaf-page.is-peeking .ayah-mark {
-  color: var(--gold-deep);
-  border-color: var(--gold);
+  color: var(--accent-deep);
+  border-color: var(--accent);
   background: radial-gradient(circle at 50% 50%, var(--page) 58%, var(--tile) 100%);
 }
 
@@ -1310,7 +1336,7 @@ body {
 .mushaf-num {
   font-family: var(--font-ar);
   font-size: 1.05rem;
-  color: var(--gold-deep);
+  color: var(--accent-deep);
   min-width: 5rem;
   text-align: center;
   direction: rtl;
@@ -1344,7 +1370,7 @@ body {
 .hifz-h {
   font-family: var(--font-ar);
   font-size: 1.15rem;
-  color: var(--brown-strong);
+  color: var(--ink-strong);
   margin: 1.4rem 0 0.5rem;
 }
 
@@ -1368,13 +1394,13 @@ body {
   padding: 0.85rem 0.4rem;
   border-radius: 14px;
   background: var(--card-2);
-  border: 1px solid var(--gold-line);
+  border: 1px solid var(--accent-line);
 }
 
 .tier-n {
   font-size: 1.6rem;
   font-variant-numeric: tabular-nums;
-  color: var(--brown-strong);
+  color: var(--ink-strong);
 }
 
 .tier-name {
@@ -1405,7 +1431,7 @@ body {
   gap: 0.5rem;
   padding: 0.6rem 0.8rem;
   border-radius: 12px;
-  border: 1px solid var(--gold-line);
+  border: 1px solid var(--accent-line);
   background: var(--card-2);
   font: inherit;
   color: var(--ink-strong);
@@ -1424,7 +1450,7 @@ body {
 
 .due-act {
   font-size: 0.78rem;
-  color: var(--gold-deep);
+  color: var(--accent-deep);
 }
 
 .btn.tiny {
@@ -1460,7 +1486,7 @@ body {
 }
 
 .heat-cell:focus-visible {
-  outline: 2px solid var(--gold);
+  outline: 2px solid var(--accent);
   outline-offset: 1px;
 }
 
@@ -1482,7 +1508,7 @@ body {
   padding: 0.8rem 0.9rem;
   border-radius: 14px;
   background: var(--card-2);
-  border: 1px solid var(--gold-line);
+  border: 1px solid var(--accent-line);
 }
 
 .wird-day {
@@ -1524,8 +1550,8 @@ body {
   padding: 0.85rem 0.9rem;
   border-radius: 14px;
   background: var(--page);
-  border: 1px solid var(--gold);
-  box-shadow: inset 0 0 0 3px var(--gold-line);
+  border: 1px solid var(--accent);
+  box-shadow: inset 0 0 0 3px var(--accent-line);
 }
 
 .fork-count {
@@ -1575,13 +1601,13 @@ body {
   gap: 0.6rem;
   padding: 0.6rem 0.8rem;
   border-radius: 12px;
-  border: 1px solid var(--gold-line);
+  border: 1px solid var(--accent-line);
   background: var(--card-2);
 }
 
 /* The branch you were asked for, so the answer is unambiguous. */
 .fork-branches li.was-asked {
-  border-color: var(--gold);
+  border-color: var(--accent);
   background: var(--tile);
 }
 
@@ -1624,7 +1650,7 @@ body {
   font-family: var(--font-ar);
   font-size: 1.7rem;
   font-weight: 700;
-  color: var(--brown-strong);
+  color: var(--ink-strong);
 }
 
 /* The other script, small: the name is new, and each half teaches the other. */
@@ -1632,7 +1658,7 @@ body {
   font-size: 0.72rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--gold-deep);
+  color: var(--accent-deep);
 }
 
 /* ============ language picker ============ */
@@ -1668,7 +1694,7 @@ body {
    never be left unsure which wording they are hearing. */
 .chip-riwayah {
   font-size: 0.58rem;
-  color: var(--gold-deep);
+  color: var(--accent-deep);
   /* Wraps rather than clips: a riwayah half-shown is worse than none, since
      the whole point is to say exactly which reading this is. */
   white-space: normal;
@@ -1679,7 +1705,7 @@ body {
 
 .reciter-riwayah {
   font-size: 0.72rem;
-  color: var(--gold-deep);
+  color: var(--accent-deep);
   margin-top: 0.1rem;
 }
 
@@ -1688,12 +1714,12 @@ body {
    be an image. */
 .paged-mushaf {
   background: var(--page);
-  border: 1px solid var(--gold);
+  border: 1px solid var(--accent);
   border-radius: 10px;
   padding: 0.5rem;
   box-shadow:
-    inset 0 0 0 3px var(--gold-line),
-    0 1px 10px rgba(150, 120, 60, 0.07);
+    inset 0 0 0 3px var(--accent-line),
+    0 1px 10px rgb(var(--shadow-rgb) / 0.07);
   min-height: 12rem;
   display: grid;
   place-items: center;
@@ -1716,4 +1742,111 @@ body {
   .paged-mushaf img {
     transition: none;
   }
+}
+
+/* ============ theme picker ============ */
+.theming {
+  margin-top: 0.9rem;
+}
+
+.theme-label {
+  margin-top: 1.2rem;
+}
+
+.seg.mode-seg {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+  gap: 0.6rem;
+}
+
+/*
+ * Each card is painted in the palette it offers. A row of identical cards
+ * with the names written on them would make the reader tap through seven
+ * themes to find out what they look like.
+ */
+.theme-card {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.7rem 0.75rem;
+  border-radius: 16px;
+  border: 1px solid var(--accent-line);
+  background: var(--sw-ground);
+  color: var(--sw-ink);
+  font: inherit;
+  cursor: pointer;
+  text-align: start;
+  position: relative;
+  overflow: hidden;
+}
+
+.theme-card.is-on {
+  border-color: var(--sw-accent);
+  box-shadow: 0 0 0 2px var(--sw-accent);
+}
+
+.theme-swatch {
+  display: grid;
+  gap: 3px;
+  flex: none;
+}
+
+.sw-accent,
+.sw-ink {
+  display: block;
+  width: 1.5rem;
+  height: 0.5rem;
+  border-radius: 3px;
+}
+
+.sw-accent {
+  background: var(--sw-accent);
+}
+
+.sw-ink {
+  background: var(--sw-ink);
+  opacity: 0.55;
+}
+
+.theme-names {
+  display: grid;
+  min-width: 0;
+}
+
+.theme-name {
+  font-family: var(--font-ar);
+  font-size: 1.05rem;
+  line-height: 1.3;
+  color: var(--sw-ink);
+}
+
+.theme-of {
+  font-size: 0.68rem;
+  line-height: 1.3;
+  color: var(--sw-ink);
+  opacity: 0.7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Said once, on the two themes built around a dark screen. */
+.theme-hint {
+  position: absolute;
+  inset-inline-end: 0.5rem;
+  top: 0.4rem;
+  font-size: 0.55rem;
+  letter-spacing: 0.04em;
+  color: var(--sw-accent);
+  opacity: 0.9;
+}
+
+.theme-card:focus-visible {
+  outline: 2px solid var(--sw-accent);
+  outline-offset: 2px;
 }

@@ -1,0 +1,538 @@
+/* =====================================================================
+   Themes
+   ---------------------------------------------------------------------
+   Each theme is a material, not a hue. The palettes are taken from things
+   that actually carry Quranic text — the printed mushaf, the kiswah of the
+   Kaaba, lapis and gold leaf in an illuminated manuscript, glazed zellij,
+   the green of the Rawdah, rubricated parchment, the hour before Fajr — so
+   they read as belonging to the subject rather than as a colour picker.
+
+   The theme is stamped on <html> as data-theme, and light or dark as
+   data-mode. "System" is resolved in JavaScript to one or the other before
+   it is stamped, so every rule here needs only two states instead of each
+   theme carrying its own prefers-color-scheme block.
+
+   In a dark palette --accent-deep is *lighter* than --accent, not darker:
+   it marks emphasis, and on a dark ground emphasis means more light.
+   ===================================================================== */
+
+/* ============ مصحف · Mushaf — cream and gold ============ */
+/* The default. Sampled from the Saudi Center's printed card. */
+
+[data-theme='mushaf'][data-mode='dark'] {
+  color-scheme: dark;
+  --bg: #17120c;
+  --card: #1f1810;
+  --card-2: #251d13;
+  --tile: #2d2216;
+  --tile-active-a: #b8974f;
+  --tile-active-b: #8d6e37;
+  --tile-active-ink: #000000;
+  --pill: #241c13;
+  --page: #1a140d;
+
+  --accent: #d8b871;
+  --accent-deep: #ecd299;
+  --accent-soft: #6b5730;
+  --accent-line: #33291a;
+  --on-accent: #17120c;
+
+  --ink: #e9ddc5;
+  --ink-strong: #f8f1e1;
+  --ink-soft: #c3b294;
+  --muted: #9b8c70;
+  --divider: #2c2318;
+
+  --play-a: #d8b871;
+  --play-b: #a8873f;
+  --on-play: #1a1408;
+
+  --ready: #6cbb90;
+  --warn: #e0975c;
+
+  --shadow-rgb: 0 0 0;
+  --pattern-opacity: 0.07;
+}
+
+/* ============ الكسوة · Kiswah — black and gold ============ */
+/* The covering of the Kaaba: black silk, gold thread. True black, so it
+   costs nothing on an OLED screen and the gold is the only thing lit. */
+
+[data-theme='kiswah'] {
+  color-scheme: light;
+  --bg: #f1efe8;
+  --card: #fbfaf6;
+  --card-2: #f6f4ed;
+  --tile: #e8e4d6;
+  --tile-active-a: #3a3730;
+  --tile-active-b: #1c1a16;
+  --tile-active-ink: #d9bf72;
+  --pill: #eeebe2;
+  --page: #fdfcf8;
+
+  --accent: #8a6c18;
+  --accent-deep: #6f5714;
+  --accent-soft: #d3c493;
+  --accent-line: #e4dcc4;
+  --on-accent: #ffffff;
+
+  --ink: #26241f;
+  --ink-strong: #121110;
+  --ink-soft: #4d4a41;
+  --muted: #6f6b5f;
+  --divider: #e6e2d6;
+
+  --play-a: #2c2925;
+  --play-b: #16150f;
+  --on-play: #d9bf72;
+
+  --ready: #3f7a58;
+  --warn: #a1622c;
+
+  --shadow-rgb: 40 36 24;
+  --pattern-opacity: 0.06;
+}
+
+[data-theme='kiswah'][data-mode='dark'] {
+  color-scheme: dark;
+  --bg: #000000;
+  --card: #0b0b0a;
+  --card-2: #121210;
+  --tile: #1a1813;
+  --tile-active-a: #c9a227;
+  --tile-active-b: #8e6f14;
+  --tile-active-ink: #000000;
+  --pill: #121210;
+  --page: #080807;
+
+  --accent: #c9a227;
+  --accent-deep: #eac75a;
+  --accent-soft: #6a5619;
+  --accent-line: #241f0e;
+  --on-accent: #0a0903;
+
+  --ink: #eee7d4;
+  --ink-strong: #fffaef;
+  --ink-soft: #c3b998;
+  --muted: #8e8770;
+  --divider: #1d1b14;
+
+  --play-a: #c9a227;
+  --play-b: #8f7016;
+  --on-play: #000000;
+
+  --ready: #62b98a;
+  --warn: #dd9a4f;
+
+  --shadow-rgb: 0 0 0;
+  --pattern-opacity: 0.1;
+}
+
+/* ============ اللازورد · Lapis — ultramarine and gold leaf ============ */
+/* The two most expensive pigments an illuminator could buy, which is why
+   they were spent on Qurans. Gold stays, on the buttons, where it was. */
+
+[data-theme='lapis'] {
+  color-scheme: light;
+  --bg: #eaeff8;
+  --card: #fbfcfe;
+  --card-2: #f3f6fc;
+  --tile: #dde6f5;
+  --tile-active-a: #2f5fa8;
+  --tile-active-b: #21447a;
+  --tile-active-ink: #f3f7ff;
+  --pill: #e8eef9;
+  --page: #ffffff;
+
+  --accent: #2f5fa8;
+  --accent-deep: #1f4179;
+  --accent-soft: #a6bfe3;
+  --accent-line: #d3e0f3;
+  --on-accent: #ffffff;
+
+  --ink: #1f3050;
+  --ink-strong: #101e39;
+  --ink-soft: #44608c;
+  --muted: #5d7291;
+  --divider: #e0e8f5;
+
+  --play-a: #e6cd92;
+  --play-b: #c6a253;
+  --on-play: #2a2008;
+
+  --ready: #2e7d5b;
+  --warn: #b06a2a;
+
+  --shadow-rgb: 30 55 105;
+  --pattern-opacity: 0.05;
+}
+
+[data-theme='lapis'][data-mode='dark'] {
+  color-scheme: dark;
+  --bg: #0a1324;
+  --card: #101d33;
+  --card-2: #14243d;
+  --tile: #1b2f4d;
+  --tile-active-a: #d8b871;
+  --tile-active-b: #a8873f;
+  --tile-active-ink: #0d1526;
+  --pill: #14243d;
+  --page: #0c1729;
+
+  --accent: #86b0e6;
+  --accent-deep: #b4d0f5;
+  --accent-soft: #3c5b8b;
+  --accent-line: #1d3253;
+  --on-accent: #0a1324;
+
+  --ink: #dae6f8;
+  --ink-strong: #f1f6ff;
+  --ink-soft: #a9bcd8;
+  --muted: #8296b5;
+  --divider: #1a2c48;
+
+  --play-a: #d8b871;
+  --play-b: #a8873f;
+  --on-play: #10182a;
+
+  --ready: #6cbb90;
+  --warn: #dd9a4f;
+
+  --shadow-rgb: 0 4 16;
+  --pattern-opacity: 0.09;
+}
+
+/* ============ الزليج · Zellij — glazed tile ============ */
+/* Fes tilework: turquoise glaze against white plaster, terracotta for the
+   warm cuts. The one theme where the accent is cool and the action is hot. */
+
+[data-theme='zellij'] {
+  color-scheme: light;
+  --bg: #eef1ea;
+  --card: #fcfdfa;
+  --card-2: #f4f8f4;
+  --tile: #d9ebe7;
+  --tile-active-a: #0f8a86;
+  --tile-active-b: #0a6360;
+  --tile-active-ink: #ffffff;
+  --pill: #eaf2ef;
+  --page: #fdfefb;
+
+  --accent: #0d7d79;
+  --accent-deep: #085956;
+  --accent-soft: #98cdc8;
+  --accent-line: #d2e8e5;
+  --on-accent: #f6fdfc;
+
+  --ink: #233a38;
+  --ink-strong: #122524;
+  --ink-soft: #47605e;
+  --muted: #5c7674;
+  --divider: #dfe9e5;
+
+  --play-a: #e79f68;
+  --play-b: #c86f3c;
+  --on-play: #2b1509;
+
+  --ready: #0d7d79;
+  --warn: #c05f28;
+
+  --shadow-rgb: 15 70 68;
+  --pattern-opacity: 0.05;
+}
+
+[data-theme='zellij'][data-mode='dark'] {
+  color-scheme: dark;
+  --bg: #061513;
+  --card: #0b201e;
+  --card-2: #0f2926;
+  --tile: #143430;
+  --tile-active-a: #38b7b0;
+  --tile-active-b: #1d7a75;
+  --tile-active-ink: #000000;
+  --pill: #0f2926;
+  --page: #081917;
+
+  --accent: #3ec0b8;
+  --accent-deep: #75dbd4;
+  --accent-soft: #1c5551;
+  --accent-line: #123330;
+  --on-accent: #04120f;
+
+  --ink: #d5ecea;
+  --ink-strong: #eefaf9;
+  --ink-soft: #a2c4c1;
+  --muted: #7a9c99;
+  --divider: #12302d;
+
+  --play-a: #e79f68;
+  --play-b: #b9642f;
+  --on-play: #190c04;
+
+  --ready: #3ec0b8;
+  --warn: #e0904f;
+
+  --shadow-rgb: 0 10 9;
+  --pattern-opacity: 0.09;
+}
+
+/* ============ الروضة · Rawdah — the green and the gold ============ */
+/* The green of the Prophet's Mosque interior, kept deep rather than bright
+   so it reads as dye and carpet, not as a success message. */
+
+[data-theme='rawdah'] {
+  color-scheme: light;
+  --bg: #edf2ea;
+  --card: #fbfdf9;
+  --card-2: #f3f8f1;
+  --tile: #dbe9d9;
+  --tile-active-a: #2f6b45;
+  --tile-active-b: #1e4b30;
+  --tile-active-ink: #f4faf3;
+  --pill: #e9f0e6;
+  --page: #fdfefc;
+
+  --accent: #2f6b45;
+  --accent-deep: #1d4a2e;
+  --accent-soft: #a4c8b0;
+  --accent-line: #d6e6d8;
+  --on-accent: #f7fcf6;
+
+  --ink: #223529;
+  --ink-strong: #12241a;
+  --ink-soft: #465c4e;
+  --muted: #607767;
+  --divider: #dee9db;
+
+  --play-a: #e2c887;
+  --play-b: #bf9f52;
+  --on-play: #291f07;
+
+  --ready: #2f6b45;
+  --warn: #b06a2a;
+
+  --shadow-rgb: 20 60 38;
+  --pattern-opacity: 0.05;
+}
+
+[data-theme='rawdah'][data-mode='dark'] {
+  color-scheme: dark;
+  --bg: #08150e;
+  --card: #0d2015;
+  --card-2: #11291b;
+  --tile: #173322;
+  --tile-active-a: #d8b871;
+  --tile-active-b: #a8873f;
+  --tile-active-ink: #0b1a11;
+  --pill: #11291b;
+  --page: #0a1a11;
+
+  --accent: #63b183;
+  --accent-deep: #93d2ab;
+  --accent-soft: #2c5a3e;
+  --accent-line: #14301f;
+  --on-accent: #08150e;
+
+  --ink: #d7ecdd;
+  --ink-strong: #eefaf1;
+  --ink-soft: #a5c5b0;
+  --muted: #7d9c88;
+  --divider: #142d1d;
+
+  --play-a: #d8b871;
+  --play-b: #a8873f;
+  --on-play: #0d1a10;
+
+  --ready: #63b183;
+  --warn: #dd9a4f;
+
+  --shadow-rgb: 0 10 5;
+  --pattern-opacity: 0.09;
+}
+
+/* ============ الرَّق · Vellum — parchment and rubric ============ */
+/* An old manuscript: walnut ink on skin, with the red the scribe reserved
+   for ayah marks and headings. The only theme whose accent is a warning
+   colour by nature, which is exactly why it is used so sparingly. */
+
+[data-theme='vellum'] {
+  color-scheme: light;
+  --bg: #e9dfc7;
+  --card: #f6efdc;
+  --card-2: #f1e8d1;
+  --tile: #e2d5b6;
+  --tile-active-a: #a33b2a;
+  --tile-active-b: #7d2a1d;
+  --tile-active-ink: #fbf4e6;
+  --pill: #eee5cd;
+  --page: #f9f3e3;
+
+  --accent: #9c3826;
+  --accent-deep: #74271a;
+  --accent-soft: #d3a396;
+  --accent-line: #e0cdae;
+  --on-accent: #fbf4e6;
+
+  --ink: #3c3125;
+  --ink-strong: #261e15;
+  --ink-soft: #5f5140;
+  --muted: #766650;
+  --divider: #ddd0b2;
+
+  --play-a: #c9a961;
+  --play-b: #a8863c;
+  --on-play: #241a07;
+
+  --ready: #4b7a52;
+  --warn: #9c3826;
+
+  --shadow-rgb: 90 70 40;
+  --pattern-opacity: 0.06;
+}
+
+[data-theme='vellum'][data-mode='dark'] {
+  color-scheme: dark;
+  --bg: #141009;
+  --card: #1d180f;
+  --card-2: #231d13;
+  --tile: #2b2317;
+  --tile-active-a: #b84a34;
+  --tile-active-b: #85301f;
+  --tile-active-ink: #f8eee3;
+  --pill: #231d13;
+  --page: #171209;
+
+  --accent: #d97a5e;
+  --accent-deep: #f0a48b;
+  --accent-soft: #6d3325;
+  --accent-line: #30251a;
+  --on-accent: #1a0f0a;
+
+  --ink: #e7dbc3;
+  --ink-strong: #f7eeda;
+  --ink-soft: #bfae90;
+  --muted: #96866b;
+  --divider: #2a2216;
+
+  --play-a: #c9a961;
+  --play-b: #987a35;
+  --on-play: #1a1206;
+
+  --ready: #6cbb90;
+  --warn: #e08a6c;
+
+  --shadow-rgb: 0 0 0;
+  --pattern-opacity: 0.07;
+}
+
+/* ============ التهجد · Tahajjud — the hour before Fajr ============ */
+/* For reciting in the dark. There is no blue anywhere in the dark palette,
+   and the ground is nearly black: this is the one theme designed around
+   what a screen does to night vision rather than around how it looks in a
+   screenshot. Its light side is the sky a few minutes later. */
+
+[data-theme='tahajjud'] {
+  color-scheme: light;
+  --bg: #f2ece4;
+  --card: #fbf7f1;
+  --card-2: #f6f0e8;
+  --tile: #ebe0d2;
+  --tile-active-a: #d99a4e;
+  --tile-active-b: #b0742f;
+  --tile-active-ink: #231708;
+  --pill: #f0e9df;
+  --page: #fdfaf5;
+
+  --accent: #9e6526;
+  --accent-deep: #85531d;
+  --accent-soft: #dcbb92;
+  --accent-line: #e8dac6;
+  --on-accent: #ffffff;
+
+  --ink: #3a2f24;
+  --ink-strong: #241c13;
+  --ink-soft: #5d4e3e;
+  --muted: #7d6b57;
+  --divider: #e6dbcc;
+
+  --play-a: #e7c08a;
+  --play-b: #c2924c;
+  --on-play: #2a1d08;
+
+  --ready: #4b7a52;
+  --warn: #b0722c;
+
+  --shadow-rgb: 110 80 45;
+  --pattern-opacity: 0.05;
+}
+
+[data-theme='tahajjud'][data-mode='dark'] {
+  color-scheme: dark;
+  --bg: #0a0806;
+  --card: #100d09;
+  --card-2: #15110b;
+  --tile: #1c1710;
+  --tile-active-a: #a87536;
+  --tile-active-b: #7a5222;
+  --tile-active-ink: #000000;
+  --pill: #15110b;
+  --page: #0c0906;
+
+  --accent: #d99a4e;
+  --accent-deep: #f0b878;
+  --accent-soft: #6a4a25;
+  --accent-line: #241c12;
+  --on-accent: #0a0806;
+
+  --ink: #e8d5b8;
+  --ink-strong: #f7e9cf;
+  --ink-soft: #c0aa8b;
+  --muted: #8d7a5f;
+  --divider: #221b12;
+
+  --play-a: #d99a4e;
+  --play-b: #a06f2c;
+  --on-play: #0e0a04;
+
+  --ready: #93b877;
+  --warn: #e0904f;
+
+  --shadow-rgb: 0 0 0;
+  --pattern-opacity: 0.06;
+}
+
+/* =====================================================================
+   Changing theme
+   ---------------------------------------------------------------------
+   The swap itself is eased, so switching does not strobe. Only colour is
+   transitioned, and only on the large surfaces — putting a transition on
+   every element would make the first paint after a theme change crawl.
+   ===================================================================== */
+body,
+.app,
+.sheet,
+.player,
+.tabbar,
+.row,
+.numeral,
+.chip,
+.mushaf-page {
+  transition:
+    background-color 320ms var(--ease-out, ease),
+    color 320ms var(--ease-out, ease),
+    border-color 320ms var(--ease-out, ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body,
+  .app,
+  .sheet,
+  .player,
+  .tabbar,
+  .row,
+  .numeral,
+  .chip,
+  .mushaf-page {
+    transition: none;
+  }
+}

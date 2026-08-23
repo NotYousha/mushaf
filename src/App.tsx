@@ -66,9 +66,18 @@ import {
 import { stringsFor, type Lang } from './i18n'
 import { brandName, brandSecondary } from './brand'
 import { LangPicker } from './ui/LangPicker'
+import { ThemePicker } from './ui/ThemePicker'
+import {
+  applyTheme,
+  DEFAULT_THEME,
+  watchSystemMode,
+  type Mode,
+  type ThemeId,
+} from './ui/theming'
 import { isHafs, riwayahLabel } from './catalog/riwayah'
 import { Splash } from './ui/Splash'
 import './ui/theme.css'
+import './ui/themes.css'
 import './ui/motion.css'
 
 type Tab = 'quran' | 'library' | 'text' | 'hifz' | 'more'
@@ -111,6 +120,8 @@ export default function App() {
   const [drill, setDrill] = useState<TalqeenState | null>(null)
   /** The player folded down to a strip, so the list has the screen. */
   const [playerMin, setPlayerMin] = useState(false)
+  const [theme, setTheme] = useState<ThemeId>(DEFAULT_THEME)
+  const [appearance, setAppearance] = useState<Mode>('system')
 
   const engine = useRef<PlayerEngine | null>(null)
   if (!engine.current) engine.current = new PlayerEngine()
@@ -177,6 +188,8 @@ export default function App() {
       setFavourites(await getPref<string[]>('favourites', []))
       setLang(await getPref<Lang>('lang', 'ar'))
       setPlayerMin(await getPref<boolean>('playerMin', false))
+      setTheme(await getPref<ThemeId>('theme', DEFAULT_THEME))
+      setAppearance(await getPref<Mode>('appearance', 'system'))
 
       // Runs once: clears audio a since-fixed queue bug may have filed under
       // the wrong reciter, which made the wrong surah play from a saved copy.
@@ -462,6 +475,17 @@ export default function App() {
     setGotoPage(page)
     setTab('text')
   }
+
+  // Stamped on <html>, so the palette reaches the page background and the
+  // browser's own chrome, not just the React tree.
+  useEffect(() => {
+    applyTheme(theme, appearance)
+  }, [theme, appearance])
+
+  useEffect(() => {
+    if (appearance !== 'system') return
+    return watchSystemMode(() => applyTheme(theme, appearance))
+  }, [theme, appearance])
 
   const selectedChip = useRef<HTMLButtonElement | null>(null)
 
@@ -865,6 +889,21 @@ export default function App() {
                 lang={lang}
                 label={t.language}
                 onChange={(next) => void changeLang(next)}
+              />
+
+              <ThemePicker
+                t={t}
+                lang={lang}
+                theme={theme}
+                mode={appearance}
+                onTheme={(id) => {
+                  setTheme(id)
+                  void setPref('theme', id)
+                }}
+                onMode={(m) => {
+                  setAppearance(m)
+                  void setPref('appearance', m)
+                }}
               />
 
               <h2 style={{ marginTop: '1.6rem' }}>{t.reciters}</h2>

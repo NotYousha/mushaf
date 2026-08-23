@@ -154,5 +154,9 @@ export const ur: Strings = {
   differentRiwayah: (r: string) => `یہ قاری ${r} میں پڑھتے ہیں۔ الفاظ حفص کے متن سے مختلف ہیں جو یہاں دکھایا جاتا ہے، اس لیے صفحہ چھپا دیا گیا ہے تاکہ وہ آواز کے خلاف نہ ہو۔`,
   riwayahPages: (r: string) => `${r} میں طبع شدہ، یہی اس قاری کی روایت ہے۔ اس کے لیے لفظ بہ لفظ متابعت دستیاب نہیں۔`,
   collapsePlayer: 'پلیئر چھوٹا کریں',
-  expandPlayer: 'پلیئر دکھائیں'
+  expandPlayer: 'پلیئر دکھائیں',
+    appearance: 'ظاہری شکل',
+    theme: 'تھیم',
+    modeName: { light: 'روشن', dark: 'تاریک', system: 'سسٹم' },
+    bestAtNight: 'رات کے لیے بنائی گئی'
 }

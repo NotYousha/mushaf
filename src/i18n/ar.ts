@@ -154,5 +154,9 @@ export const ar: Strings = {
   differentRiwayah: (r: string) => `هذا القارئ يقرأ ب${r}، ويختلف اللفظ عن نص حفص المعروض هنا، فأُخفيت الصفحة لئلّا تخالف الصوت.`,
   riwayahPages: (r: string) => `مطبوعة ب${r}، وهي رواية هذا القارئ. لا تتوفّر متابعة الكلمات فيها.`,
   collapsePlayer: 'تصغير المشغّل',
-  expandPlayer: 'إظهار المشغّل'
+  expandPlayer: 'إظهار المشغّل',
+    appearance: 'المظهر',
+    theme: 'السِّمة',
+    modeName: { light: 'فاتح', dark: 'داكن', system: 'النظام' },
+    bestAtNight: 'صُمِّمت لليل'
 }

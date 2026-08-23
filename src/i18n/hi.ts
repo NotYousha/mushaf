@@ -154,5 +154,9 @@ export const hi: Strings = {
   differentRiwayah: (r: string) => `यह क़ारी ${r} में पढ़ते हैं। शब्द हफ़्स के मतन से अलग हैं जो यहाँ दिखाया जाता है, इसलिए पन्ना छिपा दिया गया है ताकि वह आवाज़ से न टकराए।`,
   riwayahPages: (r: string) => `${r} में छपा हुआ, यही इस क़ारी की रिवायत है। इसके लिए शब्द-दर-शब्द अनुसरण उपलब्ध नहीं है।`,
   collapsePlayer: 'प्लेयर छोटा करें',
-  expandPlayer: 'प्लेयर दिखाएँ'
+  expandPlayer: 'प्लेयर दिखाएँ',
+    appearance: 'रूप',
+    theme: 'थीम',
+    modeName: { light: 'उजला', dark: 'गहरा', system: 'सिस्टम' },
+    bestAtNight: 'रात के लिए बनी'
 }

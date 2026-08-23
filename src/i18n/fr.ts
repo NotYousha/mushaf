@@ -154,5 +154,9 @@ export const fr: Strings = {
   differentRiwayah: (r: string) => `Ce récitateur lit en ${r}. Les mots diffèrent du texte Hafs affiché ici, donc la page est masquée plutôt que de contredire la voix.`,
   riwayahPages: (r: string) => `Imprimé en ${r}, la lecture suivie par ce récitateur. Le suivi mot à mot n'est pas disponible pour elle.`,
   collapsePlayer: 'Réduire le lecteur',
-  expandPlayer: 'Afficher le lecteur'
+  expandPlayer: 'Afficher le lecteur',
+    appearance: 'Apparence',
+    theme: 'Thème',
+    modeName: { light: 'Clair', dark: 'Sombre', system: 'Système' },
+    bestAtNight: 'Pensé pour la nuit'
 }
