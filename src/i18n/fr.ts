@@ -158,5 +158,6 @@ export const fr: Strings = {
     appearance: 'Apparence',
     theme: 'Thème',
     modeName: { light: 'Clair', dark: 'Sombre', system: 'Système' },
-    bestAtNight: 'Pensé pour la nuit'
+    bestAtNight: 'Pensé pour la nuit',
+    openPlayer: 'Ouvrir le lecteur'
 }

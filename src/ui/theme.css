@@ -261,7 +261,9 @@ body {
   overflow-y: auto;
   flex: 1;
   min-height: 0;
-  padding-bottom: 0.5rem;
+  /* Room for the floating dock, or for a native tab bar when one owns the
+     bottom of the screen. The list runs underneath either. */
+  padding-bottom: calc(6.5rem + var(--native-bottom, 0px));
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
 }
@@ -646,8 +648,10 @@ body {
 }
 
 /* ============ tab bar ============ */
+/* Superseded by the floating dock in glass.css; kept only so a native shell
+   that hides the dock has nothing else pinned to the bottom either. */
 .tabbar {
-  display: grid;
+  display: none;
   /* Five tabs. Explicitly equal columns rather than a count, so adding one
      never silently wraps a tab onto a second row. */
   grid-template-columns: repeat(5, 1fr);

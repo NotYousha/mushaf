@@ -158,5 +158,6 @@ export const ur: Strings = {
     appearance: 'ظاہری شکل',
     theme: 'تھیم',
     modeName: { light: 'روشن', dark: 'تاریک', system: 'سسٹم' },
-    bestAtNight: 'رات کے لیے بنائی گئی'
+    bestAtNight: 'رات کے لیے بنائی گئی',
+    openPlayer: 'پلیئر کھولیں'
 }

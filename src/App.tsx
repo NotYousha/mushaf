@@ -67,6 +67,13 @@ import { stringsFor, type Lang } from './i18n'
 import { brandName, brandSecondary } from './brand'
 import { LangPicker } from './ui/LangPicker'
 import { ThemePicker } from './ui/ThemePicker'
+import { Dock, type DockTab } from './ui/Dock'
+import {
+  applyNativeInsets,
+  isNativeShell,
+  publishNowPlaying,
+  publishTab,
+} from './native/shell'
 import {
   applyTheme,
   DEFAULT_THEME,
@@ -78,6 +85,7 @@ import { isHafs, riwayahLabel } from './catalog/riwayah'
 import { Splash } from './ui/Splash'
 import './ui/theme.css'
 import './ui/themes.css'
+import './ui/glass.css'
 import './ui/motion.css'
 
 type Tab = 'quran' | 'library' | 'text' | 'hifz' | 'more'
@@ -119,7 +127,9 @@ export default function App() {
   const [talqeen, setTalqeen] = useState(false)
   const [drill, setDrill] = useState<TalqeenState | null>(null)
   /** The player folded down to a strip, so the list has the screen. */
-  const [playerMin, setPlayerMin] = useState(false)
+  /** The full player is a sheet over the app; the dock capsule is its
+   *  collapsed form, so it starts closed. */
+  const [playerMin, setPlayerMin] = useState(true)
   const [theme, setTheme] = useState<ThemeId>(DEFAULT_THEME)
   const [appearance, setAppearance] = useState<Mode>('system')
 
@@ -187,7 +197,7 @@ export default function App() {
       setVerdicts(await getVerdicts())
       setFavourites(await getPref<string[]>('favourites', []))
       setLang(await getPref<Lang>('lang', 'ar'))
-      setPlayerMin(await getPref<boolean>('playerMin', false))
+      setPlayerMin(await getPref<boolean>('playerMin', true))
       setTheme(await getPref<ThemeId>('theme', DEFAULT_THEME))
       setAppearance(await getPref<Mode>('appearance', 'system'))
 
@@ -483,10 +493,21 @@ export default function App() {
   }, [theme, appearance])
 
   useEffect(() => {
+    applyNativeInsets()
+  }, [])
+
+  useEffect(() => {
+    publishTab(tab)
+  }, [tab])
+
+
+  useEffect(() => {
     if (appearance !== 'system') return
     return watchSystemMode(() => applyTheme(theme, appearance))
   }, [theme, appearance])
 
+  const scrollRef = useRef<HTMLDivElement | null>(null)
+  const searchRef = useRef<HTMLInputElement | null>(null)
   const selectedChip = useRef<HTMLButtonElement | null>(null)
 
   useEffect(() => {
@@ -660,6 +681,36 @@ export default function App() {
     setConfirmAll(false)
   }
 
+  useEffect(() => {
+    if (!isNativeShell()) return
+    publishNowPlaying(
+      currentView && reciter
+        ? {
+            surah: currentView.surah,
+            title: `${t.surahWord} ${currentView.name}`,
+            reciter: reciter.fullName,
+            artwork: reciter.photo
+              ? `${import.meta.env.BASE_URL}${reciter.photo}`
+              : null,
+            playing,
+            progress: duration ? time / duration : 0,
+          }
+        : null,
+    )
+    // Position is deliberately not a dependency: pushing it every frame would
+    // cross the bridge sixty times a second for a bar that redraws far less
+    // often. The accessory updates on the transitions that matter.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentView?.surah, reciter?.id, playing])
+
+  const dockTabs: DockTab[] = [
+    { id: 'library', label: t.tabLibrary, icon: <Library size={21} />, onSelect: () => setTab('library') },
+    { id: 'quran', label: t.tabQuran, icon: <QuranMark size={21} />, onSelect: () => setTab('quran') },
+    { id: 'text', label: t.tabText, icon: <Broadcast size={21} />, onSelect: openText },
+    { id: 'hifz', label: t.tabHifz, icon: <Heart size={21} />, onSelect: () => setTab('hifz') },
+    { id: 'more', label: t.tabMore, icon: <More size={21} />, onSelect: () => setTab('more') },
+  ]
+
   const pct = duration ? (time / duration) * 100 : 0
 
   return (
@@ -723,6 +774,7 @@ export default function App() {
           <div className="search">
             <Search size={20} />
             <input
+              ref={searchRef}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={t.search}
@@ -731,7 +783,7 @@ export default function App() {
           </div>
         )}
 
-        <div className="scroll">
+        <div className="scroll" ref={scrollRef}>
           {tab === 'quran' && (
             <SurahList
               surahs={filtered}
@@ -935,7 +987,17 @@ export default function App() {
         </div>
       </div>
 
-      {currentView && reciter && (
+      {currentView && reciter && !playerMin && (
+        <div
+          className="sheet-scrim"
+          onClick={() => {
+            setPlayerMin(true)
+            void setPref('playerMin', true)
+          }}
+        />
+      )}
+
+      {currentView && reciter && !playerMin && (
         <div className={`player${playerMin ? ' is-min' : ''}`}>
           {/* The grabber. Folding the player away is the difference between
               seeing four surahs and seeing ten, so it is a full-width target
@@ -1163,48 +1225,36 @@ export default function App() {
         </div>
       )}
 
-      <nav className="tabbar" role="tablist">
-        <button
-          className="tab"
-          role="tab"
-          aria-selected={tab === 'library'}
-          onClick={() => setTab('library')}
-        >
-          <Library size={23} />
-          {t.tabLibrary}
-        </button>
-        <button
-          className="tab"
-          role="tab"
-          aria-selected={tab === 'quran'}
-          onClick={() => setTab('quran')}
-        >
-          <QuranMark size={23} />
-          {t.tabQuran}
-        </button>
-        <button className="tab" role="tab" aria-selected={tab === 'text'} onClick={openText}>
-          <Broadcast size={23} />
-          {t.tabText}
-        </button>
-        <button
-          className="tab"
-          role="tab"
-          aria-selected={tab === 'hifz'}
-          onClick={() => setTab('hifz')}
-        >
-          <Heart size={23} />
-          {t.tabHifz}
-        </button>
-        <button
-          className="tab"
-          role="tab"
-          aria-selected={tab === 'more'}
-          onClick={() => setTab('more')}
-        >
-          <More size={23} />
-          {t.tabMore}
-        </button>
-      </nav>
+      <Dock
+        t={t}
+        tabs={dockTabs}
+        active={tab}
+        now={
+          currentView && reciter
+            ? {
+                title: `${t.surahWord} ${currentView.name}`,
+                reciter: reciter.nameEn,
+                artwork: reciter.photo
+                  ? `${import.meta.env.BASE_URL}${reciter.photo}`
+                  : null,
+                playing,
+              }
+            : null
+        }
+        onOpenPlayer={() => {
+          setPlayerMin(false)
+          void setPref('playerMin', false)
+        }}
+        onToggle={toggle}
+        onNext={() => void advance()}
+        onSearch={() => {
+          setTab('quran')
+          // The field is in the panel that is about to mount, so focus waits
+          // for it rather than racing it.
+          window.setTimeout(() => searchRef.current?.focus(), 60)
+        }}
+        scroller={scrollRef}
+      />
     </div>
   )
 }

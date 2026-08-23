@@ -158,5 +158,6 @@ export const ar: Strings = {
     appearance: 'المظهر',
     theme: 'السِّمة',
     modeName: { light: 'فاتح', dark: 'داكن', system: 'النظام' },
-    bestAtNight: 'صُمِّمت لليل'
+    bestAtNight: 'صُمِّمت لليل',
+    openPlayer: 'فتح المشغّل'
 }

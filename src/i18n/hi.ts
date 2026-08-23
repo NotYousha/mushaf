@@ -158,5 +158,6 @@ export const hi: Strings = {
     appearance: 'रूप',
     theme: 'थीम',
     modeName: { light: 'उजला', dark: 'गहरा', system: 'सिस्टम' },
-    bestAtNight: 'रात के लिए बनी'
+    bestAtNight: 'रात के लिए बनी',
+    openPlayer: 'प्लेयर खोलें'
 }

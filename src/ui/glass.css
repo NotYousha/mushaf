@@ -1,0 +1,363 @@
+/* =====================================================================
+   Glass
+   ---------------------------------------------------------------------
+   An approximation of the material iOS uses for its floating controls.
+   Apple's own is native-only — there is no web API that exposes it — so
+   this is built from what the platform does give us: a backdrop blur with
+   the saturation pushed up, a translucent fill, and a bright inner edge
+   along the top with a dark one along the bottom to fake the thickness of
+   a lens.
+
+   Saturation matters more than blur. Blur alone gives frosted plastic;
+   pushing chroma back up is what makes the colours underneath bleed
+   through and read as glass rather than as a grey scrim.
+
+   Every value is themed, because a translucent white over a black kiswah
+   page is a smear, and a translucent black over cream is a bruise.
+   ===================================================================== */
+
+:root {
+  --glass-tint: 255 255 255;
+  --glass-alpha: 0.62;
+  --glass-blur: 20px;
+  --glass-sat: 180%;
+  /* The lit top edge and the shadowed bottom one. */
+  --glass-edge-top: rgb(255 255 255 / 0.55);
+  --glass-edge-bottom: rgb(var(--shadow-rgb) / 0.08);
+  --glass-ring: rgb(var(--shadow-rgb) / 0.1);
+}
+
+[data-mode='dark'] {
+  --glass-tint: 26 26 28;
+  --glass-alpha: 0.58;
+  --glass-edge-top: rgb(255 255 255 / 0.14);
+  --glass-edge-bottom: rgb(0 0 0 / 0.4);
+  --glass-ring: rgb(255 255 255 / 0.08);
+}
+
+/* True black wants a fraction more fill, or the pill disappears into it. */
+[data-theme='kiswah'][data-mode='dark'],
+[data-theme='tahajjud'][data-mode='dark'] {
+  --glass-tint: 32 30 26;
+  --glass-alpha: 0.66;
+}
+
+.glass {
+  position: relative;
+  background: rgb(var(--glass-tint) / var(--glass-alpha));
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  box-shadow:
+    inset 0 1px 0 var(--glass-edge-top),
+    inset 0 -1px 0 var(--glass-edge-bottom),
+    0 0 0 0.5px var(--glass-ring),
+    0 10px 30px rgb(var(--shadow-rgb) / 0.18);
+}
+
+/*
+ * Where the backdrop cannot be blurred, the fill alone would be
+ * see-through enough to read text straight through it. Firefox and older
+ * WebKit land here.
+ */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass {
+    background: rgb(var(--glass-tint) / 0.94);
+  }
+}
+
+/* =====================================================================
+   The dock
+   ---------------------------------------------------------------------
+   One row of floating glass at the bottom: the tabs, a capsule for what is
+   playing, and search. Scrolling collapses the tabs away and the capsule
+   takes the space they leave, so reading gets the screen back without ever
+   losing the transport.
+   ===================================================================== */
+
+.dock {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 40;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: 0 var(--space-3) calc(var(--space-3) + env(safe-area-inset-bottom));
+  max-width: 30rem;
+  margin: 0 auto;
+  pointer-events: none;
+}
+
+.dock > * {
+  pointer-events: auto;
+}
+
+/*
+ * The capsule's flex-basis is what moves it between the two layouts.
+ *
+ * At 100% it is wider than the row can hold, so it wraps onto a line of its
+ * own above the tabs. At 0 it shares the line with them. Because
+ * flex-basis is animatable and flex-grow keeps it filling whatever is left,
+ * one transition carries it between the two arrangements without the
+ * element ever being moved in the DOM — which is what would have made it
+ * jump instead of travel.
+ */
+.now-capsule {
+  order: 2;
+  flex: 1 1 var(--cap-basis, 100%);
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 3.4rem;
+  padding: 0 var(--space-2) 0 var(--space-3);
+  border: 0;
+  border-radius: var(--radius-pill);
+  font: inherit;
+  color: var(--ink-strong);
+  cursor: pointer;
+  overflow: hidden;
+  transition:
+    flex-basis var(--t-slow) var(--ease-out),
+    height var(--t-slow) var(--ease-out);
+}
+
+.dock.is-tight .now-capsule {
+  --cap-basis: 0%;
+}
+
+.cap-art {
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 50%;
+  flex: none;
+  background-color: var(--tile);
+  background-size: var(--face-zoom) auto;
+  background-position: var(--face-x) var(--face-y);
+  background-repeat: no-repeat;
+  box-shadow: 0 0 0 1px var(--glass-ring);
+}
+
+.cap-text {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  text-align: start;
+  line-height: 1.25;
+}
+
+.cap-title {
+  font-family: var(--font-ar);
+  font-size: 1rem;
+  color: var(--ink-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cap-sub {
+  font-size: 0.68rem;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cap-btn {
+  width: 2.6rem;
+  height: 2.6rem;
+  flex: none;
+  border: 0;
+  background: none;
+  border-radius: 50%;
+  color: var(--ink-strong);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.cap-btn:active {
+  transform: scale(0.9);
+}
+
+/* ---- the tab pill ---- */
+
+.dock-tabs {
+  order: 3;
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  height: 3.6rem;
+  padding: 0 var(--space-1);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+  transition: flex-grow var(--t-slow) var(--ease-out);
+}
+
+/*
+ * Collapsed, every tab but the one you are on folds to nothing. Keeping the
+ * current tab visible means the pill still says where you are, which a bare
+ * home button would not.
+ */
+.dock.is-tight .dock-tabs {
+  flex-grow: 0;
+}
+
+.dock-tab {
+  display: grid;
+  justify-items: center;
+  gap: 0.1rem;
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 6rem;
+  padding: 0.4rem 0.5rem;
+  border: 0;
+  background: none;
+  border-radius: var(--radius-pill);
+  color: var(--control-quiet);
+  font: inherit;
+  font-size: 0.62rem;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  touch-action: manipulation;
+  transition:
+    max-width var(--t-slow) var(--ease-out),
+    padding var(--t-slow) var(--ease-out),
+    opacity var(--t-base) var(--ease-out),
+    background-color var(--t-base) var(--ease-out),
+    color var(--t-base) var(--ease-out);
+}
+
+.dock-tab[aria-selected='true'] {
+  color: var(--ink-strong);
+  background: rgb(var(--glass-tint) / 0.5);
+}
+
+.dock.is-tight .dock-tab:not([aria-selected='true']) {
+  max-width: 0;
+  padding-inline: 0;
+  opacity: 0;
+}
+
+/* The label goes before the tab does, so the pill narrows in two stages
+   rather than snapping. */
+.dock.is-tight .dock-tab span {
+  display: none;
+}
+
+.dock-circle {
+  order: 4;
+  flex: none;
+  width: 3.6rem;
+  height: 3.6rem;
+  border: 0;
+  border-radius: 50%;
+  color: var(--ink-strong);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.dock-circle:active,
+.dock-tab:active {
+  transform: scale(0.94);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .now-capsule,
+  .dock-tabs,
+  .dock-tab {
+    transition: none;
+  }
+
+  .dock-circle:active,
+  .dock-tab:active,
+  .cap-btn:active {
+    transform: none;
+  }
+}
+
+/* The capsule's tap target: everything but the two transport buttons. */
+.cap-open {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  border: 0;
+  background: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-align: start;
+  touch-action: manipulation;
+}
+
+.cap-open:active {
+  transform: scale(0.98);
+}
+
+/*
+ * Inside a native shell the platform draws the bottom bar, so the web dock
+ * is not rendered at all and the old welded bar stays out of the way too.
+ */
+.is-native .tabbar,
+.is-native .dock {
+  display: none;
+}
+
+/* =====================================================================
+   The now-playing sheet
+   ---------------------------------------------------------------------
+   Opened from the capsule. It sits over the app rather than in the layout,
+   so the list keeps its full height whenever the sheet is closed — which
+   is most of the time.
+   ===================================================================== */
+
+.sheet-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 45;
+  background: rgb(var(--shadow-rgb) / 0.28);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  animation: scrim-in var(--t-base) var(--ease-out);
+}
+
+@keyframes scrim-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.player {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 50;
+  max-width: 30rem;
+  margin-inline: auto;
+  animation: sheet-up var(--t-slow) var(--ease-out);
+  padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom));
+}
+
+@keyframes sheet-up {
+  from {
+    transform: translateY(18%);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet-scrim,
+  .player {
+    animation: none;
+  }
+}

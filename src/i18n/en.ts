@@ -162,7 +162,8 @@ export const en = {
     appearance: 'Appearance',
     theme: 'Theme',
     modeName: { light: 'Light', dark: 'Dark', system: 'System' },
-    bestAtNight: 'Made for the dark'
+    bestAtNight: 'Made for the dark',
+    openPlayer: 'Open the player'
 }
 
 export type Strings = typeof en
