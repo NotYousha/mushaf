@@ -55,7 +55,10 @@ export function Dock({
   scroller,
 }: Props) {
   const [tight, setTight] = useState(false)
+  /** True only while the list is actually moving. */
+  const [scrolling, setScrolling] = useState(false)
   const lastY = useRef(0)
+  const settle = useRef(0)
 
   useEffect(() => {
     const el = scroller.current
@@ -67,6 +70,18 @@ export function Dock({
       if (frame) return
       frame = requestAnimationFrame(() => {
         frame = 0
+        /*
+         * Blurring the backdrop means re-sampling whatever the list painted
+         * under the dock, every frame, for as long as it moves — which is
+         * the most expensive thing this page asks of a phone's GPU, and it
+         * asks for it exactly when frames are scarcest. So the blur is
+         * dropped for a flat fill while scrolling and restored once the list
+         * comes to rest, where it is what anyone actually looks at.
+         */
+        setScrolling(true)
+        window.clearTimeout(settle.current)
+        settle.current = window.setTimeout(() => setScrolling(false), 140)
+
         const y = el.scrollTop
         const delta = y - lastY.current
         // A dead zone, so a thumb resting on the list does not flap the dock
@@ -82,13 +97,18 @@ export function Dock({
     return () => {
       el.removeEventListener('scroll', onScroll)
       if (frame) cancelAnimationFrame(frame)
+      window.clearTimeout(settle.current)
     }
   }, [scroller])
 
   if (isNativeShell()) return null
 
   return (
-    <div className={`dock${tight && now ? ' is-tight' : ''}`}>
+    <div
+      className={`dock${tight && now ? ' is-tight' : ''}${
+        scrolling ? ' is-scrolling' : ''
+      }`}
+    >
       {now && (
         <div className="now-capsule glass">
           <button

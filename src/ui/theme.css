@@ -108,6 +108,13 @@ html,
 body {
   margin: 0;
   height: 100%;
+  /*
+   * A second line of defence against the outer rubber-band. `.scroll`
+   * already contains its own overscroll, but iOS can still bounce the
+   * visual viewport on a swipe that begins right at the screen edge before
+   * the touch target has resolved.
+   */
+  overscroll-behavior-y: none;
 }
 
 body {
@@ -124,6 +131,13 @@ body {
      and only the surah list scrolls, inside its own overflow container. */
   height: 100dvh;
   overflow: hidden;
+  /*
+   * The notch, and in landscape the side it eats. Zero on a device without
+   * one, and zero in standalone where iOS reserves the status bar itself,
+   * so this only pays out where it is actually needed.
+   */
+  padding-top: env(safe-area-inset-top);
+  padding-inline: max(0px, env(safe-area-inset-left)) max(0px, env(safe-area-inset-right));
   display: flex;
   flex-direction: column;
   max-width: 30rem;
@@ -186,8 +200,9 @@ body {
 }
 
 .round {
-  width: 2.7rem;
-  height: 2.7rem;
+  /* Apple's floor for a touch target is 44px; this was 43.2. */
+  width: 2.75rem;
+  height: 2.75rem;
   border-radius: 50%;
   border: 1.5px solid var(--divider);
   background: var(--card);
@@ -841,10 +856,18 @@ body {
 /* Each portrait is framed differently, so the crop is per reciter.
    Barhaji's source is 302x662 — much narrower than Al-Dosari's 555x764 —
    and needs its own zoom and offset to sit correctly in the medallion. */
-.medallion[data-reciter='burhaji-nabawi'] {
-  --face-zoom: 150%;
-  --face-x: 62%;
-  --face-y: 25%;
+/*
+ * The portraits are cropped square on the face before they ship, so the
+ * frame needs no per-reciter nudging: one set of values is right for every
+ * one of them, at every size, on every screen. The variables stay because
+ * Al-Dosari's photo is still an uncropped original.
+ */
+.medallion[data-reciter='burhaji-nabawi'],
+.medallion[data-reciter='turki'],
+.medallion[data-reciter='juhany'] {
+  --face-zoom: 100%;
+  --face-x: 50%;
+  --face-y: 50%;
 }
 
 /* ============ verify + import panels ============ */

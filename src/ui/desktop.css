@@ -1,4 +1,87 @@
 /* =====================================================================
+   Every screen
+   ---------------------------------------------------------------------
+   Steps at 30, 40, 48, 64 and 90rem, plus one that keys off height rather
+   than width — a phone on its side is not a small tablet, it is a very
+   short screen, and that is what actually breaks a layout built around a
+   pinned player and a fifteen-line page.
+   ===================================================================== */
+
+/* ---------------------------------------------------------------------
+   Small phones
+   At 320px the dock has to seat a capsule, a tab pill and a search circle
+   on one row, and their fixed chrome alone overruns the width. The
+   capsule gives up its text first: the surah is named in the list behind
+   it and in the sheet in front of it, so it is the one thing here that is
+   said twice.
+   --------------------------------------------------------------------- */
+@media (max-width: 23.5rem) {
+  .dock.is-tight .cap-text {
+    display: none;
+  }
+
+  .cap-art {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .dock-circle {
+    width: 3.1rem;
+    height: 3.1rem;
+  }
+
+  /* 604 cells across 28 columns leaves each one about 7px here, which is
+     not a target anyone can hit. Fewer, larger columns and a taller map. */
+  .heat {
+    grid-template-columns: repeat(14, 1fr);
+  }
+}
+
+/* ---------------------------------------------------------------------
+   Short screens — a phone on its side, mostly
+   The player sheet's own content is roughly 300px tall, which is the whole
+   viewport at 320. Without this it renders off the top of the screen with
+   no way to scroll back to it.
+   --------------------------------------------------------------------- */
+@media (max-height: 30rem) {
+  .player {
+    max-height: 100dvh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .medallion {
+    width: 3.2rem;
+    height: 3.2rem;
+  }
+
+  .player-top {
+    gap: var(--space-2);
+  }
+
+  .label,
+  .reciter-en,
+  .reciter-riwayah {
+    display: none;
+  }
+
+  .ctrl.big {
+    width: 3.2rem;
+    height: 3.2rem;
+  }
+
+  /* The reciter strip is the first thing worth losing when there is no
+     height to spare. */
+  .reciters {
+    padding-bottom: var(--space-1);
+  }
+
+  .chip-meta {
+    display: none;
+  }
+}
+
+/* ---------------------------------------------------------------------
    Wider screens
    ---------------------------------------------------------------------
    The layout is built phone-first, and a phone-shaped column stranded in
@@ -69,6 +152,14 @@
 /* ---------------------------------------------------------------------
    Tablet and up: the column can afford to breathe
    --------------------------------------------------------------------- */
+/* Large phones and unfolded foldables sat frozen at exactly 480px with the
+   margins growing around them all the way to 640. */
+@media (min-width: 30rem) {
+  .app {
+    max-width: 36rem;
+  }
+}
+
 @media (min-width: 40rem) {
   .app {
     max-width: 34rem;
@@ -78,6 +169,19 @@
      beside the name rather than under it. */
   .name-plain {
     font-size: 0.86rem;
+  }
+}
+
+/* An iPad in portrait is 768 or 834 wide and the rail does not arrive until
+   1024, so without this it showed a 544px phone column with a third of the
+   screen empty on either side. */
+@media (min-width: 48rem) {
+  .app {
+    max-width: 42rem;
+  }
+
+  .dock-tab {
+    font-size: 0.72rem;
   }
 }
 

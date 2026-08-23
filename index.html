@@ -3,10 +3,25 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <!-- Light only. The design has no dark variant; without this the browser
-         auto-darkens the page on phones set to dark mode. -->
-    <meta name="color-scheme" content="light only" />
+    <!-- Both, now that every theme has a dark palette. The active one is
+         pinned per theme in themes.css, so form controls and scrollbars
+         follow the palette rather than the browser's guess. Leaving this at
+         `light only` forced light chrome over a black Kiswah page. -->
+    <meta name="color-scheme" content="light dark" />
     <meta name="theme-color" content="#f6f0e6" />
+    <!--
+      Standalone on iOS. vite-plugin-pwa injects the manifest but not these,
+      and without the first one an older iPhone opens an "installed" app as a
+      plain Safari tab.
+
+      The bar style is `default` on purpose. The alternatives put content
+      under the status bar with light text, which is unreadable on the cream
+      and parchment themes — and the style is fixed at launch, so it cannot
+      follow the theme the way `theme-color` does. Letting iOS reserve the bar
+      and pick readable text is the only option that is right for all seven.
+    -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <!--
       Everything this page may talk to, enforced by the browser rather than
       promised in a policy document. Audio is the only outside origin, and it

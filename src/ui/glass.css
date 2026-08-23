@@ -84,7 +84,12 @@
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
-  padding: 0 var(--space-3) calc(var(--space-3) + env(safe-area-inset-bottom));
+  /* Clear of the home indicator, and of the notch when the phone is on its
+     side and the notch is on one of these edges. */
+  padding-block: 0 calc(var(--space-3) + env(safe-area-inset-bottom));
+  padding-inline:
+    max(var(--space-3), env(safe-area-inset-left))
+    max(var(--space-3), env(safe-area-inset-right));
   max-width: 30rem;
   margin: 0 auto;
   pointer-events: none;
@@ -134,8 +139,11 @@
   border-radius: 50%;
   flex: none;
   background-color: var(--tile);
-  background-size: var(--face-zoom) auto;
-  background-position: var(--face-x) var(--face-y);
+  /* `cover` rather than the medallion's tuned zoom: these are already square
+     crops, and cover is right whether the frame is a circle on a phone or a
+     rounded square on the rail. */
+  background-size: cover;
+  background-position: center;
   background-repeat: no-repeat;
   box-shadow: 0 0 0 1px var(--glass-ring);
 }
@@ -166,8 +174,8 @@
 }
 
 .cap-btn {
-  width: 2.6rem;
-  height: 2.6rem;
+  width: 2.75rem;
+  height: 2.75rem;
   flex: none;
   border: 0;
   background: none;
@@ -351,6 +359,9 @@
   margin-inline: auto;
   animation: sheet-up var(--t-slow) var(--ease-out);
   padding-bottom: calc(var(--space-4) + env(safe-area-inset-bottom));
+  padding-inline:
+    max(0px, env(safe-area-inset-left))
+    max(0px, env(safe-area-inset-right));
 }
 
 @keyframes sheet-up {
@@ -365,4 +376,37 @@
   .player {
     animation: none;
   }
+}
+
+/*
+ * A long press on a control in iOS raises the selection callout and can
+ * select the label inside it. Nothing in the dock is text to be copied.
+ */
+.dock button,
+.now-capsule,
+.cap-title,
+.cap-sub,
+.dock-tab span,
+.dock-circle-label {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/*
+ * While the list is moving the dock drops its blur for a flat fill. The
+ * backdrop has to be re-sampled and re-blurred every frame it is over
+ * something that moves, and those are precisely the frames with none to
+ * spare. It comes back the moment the list settles, which is when anyone is
+ * actually looking at it.
+ */
+.dock.is-scrolling .glass {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  background: rgb(var(--glass-tint) / 0.93);
+}
+
+/* Its own layer, so scrolling underneath never repaints it. */
+.dock .glass {
+  will-change: transform;
 }

@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import type { SurahView } from '../catalog/types'
 import type { Strings, Lang } from '../i18n'
 import { Play, Handle, Download, Saved } from './Icons'
@@ -22,7 +23,14 @@ type Props = {
   onDownload: (surah: number) => void
 }
 
-export function SurahList({
+/**
+ * Memoised, and its callers hand it stable callbacks.
+ *
+ * The player sets the playback position about four times a second. Without
+ * this the whole list reconciled on every one of those ticks — 114 rows of
+ * diffing, during the scroll that the ticks are most likely to coincide with.
+ */
+export const SurahList = memo(function SurahList({
   surahs,
   reciterId,
   lang,
@@ -153,4 +161,4 @@ export function SurahList({
       </ul>
     </>
   )
-}
+})

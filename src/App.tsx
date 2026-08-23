@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { loadCatalog, buildView, surahMeta } from './catalog/load'
-import type { Reciter } from './catalog/types'
+import type { Reciter, SurahView } from './catalog/types'
 import {
   effectiveVerified,
   getVerdicts,
@@ -750,13 +750,39 @@ export default function App() {
     return () => window.removeEventListener('keydown', onKey)
   }, [toggle, current, time, t.dir])
 
-  const dockTabs: DockTab[] = [
-    { id: 'library', label: t.tabLibrary, icon: <Library size={21} />, onSelect: () => setTab('library') },
-    { id: 'quran', label: t.tabQuran, icon: <QuranMark size={21} />, onSelect: () => setTab('quran') },
-    { id: 'text', label: t.tabText, icon: <Broadcast size={21} />, onSelect: openText },
-    { id: 'hifz', label: t.tabHifz, icon: <Heart size={21} />, onSelect: () => setTab('hifz') },
-    { id: 'more', label: t.tabMore, icon: <More size={21} />, onSelect: () => setTab('more') },
-  ]
+  /*
+   * The list's props have to keep their identity between renders or
+   * memoising it is pointless — a fresh closure is a changed prop. This
+   * matters because `timeupdate` sets `time` about four times a second, and
+   * without it all 114 rows reconcile on every tick while the user scrolls.
+   */
+  const isVerified = useCallback(
+    (s: SurahView) => effectiveVerified(reciterId, s, verdicts),
+    [reciterId, verdicts],
+  )
+
+  const startSurah = useCallback((n: number) => void playSurah(n), [playSurah])
+
+  const startDownload = useCallback(
+    (n: number) => {
+      const u = urls.get(n)
+      if (!u) return
+      const bytes = surahs.find((x) => x.surah === n)?.bytes
+      queue.current!.enqueue({ reciterId, surah: n, url: u, bytes })
+    },
+    [urls, surahs, reciterId],
+  )
+
+  const dockTabs: DockTab[] = useMemo(
+    () => [
+      { id: 'library', label: t.tabLibrary, icon: <Library size={21} />, onSelect: () => setTab('library') },
+      { id: 'quran', label: t.tabQuran, icon: <QuranMark size={21} />, onSelect: () => setTab('quran') },
+      { id: 'text', label: t.tabText, icon: <Broadcast size={21} />, onSelect: openText },
+      { id: 'hifz', label: t.tabHifz, icon: <Heart size={21} />, onSelect: () => setTab('hifz') },
+      { id: 'more', label: t.tabMore, icon: <More size={21} />, onSelect: () => setTab('more') },
+    ],
+    [t, openText],
+  )
 
   const pct = duration ? (time / duration) * 100 : 0
 
@@ -841,16 +867,10 @@ export default function App() {
               partials={partialsHere}
               progress={progress}
               current={current}
-              verified={(s) => effectiveVerified(reciterId, s, verdicts)}
+              verified={isVerified}
               rejected={rejected}
-              onPlay={(n) => void playSurah(n)}
-              onDownload={(n) => {
-                const u = urls.get(n)
-                if (u) {
-                  const bytes = surahs.find((x) => x.surah === n)?.bytes
-                  queue.current!.enqueue({ reciterId, surah: n, url: u, bytes })
-                }
-              }}
+              onPlay={startSurah}
+              onDownload={startDownload}
             />
           )}
 

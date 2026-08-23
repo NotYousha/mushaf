@@ -1,4 +1,12 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import type { Strings } from '../i18n'
 import {
   loadLayout,
@@ -65,6 +73,45 @@ const arabicNumber = (n: number) =>
 
 const NAMES = new Map((surahMeta as { surah: number; name: string }[]).map((m) => [m.surah, m.name]))
 
+/**
+ * One word of the page.
+ *
+ * Memoised because the highlight moves several times a second while audio
+ * plays, and without this every word on the page — about a hundred and fifty
+ * of them — was reconciled on each move to change the class on two.
+ */
+const MushafWord = memo(function MushafWord({
+  text,
+  wordKey,
+  active,
+  lead,
+  onSeek,
+}: {
+  text: string
+  wordKey: string | undefined
+  active: boolean
+  lead: boolean
+  onSeek?: (key: string) => void
+}) {
+  if (!wordKey) {
+    return (
+      <span className="ayah-mark" aria-hidden="true">
+        {text}
+      </span>
+    )
+  }
+  return (
+    <span
+      className={`mw${active ? ' is-now' : ''}${onSeek ? ' tap' : ''}${
+        lead ? ' is-lead' : ''
+      }`}
+      onClick={onSeek ? () => onSeek(wordKey) : undefined}
+    >
+      {text}
+    </span>
+  )
+})
+
 export { ayahStartsFor } from '../mushaf/data'
 
 export function MushafView({
@@ -86,7 +133,6 @@ export function MushafView({
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(0)
   const [manual, setManual] = useState(false)
-  const activeRef = useRef<HTMLSpanElement | null>(null)
   const pageRef = useRef<HTMLDivElement | null>(null)
   const [zoomIdx, setZoomIdx] = useState(0)
   const [veil, setVeil] = useState<Veil>('off')
@@ -214,7 +260,11 @@ export function MushafView({
   }, [gotoPage, onWentToPage])
 
   useEffect(() => {
-    activeRef.current?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+    // Located rather than held by a ref: a ref on the active word would be a
+    // changing prop, which is exactly what memoising the word avoids.
+    pageRef.current
+      ?.querySelector('.mw.is-now')
+      ?.scrollIntoView({ block: 'center', behavior: 'smooth' })
   }, [activeKey])
 
   /**
@@ -252,9 +302,23 @@ export function MushafView({
       widest = Math.max(widest, w)
     }
     if (!widest) return
+    /*
+     * A page has to fit the screen in both directions. Width alone is the
+     * obvious constraint and the only one that matters in portrait, but turn
+     * the phone on its side and width becomes plentiful while height nearly
+     * vanishes — measuring width only, the type scaled *up* and pushed
+     * fifteen lines a long way past the bottom of the screen.
+     */
+    const lines = el.querySelectorAll('.mushaf-line').length || 15
+    const viewport = window.innerHeight || 800
+    // What is left after the dock and the page's own chrome.
+    const budget = Math.max(160, viewport - 190)
+    // Each line occupies its line-height, which is 2.5em of the page's size.
+    const byHeight = budget / (lines * 2.5 * base)
+
     // Clamped: never so small it cannot be read, never larger than a page of
     // print would be on this width.
-    const fit = Math.max(0.62, Math.min(1.9, (avail / widest) * 0.995))
+    const fit = Math.max(0.62, Math.min(1.9, byHeight, (avail / widest) * 0.995))
     el.style.setProperty('--fit', String(fit))
     el.style.setProperty('--zoom', String(ZOOMS[zoomRef.current]))
   }, [])
@@ -262,6 +326,18 @@ export function MushafView({
   useLayoutEffect(() => {
     fitPage()
   }, [fitPage, page, layout, zoomIdx])
+
+  // A rotation changes the height budget, and on iOS does not always fire a
+  // resize on the page element itself.
+  useEffect(() => {
+    const onResize = () => fitPage()
+    window.addEventListener('resize', onResize)
+    window.addEventListener('orientationchange', onResize)
+    return () => {
+      window.removeEventListener('resize', onResize)
+      window.removeEventListener('orientationchange', onResize)
+    }
+  }, [fitPage])
 
   useEffect(() => {
     if (typeof ResizeObserver === 'undefined') return
@@ -282,17 +358,21 @@ export function MushafView({
   // Showing Hafs words under a recitation of a different riwayah would be
   // worse than showing nothing: the reader would follow along and find the
   // page disagreeing with the voice, with no explanation.
+  const jumpTo = useCallback(
+    (key: string) => {
+      if (!onSeek) return
+      const hit = schedule.find((s) => s.key === key)
+      if (hit) onSeek(hit.at / 1000)
+    },
+    [onSeek, schedule],
+  )
+
   if (riwayah) return <p className="empty">{t.differentRiwayah(riwayah)}</p>
   if (loading) return <p className="empty">{t.loading}</p>
   if (!layout) return <p className="empty">{t.noResults}</p>
 
   const lines = layout.pages[page] ?? []
 
-  const jumpTo = (key: string) => {
-    if (!onSeek) return
-    const hit = schedule.find((s) => s.key === key)
-    if (hit) onSeek(hit.at / 1000)
-  }
 
   // The line Talqeen is on, marked so you can see where to pick up — and,
   // while it is your turn, veiled, because reading it back defeats the point.
@@ -346,31 +426,18 @@ export function MushafView({
               line.w.length <= 3 ? ' is-short' : ''
             }`}
           >
-            {line.w.map((w, i) => {
-              const key = w[1]
-              const isEnd = !key
-              // A line can open with an ayah rosette, so "first word" is not
-              // the same as first child.
-              const isLead = i === line.w.findIndex((x) => x[1])
-              const active = key !== undefined && key === activeKey
-              return (
-                <span
-                  key={`${line.n}-${i}`}
-                  ref={active ? activeRef : undefined}
-                  className={
-                    isEnd
-                      ? 'ayah-mark'
-                      : `mw${active ? ' is-now' : ''}${onSeek ? ' tap' : ''}${
-                          isLead ? ' is-lead' : ''
-                        }`
-                  }
-                  aria-hidden={isEnd ? 'true' : undefined}
-                  onClick={key && onSeek ? () => jumpTo(key) : undefined}
-                >
-                  {w[0]}
-                </span>
-              )
-            })}
+            {line.w.map((w, i) => (
+              <MushafWord
+                key={`${line.n}-${i}`}
+                text={w[0]}
+                wordKey={w[1]}
+                // A line can open with an ayah rosette, so "first word" is
+                // not the same as first child.
+                lead={i === line.w.findIndex((x) => x[1])}
+                active={w[1] !== undefined && w[1] === activeKey}
+                onSeek={onSeek ? jumpTo : undefined}
+              />
+            ))}
           </p>
         </div>
           )

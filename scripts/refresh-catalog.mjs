@@ -91,7 +91,7 @@ const SOURCES = {
     nameEn: 'Badr Al-Turki',
     fullName: 'الشيخ بدر التركي',
     mushaf: 'إنتاج المركز السعودي للتلاوات القرآنية',
-    photo: null,
+    photo: 'turki.webp',
   },
   'burhaji-nabawi': {
     route: 'b',
@@ -102,7 +102,7 @@ const SOURCES = {
     fullName: 'أ. د. محمد برهجي',
     mushaf: 'المصحف المرتل من مسجد رسول الله ﷺ',
     mushafEn: "The Prophet's Mosque",
-    photo: 'burhaji.jpg',
+    photo: 'burhaji.webp',
     /**
      * The source's files in the 94-102 range hold each other's recitations.
      * Comparing our exact durations against the QUA reference timings for
@@ -151,7 +151,7 @@ const SOURCES = {
     partialOk: true,
     mushaf: 'مصحف برواية الدوري عن أبي عمرو البصري',
     mushafEn: 'Mushaf in the riwayah of Ad-Duri',
-    photo: null,
+    photo: 'juhany.webp',
     exclude: [],
   },
 }

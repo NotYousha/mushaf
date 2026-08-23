@@ -935,7 +935,7 @@
    "mushaf": "المصحف المرتل من مسجد رسول الله ﷺ",
    "mushafEn": "The Prophet's Mosque",
    "source": "https://mushaf-audio.mushaftarteel.workers.dev/b/{surah}.mp3",
-   "photo": "burhaji.jpg",
+   "photo": "burhaji.webp",
    "released": 114,
    "total": 114,
    "surahs": [
@@ -1860,7 +1860,7 @@
    "fullName": "الشيخ بدر التركي",
    "mushaf": "إنتاج المركز السعودي للتلاوات القرآنية",
    "source": "https://mushaf-audio.mushaftarteel.workers.dev/t/{surah}.mp3",
-   "photo": null,
+   "photo": "turki.webp",
    "released": 114,
    "total": 114,
    "surahs": [
@@ -2788,7 +2788,7 @@
    "riwayah": "رواية الدوري عن أبي عمرو البصري",
    "riwayahEn": "Ad-Duri from Abu Amr al-Basri",
    "source": "https://mushaf-audio.mushaftarteel.workers.dev/j/{surah}.mp3",
-   "photo": null,
+   "photo": "juhany.webp",
    "released": 83,
    "total": 114,
    "surahs": [
