@@ -269,6 +269,11 @@
   transform: scale(0.94);
 }
 
+/* The circle is only a circle on a phone, where there is no room to say so. */
+.dock-circle-label {
+  display: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .now-capsule,
   .dock-tabs,

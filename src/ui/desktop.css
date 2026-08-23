@@ -1,0 +1,296 @@
+/* =====================================================================
+   Wider screens
+   ---------------------------------------------------------------------
+   The layout is built phone-first, and a phone-shaped column stranded in
+   the middle of a 27-inch monitor is the giveaway that nobody thought
+   about the desktop. But a Quran app should not run edge to edge either:
+   a line of Uthmani text a metre wide is unreadable, and the surah list
+   gains nothing from being 2000px across.
+
+   So the column stays a column and the chrome moves out of its way. The
+   dock stops being a bar across the bottom and becomes a rail down the
+   side, which is where a pointer expects navigation and where it costs
+   the reading area nothing.
+   ===================================================================== */
+
+/* ---------------------------------------------------------------------
+   Pointer affordances
+   Touch has no hover, so every one of these is gated. On a phone they
+   would fire on tap and leave controls looking stuck.
+   --------------------------------------------------------------------- */
+@media (hover: hover) and (pointer: fine) {
+  .row:hover {
+    background: var(--card-2);
+  }
+
+  .row-main:hover .name-ar {
+    color: var(--ink-strong);
+  }
+
+  .mini:hover,
+  .ctrl:hover,
+  .round:hover,
+  .cap-btn:hover,
+  .dock-circle:hover {
+    color: var(--ink-strong);
+    background: rgb(var(--shadow-rgb) / 0.06);
+  }
+
+  .dock-tab:hover:not([aria-selected='true']) {
+    color: var(--ink-strong);
+  }
+
+  .chip:hover,
+  .theme-card:hover,
+  .due-row:hover {
+    box-shadow: var(--shadow-sm);
+  }
+
+  .heat-cell:hover {
+    outline: 1.5px solid var(--accent);
+    outline-offset: 1px;
+  }
+
+  .mw.tap:hover {
+    background: var(--tile);
+  }
+
+  /* The track is a slider; say so before it is dragged. */
+  .track:hover .knob {
+    transform: scale(1.25);
+  }
+}
+
+/* A scrollbar that appears on hover must not shove the layout sideways. */
+.scroll {
+  scrollbar-gutter: stable;
+}
+
+/* ---------------------------------------------------------------------
+   Tablet and up: the column can afford to breathe
+   --------------------------------------------------------------------- */
+@media (min-width: 40rem) {
+  .app {
+    max-width: 34rem;
+  }
+
+  /* Two lines of a surah name fit comfortably now, so the meaning can sit
+     beside the name rather than under it. */
+  .name-plain {
+    font-size: 0.86rem;
+  }
+}
+
+/* ---------------------------------------------------------------------
+   Desktop: rail beside the reading column
+   --------------------------------------------------------------------- */
+@media (min-width: 64rem) {
+  .app {
+    max-width: 68rem;
+    display: grid;
+    grid-template-columns: 15rem minmax(0, 1fr);
+    grid-template-areas: 'rail main';
+    align-items: stretch;
+    gap: var(--space-4);
+    padding-inline: var(--space-4);
+  }
+
+  .sheet {
+    grid-area: main;
+    margin: var(--space-4) 0;
+    /* Past this the row's name and its controls drift so far apart that the
+       eye stops connecting them. */
+    max-width: 46rem;
+    margin-inline: auto;
+    width: 100%;
+  }
+
+  /*
+   * The dock unfolds into a rail. It leaves the fixed layer entirely —
+   * on a pointer device there is no scrolling-away to do, so it simply
+   * sits in the grid and never overlaps what is being read.
+   */
+  .dock {
+    grid-area: rail;
+    position: static;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: var(--space-3);
+    padding: var(--space-4) 0;
+    max-width: none;
+    margin: 0;
+  }
+
+  .dock-tabs {
+    order: 1;
+    flex: none;
+    flex-direction: column;
+    align-items: stretch;
+    height: auto;
+    padding: var(--space-2);
+    border-radius: var(--radius-lg);
+  }
+
+  .dock-tab {
+    /* Icon and label on one line, as a sidebar item reads. */
+    grid-auto-flow: column;
+    grid-template-columns: 1.6rem 1fr;
+    justify-items: start;
+    align-items: center;
+    gap: var(--space-2);
+    max-width: none;
+    padding: 0.7rem var(--space-3);
+    font-size: 0.9rem;
+    border-radius: var(--radius-sm);
+  }
+
+  /* Nothing folds away on a desktop: there is no scroll gesture to
+     trigger it and no screen height to reclaim. */
+  .dock.is-tight .dock-tab:not([aria-selected='true']) {
+    max-width: none;
+    padding-inline: var(--space-3);
+    opacity: 1;
+  }
+
+  .dock.is-tight .dock-tab span {
+    display: block;
+  }
+
+  .dock.is-tight .dock-tabs {
+    flex-grow: 0;
+  }
+
+  /*
+   * On the rail the capsule becomes a card: artwork across the top, then the
+   * transport side by side underneath. Laid out as a grid rather than a
+   * column so the two buttons share a row without needing a wrapper element
+   * that would only exist for desktop.
+   */
+  .now-capsule,
+  .dock.is-tight .now-capsule {
+    order: 2;
+    flex: none;
+    --cap-basis: auto;
+    height: auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: stretch;
+    gap: var(--space-2);
+    padding: var(--space-3);
+    border-radius: var(--radius-lg);
+  }
+
+  .cap-open {
+    grid-column: 1 / -1;
+  }
+
+  .cap-open {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--space-2);
+    margin-bottom: var(--space-1);
+  }
+
+  /* Room for real artwork once there is a rail to put it in. */
+  .cap-art {
+    width: 8rem;
+    height: 8rem;
+    border-radius: var(--radius-md);
+  }
+
+  .cap-text {
+    text-align: center;
+    width: 100%;
+  }
+
+  .cap-title {
+    font-size: 1.15rem;
+    white-space: normal;
+  }
+
+  .now-capsule .cap-btn {
+    width: 100%;
+    height: 2.8rem;
+    border-radius: var(--radius-sm);
+    background: rgb(var(--shadow-rgb) / 0.05);
+  }
+
+  .dock-circle {
+    order: 3;
+    width: 100%;
+    height: 3.2rem;
+    border-radius: var(--radius-sm);
+    grid-auto-flow: column;
+    grid-template-columns: 1.6rem 1fr;
+    justify-items: start;
+    align-items: center;
+    gap: var(--space-2);
+    padding-inline: var(--space-3);
+  }
+
+  .dock-circle-label {
+    display: block;
+    font-size: 0.9rem;
+  }
+
+  /* The sheet belongs over the reading column, not the rail. */
+  .player {
+    inset-inline-start: auto;
+    inset-inline-end: auto;
+    max-width: 40rem;
+  }
+
+  .scroll {
+    padding-bottom: var(--space-4);
+  }
+
+  /*
+   * A printed page has a measure, and it does not grow because the window
+   * did. Past this width the page stops widening and centres instead, so
+   * a line of Uthmani never runs further than an eye can track.
+   */
+  .mushaf-page,
+  .paged-mushaf {
+    max-width: 34rem;
+    margin-inline: auto;
+  }
+
+  .theme-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .heat {
+    grid-template-columns: repeat(44, 1fr);
+  }
+}
+
+/* ---------------------------------------------------------------------
+   Very wide: stop growing, start centring
+   --------------------------------------------------------------------- */
+@media (min-width: 90rem) {
+  .app {
+    max-width: 76rem;
+  }
+}
+
+/*
+ * A second column was tried here and removed. CSS columns flow top to bottom
+ * and then across, so inside a vertical scroller the list ran to surah 59 in
+ * one column and continued in the next — which reads as two unrelated lists —
+ * and column fragmentation fought `content-visibility` badly enough to leave
+ * rows half-painted. One column, wider, is simply better.
+ */
+
+/* A keyboard is a first-class input here, so the focus ring is never the
+   thing that got left out. */
+.dock-tab:focus-visible,
+.dock-circle:focus-visible,
+.cap-open:focus-visible,
+.cap-btn:focus-visible,
+.theme-card:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}

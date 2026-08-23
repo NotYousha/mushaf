@@ -87,6 +87,7 @@ import './ui/theme.css'
 import './ui/themes.css'
 import './ui/glass.css'
 import './ui/motion.css'
+import './ui/desktop.css'
 
 type Tab = 'quran' | 'library' | 'text' | 'hifz' | 'more'
 const SPEEDS = [1, 1.25, 1.5, 0.75]
@@ -496,6 +497,7 @@ export default function App() {
     applyNativeInsets()
   }, [])
 
+
   useEffect(() => {
     publishTab(tab)
   }, [tab])
@@ -702,6 +704,51 @@ export default function App() {
     // often. The accessory updates on the transitions that matter.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentView?.surah, reciter?.id, playing])
+
+  /**
+   * Keyboard transport.
+   *
+   * Space and the arrows are what a listener reaches for before the mouse.
+   * They are ignored while a field or a control has focus, so typing a surah
+   * name into the search box does not pause the recitation on every space.
+   */
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const el = e.target as HTMLElement | null
+      const tag = el?.tagName
+      if (
+        e.metaKey ||
+        e.ctrlKey ||
+        e.altKey ||
+        tag === 'INPUT' ||
+        tag === 'TEXTAREA' ||
+        el?.isContentEditable
+      ) {
+        return
+      }
+      // The transport keys act on the player even when a button has focus;
+      // Enter and Space on a focused button are the browser's to handle.
+      if (e.code === 'Space' && tag !== 'BUTTON') {
+        e.preventDefault()
+        void toggle()
+        return
+      }
+      if (current === null) return
+      // Left and right are mirrored in an RTL interface: back is the side
+      // the text runs from.
+      const back = t.dir === 'rtl' ? 'ArrowRight' : 'ArrowLeft'
+      const forward = t.dir === 'rtl' ? 'ArrowLeft' : 'ArrowRight'
+      if (e.key === back) {
+        e.preventDefault()
+        engine.current!.seek(Math.max(0, time - 10))
+      } else if (e.key === forward) {
+        e.preventDefault()
+        engine.current!.seek(time + 10)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [toggle, current, time, t.dir])
 
   const dockTabs: DockTab[] = [
     { id: 'library', label: t.tabLibrary, icon: <Library size={21} />, onSelect: () => setTab('library') },

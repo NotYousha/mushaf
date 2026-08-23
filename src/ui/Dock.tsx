@@ -138,6 +138,9 @@ export function Dock({
 
       <button className="dock-circle glass" onClick={onSearch} aria-label={t.search}>
         <Search size={22} />
+        {/* Shown only on the rail, where every other item is labelled and a
+            lone icon would look unfinished. */}
+        <span className="dock-circle-label">{t.search}</span>
       </button>
     </div>
   )
