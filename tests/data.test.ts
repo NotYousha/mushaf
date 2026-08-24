@@ -2,8 +2,6 @@ import { describe, it, expect } from 'vitest'
 import catalog from '../data/catalog.json'
 import surahs from '../data/surahs.json'
 import imams from '../data/imams.json'
-import haramData from '../data/haram-years.json'
-import { haramReciters, imamsOf, arabicDigits } from '../src/catalog/haram'
 
 const reciters = catalog.reciters
 

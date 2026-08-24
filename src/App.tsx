@@ -83,7 +83,7 @@ import {
 } from './ui/theming'
 import { isHafs, riwayahLabel } from './catalog/riwayah'
 import { artistFor, artistForEn, voiceLabel } from './catalog/voice'
-import { arabicDigits, imamsOf } from './catalog/haram'
+import { arabicDigits, imamsOf, PLACES, type Place } from './catalog/mosques'
 import { inScript, isArabicScript } from './i18n/script'
 import { Splash } from './ui/Splash'
 import './ui/theme.css'
@@ -126,13 +126,14 @@ export default function App() {
   const t = stringsFor(lang)
   const [confirmAll, setConfirmAll] = useState(false)
   /**
-   * Whether the Grand Mosque year picker is open.
+   * Which mosque's year picker is open, if any.
    *
-   * Closed by default, and closed again once a year is chosen: thirty-three
-   * rows standing open under the strip pushes the surahs off the screen for
-   * everyone, including the four people in five who never touch them.
+   * Closed by default, and closed again once a year is chosen: fifty-odd rows
+   * standing open under the strip pushes the surahs off the screen for
+   * everyone, including the people who never touch them. Only one opens at a
+   * time, so the two never stack.
    */
-  const [yearsOpen, setYearsOpen] = useState(false)
+  const [yearsOpen, setYearsOpen] = useState<Place | null>(null)
   const [queued, setQueued] = useState(0)
   const [canCast, setCanCast] = useState(false)
   const [persisted, setPersisted] = useState<boolean | null>(null)
@@ -166,12 +167,17 @@ export default function App() {
    * to scroll past rather than choose from.
    */
   const individual = useMemo(() => reciters.filter((r) => !r.group), [reciters])
-  const haramYears = useMemo(
-    () => reciters.filter((r) => r.group === 'haram' && r.year),
-    [reciters],
-  )
-  /** The year currently being listened to, or null when it is a mushaf. */
-  const haramYear = reciter?.group === 'haram' ? (reciter.year ?? null) : null
+  /** Each mosque's years, newest first, keyed by mosque. */
+  const mosqueYears = useMemo(() => {
+    const by = new Map<Place, Reciter[]>()
+    for (const m of PLACES) {
+      by.set(m.place, reciters.filter((r) => r.group === m.place && r.year))
+    }
+    return by
+  }, [reciters])
+  /** The mosque and year being listened to, or nulls when it is a mushaf. */
+  const openPlace = (reciter?.group ?? null) as Place | null
+  const openYear = openPlace ? (reciter?.year ?? null) : null
 
   const urls = useMemo(
     () => new Map(surahs.filter((s) => s.url).map((s) => [s.surah, s.url as string])),
@@ -850,7 +856,7 @@ export default function App() {
           </div>
         </div>
 
-        {(individual.length > 1 || haramYears.length > 0) && (
+        {(individual.length > 1 || mosqueYears.size > 0) && (
           <div className="reciters" role="tablist" aria-label="القارئ">
             {individual.map((r) => (
               <button
@@ -863,7 +869,7 @@ export default function App() {
                 // the edge and the row looks arbitrary.
                 ref={r.id === reciterId ? selectedChip : undefined}
                 onClick={() => {
-                  setYearsOpen(false)
+                  setYearsOpen(null)
                   void switchReciter(r.id)
                 }}
               >
@@ -878,88 +884,109 @@ export default function App() {
               </button>
             ))}
 
-            {/* One chip for thirty-three years. It opens the picker rather
-                than selecting anything, because there is no sensible default
-                year to jump to — and it reads as selected whenever one of its
-                years is the thing playing. */}
-            {haramYears.length > 0 && (
-              <button
-                role="tab"
-                aria-selected={haramYear !== null}
-                aria-expanded={yearsOpen}
-                aria-controls="haram-years"
-                className={`chip chip-group${yearsOpen ? ' is-open' : ''}`}
-                ref={haramYear !== null && !yearsOpen ? selectedChip : undefined}
-                onClick={() => setYearsOpen((v) => !v)}
-              >
-                <span className="chip-name">{t.haramShort}</span>
-                <span className="chip-meta">
-                  {haramYear !== null
-                    ? isArabicScript(lang)
-                      ? arabicDigits(haramYear)
-                      : haramYear
-                    : t.haramCount(haramYears.length)}
-                  <Chevron size={12} />
-                </span>
-              </button>
-            )}
+            {/* One chip per mosque, standing for all its years. Each opens a
+                picker rather than selecting anything, because there is no
+                sensible default year to jump to — and it reads as selected
+                whenever one of its own years is the thing playing. */}
+            {PLACES.map((m) => {
+              const years = mosqueYears.get(m.place) ?? []
+              if (!years.length) return null
+              const here = openPlace === m.place
+              const open = yearsOpen === m.place
+              return (
+                <button
+                  key={m.place}
+                  role="tab"
+                  aria-selected={here}
+                  aria-expanded={open}
+                  aria-controls={`years-${m.place}`}
+                  className={`chip chip-group${open ? ' is-open' : ''}`}
+                  ref={here && !open ? selectedChip : undefined}
+                  onClick={() => setYearsOpen(open ? null : m.place)}
+                >
+                  <span className="chip-name">{inScript(lang, m.shortAr, m.shortEn)}</span>
+                  <span className="chip-meta">
+                    {here && openYear !== null
+                      ? isArabicScript(lang)
+                        ? arabicDigits(openYear)
+                        : openYear
+                      : t.haramCount(years.length)}
+                    <Chevron size={12} />
+                  </span>
+                </button>
+              )
+            })}
           </div>
         )}
 
-        {haramYears.length > 0 && (
-          /* Kept mounted and collapsed rather than unmounted, so it folds
-             away on the way out as well as on the way in. Closed, it is
-             visibility:hidden, which takes it out of the tab order and off
-             a screen reader without costing the animation. */
-          <section className={`years${yearsOpen ? ' is-open' : ''}`} id="haram-years">
-            <div className="years-inner">
-            <div className="years-head">
-              <h3>{t.haramPick}</h3>
-              <span className="years-count">{t.haramCount(haramYears.length)}</span>
-            </div>
-            {/* Newest first: the year someone wants is nearly always the last
-                one, and 1414 is a long scroll away from the top. */}
-            <div className="years-scroll" role="tablist" aria-label={t.haramYears}>
-              {haramYears.map((r) => {
-                const selected = r.id === reciterId
-                const led = imamsOf(r.year!)
-                const arabicScript = isArabicScript(lang)
-                return (
-                  <button
-                    key={r.id}
-                    role="tab"
-                    aria-selected={selected}
-                    className={`year${selected ? ' is-on' : ''}`}
-                    ref={selected ? selectedChip : undefined}
-                    // Chosen, so the picker gets out of the way and gives the
-                    // surahs back the half of the screen it was holding.
-                    onClick={() => {
-                      setYearsOpen(false)
-                      void switchReciter(r.id)
-                    }}
-                  >
-                    <span className="year-num">
-                      {arabicScript ? arabicDigits(r.year!) : r.year}
-                    </span>
-                    <span className="year-body">
-                      {r.ce ? <span className="year-ce">{r.ce}</span> : null}
-                      {led.length > 0 && (
-                        <span className="year-imams">
-                          <span className="year-led">{t.haramLed}</span>{' '}
-                          {led.map((i) => inScript(lang, i.name, i.nameEn)).join(' · ')}
+        {PLACES.map((m) => {
+          const years = mosqueYears.get(m.place) ?? []
+          if (!years.length) return null
+          const open = yearsOpen === m.place
+          return (
+            /* Kept mounted and collapsed rather than unmounted, so it folds
+               away on the way out as well as on the way in. Closed, it is
+               visibility:hidden, which takes it out of the tab order and off
+               a screen reader without costing the animation. */
+            <section
+              key={m.place}
+              className={`years${open ? ' is-open' : ''}`}
+              id={`years-${m.place}`}
+            >
+              <div className="years-inner">
+                <div className="years-head">
+                  <h3>
+                    {t.haramPick} · {inScript(lang, m.ar, m.en)}
+                  </h3>
+                  <span className="years-count">{t.haramCount(years.length)}</span>
+                </div>
+                {/* Newest first: the year someone wants is nearly always the
+                    last one, and the oldest is a long scroll from the top. */}
+                <div
+                  className="years-scroll"
+                  role="tablist"
+                  aria-label={inScript(lang, m.ar, m.en)}
+                >
+                  {years.map((r) => {
+                    const selected = r.id === reciterId
+                    const led = imamsOf(m.place, r.year!)
+                    return (
+                      <button
+                        key={r.id}
+                        role="tab"
+                        aria-selected={selected}
+                        className={`year${selected ? ' is-on' : ''}`}
+                        ref={selected ? selectedChip : undefined}
+                        // Chosen, so the picker gets out of the way and gives
+                        // the surahs back the screen it was holding.
+                        onClick={() => {
+                          setYearsOpen(null)
+                          void switchReciter(r.id)
+                        }}
+                      >
+                        <span className="year-num">
+                          {isArabicScript(lang) ? arabicDigits(r.year!) : r.year}
                         </span>
-                      )}
-                    </span>
-                    <span className="year-size">
-                      {formatBytes(r.surahs.reduce((a, s) => a + s.bytes, 0))}
-                    </span>
-                  </button>
-                )
-              })}
-            </div>
-            </div>
-          </section>
-        )}
+                        <span className="year-body">
+                          {r.ce ? <span className="year-ce">{r.ce}</span> : null}
+                          {led.length > 0 && (
+                            <span className="year-imams">
+                              <span className="year-led">{t.haramLed}</span>{' '}
+                              {led.map((i) => inScript(lang, i.name, i.nameEn)).join(' · ')}
+                            </span>
+                          )}
+                        </span>
+                        <span className="year-size">
+                          {formatBytes(r.surahs.reduce((a, s) => a + s.bytes, 0))}
+                        </span>
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
+            </section>
+          )
+        })}
 
         {tab === 'quran' && (
           <div className="search">
@@ -1144,19 +1171,23 @@ export default function App() {
               />
 
               <h2 style={{ marginTop: '1.6rem' }}>{t.reciters}</h2>
-              {/* One paragraph per Grand Mosque year would be thirty-three of
-                  them saying nearly the same thing. They are described once,
-                  and chosen from the year list instead. */}
-              {haramYears.length > 0 && (
-                <p>
-                  <strong>{t.haramYears}</strong>
-                  <br />
-                  {haramYears[haramYears.length - 1].year}–{haramYears[0].year} ·{' '}
-                  {t.haramCount(haramYears.length)}
-                  <br />
-                  <span style={{ color: 'var(--muted)' }}>{haramYears[0].note}</span>
-                </p>
-              )}
+              {/* One paragraph per year would be fifty-six of them saying
+                  nearly the same thing. Each mosque is described once, and
+                  its years chosen from the picker instead. */}
+              {PLACES.map((m) => {
+                const years = mosqueYears.get(m.place) ?? []
+                if (!years.length) return null
+                return (
+                  <p key={m.place}>
+                    <strong>{inScript(lang, m.ar, m.en)}</strong>
+                    <br />
+                    {years[years.length - 1].year}–{years[0].year} ·{' '}
+                    {t.haramCount(years.length)}
+                    <br />
+                    <span style={{ color: 'var(--muted)' }}>{years[0].note}</span>
+                  </p>
+                )
+              })}
               {individual.map((r) => (
                 <p key={r.id}>
                   <strong>{inScript(lang, r.fullName, r.nameEn)}</strong>

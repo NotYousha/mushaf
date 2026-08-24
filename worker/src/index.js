@@ -16,20 +16,21 @@
  *                   sends no CORS header and is unreachable from some
  *                   networks entirely — the proxy fixes both.
  *
- *   /haram/{year}/{1-114}.mp3
- *                   The Grand Mosque's mushaf, one archive.org item per year
- *                   (Mecca{year}), each assembled from that Ramadan's
- *                   Taraweeh and Tahajjud. Thirty-three years, 1414-1447,
- *                   except 1416 whose item is missing surah 12.
- *                   /h/{1-114}.mp3 is 1447 under the name it first shipped
- *                   with, kept because that catalog is on people's devices.
- *                   Archive.org does send
- *                   Access-Control-Allow-Origin: *, so this one looks as
- *                   though it needs no proxy — it does. Archive sends no
- *                   Access-Control-Expose-Headers, and neither ETag nor
- *                   Content-Range is CORS-safelisted, so a browser reads
- *                   null for both: no total to size the download against
- *                   and no validator to resume with.
+ *   /haram/{year}/{1-114}.mp3    the Grand Mosque, item Mecca{year}
+ *   /nabawi/{year}/{1-114}.mp3   the Prophet's Mosque, item Nabawi{year}
+ *                   One archive.org item per Ramadan, each assembled from
+ *                   that year's Taraweeh and Tahajjud, 114 files named
+ *                   001.mp3 .. 114.mp3. Not every year is served: see
+ *                   MOSQUES below and scripts/build-mosque-years.mjs.
+ *                   /h/{1-114}.mp3 is Makkah 1447 under the name it first
+ *                   shipped with, kept because that catalog is already on
+ *                   people's devices.
+ *                   Archive.org does send Access-Control-Allow-Origin: *, so
+ *                   these look as though they need no proxy — they do.
+ *                   Archive sends no Access-Control-Expose-Headers, and
+ *                   neither ETag nor Content-Range is CORS-safelisted, so a
+ *                   browser reads null for both: no total to size a download
+ *                   against and no validator to resume with.
  *
  * Every route resolves the real audio URL on demand, caches that resolution, and
  * stream the file back with CORS attached. Range requests pass through, so
@@ -76,34 +77,50 @@ const HARAMAIN = {
 const HARAMAIN_INDEX_TTL = 6 * 60 * 60
 const HARAMAIN_PAGE_TTL = 7 * 24 * 60 * 60
 
-/* ---------------- Haram 1447 Taraweeh ----------------
- * Unlike the mushafs above, this one is not a single sheikh's. Taraweeh and
- * Tahajjud at the Grand Mosque rotate imams across the month, so the
- * attribution belongs per surah in the catalog rather than on the reciter.
+/* ---------------- the two mosques, by year ----------------
+ * Unlike the mushafs above, these are not one sheikh's. Taraweeh and Tahajjud
+ * rotate imams across the month, so attribution belongs per surah rather than
+ * on the reciter — and since no source records which surah is whose, the app
+ * asserts none of it.
  *
- * Ramadan 1447 is over, so this list does not grow: there is no index to
- * scrape and no /count/h route.
+ * These Ramadans are over, so the lists do not grow: no index to scrape and
+ * no /count route.
  *
- * The item is addressed through archive.org/download rather than the node it
- * currently lives on (ia801807 at the time of writing). Nodes rotate and
- * individual ones go unhealthy; /download always redirects to a live one,
- * which the runtime follows.
+ * Items are addressed through archive.org/download rather than the node they
+ * currently live on. Nodes rotate and individual ones go unhealthy;
+ * /download always redirects to a live one, which the runtime follows.
  */
-const HARAM_FIRST = 1414
-const HARAM_LAST = 1447
-/** Its item is missing surah 12, so the year is not served at all. */
-const HARAM_SKIP = new Set([1416])
+/**
+ * The years each mosque publishes.
+ *
+ * The skip lists are not arbitrary. Every entry is an item that was checked
+ * and found not to be what it claims: one missing a surah outright, two whose
+ * file numbering is shifted so Al-Baqarah is not the largest file, two running
+ * at half the pace of every other year, four where the Madinah item holds the
+ * Makkah recording, and one a listener reported as the wrong recitation.
+ * scripts/build-mosque-years.mjs carries the reason for each, and the app's
+ * data is generated from the same lists — they must not drift apart.
+ */
+const MOSQUES = {
+  haram: { item: 'Mecca', first: 1414, last: 1447, skip: new Set([1416, 1430, 1443]) },
+  nabawi: {
+    item: 'Nabawi',
+    first: 1416,
+    last: 1447,
+    skip: new Set([1421, 1422, 1423, 1437, 1441, 1443, 1446]),
+  },
+}
 
-const haramYearOk = (year) =>
-  Number.isInteger(year) && year >= HARAM_FIRST && year <= HARAM_LAST && !HARAM_SKIP.has(year)
+const mosqueYearOk = (m, year) =>
+  Number.isInteger(year) && year >= m.first && year <= m.last && !m.skip.has(year)
 
 /**
- * Files are named 001.mp3 through 114.mp3 in every year's item, with no surah
- * name to encode. The year is bounded above rather than interpolated freely,
- * so this cannot be used to fetch arbitrary archive.org items.
+ * Files are named 001.mp3 through 114.mp3 in every item, with no surah name to
+ * encode. The year is bounded rather than interpolated freely, so this cannot
+ * be used to fetch arbitrary archive.org items.
  */
-const resolveHaram = (year, surah) =>
-  `https://archive.org/download/Mecca${year}/${String(surah).padStart(3, '0')}.mp3`
+const resolveMosque = (m, year, surah) =>
+  `https://archive.org/download/${m.item}${year}/${String(surah).padStart(3, '0')}.mp3`
 
 const ALLOWED_ORIGINS = [
   'https://notyousha.github.io',
@@ -298,7 +315,8 @@ export default {
             '/b/{1-114}.mp3': ROUTES.b.name,
             '/d/{1-114}.mp3': ROUTES.d.name,
             '/t/{1-114}.mp3': ROUTES.t.name,
-            '/haram/{year}/{1-114}.mp3': `Grand Mosque, ${HARAM_FIRST}-${HARAM_LAST} except 1416`,
+            '/haram/{year}/{1-114}.mp3': `Grand Mosque, ${MOSQUES.haram.first}-${MOSQUES.haram.last}`,
+            '/nabawi/{year}/{1-114}.mp3': `Prophet's Mosque, ${MOSQUES.nabawi.first}-${MOSQUES.nabawi.last}`,
             '/h/{1-114}.mp3': 'Grand Mosque 1447 (alias, kept for shipped catalogs)',
           },
           '/count/{d,t}': 'how many surahs are published',
@@ -346,34 +364,36 @@ export default {
     let surah
     let cacheKey
 
-    const haram = /^\/haram\/(\d{4})\/(\d{1,3})\.mp3$/.exec(url.pathname)
+    const mosque = /^\/(haram|nabawi)\/(\d{4})\/(\d{1,3})\.mp3$/.exec(url.pathname)
     const legacy = /^\/h\/(\d{1,3})\.mp3$/.exec(url.pathname)
     const single = /^\/([bdtj])\/(\d{1,3})\.mp3$/.exec(url.pathname)
 
-    if (haram || legacy) {
-      const year = haram ? Number(haram[1]) : 1447
-      surah = Number(haram ? haram[2] : legacy[1])
-      if (!haramYearOk(year)) {
+    if (mosque || legacy) {
+      const key = mosque ? mosque[1] : 'haram'
+      const m = MOSQUES[key]
+      const year = mosque ? Number(mosque[2]) : 1447
+      surah = Number(mosque ? mosque[3] : legacy[1])
+      if (!mosqueYearOk(m, year)) {
         return new Response(
-          `No Grand Mosque mushaf for ${year}. Years ${HARAM_FIRST}-${HARAM_LAST}, except 1416.`,
+          `No ${key} mushaf published for ${year}. Years ${m.first}-${m.last}, less those that failed a check.`,
           { status: 404, headers: cors },
         )
       }
       route = {
         ttl: HARAMAIN_PAGE_TTL,
-        // A pure function of year and surah, so there is nothing to look up
-        // and the memo below only ever stores what this returned.
-        resolve: () => resolveHaram(year, surah),
-        name: `Grand Mosque ${year} — Taraweeh and Tahajjud`,
+        // A pure function of mosque, year and surah, so there is nothing to
+        // look up and the memo below only ever stores what this returned.
+        resolve: () => resolveMosque(m, year, surah),
+        name: `${key} ${year} — Taraweeh and Tahajjud`,
       }
-      cacheKey = `haram-${year}-${surah}`
+      cacheKey = `${key}-${year}-${surah}`
     } else if (single) {
       route = ROUTES[single[1]]
       surah = Number(single[2])
       cacheKey = `${single[1]}-${surah}`
     } else {
       return new Response(
-        'Not found. Use /b, /d, /t or /j + /{1-114}.mp3, or /haram/{year}/{1-114}.mp3',
+        'Not found. Use /b, /d, /t or /j + /{1-114}.mp3, or /{haram,nabawi}/{year}/{1-114}.mp3',
         { status: 404, headers: cors },
       )
     }

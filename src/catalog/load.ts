@@ -1,7 +1,7 @@
 import bundled from '../../data/catalog.json'
 import meta from '../../data/surahs.json'
 import type { Catalog, Reciter, SurahMeta, SurahView } from './types'
-import { haramReciters } from './haram'
+import { mosqueReciters } from './mosques'
 
 /** Deployment base, so audio shipped with the app resolves from a subpath. */
 const BASE = import.meta.env?.BASE_URL ?? '/'
@@ -9,13 +9,13 @@ const BASE = import.meta.env?.BASE_URL ?? '/'
 const catalog = bundled as unknown as Catalog
 
 /**
- * The four individual mushafs, then every year of the Grand Mosque's.
+ * The four individual mushafs, then every published year of both mosques.
  *
  * The years are expanded from a folded-up file rather than stored here — see
- * src/catalog/haram.ts for why — but from this point on they are ordinary
+ * src/catalog/mosques.ts for why — but from this point on they are ordinary
  * reciters and nothing downstream treats them differently.
  */
-const allReciters = (): Reciter[] => [...catalog.reciters, ...haramReciters()]
+const allReciters = (): Reciter[] => [...catalog.reciters, ...mosqueReciters()]
 
 export function getReciters(): Reciter[] {
   return allReciters()
@@ -56,8 +56,8 @@ export function buildView(reciter: Reciter, m: SurahMeta[]): SurahView[] {
  * a superset of the bundled one — a truncated or corrupt response must never
  * remove surahs the user can already see.
  *
- * The remote manifest only ever describes the individual mushafs. The Grand
- * Mosque years are finished recordings that cannot grow, so they are appended
+ * The remote manifest only ever describes the individual mushafs. The mosque
+ * years are finished recordings that cannot grow, so they are appended
  * locally in every branch rather than being carried over the wire — otherwise
  * a successful refresh would silently drop all thirty-three of them.
  */
@@ -74,7 +74,7 @@ export async function loadCatalog(remoteUrl?: string): Promise<Reciter[]> {
       const r = remote.reciters.find((x) => x.id === local.id)
       return r && Array.isArray(r.surahs) && r.surahs.length >= local.surahs.length
     })
-    return ok ? [...remote.reciters, ...haramReciters()] : allReciters()
+    return ok ? [...remote.reciters, ...mosqueReciters()] : allReciters()
   } catch {
     // Offline or unreachable. The bundled catalog stands.
     return allReciters()
