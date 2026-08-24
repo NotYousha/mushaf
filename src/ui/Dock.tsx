@@ -21,6 +21,8 @@ type Props = {
     /** Which reciter, so a photo that is not pre-cropped can be framed. */
     reciterId: string
     artwork: string | null
+    /** Framing for the card, when the picture is one the listener supplied. */
+    artFrame?: { zoom: number; x: number; y: number } | null
     playing: boolean
   } | null
   onOpenPlayer: () => void
@@ -123,7 +125,19 @@ export function Dock({
               className="cap-art"
               aria-hidden="true"
               data-reciter={now.reciterId}
-              style={now.artwork ? { backgroundImage: `url('${now.artwork}')` } : undefined}
+              style={
+                now.artwork
+                  ? {
+                      backgroundImage: `url('${now.artwork}')`,
+                      ...(now.artFrame
+                        ? {
+                            backgroundSize: `${now.artFrame.zoom}% auto`,
+                            backgroundPosition: `${now.artFrame.x}% ${now.artFrame.y}%`,
+                          }
+                        : {}),
+                    }
+                  : undefined
+              }
             />
             <span className="cap-text">
               <span className="cap-title">{now.title}</span>

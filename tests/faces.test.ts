@@ -106,9 +106,12 @@ describe('reading portraits never breaks the app', () => {
     await db.put('faces', { buffer: new Uint8Array([1]).buffer, type: 'image/webp' }, 'legacy')
     const faces = await loadFaces()
     const f = faces.get('legacy')!
-    expect(f.zoom).toBe(DEFAULT_FRAMING.zoom)
-    expect(f.x).toBe(DEFAULT_FRAMING.x)
-    expect(f.y).toBe(DEFAULT_FRAMING.y)
+    // Both surfaces start from the default when the record predates them.
+    for (const surface of ['player', 'card'] as const) {
+      expect(f[surface].zoom).toBe(DEFAULT_FRAMING.zoom)
+      expect(f[surface].x).toBe(DEFAULT_FRAMING.x)
+      expect(f[surface].y).toBe(DEFAULT_FRAMING.y)
+    }
     await db.delete('faces', 'legacy')
   })
 })

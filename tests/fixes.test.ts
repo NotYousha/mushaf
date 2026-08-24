@@ -99,3 +99,45 @@ describe('the download queue', () => {
     expect(Object.values(seen).join()).toContain('500')
   })
 })
+
+/**
+ * The lock screen and the Dynamic Island own the scrubber while a finger is on
+ * it. Every setPositionState call re-asserts where the app thinks it is, so
+ * reporting on every timeupdate — four times a second — pulls the thumb back
+ * out from under the finger and the seek never lands.
+ */
+describe('position reporting to the OS', () => {
+  const el = () =>
+    ({ duration: 600, currentTime: 12, playbackRate: 1 }) as unknown as HTMLAudioElement
+
+  it('reports at most once a second while playing', async () => {
+    const { setPosition, setSeeking } = await import('../src/player/mediaSession')
+    const calls: unknown[] = []
+    const session = { setPositionState: (s: unknown) => calls.push(s) }
+    ;(navigator as unknown as { mediaSession: unknown }).mediaSession = session
+    setSeeking(false)
+
+    setPosition(el(), true)
+    const after = calls.length
+    // A burst of timeupdates must not become a burst of reports.
+    for (let i = 0; i < 8; i++) setPosition(el())
+    expect(calls.length).toBe(after)
+  })
+
+  it('says nothing at all while a seek is in flight', async () => {
+    const { setPosition, setSeeking } = await import('../src/player/mediaSession')
+    const calls: unknown[] = []
+    ;(navigator as unknown as { mediaSession: unknown }).mediaSession = {
+      setPositionState: (s: unknown) => calls.push(s),
+    }
+
+    setSeeking(true)
+    for (let i = 0; i < 5; i++) setPosition(el())
+    expect(calls).toHaveLength(0)
+
+    // Landing reports immediately rather than waiting out the interval.
+    setSeeking(false)
+    setPosition(el())
+    expect(calls).toHaveLength(1)
+  })
+})

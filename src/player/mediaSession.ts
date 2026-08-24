@@ -8,7 +8,7 @@ export type MediaHandlers = {
   play: () => void
   pause: () => void
   stop: () => void
-  seek: (seconds: number) => void
+  seek: (seconds: number, fast?: boolean) => void
 }
 
 const ms = () =>
@@ -49,11 +49,14 @@ export function registerMediaHandlers(ref: { current: MediaHandlers | null }) {
   on('seekforward', () => ref.current?.step(1))
   on('seekbackward', () => ref.current?.step(-1))
   on('seekto', (d) => {
-    if (typeof d.seekTime === 'number') ref.current?.seek(d.seekTime)
+    if (typeof d.seekTime !== 'number') return
+    // fastSeek is what a drag sends while the finger is still moving: the OS
+    // is asking for a cheap approximate jump, and answering every one of them
+    // precisely is what makes a scrub feel like it is fighting back.
+    ref.current?.seek(d.seekTime, d.fastSeek === true)
   })
 }
 
-/** Grey out a transport button rather than leaving it lit and inert. */
 /**
  * Grey out a transport button rather than leaving it lit and inert — and put
  * it back when it applies again.
@@ -91,16 +94,41 @@ export function setPlaybackState(state: MediaSessionPlaybackState) {
 }
 
 /**
- * Tell the OS where we are, so the lock screen and car draw a real progress
- * bar. The rate must be the true one: the system extrapolates between calls,
- * so reporting 1 while playing at 1.25 makes the bar drift further ahead for
- * the whole of a two-hour surah.
+ * Tell the OS where we are, so the lock screen and the car draw a real
+ * progress bar. The rate must be the true one: the system extrapolates between
+ * calls, so reporting 1 while playing at 1.25 makes the bar drift further
+ * ahead for the whole of a two-hour surah.
+ *
+ * Reporting it too often is what breaks scrubbing.
+ *
+ * The lock screen and the Dynamic Island own the scrubber while a finger is on
+ * it. Every setPositionState call re-asserts where we think we are, so pushing
+ * one four times a second — which is what timeupdate fires at — drags the
+ * thumb back out from under the finger and the seek never lands. Once a second
+ * is plenty for a progress bar, and while a seek is in flight we say nothing
+ * at all and let the OS lead.
  */
-export function setPosition(el: HTMLAudioElement) {
+const POSITION_EVERY_MS = 1000
+let lastPositionAt = 0
+let seeking = false
+
+/** Called from the engine's seeking/seeked listeners. */
+export function setSeeking(active: boolean) {
+  seeking = active
+  // Report once the moment it lands, so the bar settles where it was dropped
+  // rather than waiting out the interval.
+  if (!active) lastPositionAt = 0
+}
+
+export function setPosition(el: HTMLAudioElement, force = false) {
   const s = ms()
   if (!s?.setPositionState) return
+  if (seeking && !force) return
+  const now = Date.now()
+  if (!force && now - lastPositionAt < POSITION_EVERY_MS) return
   const duration = el.duration
   if (!Number.isFinite(duration) || duration <= 0) return
+  lastPositionAt = now
   try {
     s.setPositionState({
       duration,

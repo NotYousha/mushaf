@@ -1351,8 +1351,8 @@ export default function App() {
                   await putFace(imamId, file)
                   await refreshFaces()
                 }}
-                onFrame={async (imamId, framing) => {
-                  await setFraming(imamId, framing)
+                onFrame={async (imamId, surface, framing) => {
+                  await setFraming(imamId, surface, framing)
                   await refreshFaces()
                 }}
                 onRemove={async (imamId) => {
@@ -1423,9 +1423,9 @@ export default function App() {
                   // An imported photo carries the listener's own framing.
                   ...(mine
                     ? {
-                        ['--face-zoom' as string]: `${mine.zoom}%`,
-                        ['--face-x' as string]: `${mine.x}%`,
-                        ['--face-y' as string]: `${mine.y}%`,
+                        ['--face-zoom' as string]: `${mine.player.zoom}%`,
+                        ['--face-x' as string]: `${mine.player.x}%`,
+                        ['--face-y' as string]: `${mine.player.y}%`,
                       }
                     : {}),
                 }}
@@ -1711,12 +1711,17 @@ export default function App() {
                 reciter: isArabicScript(lang)
                   ? artistFor(currentView, reciter)
                   : artistForEn(currentView, reciter),
-                // Still the entry's id: the dock uses it to frame the photo,
-                // which is the collection's image, not the imam's.
-                reciterId: reciter.id,
-                artwork: reciter.photo
-                  ? `${import.meta.env.BASE_URL}${reciter.photo}`
-                  : null,
+                // The dock shows this surah's reciter as well, framed for a
+                // small square rather than the player's circle.
+                reciterId: currentView.voiceId ?? reciter.id,
+                artwork: mine
+                  ? mine.url
+                  : currentView.voicePhoto
+                    ? `${import.meta.env.BASE_URL}${currentView.voicePhoto}`
+                    : reciter.photo
+                      ? `${import.meta.env.BASE_URL}${reciter.photo}`
+                      : null,
+                artFrame: mine ? mine.card : null,
                 playing,
               }
             : null

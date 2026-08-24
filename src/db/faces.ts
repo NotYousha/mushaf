@@ -24,15 +24,36 @@ export type Framing = {
   y: number
 }
 
-export type Face = Framing & { url: string }
+/**
+ * The two places a portrait appears, framed separately.
+ *
+ * The player draws a large circle and the dock a small square, and a crop
+ * that suits one rarely suits the other — a circle cuts the corners off, and
+ * what reads as a portrait at 5.4rem is just a smudge at 2.6rem. So each
+ * surface keeps its own framing rather than sharing one compromise.
+ */
+export type Surface = 'player' | 'card'
+export const SURFACES: Surface[] = ['player', 'card']
 
-type FaceRecord = Framing & {
+export type Framings = Record<Surface, Framing>
+export type Face = { url: string } & Framings
+
+type FaceRecord = {
   buffer: ArrayBuffer
   type: string
   storedAt: number
+  frames?: Partial<Framings>
+  /** Framing from before the two surfaces were separate. */
+  zoom?: number
+  x?: number
+  y?: number
 }
 
 export const DEFAULT_FRAMING: Framing = { zoom: 100, x: 50, y: 50 }
+export const DEFAULT_FRAMINGS: Framings = {
+  player: { ...DEFAULT_FRAMING },
+  card: { ...DEFAULT_FRAMING },
+}
 
 /** Long edge after shrinking. Three times the medallion at 3x, which is
  *  enough to stay sharp while zoomed in and still land well under a
@@ -76,7 +97,20 @@ async function decode(file: File): Promise<{
 }> {
   if (typeof createImageBitmap === 'function') {
     try {
-      const bitmap = await createImageBitmap(file)
+      /**
+       * Decoded straight to the size we want, never at full resolution.
+       *
+       * This is the difference between a portrait importing and the tab dying.
+       * A modern phone camera makes 12 to 48 megapixels; decoded whole that is
+       * two hundred megabytes to nearly a gigabyte of bitmap, and Android kills
+       * the renderer rather than let a page hold it — which blanks the screen
+       * with no error to catch, after the photo has already been saved.
+       * Asking the decoder for a smaller image caps it at a few megabytes.
+       */
+      const bitmap = await createImageBitmap(file, {
+        resizeWidth: MAX_EDGE,
+        resizeQuality: 'high',
+      })
       return {
         draw: bitmap,
         width: bitmap.width,
@@ -130,33 +164,68 @@ async function shrink(file: File): Promise<{ buffer: ArrayBuffer; type: string }
       (await new Promise<Blob | null>((r) => canvas.toBlob(r, 'image/webp', 0.9))) ??
       (await new Promise<Blob | null>((r) => canvas.toBlob(r, 'image/jpeg', 0.9)))
     if (!blob) throw new ImageUnreadableError('could not be re-encoded')
+
+    // Let the decoded picture and the canvas go before the write, rather than
+    // holding all three at once on a device already short of memory.
+    release()
+    canvas.width = 0
+    canvas.height = 0
     return { buffer: await blob.arrayBuffer(), type: blob.type || 'image/jpeg' }
   } finally {
-    release()
+    // Safe to call twice; the early release above is the one that matters.
+    try {
+      release()
+    } catch {
+      /* already released */
+    }
   }
 }
 
 export async function putFace(imamId: string, file: File): Promise<void> {
   const { buffer, type } = await shrink(file)
   const db = await getDB()
-  const existing = (await db.get('faces', imamId)) as FaceRecord | undefined
+  // A replacement is a new picture, so both surfaces start from a clean frame.
   const rec: FaceRecord = {
     buffer,
     type,
-    // A replacement is a new picture, so it starts from a clean frame.
-    ...DEFAULT_FRAMING,
     storedAt: Date.now(),
-    ...(existing && file.size === 0 ? { zoom: existing.zoom, x: existing.x, y: existing.y } : {}),
+    frames: { player: { ...DEFAULT_FRAMING }, card: { ...DEFAULT_FRAMING } },
   }
   await db.put('faces', rec, imamId)
 }
 
-/** Move or zoom an existing portrait without touching the picture itself. */
-export async function setFraming(imamId: string, framing: Framing): Promise<void> {
+/** Move or zoom one surface without touching the picture or the other. */
+export async function setFraming(
+  imamId: string,
+  surface: Surface,
+  framing: Framing,
+): Promise<void> {
   const db = await getDB()
   const rec = (await db.get('faces', imamId)) as FaceRecord | undefined
   if (!rec) return
-  await db.put('faces', { ...rec, ...framing }, imamId)
+  await db.put(
+    'faces',
+    { ...rec, frames: { ...framingsOf(rec), [surface]: framing } },
+    imamId,
+  )
+}
+
+/**
+ * A record's framings, whichever shape it was written in.
+ *
+ * Portraits saved before the surfaces were separate carry one flat framing;
+ * it becomes the starting point for both rather than being discarded.
+ */
+function framingsOf(rec: FaceRecord): Framings {
+  const legacy: Framing = {
+    zoom: rec.zoom ?? DEFAULT_FRAMING.zoom,
+    x: rec.x ?? DEFAULT_FRAMING.x,
+    y: rec.y ?? DEFAULT_FRAMING.y,
+  }
+  return {
+    player: rec.frames?.player ?? legacy,
+    card: rec.frames?.card ?? legacy,
+  }
 }
 
 export async function deleteFace(imamId: string): Promise<void> {
@@ -185,10 +254,7 @@ export async function loadFaces(): Promise<Map<string, Face>> {
       try {
         out.set(String(k), {
           url: URL.createObjectURL(new Blob([rec.buffer], { type: rec.type })),
-          // A record written before framing existed carries none.
-          zoom: rec.zoom ?? DEFAULT_FRAMING.zoom,
-          x: rec.x ?? DEFAULT_FRAMING.x,
-          y: rec.y ?? DEFAULT_FRAMING.y,
+          ...framingsOf(rec),
         })
       } catch (e) {
         // One unreadable portrait must not cost the others.

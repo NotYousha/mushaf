@@ -2480,3 +2480,32 @@ body {
   opacity: 0.7;
   line-height: 1.7;
 }
+
+/* Which surface is being framed. The dock's card is a small square and the
+   player's a large circle; a crop that suits one rarely suits the other. */
+.face-surfaces {
+  display: flex;
+  gap: 0.3rem;
+}
+
+.face-surface {
+  font: inherit;
+  font-size: 0.72rem;
+  padding: 0.22rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid var(--accent-line);
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.face-surface.is-on {
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+
+/* The preview takes the shape of the surface it is standing in for. */
+.face-stage.is-card {
+  border-radius: 0.7rem;
+  background-size: cover;
+}

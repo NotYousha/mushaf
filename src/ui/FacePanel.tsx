@@ -2,7 +2,13 @@ import { useRef, useState } from 'react'
 import type { Strings, Lang } from '../i18n'
 import { inScript, digits } from '../i18n/script'
 import { allImams, PLACES, type Imam, type Place } from '../catalog/mosques'
-import { DEFAULT_FRAMING, type Face, type Framing } from '../db/faces'
+import {
+  DEFAULT_FRAMING,
+  SURFACES,
+  type Face,
+  type Framing,
+  type Surface,
+} from '../db/faces'
 import { Saved } from './Icons'
 
 type Props = {
@@ -12,7 +18,7 @@ type Props = {
   /** Portraits the listener has added, imam id to picture and framing. */
   faces: Map<string, Face>
   onPick: (imamId: string, file: File) => Promise<void>
-  onFrame: (imamId: string, framing: Framing) => Promise<void>
+  onFrame: (imamId: string, surface: Surface, framing: Framing) => Promise<void>
   onRemove: (imamId: string) => Promise<void>
 }
 
@@ -34,6 +40,8 @@ export function FacePanel({ t, lang, base, faces, onPick, onFrame, onRemove }: P
   const [failed, setFailed] = useState<{ id: string; message: string } | null>(null)
   /** Which row is open for framing, and its live values while dragging. */
   const [editing, setEditing] = useState<string | null>(null)
+  /** Which surface is being framed: the player's circle or the dock's card. */
+  const [surface, setSurface] = useState<Surface>('player')
   const [draft, setDraft] = useState<Framing>(DEFAULT_FRAMING)
   const inputs = useRef(new Map<string, HTMLInputElement | null>())
   const drag = useRef<{ x: number; y: number; fx: number; fy: number } | null>(null)
@@ -54,7 +62,8 @@ export function FacePanel({ t, lang, base, faces, onPick, onFrame, onRemove }: P
       // Straight into framing: a photo almost always wants a nudge, and
       // finding the control afterwards is a step nobody should have to guess.
       setEditing(imam.id)
-      setDraft(DEFAULT_FRAMING)
+      setSurface('player')
+      setDraft({ ...DEFAULT_FRAMING })
     } catch (e) {
       setFailed({
         id: imam.id,
@@ -68,9 +77,10 @@ export function FacePanel({ t, lang, base, faces, onPick, onFrame, onRemove }: P
     }
   }
 
-  const openFraming = (id: string, face: Face) => {
+  const openFraming = (id: string, face: Face, next: Surface = 'player') => {
     setEditing(id)
-    setDraft({ zoom: face.zoom, x: face.x, y: face.y })
+    setSurface(next)
+    setDraft({ ...face[next] })
   }
 
   /**
@@ -99,7 +109,7 @@ export function FacePanel({ t, lang, base, faces, onPick, onFrame, onRemove }: P
   const endDrag = (id: string) => {
     if (!drag.current) return
     drag.current = null
-    void onFrame(id, draft)
+    void onFrame(id, surface, draft)
   }
 
   return (
@@ -116,7 +126,10 @@ export function FacePanel({ t, lang, base, faces, onPick, onFrame, onRemove }: P
               const mine = faces.get(imam.id)
               const src = mine?.url ?? (imam.photo ? `${base}${imam.photo}` : null)
               const open = editing === imam.id && !!mine
-              const frame = open ? draft : (mine ?? DEFAULT_FRAMING)
+              // The row's thumbnail previews the circle, so it follows the
+                  // player framing unless that is the one being dragged.
+                  const frame =
+                    open && surface === 'player' ? draft : (mine?.player ?? DEFAULT_FRAMING)
               return (
                 <li key={imam.id} className={`face-row${open ? ' is-editing' : ''}`}>
                   <span
@@ -189,7 +202,7 @@ export function FacePanel({ t, lang, base, faces, onPick, onFrame, onRemove }: P
                   {open && mine && (
                     <div className="face-editor">
                       <div
-                        className="face-stage"
+                        className={`face-stage is-${surface}`}
                         role="img"
                         aria-label={t.dragToPosition}
                         style={{
@@ -203,6 +216,23 @@ export function FacePanel({ t, lang, base, faces, onPick, onFrame, onRemove }: P
                         onPointerCancel={() => endDrag(imam.id)}
                       />
                       <div className="face-controls">
+                        {/* Each surface is framed on its own: a crop that
+                            suits the player's circle rarely suits the dock's
+                            small square. */}
+                        <div className="face-surfaces" role="tablist">
+                          {SURFACES.map((sf) => (
+                            <button
+                              key={sf}
+                              type="button"
+                              role="tab"
+                              aria-selected={surface === sf}
+                              className={`face-surface${surface === sf ? ' is-on' : ''}`}
+                              onClick={() => openFraming(imam.id, mine, sf)}
+                            >
+                              {t.surfaceName[sf]}
+                            </button>
+                          ))}
+                        </div>
                         <label className="face-zoom">
                           {t.zoom} {digits(lang, Math.round(draft.zoom))}%
                           <input
@@ -214,8 +244,8 @@ export function FacePanel({ t, lang, base, faces, onPick, onFrame, onRemove }: P
                             onChange={(e) =>
                               setDraft((p) => ({ ...p, zoom: Number(e.target.value) }))
                             }
-                            onPointerUp={() => void onFrame(imam.id, draft)}
-                            onKeyUp={() => void onFrame(imam.id, draft)}
+                            onPointerUp={() => void onFrame(imam.id, surface, draft)}
+                            onKeyUp={() => void onFrame(imam.id, surface, draft)}
                           />
                         </label>
                         <p className="face-hint">{t.dragToPosition}</p>
@@ -223,8 +253,8 @@ export function FacePanel({ t, lang, base, faces, onPick, onFrame, onRemove }: P
                           type="button"
                           className="face-reset"
                           onClick={() => {
-                            setDraft(DEFAULT_FRAMING)
-                            void onFrame(imam.id, DEFAULT_FRAMING)
+                            setDraft({ ...DEFAULT_FRAMING })
+                            void onFrame(imam.id, surface, { ...DEFAULT_FRAMING })
                           }}
                         >
                           {t.resetFraming}

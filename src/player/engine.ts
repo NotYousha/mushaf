@@ -5,6 +5,7 @@ import {
   registerMediaHandlers,
   setPlaybackState,
   setPosition,
+  setSeeking,
   type MediaHandlers,
 } from './mediaSession'
 
@@ -66,6 +67,13 @@ export class PlayerEngine {
     // so it must be corrected whenever the rate, the position, or the play
     // state changes — not only while ticking.
     const sync = () => setPosition(this.el)
+    // While the OS is scrubbing, stop reporting where we think we are — the
+    // scrubber belongs to the finger until it lets go.
+    this.el.addEventListener('seeking', () => setSeeking(true))
+    this.el.addEventListener('seeked', () => {
+      setSeeking(false)
+      setPosition(this.el, true)
+    })
     this.el.addEventListener('loadedmetadata', () => {
       // A resource load resets playbackRate to defaultPlaybackRate, which
       // silently dropped the listener's chosen speed back to 1x on every
@@ -73,7 +81,8 @@ export class PlayerEngine {
       this.el.playbackRate = this.rate
       sync()
     })
-    this.el.addEventListener('durationchange', sync)
+    // A new duration changes the whole scale, so it is worth saying at once.
+    this.el.addEventListener('durationchange', () => setPosition(this.el, true))
     this.el.addEventListener('seeked', sync)
     this.el.addEventListener('ratechange', sync)
     this.el.addEventListener('timeupdate', sync)
@@ -215,9 +224,13 @@ export class PlayerEngine {
     this.el.pause()
   }
 
-  seek(seconds: number) {
+  seek(seconds: number, fast = false) {
     try {
-      this.el.currentTime = seconds
+      // fastSeek lets the browser land on the nearest keyframe rather than
+      // decoding to an exact offset, which is what keeps a lock-screen drag
+      // responsive on a two-hour file.
+      if (fast && typeof this.el.fastSeek === 'function') this.el.fastSeek(seconds)
+      else this.el.currentTime = seconds
     } catch {
       /* not seekable yet */
     }
