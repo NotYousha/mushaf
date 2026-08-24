@@ -96,6 +96,12 @@ import {
 import { isHafs, riwayahLabel } from './catalog/riwayah'
 import { artistFor, artistForEn, voiceLabel } from './catalog/voice'
 import { arabicDigits, imamsOf, PLACES, type Place } from './catalog/mosques'
+import {
+  imamAt,
+  imamName,
+  nextChangeAfter,
+  segmentsFor,
+} from './catalog/segments'
 import { digits, inScript, isArabicScript } from './i18n/script'
 import { Splash } from './ui/Splash'
 import { BUILD } from './pwa'
@@ -742,10 +748,30 @@ export default function App() {
    * then the entry's. A user photo is already cropped square on import, so it
    * needs none of the per-reciter framing the bundled originals do.
    */
-  const mine = currentView?.voiceId ? faces.get(currentView.voiceId) : undefined
-  const face = mine?.url ?? currentView?.voicePhoto ?? reciter?.photo ?? null
+  /**
+   * Who is reciting at this very moment.
+   *
+   * A Taraweeh surah is a stitch: Al-Baqarah passes between seven imams, so
+   * the reciter is a function of where the playhead is, not of the surah. Where
+   * no changeovers are published this falls back to the surah's own
+   * attribution, which is what every other year has.
+   */
+  const liveImam =
+    openPlace && openYear && current !== null
+      ? imamAt(openPlace, openYear, current, time)
+      : null
+  const liveWho = imamName(liveImam)
+  const voiceIdNow = liveImam ?? currentView?.voiceId ?? null
+
+  const mine = voiceIdNow ? faces.get(voiceIdNow) : undefined
+  const face =
+    mine?.url ??
+    (liveWho?.photo ? `${import.meta.env.BASE_URL}${liveWho.photo}` : null) ??
+    currentView?.voicePhoto ??
+    reciter?.photo ??
+    null
   const faceIsMine = !!mine
-  const facePerson = currentView?.voiceId ?? reciter?.id ?? ''
+  const facePerson = voiceIdNow ?? reciter?.id ?? ''
 
   /**
    * Where the voice next changes hands, on a year that names its reciters.
@@ -758,10 +784,23 @@ export default function App() {
     (n: number) => surahs.find((v) => v.surah === n)?.voice ?? null,
     [surahs],
   )
-  const nextVoice = useMemo(
-    () => (current === null ? null : nextVoiceChange(current, playable, voiceOfSurah)),
-    [current, playable, voiceOfSurah],
-  )
+  /**
+   * Where the recitation next changes hands.
+   *
+   * Inside the surah first, where the changeovers are published — that is the
+   * whole point on a surah like Al-Baqarah, which passes between seven imams
+   * across an hour and three quarters. Only when there is nothing left in this
+   * surah does it move to the next one a different imam recites.
+   */
+  const nextVoice = useMemo(() => {
+    if (current === null) return null
+    if (openPlace && openYear) {
+      const within = nextChangeAfter(openPlace, openYear, current, time)
+      if (within) return { kind: 'within' as const, at: within.at, id: within.id }
+    }
+    const surah = nextVoiceChange(current, playable, voiceOfSurah)
+    return surah === null ? null : { kind: 'surah' as const, surah }
+  }, [current, time, openPlace, openYear, playable, voiceOfSurah])
   const releasedTotal = surahs.filter((s) => s.released).reduce((a, s) => a + s.bytes, 0)
 
   const filtered = useMemo(() => {
@@ -1476,9 +1515,12 @@ export default function App() {
                   which does not say whose voice this is. Both belong here:
                   the collection identifies the recording, the imam
                   identifies the recitation. */}
-              {voiceLabel(currentView, lang) && (
+              {(liveWho || voiceLabel(currentView, lang)) && (
                 <div className="reciter-voice">
-                  {t.recitedBy} {voiceLabel(currentView, lang)}
+                  {t.recitedBy}{' '}
+                  {liveWho
+                    ? inScript(lang, liveWho.name, liveWho.nameEn)
+                    : voiceLabel(currentView, lang)}
                 </div>
               )}
             </div>
@@ -1638,12 +1680,21 @@ export default function App() {
                 inside a surah: nothing published says where, within a surah
                 that spanned several nights, one imam stopped and the next
                 began. */}
-            {currentView?.voice && (
+            {(currentView?.voice ||
+              (openPlace && openYear && current !== null
+                ? !!segmentsFor(openPlace, openYear, current)
+                : false)) && (
               <button
                 className="ctrl small"
                 aria-label={t.nextReciter}
                 disabled={nextVoice === null}
-                onClick={() => nextVoice !== null && void playSurah(nextVoice)}
+                onClick={() => {
+                  if (!nextVoice) return
+                  // Within the surah it is a seek, not a track change: the
+                  // audio is already loaded and the handover is a place in it.
+                  if (nextVoice.kind === 'within') engine.current!.seek(nextVoice.at)
+                  else void playSurah(nextVoice.surah)
+                }}
               >
                 <NextVoice size={22} />
               </button>
