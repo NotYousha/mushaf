@@ -1,7 +1,51 @@
 # Haram 1447 Taraweeh — a multi-voice compilation in the catalog
 
 **Date:** 2026-08-24
-**Status:** designed, blocked on two external inputs
+**Status:** shipped without attribution. The host is resolved; the imam map is not.
+
+## What actually shipped
+
+The host is **archive.org item `Mecca1447`** — 114 files, `001.mp3`–`114.mp3`,
+1.17 GB. All 114 verified: `206`, `Content-Range`, strong `ETag`, sizes matching the
+item metadata exactly. It is reached through `archive.org/download`, which redirects to
+a healthy node, rather than a node id that rotates.
+
+Archive sends `Access-Control-Allow-Origin: *`, which makes the proxy look unnecessary.
+It is not: there is no `Access-Control-Expose-Headers`, and neither `ETag` nor
+`Content-Range` is CORS-safelisted, so a browser reads null for both and can neither
+size nor resume a download. The `/h/` route stands.
+
+**The imam map does not exist in any source found.** Not in the archive item, whose
+files carry no ID3 at all and whose per-file metadata holds only `length` and `track`;
+not in its 228 PNGs, which are archive's own waveform and spectrogram derivatives; and
+not on `tilawatalharamain.com`, whose 1447 collection (`/quran/c/61`) shows an ellipsis
+for nearly every reciter and whose per-surah pages carry a literal empty placeholder —
+`للشيخ ...` — where the name would go. Its audio also sits on `media.altilawat.com`,
+which this repo already blocks as CORS-blocked.
+
+So the entry ships with the `voice` fields empty and **every surah `verified: false`**,
+with the length check not run for it. With seven imams and no map, a single median
+across seven paces deletes good recordings rather than finding bad ones — the exact
+failure the per-voice check was built to prevent. The `VerifyPanel` carries the entry
+instead, and `effectiveVerified()` lets a listener settle a surah for good.
+
+Nothing about this is a dead end: the `voice`/`voiceEn` fields, `judgeByVoice`, the
+label helpers and all three attribution sites are built, tested and in place. When the
+map arrives — most likely from the source channel's per-surah video titles — the entry
+gains attribution with no code change, and Task 8 of the plan runs as written.
+
+The roster is real and committed: `data/imams.json` holds the seven imams the archive
+item itself names — السديس, بليلة, الجهني, المعيقلي, الدوسري, الشمسان, التركي.
+
+**Not done:** the Worker is written but **not deployed**; nothing reaches `/h/` until
+`npx wrangler deploy` runs. `haram-1447` is deliberately absent from `SOURCES` in
+`refresh-catalog.mjs`, because CI runs that script over every source and it would fail
+the weekly job until the route is live. `photo` is `null` — no image was chosen for a
+compilation that has no one face.
+
+---
+
+## Original design
 
 Adds the recitation of the Taraweeh and Tahajjud prayers at the Grand Mosque for
 1447 AH — published by شؤون الأئمة والمؤذنين — to the catalog as a fifth entry.
