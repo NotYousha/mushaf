@@ -1156,7 +1156,11 @@ body {
  */
 .medallion[data-reciter='burhaji-nabawi'],
 .medallion[data-reciter='turki'],
-.medallion[data-reciter='juhany'] {
+.medallion[data-reciter='juhany'],
+/* The same portrait reached by imam id rather than entry id: on a Taraweeh
+   year the medallion shows the surah's reciter, not the entry's. The other
+   ids happen to be identical in both spellings; this one is not. */
+.medallion[data-reciter='burhaji'] {
   --face-zoom: 100%;
   --face-x: 50%;
   --face-y: 50%;

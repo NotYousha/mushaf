@@ -13,6 +13,7 @@ export const ar: Strings = {
 
   reciter: 'القارئ',
   recitedBy: 'قرأها',
+  nextReciter: 'القارئ التالي',
   dismiss: 'إغلاق',
   skipBack: (n: number | string) => `للخلف ${n} ثوانٍ`,
   skipForward: (n: number | string) => `للأمام ${n} ثوانٍ`,

@@ -43,6 +43,8 @@ export function buildView(reciter: Reciter, m: SurahMeta[]): SurahView[] {
       bytes: e?.bytes ?? 0,
       voice: e?.voice ?? null,
       voiceEn: e?.voiceEn ?? null,
+      voicePhoto: e?.voicePhoto ?? null,
+      voiceId: e?.voiceId ?? null,
     }
   })
 }

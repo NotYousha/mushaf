@@ -14,6 +14,7 @@ export const fr: Strings = {
 
   reciter: 'Récitateur',
   recitedBy: 'Récité par',
+  nextReciter: 'Récitateur suivant',
   dismiss: 'Fermer',
   skipBack: (n: number | string) => `${n} secondes en arrière`,
   skipForward: (n: number | string) => `${n} secondes en avant`,

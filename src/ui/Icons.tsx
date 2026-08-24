@@ -102,6 +102,21 @@ export const SkipForward = ({ size, label }: P & { label: string }) => (
   </svg>
 )
 
+/**
+ * Jump to where the recitation changes hands.
+ *
+ * A head-and-shoulders silhouette with a forward chevron: the subject is who
+ * is reciting, not where you are in the file, so it deliberately does not
+ * borrow the transport's arrows.
+ */
+export const NextVoice = ({ size }: P) => (
+  <svg {...s(size)} stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="9" cy="7.5" r="3.2" />
+    <path d="M3.4 18.5a5.6 5.6 0 0 1 11.2 0" />
+    <path d="M17.8 8.6 21.2 12l-3.4 3.4" />
+  </svg>
+)
+
 export const Moon = ({ size }: P) => (
   <svg {...s(size)} stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
     <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z" />

@@ -1,5 +1,6 @@
 import data from '../../data/mosque-years.json'
 import imamRoster from '../../data/imams.json'
+import voiceMap from '../../data/voices.json'
 import type { Reciter } from './types'
 
 /**
@@ -25,7 +26,12 @@ type YearRow = { year: number; ce: number | null; imams: string[]; bytes: number
 type Doc = { mosques: Record<Place, YearRow[]>; excluded: Record<Place, Record<string, string>> }
 
 const doc = data as unknown as Doc
-const roster = imamRoster as Record<string, { name: string; nameEn: string }>
+const roster = imamRoster as Record<
+  string,
+  { name: string; nameEn: string; photo?: string }
+>
+/** surah -> the imams who recited it, for the years that publish it. */
+const voices = voiceMap as Record<string, Record<string, string[]>>
 
 export const PLACES: {
   place: Place
@@ -75,6 +81,32 @@ export function imamsOf(place: Place, year: number): { name: string; nameEn: str
 /** Why a year is missing, for anyone who goes looking for it. */
 export const excludedYears = (place: Place) => doc.excluded?.[place] ?? {}
 
+
+/**
+ * Who recited this surah, where that is published.
+ *
+ * A surah spanning several nights genuinely has several reciters — Al-Baqarah
+ * always does — so the names are joined rather than one being picked. The
+ * portrait only travels with a surah a single imam recited: a face is a claim
+ * about one person, and there is no honest way to show seven at once.
+ */
+function voiceFields(place: Place, year: number, surah: number) {
+  const ids = voices[`${place}-${year}`]?.[String(surah)]
+  if (!ids?.length) return {}
+  const who = ids.map((id) => roster[id]).filter(Boolean)
+  if (!who.length) return {}
+  return {
+    voice: who.map((w) => w.name).join(' · '),
+    voiceEn: who.map((w) => w.nameEn).join(' · '),
+    // The id travels with the portrait: the medallion's crop is keyed to it
+    // in CSS, because the shipped images are framed differently from each
+    // other and one set of values does not suit them all.
+    ...(who.length === 1 && who[0].photo
+      ? { voicePhoto: who[0].photo, voiceId: ids[0] }
+      : {}),
+  }
+}
+
 function toReciter(place: Place, row: YearRow): Reciter {
   const m = meta(place)
   const ar = arabicDigits(row.year)
@@ -102,14 +134,15 @@ function toReciter(place: Place, row: YearRow): Reciter {
       url: `${WORKER}/${m.route}/${row.year}/${i + 1}.mp3`,
       fallbackUrl: null,
       bytes,
+      ...voiceFields(place, row.year, i + 1),
       /**
-       * Nothing here is asserted, because nothing can be.
+       * Still unasserted, even where the reciter is now known.
        *
-       * Several imams led each of these Ramadans and no source records which
-       * surah is whose, so the seconds-per-letter check cannot be run per
-       * voice — one median across several paces deletes good recordings
-       * rather than finding wrong ones. Every surah therefore asks for an ear
-       * check, and effectiveVerified() lets a listener settle one for good.
+       * Knowing who recited a surah is not the same as having checked that
+       * this file holds that recitation. The per-voice length check needs
+       * enough surahs per imam to have a median worth comparing against, and
+       * most years publish no attribution at all. So every surah continues to
+       * ask for an ear, and effectiveVerified() lets a listener settle one.
        *
        * The build script does screen each item as a whole, which is what
        * caught the years that are missing entirely.

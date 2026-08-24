@@ -24,7 +24,7 @@ import {
   updateMetadata,
   type MediaHandlers,
 } from './player/mediaSession'
-import { nextSurah, prevSurah, type RepeatMode } from './player/playQueue'
+import { nextSurah, nextVoiceChange, prevSurah, type RepeatMode } from './player/playQueue'
 import { getQuota, requestPersistence, canDownloadAll } from './storage/quota'
 import { SurahList, plainName } from './ui/SurahList'
 import { VerifyPanel } from './ui/VerifyPanel'
@@ -64,6 +64,7 @@ import {
   Chevron,
   SkipBack,
   SkipForward,
+  NextVoice,
 } from './ui/Icons'
 import { stringsFor, type Lang } from './i18n'
 import { brandName, brandSecondary } from './brand'
@@ -675,6 +676,31 @@ export default function App() {
   }
 
   const currentView = surahs.find((s) => s.surah === current) ?? null
+  /**
+   * The portrait to show, and whose it is.
+   *
+   * A surah's own reciter wins over the entry's: on a Taraweeh year the imam
+   * changes from surah to surah, and the face has to change with him or it is
+   * telling the listener something untrue.
+   */
+  const face = currentView?.voicePhoto ?? reciter?.photo ?? null
+  const facePerson = currentView?.voiceId ?? reciter?.id ?? ''
+
+  /**
+   * Where the voice next changes hands, on a year that names its reciters.
+   *
+   * Null on every other entry, which is what keeps the control off the screen
+   * for the four single-voice mushafs — there is nothing to step through when
+   * one sheikh recites the whole thing.
+   */
+  const voiceOfSurah = useCallback(
+    (n: number) => surahs.find((v) => v.surah === n)?.voice ?? null,
+    [surahs],
+  )
+  const nextVoice = useMemo(
+    () => (current === null ? null : nextVoiceChange(current, playable, voiceOfSurah)),
+    [current, playable, voiceOfSurah],
+  )
   const releasedTotal = surahs.filter((s) => s.released).reduce((a, s) => a + s.bytes, 0)
 
   const filtered = useMemo(() => {
@@ -1300,17 +1326,19 @@ export default function App() {
 
           <div className="player-fold">
             <div className="player-fold-inner">
-          <div className={`player-top${reciter.photo ? '' : ' no-face'}`}>
-            {/* Only where there is a face to show. A mosque year is a
-                compilation of several imams and carries no portrait, and an
-                empty ring was taking a third of the width to say nothing. */}
-            {reciter.photo && (
+          <div className={`player-top${face ? '' : ' no-face'}`}>
+            {/* The reciter of this surah, not of the entry.
+                On a mosque year the imam changes between surahs, so the
+                portrait follows what is playing; where a surah spanned
+                several nights and several imams there is no one face to show,
+                and the column collapses rather than showing an empty ring. */}
+            {face && (
               <div
                 className="medallion"
                 aria-hidden="true"
-                data-reciter={reciter.id}
+                data-reciter={facePerson}
                 style={{
-                  ['--face-src' as string]: `url('${import.meta.env.BASE_URL}${reciter.photo}')`,
+                  ['--face-src' as string]: `url('${import.meta.env.BASE_URL}${face}')`,
                 }}
               />
             )}
@@ -1483,6 +1511,22 @@ export default function App() {
               play button out of round. Quieter, smaller, and out of the way
               of the five things a thumb actually reaches for. */}
           <div className="controls-aux">
+            {/* Only where the reciter actually changes. A Taraweeh year hands
+                over between surahs rather than at a fixed point, so this jumps
+                to the next surah a different imam recites. It is not a jump
+                inside a surah: nothing published says where, within a surah
+                that spanned several nights, one imam stopped and the next
+                began. */}
+            {currentView?.voice && (
+              <button
+                className="ctrl small"
+                aria-label={t.nextReciter}
+                disabled={nextVoice === null}
+                onClick={() => nextVoice !== null && void playSurah(nextVoice)}
+              >
+                <NextVoice size={22} />
+              </button>
+            )}
             <button
               className="ctrl small"
               aria-label={t.speed}

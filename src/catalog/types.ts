@@ -11,6 +11,15 @@ export type CatalogEntry = {
    */
   voice?: string
   voiceEn?: string
+  /**
+   * The reciter's portrait, when exactly one imam recited this surah.
+   *
+   * Absent where several did — a face is a claim about one person, and a
+   * surah spanning nights has no single one to show.
+   */
+  voicePhoto?: string
+  /** Roster id of that reciter, which the medallion's crop is keyed to. */
+  voiceId?: string
 }
 
 export type Reciter = {
@@ -81,4 +90,7 @@ export type SurahView = {
   /** Who recites this surah, or null for a single-voice mushaf. */
   voice: string | null
   voiceEn: string | null
+  /** That reciter's portrait, when the surah has exactly one. */
+  voicePhoto: string | null
+  voiceId: string | null
 }

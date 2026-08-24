@@ -15,6 +15,8 @@ const view = (over: Partial<SurahView> = {}): SurahView => ({
   bytes: 1,
   voice: null,
   voiceEn: null,
+  voicePhoto: null,
+  voiceId: null,
   ...over,
 })
 

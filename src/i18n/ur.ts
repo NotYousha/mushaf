@@ -14,6 +14,7 @@ export const ur: Strings = {
 
   reciter: 'قاری',
   recitedBy: 'پڑھنے والے',
+  nextReciter: 'اگلا قاری',
   dismiss: 'بند کریں',
   skipBack: (n: number | string) => `${n} سیکنڈ پیچھے`,
   skipForward: (n: number | string) => `${n} سیکنڈ آگے`,

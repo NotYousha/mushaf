@@ -83,13 +83,45 @@ describe('the mosque years', () => {
     }
   })
 
-  // Several imams led each Ramadan and no source records which surah is
-  // whose, so nothing is asserted and every surah asks for an ear.
+  /**
+   * Knowing who recited a surah is not the same as having checked that this
+   * file holds that recitation, so every surah still asks for an ear even
+   * where the reciter is now named.
+   */
   it('claims nothing it cannot prove', () => {
     for (const r of all) {
       expect(r.surahs.every((s) => s.verified === false), r.id).toBe(true)
+    }
+  })
+
+  /**
+   * Attribution exists only where a source publishes it. The Grand Mosque's
+   * 1446 and 1447 videos carry the reciter as a hashtag in the description;
+   * nothing else does, and a year without it shows no name rather than a
+   * guess.
+   */
+  it('attributes exactly the years that publish a reciter', () => {
+    const attributed = all.filter((r) => r.surahs.some((s) => (s as { voice?: string }).voice))
+    expect(attributed.map((r) => r.id).sort()).toEqual(['haram-1446', 'haram-1447'])
+    for (const r of attributed) {
       for (const s of r.surahs) {
-        expect((s as { voice?: string }).voice).toBeUndefined()
+        expect((s as { voice?: string }).voice, `${r.id}:${s.surah}`).toBeTruthy()
+      }
+    }
+  })
+
+  /**
+   * A portrait is a claim about one person. A surah that spanned several
+   * nights had several reciters, and there is no honest way to show them all
+   * in one ring — so those carry names without a face.
+   */
+  it('only carries a portrait where a single imam recited', () => {
+    for (const r of all) {
+      for (const s of r.surahs) {
+        const e = s as { voice?: string; voicePhoto?: string; voiceId?: string }
+        if (!e.voicePhoto) continue
+        expect(e.voice, `${r.id}:${s.surah}`).not.toContain(' · ')
+        expect(e.voiceId, `${r.id}:${s.surah}`).toBeTruthy()
       }
     }
   })

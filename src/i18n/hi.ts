@@ -14,6 +14,7 @@ export const hi: Strings = {
 
   reciter: 'क़ारी',
   recitedBy: 'पढ़ने वाले',
+  nextReciter: 'अगला क़ारी',
   dismiss: 'बंद करें',
   skipBack: (n: number | string) => `${n} सेकंड पीछे`,
   skipForward: (n: number | string) => `${n} सेकंड आगे`,

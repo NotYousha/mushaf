@@ -19,6 +19,7 @@ export const en = {
   reciter: 'Reciter',
   /** Precedes an imam's name on a surah from a multi-voice compilation. */
   recitedBy: 'Recited by',
+  nextReciter: 'Next reciter',
   dismiss: 'Dismiss',
   /** The transport's fixed jump, in seconds. */
   skipBack: (n: number | string) => `Back ${n} seconds`,

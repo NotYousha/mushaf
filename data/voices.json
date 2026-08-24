@@ -1,0 +1,813 @@
+{
+ "makkah-1447": {
+  "1": [
+   "turki"
+  ],
+  "2": [
+   "sudais",
+   "muaiqly",
+   "juhany",
+   "baleela",
+   "dosari",
+   "turki",
+   "shamsan"
+  ],
+  "3": [
+   "juhany",
+   "baleela",
+   "turki",
+   "shamsan"
+  ],
+  "4": [
+   "sudais",
+   "muaiqly",
+   "dosari",
+   "turki",
+   "shamsan"
+  ],
+  "5": [
+   "juhany",
+   "baleela",
+   "dosari"
+  ],
+  "6": [
+   "sudais",
+   "muaiqly",
+   "dosari",
+   "shamsan",
+   "turki"
+  ],
+  "7": [
+   "baleela",
+   "muaiqly",
+   "dosari",
+   "turki"
+  ],
+  "8": [
+   "dosari",
+   "turki"
+  ],
+  "9": [
+   "sudais",
+   "baleela",
+   "juhany",
+   "shamsan",
+   "turki"
+  ],
+  "10": [
+   "baleela",
+   "dosari"
+  ],
+  "11": [
+   "muaiqly",
+   "shamsan",
+   "turki"
+  ],
+  "12": [
+   "sudais",
+   "shamsan",
+   "baleela"
+  ],
+  "13": [
+   "baleela",
+   "juhany"
+  ],
+  "14": [
+   "juhany",
+   "muaiqly"
+  ],
+  "15": [
+   "muaiqly"
+  ],
+  "16": [
+   "dosari",
+   "shamsan",
+   "turki"
+  ],
+  "17": [
+   "sudais",
+   "shamsan",
+   "juhany"
+  ],
+  "18": [
+   "baleela",
+   "turki"
+  ],
+  "19": [
+   "muaiqly",
+   "turki"
+  ],
+  "20": [
+   "muaiqly",
+   "dosari"
+  ],
+  "21": [
+   "dosari",
+   "shamsan"
+  ],
+  "22": [
+   "sudais",
+   "shamsan",
+   "turki"
+  ],
+  "23": [
+   "dosari",
+   "turki"
+  ],
+  "24": [
+   "baleela",
+   "dosari"
+  ],
+  "25": [
+   "baleela",
+   "muaiqly"
+  ],
+  "26": [
+   "baleela",
+   "muaiqly"
+  ],
+  "27": [
+   "baleela",
+   "shamsan"
+  ],
+  "28": [
+   "dosari",
+   "shamsan"
+  ],
+  "29": [
+   "dosari",
+   "turki"
+  ],
+  "30": [
+   "shamsan",
+   "turki"
+  ],
+  "31": [
+   "shamsan"
+  ],
+  "32": [
+   "shamsan"
+  ],
+  "33": [
+   "dosari",
+   "muaiqly"
+  ],
+  "34": [
+   "muaiqly"
+  ],
+  "35": [
+   "muaiqly",
+   "baleela"
+  ],
+  "36": [
+   "baleela"
+  ],
+  "37": [
+   "turki"
+  ],
+  "38": [
+   "turki",
+   "dosari"
+  ],
+  "39": [
+   "baleela",
+   "dosari"
+  ],
+  "40": [
+   "baleela",
+   "shamsan"
+  ],
+  "41": [
+   "shamsan"
+  ],
+  "42": [
+   "dosari"
+  ],
+  "43": [
+   "dosari",
+   "shamsan"
+  ],
+  "44": [
+   "shamsan"
+  ],
+  "45": [
+   "baleela"
+  ],
+  "46": [
+   "baleela"
+  ],
+  "47": [
+   "baleela"
+  ],
+  "48": [
+   "muaiqly"
+  ],
+  "49": [
+   "muaiqly"
+  ],
+  "50": [
+   "baleela"
+  ],
+  "51": [
+   "baleela"
+  ],
+  "52": [
+   "baleela"
+  ],
+  "53": [
+   "baleela",
+   "muaiqly"
+  ],
+  "54": [
+   "muaiqly"
+  ],
+  "55": [
+   "muaiqly"
+  ],
+  "56": [
+   "dosari"
+  ],
+  "57": [
+   "dosari"
+  ],
+  "58": [
+   "dosari",
+   "turki"
+  ],
+  "59": [
+   "turki"
+  ],
+  "60": [
+   "turki"
+  ],
+  "61": [
+   "sudais"
+  ],
+  "62": [
+   "sudais"
+  ],
+  "63": [
+   "turki"
+  ],
+  "64": [
+   "turki"
+  ],
+  "65": [
+   "turki"
+  ],
+  "66": [
+   "turki"
+  ],
+  "67": [
+   "turki"
+  ],
+  "68": [
+   "shamsan"
+  ],
+  "69": [
+   "shamsan"
+  ],
+  "70": [
+   "shamsan"
+  ],
+  "71": [
+   "muaiqly"
+  ],
+  "72": [
+   "muaiqly"
+  ],
+  "73": [
+   "muaiqly"
+  ],
+  "74": [
+   "muaiqly"
+  ],
+  "75": [
+   "muaiqly"
+  ],
+  "76": [
+   "muaiqly"
+  ],
+  "77": [
+   "muaiqly"
+  ],
+  "78": [
+   "baleela"
+  ],
+  "79": [
+   "baleela"
+  ],
+  "80": [
+   "baleela"
+  ],
+  "81": [
+   "baleela"
+  ],
+  "82": [
+   "baleela"
+  ],
+  "83": [
+   "baleela"
+  ],
+  "84": [
+   "turki"
+  ],
+  "85": [
+   "turki"
+  ],
+  "86": [
+   "turki"
+  ],
+  "87": [
+   "turki"
+  ],
+  "88": [
+   "turki"
+  ],
+  "89": [
+   "turki"
+  ],
+  "90": [
+   "turki"
+  ],
+  "91": [
+   "turki"
+  ],
+  "92": [
+   "turki"
+  ],
+  "93": [
+   "shamsan"
+  ],
+  "94": [
+   "shamsan"
+  ],
+  "95": [
+   "shamsan"
+  ],
+  "96": [
+   "shamsan"
+  ],
+  "97": [
+   "shamsan"
+  ],
+  "98": [
+   "shamsan"
+  ],
+  "99": [
+   "shamsan"
+  ],
+  "100": [
+   "shamsan"
+  ],
+  "101": [
+   "shamsan"
+  ],
+  "102": [
+   "shamsan"
+  ],
+  "103": [
+   "shamsan"
+  ],
+  "104": [
+   "shamsan"
+  ],
+  "105": [
+   "shamsan"
+  ],
+  "106": [
+   "shamsan"
+  ],
+  "107": [
+   "shamsan"
+  ],
+  "108": [
+   "shamsan"
+  ],
+  "109": [
+   "shamsan"
+  ],
+  "110": [
+   "shamsan"
+  ],
+  "111": [
+   "sudais"
+  ],
+  "112": [
+   "sudais"
+  ],
+  "113": [
+   "sudais"
+  ],
+  "114": [
+   "sudais"
+  ]
+ },
+ "makkah-1446": {
+  "1": [
+   "juhany"
+  ],
+  "2": [
+   "sudais",
+   "muaiqly",
+   "juhany",
+   "baleela",
+   "dosari",
+   "turki",
+   "shamsan"
+  ],
+  "3": [
+   "sudais",
+   "muaiqly",
+   "juhany",
+   "dosari",
+   "shamsan"
+  ],
+  "4": [
+   "sudais",
+   "juhany",
+   "baleela",
+   "turki",
+   "shamsan"
+  ],
+  "5": [
+   "muaiqly",
+   "dosari",
+   "turki"
+  ],
+  "6": [
+   "sudais",
+   "juhany",
+   "baleela",
+   "shamsan",
+   "turki"
+  ],
+  "7": [
+   "muaiqly",
+   "baleela",
+   "dosari",
+   "turki"
+  ],
+  "8": [
+   "juhany",
+   "turki"
+  ],
+  "9": [
+   "sudais",
+   "muaiqly",
+   "juhany",
+   "dosari",
+   "shamsan"
+  ],
+  "10": [
+   "muaiqly",
+   "turki"
+  ],
+  "11": [
+   "baleela",
+   "juhany",
+   "shamsan"
+  ],
+  "12": [
+   "sudais",
+   "muaiqly",
+   "shamsan"
+  ],
+  "13": [
+   "muaiqly",
+   "dosari"
+  ],
+  "14": [
+   "dosari",
+   "baleela"
+  ],
+  "15": [
+   "baleela"
+  ],
+  "16": [
+   "juhany",
+   "shamsan",
+   "turki"
+  ],
+  "17": [
+   "sudais",
+   "dosari",
+   "shamsan"
+  ],
+  "18": [
+   "muaiqly",
+   "juhany",
+   "dosari"
+  ],
+  "19": [
+   "baleela",
+   "juhany"
+  ],
+  "20": [
+   "baleela",
+   "turki"
+  ],
+  "21": [
+   "dosari",
+   "turki"
+  ],
+  "22": [
+   "sudais",
+   "juhany",
+   "dosari"
+  ],
+  "23": [
+   "juhany",
+   "shamsan"
+  ],
+  "24": [
+   "muaiqly",
+   "shamsan"
+  ],
+  "25": [
+   "baleela",
+   "muaiqly"
+  ],
+  "26": [
+   "baleela",
+   "turki"
+  ],
+  "27": [
+   "dosari",
+   "turki"
+  ],
+  "28": [
+   "juhany",
+   "dosari"
+  ],
+  "29": [
+   "juhany",
+   "shamsan"
+  ],
+  "30": [
+   "shamsan",
+   "turki"
+  ],
+  "31": [
+   "turki"
+  ],
+  "32": [
+   "turki"
+  ],
+  "33": [
+   "baleela",
+   "shamsan"
+  ],
+  "34": [
+   "baleela"
+  ],
+  "35": [
+   "baleela",
+   "muaiqly"
+  ],
+  "36": [
+   "muaiqly"
+  ],
+  "37": [
+   "juhany"
+  ],
+  "38": [
+   "baleela",
+   "juhany"
+  ],
+  "39": [
+   "baleela",
+   "turki"
+  ],
+  "40": [
+   "turki",
+   "dosari"
+  ],
+  "41": [
+   "juhany",
+   "dosari"
+  ],
+  "42": [
+   "shamsan"
+  ],
+  "43": [
+   "dosari",
+   "shamsan"
+  ],
+  "44": [
+   "dosari"
+  ],
+  "45": [
+   "muaiqly"
+  ],
+  "46": [
+   "muaiqly"
+  ],
+  "47": [
+   "muaiqly"
+  ],
+  "48": [
+   "baleela"
+  ],
+  "49": [
+   "baleela"
+  ],
+  "50": [
+   "turki"
+  ],
+  "51": [
+   "turki"
+  ],
+  "52": [
+   "turki"
+  ],
+  "53": [
+   "muaiqly",
+   "turki"
+  ],
+  "54": [
+   "muaiqly"
+  ],
+  "55": [
+   "muaiqly"
+  ],
+  "56": [
+   "juhany"
+  ],
+  "57": [
+   "juhany"
+  ],
+  "58": [
+   "juhany",
+   "shamsan"
+  ],
+  "59": [
+   "shamsan"
+  ],
+  "60": [
+   "shamsan"
+  ],
+  "61": [
+   "sudais"
+  ],
+  "62": [
+   "sudais"
+  ],
+  "63": [
+   "turki"
+  ],
+  "64": [
+   "turki"
+  ],
+  "65": [
+   "turki"
+  ],
+  "66": [
+   "turki"
+  ],
+  "67": [
+   "turki"
+  ],
+  "68": [
+   "dosari"
+  ],
+  "69": [
+   "dosari"
+  ],
+  "70": [
+   "dosari"
+  ],
+  "71": [
+   "baleela"
+  ],
+  "72": [
+   "baleela"
+  ],
+  "73": [
+   "baleela"
+  ],
+  "74": [
+   "baleela"
+  ],
+  "75": [
+   "baleela"
+  ],
+  "76": [
+   "baleela"
+  ],
+  "77": [
+   "baleela"
+  ],
+  "78": [
+   "muaiqly"
+  ],
+  "79": [
+   "muaiqly"
+  ],
+  "80": [
+   "muaiqly"
+  ],
+  "81": [
+   "muaiqly"
+  ],
+  "82": [
+   "muaiqly"
+  ],
+  "83": [
+   "muaiqly"
+  ],
+  "84": [
+   "juhany"
+  ],
+  "85": [
+   "juhany"
+  ],
+  "86": [
+   "juhany"
+  ],
+  "87": [
+   "juhany"
+  ],
+  "88": [
+   "juhany"
+  ],
+  "89": [
+   "juhany"
+  ],
+  "90": [
+   "juhany"
+  ],
+  "91": [
+   "juhany"
+  ],
+  "92": [
+   "juhany"
+  ],
+  "93": [
+   "baleela"
+  ],
+  "94": [
+   "baleela"
+  ],
+  "95": [
+   "baleela"
+  ],
+  "96": [
+   "baleela"
+  ],
+  "97": [
+   "baleela"
+  ],
+  "98": [
+   "baleela"
+  ],
+  "99": [
+   "baleela"
+  ],
+  "100": [
+   "baleela"
+  ],
+  "101": [
+   "baleela"
+  ],
+  "102": [
+   "baleela"
+  ],
+  "103": [
+   "baleela"
+  ],
+  "104": [
+   "baleela"
+  ],
+  "105": [
+   "baleela"
+  ],
+  "106": [
+   "baleela"
+  ],
+  "107": [
+   "baleela"
+  ],
+  "108": [
+   "baleela"
+  ],
+  "109": [
+   "sudais"
+  ],
+  "110": [
+   "sudais"
+  ],
+  "111": [
+   "sudais"
+  ],
+  "112": [
+   "sudais"
+  ],
+  "113": [
+   "sudais"
+  ],
+  "114": [
+   "sudais"
+  ]
+ }
+}
