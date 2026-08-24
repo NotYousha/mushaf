@@ -1300,17 +1300,20 @@ export default function App() {
 
           <div className="player-fold">
             <div className="player-fold-inner">
-          <div className="player-top">
-            <div
-              className="medallion"
-              aria-hidden="true"
-              data-reciter={reciter.id}
-              style={{
-                ['--face-src' as string]: reciter.photo
-                  ? `url('${import.meta.env.BASE_URL}${reciter.photo}')`
-                  : 'none',
-              }}
-            />
+          <div className={`player-top${reciter.photo ? '' : ' no-face'}`}>
+            {/* Only where there is a face to show. A mosque year is a
+                compilation of several imams and carries no portrait, and an
+                empty ring was taking a third of the width to say nothing. */}
+            {reciter.photo && (
+              <div
+                className="medallion"
+                aria-hidden="true"
+                data-reciter={reciter.id}
+                style={{
+                  ['--face-src' as string]: `url('${import.meta.env.BASE_URL}${reciter.photo}')`,
+                }}
+              />
+            )}
 
             <div className="now">
               <div className="surah-name">سُورَةُ {currentView.name}</div>
@@ -1394,17 +1397,6 @@ export default function App() {
           </div>
 
           <div className="controls">
-            <button
-              className="ctrl"
-              aria-label={t.speed}
-              onClick={() => {
-                const i = (speedIdx + 1) % SPEEDS.length
-                setSpeedIdx(i)
-                engine.current!.setRate(SPEEDS[i])
-              }}
-            >
-              {SPEEDS[speedIdx]}x
-            </button>
 
             <button
               className="ctrl"
@@ -1453,26 +1445,6 @@ export default function App() {
               <Forward size={26} />
             </button>
 
-            <button
-              className="ctrl"
-              aria-label={t.stumble}
-              disabled={current === null}
-              onClick={() => {
-                const key = currentWordKey()
-                if (key) void markStumble(key)
-              }}
-            >
-              <Stumble size={22} />
-            </button>
-
-            <button
-              className="ctrl"
-              aria-label={t.sleep}
-              aria-pressed={sleepAt !== null}
-              onClick={() => setSleepAt(sleepAt === null ? 30 : sleepAt === 30 ? 60 : null)}
-            >
-              <Moon size={22} />
-            </button>
           </div>
 
           <div className="progress">
@@ -1504,6 +1476,44 @@ export default function App() {
               </span>
               <span>-{formatTime(Math.max(0, duration - time), lang)}</span>
             </div>
+          </div>
+
+          {/* Settings, not transport. They used to sit in the same row as
+              play, which put eight controls across a phone and squeezed the
+              play button out of round. Quieter, smaller, and out of the way
+              of the five things a thumb actually reaches for. */}
+          <div className="controls-aux">
+            <button
+              className="ctrl small"
+              aria-label={t.speed}
+              onClick={() => {
+                const i = (speedIdx + 1) % SPEEDS.length
+                setSpeedIdx(i)
+                engine.current!.setRate(SPEEDS[i])
+              }}
+            >
+              {SPEEDS[speedIdx]}x
+            </button>
+            <button
+              className="ctrl small"
+              aria-label={t.stumble}
+              disabled={current === null}
+              onClick={() => {
+                const key = currentWordKey()
+                if (key) void markStumble(key)
+              }}
+            >
+              <Stumble size={22} />
+            </button>
+
+            <button
+              className="ctrl small"
+              aria-label={t.sleep}
+              aria-pressed={sleepAt !== null}
+              onClick={() => setSleepAt(sleepAt === null ? 30 : sleepAt === 30 ? 60 : null)}
+            >
+              <Moon size={22} />
+            </button>
           </div>
 
         </div>

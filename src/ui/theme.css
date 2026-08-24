@@ -550,6 +550,12 @@ body {
   gap: 0.9rem;
 }
 
+/* No portrait to show, so the row is title and actions only — otherwise the
+   empty first column still claims its gap and pushes the title off centre. */
+.player-top.no-face {
+  grid-template-columns: 1fr auto;
+}
+
 /* Portrait medallion. The photo is a phone screenshot, so it is zoomed and
    offset by the --face-* variables to frame the face inside the ring. */
 .medallion {
@@ -604,13 +610,38 @@ body {
   direction: ltr;
 }
 
+/* Five controls, and only the five a thumb reaches for while reciting:
+   previous, back ten, play, forward ten, next. Speed, stumble and the sleep
+   timer are settings and live in .controls-aux below the scrubber — with all
+   eight in this row a phone had to squeeze them, and what gave first was the
+   play button, which flattened out of round. */
 .controls {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.4rem;
+  justify-content: center;
+  gap: clamp(0.35rem, 3.2vw, 1.1rem);
   padding: 0.85rem 0.15rem 0.3rem;
   direction: ltr;
+}
+
+/* Settings, quieter and smaller, under the scrubber. */
+.controls-aux {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(1rem, 8vw, 2.6rem);
+  padding: 0.1rem 0.15rem 0.2rem;
+  direction: ltr;
+}
+
+.ctrl.small {
+  color: var(--muted);
+  min-width: 2.2rem;
+  padding: 0.3rem;
+}
+
+.ctrl.small:hover {
+  color: var(--ink);
 }
 
 .ctrl {
@@ -626,6 +657,10 @@ body {
   font-size: 1rem;
   font-weight: 500;
   min-width: 2.7rem;
+  /* Never shrink. A flex item defaults to shrinking, and when this row was
+     overfull the round play button lost width but kept its height — which is
+     how it ended up an oval on a phone. */
+  flex: none;
 }
 
 .ctrl:hover {
@@ -635,6 +670,10 @@ body {
 .ctrl.big {
   width: 4.2rem;
   height: 4.2rem;
+  /* Square before it is round: without both of these fixed and flex:none
+     above, any crowding in the row turns the circle into an ellipse. */
+  aspect-ratio: 1;
+  flex: none;
   border-radius: 50%;
   background: linear-gradient(160deg, var(--play-a), var(--play-b));
   color: var(--on-accent);

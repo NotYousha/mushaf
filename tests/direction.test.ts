@@ -37,7 +37,10 @@ describe('interface direction', () => {
    */
   it('keeps pinned directions to the deliberate islands', () => {
     const pinned = css.match(/^\s*direction:\s*(rtl|ltr);/gm) ?? []
-    expect(pinned.length).toBeLessThanOrEqual(14)
+    // 15: the fourteen scripture and numeral islands, plus .controls-aux,
+    // which is pinned for the same reason .controls is — a transport reads
+    // left to right in every language, like a video scrubber.
+    expect(pinned.length).toBeLessThanOrEqual(15)
   })
 
   // These broke the main layout: a row that hugged the wrong edge, a search
@@ -58,5 +61,32 @@ describe('interface direction', () => {
     const rule = /\.mini-pct\s*\{[\s\S]*?\}/.exec(css)?.[0] ?? ''
     expect(rule).toMatch(/inset-inline-start/)
     expect(rule).not.toMatch(/transform:\s*translateX/)
+  })
+})
+
+/**
+ * The transport row. Eight controls across a phone overflowed it, and because
+ * a flex item shrinks by default the round play button lost width while
+ * keeping its height — it rendered as an oval. Both are pinned here: nothing
+ * in the row may shrink, and the settings must stay out of it.
+ */
+describe('the transport row', () => {
+  it('never lets a control shrink', () => {
+    const ctrl = /\.ctrl\s*\{[\s\S]*?\}/.exec(css)?.[0] ?? ''
+    expect(ctrl).toMatch(/flex:\s*none/)
+    const big = /\.ctrl\.big\s*\{[\s\S]*?\}/.exec(css)?.[0] ?? ''
+    expect(big).toMatch(/flex:\s*none/)
+    expect(big).toMatch(/aspect-ratio:\s*1/)
+  })
+
+  it('keeps the settings in their own row', () => {
+    expect(css).toMatch(/\.controls-aux\s*\{/)
+  })
+
+  // With no portrait the first grid column still claimed its gap, pushing the
+  // title off centre and the empty ring off the edge of the screen.
+  it('drops the portrait column when there is no portrait', () => {
+    const rule = /\.player-top\.no-face\s*\{[\s\S]*?\}/.exec(css)?.[0] ?? ''
+    expect(rule).toMatch(/grid-template-columns:\s*1fr auto/)
   })
 })
