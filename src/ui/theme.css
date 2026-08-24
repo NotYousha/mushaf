@@ -1794,6 +1794,17 @@ body {
   margin-top: 0.1rem;
 }
 
+/* The imam on a compilation. Weighted like the riwayah line beside it —
+   supporting detail under the entry name, not competing with it. The label
+   and the name may be in opposite scripts, so the direction comes from the
+   text rather than being pinned. */
+.reciter-voice {
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin-top: 0.15rem;
+  unicode-bidi: plaintext;
+}
+
 /* ============ printed-page mushaf ============ */
 /* Used for a riwayah with no machine-readable text, where the page can only
    be an image. */

@@ -82,6 +82,7 @@ import {
   type ThemeId,
 } from './ui/theming'
 import { isHafs, riwayahLabel } from './catalog/riwayah'
+import { artistFor, artistForEn, voiceLabel } from './catalog/voice'
 import { Splash } from './ui/Splash'
 import './ui/theme.css'
 import './ui/themes.css'
@@ -1105,6 +1106,15 @@ export default function App() {
               <div className="reciter-en">{reciter.nameEn}</div>
               {riwayahLabel(reciter, lang) && (
                 <div className="reciter-riwayah">({riwayahLabel(reciter, lang)})</div>
+              )}
+              {/* The entry name above is the collection — "Taraweeh 1447" —
+                  which does not say whose voice this is. Both belong here:
+                  the collection identifies the recording, the imam
+                  identifies the recitation. */}
+              {voiceLabel(currentView, lang) && (
+                <div className="reciter-voice">
+                  {t.recitedBy} {voiceLabel(currentView, lang)}
+                </div>
               )}
             </div>
 
