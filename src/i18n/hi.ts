@@ -15,6 +15,8 @@ export const hi: Strings = {
   reciter: 'क़ारी',
   recitedBy: 'पढ़ने वाले',
   haramYears: 'हरम मक्की तरावीह — वर्ष अनुसार',
+  haramShort: 'हरम तरावीह',
+  haramPick: 'वर्ष चुनें',
   haramCount: (n: number) => `${n} वर्ष`,
   haramLed: 'इमामत',
   saved: 'सहेजा गया',

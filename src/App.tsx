@@ -124,6 +124,14 @@ export default function App() {
   const [lang, setLang] = useState<Lang>('ar')
   const t = stringsFor(lang)
   const [confirmAll, setConfirmAll] = useState(false)
+  /**
+   * Whether the Grand Mosque year picker is open.
+   *
+   * Closed by default, and closed again once a year is chosen: thirty-three
+   * rows standing open under the strip pushes the surahs off the screen for
+   * everyone, including the four people in five who never touch them.
+   */
+  const [yearsOpen, setYearsOpen] = useState(false)
   const [queued, setQueued] = useState(0)
   const [canCast, setCanCast] = useState(false)
   const [persisted, setPersisted] = useState<boolean | null>(null)
@@ -161,6 +169,8 @@ export default function App() {
     () => reciters.filter((r) => r.group === 'haram' && r.year),
     [reciters],
   )
+  /** The year currently being listened to, or null when it is a mushaf. */
+  const haramYear = reciter?.group === 'haram' ? (reciter.year ?? null) : null
 
   const urls = useMemo(
     () => new Map(surahs.filter((s) => s.url).map((s) => [s.surah, s.url as string])),
@@ -839,7 +849,7 @@ export default function App() {
           </div>
         </div>
 
-        {individual.length > 1 && (
+        {(individual.length > 1 || haramYears.length > 0) && (
           <div className="reciters" role="tablist" aria-label="القارئ">
             {individual.map((r) => (
               <button
@@ -851,7 +861,10 @@ export default function App() {
                 // the one that has to be on screen — otherwise it sits off
                 // the edge and the row looks arbitrary.
                 ref={r.id === reciterId ? selectedChip : undefined}
-                onClick={() => void switchReciter(r.id)}
+                onClick={() => {
+                  setYearsOpen(false)
+                  void switchReciter(r.id)
+                }}
               >
                 <span className="chip-name">{r.name}</span>
                 {riwayahLabel(r, lang) && (
@@ -860,13 +873,44 @@ export default function App() {
                 <span className="chip-meta">{r.surahs.length}/114</span>
               </button>
             ))}
+
+            {/* One chip for thirty-three years. It opens the picker rather
+                than selecting anything, because there is no sensible default
+                year to jump to — and it reads as selected whenever one of its
+                years is the thing playing. */}
+            {haramYears.length > 0 && (
+              <button
+                role="tab"
+                aria-selected={haramYear !== null}
+                aria-expanded={yearsOpen}
+                aria-controls="haram-years"
+                className={`chip chip-group${yearsOpen ? ' is-open' : ''}`}
+                ref={haramYear !== null && !yearsOpen ? selectedChip : undefined}
+                onClick={() => setYearsOpen((v) => !v)}
+              >
+                <span className="chip-name">{t.haramShort}</span>
+                <span className="chip-meta">
+                  {haramYear !== null
+                    ? lang === 'ar' || lang === 'ur'
+                      ? arabicDigits(haramYear)
+                      : haramYear
+                    : t.haramCount(haramYears.length)}
+                  <Chevron size={12} />
+                </span>
+              </button>
+            )}
           </div>
         )}
 
         {haramYears.length > 0 && (
-          <section className="years">
+          /* Kept mounted and collapsed rather than unmounted, so it folds
+             away on the way out as well as on the way in. Closed, it is
+             visibility:hidden, which takes it out of the tab order and off
+             a screen reader without costing the animation. */
+          <section className={`years${yearsOpen ? ' is-open' : ''}`} id="haram-years">
+            <div className="years-inner">
             <div className="years-head">
-              <h3>{t.haramYears}</h3>
+              <h3>{t.haramPick}</h3>
               <span className="years-count">{t.haramCount(haramYears.length)}</span>
             </div>
             {/* Newest first: the year someone wants is nearly always the last
@@ -883,7 +927,12 @@ export default function App() {
                     aria-selected={selected}
                     className={`year${selected ? ' is-on' : ''}`}
                     ref={selected ? selectedChip : undefined}
-                    onClick={() => void switchReciter(r.id)}
+                    // Chosen, so the picker gets out of the way and gives the
+                    // surahs back the half of the screen it was holding.
+                    onClick={() => {
+                      setYearsOpen(false)
+                      void switchReciter(r.id)
+                    }}
                   >
                     <span className="year-num">
                       {arabicScript ? arabicDigits(r.year!) : r.year}
@@ -903,6 +952,7 @@ export default function App() {
                   </button>
                 )
               })}
+            </div>
             </div>
           </section>
         )}

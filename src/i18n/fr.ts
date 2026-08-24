@@ -15,6 +15,8 @@ export const fr: Strings = {
   reciter: 'Récitateur',
   recitedBy: 'Récité par',
   haramYears: 'Grande Mosquée — Tarawih par année',
+  haramShort: 'Tarawih du Haram',
+  haramPick: 'Choisir une année',
   haramCount: (n: number) => `${n} années`,
   haramLed: 'Dirigé par',
   saved: 'enregistrée',

@@ -21,6 +21,9 @@ export const en = {
   recitedBy: 'Recited by',
   /** The Grand Mosque year list, which stands apart from the reciter strip. */
   haramYears: 'Grand Mosque — Taraweeh by year',
+  /** Short enough for a chip in the reciter strip. */
+  haramShort: 'Haram Taraweeh',
+  haramPick: 'Choose a year',
   haramCount: (n: number) => `${n} years`,
   haramLed: 'Led by',
   saved: 'saved',

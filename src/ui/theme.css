@@ -835,13 +835,77 @@ body {
   display: none;
 }
 
+/* The chip that stands for thirty-three years rather than one mushaf. It
+   opens a picker instead of selecting, so it carries a chevron to say so. */
+.chip-group .chip-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.22rem;
+}
+
+.chip-group .chip-meta svg {
+  transition: transform 220ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.chip-group.is-open .chip-meta svg {
+  transform: rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chip-group .chip-meta svg {
+    transition-duration: 0s;
+  }
+}
+
 /* ============ Grand Mosque, by year ============
    Thirty-three years cannot go in the strip above: a horizontal run of that
    many chips is a thing you scroll past rather than choose from. A vertical
    list newest-first puts the year most people want under the heading, and
    caps its own height so it never takes the whole screen from the surahs. */
+/* Collapsed to nothing and grown back on demand.
+   grid-template-rows 0fr -> 1fr is the one way to animate to a height the
+   content decides, without measuring it in JS and without capping it at a
+   guess that clips the last row on a narrow phone.
+   visibility is discrete, so delaying it until the fold finishes keeps the
+   rows out of the tab order and off a screen reader while still letting them
+   animate out rather than blink away. */
 .years {
-  padding: 0 1.2rem 0.85rem;
+  display: grid;
+  grid-template-rows: 0fr;
+  padding: 0 1.2rem;
+  visibility: hidden;
+  opacity: 0;
+  transition:
+    grid-template-rows 260ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    opacity 180ms ease,
+    padding-bottom 260ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    visibility 0s linear 260ms;
+}
+
+.years.is-open {
+  grid-template-rows: 1fr;
+  padding-bottom: 0.85rem;
+  visibility: visible;
+  opacity: 1;
+  transition:
+    grid-template-rows 300ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    opacity 200ms ease 60ms,
+    padding-bottom 300ms cubic-bezier(0.22, 0.61, 0.36, 1),
+    visibility 0s;
+}
+
+/* The 0fr row only collapses if its child can be smaller than its content. */
+.years-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .years,
+  .years.is-open {
+    transition-duration: 0s;
+    transition-delay: 0s;
+  }
 }
 
 .years-head {
