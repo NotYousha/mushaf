@@ -75,6 +75,11 @@ Attribution data lives in two hand-authored files:
   than 114 times and the file serves future years.
 - `data/voices-haram-1447.json` — `surah → imamId`.
 
+The ids exist only in those two source files. `refresh-catalog.mjs` resolves them and
+writes the **display names** into `voice`/`voiceEn`, so the app never performs a join
+and `imams.json` is not shipped to the client. An unresolvable id fails the refresh
+rather than writing a blank attribution.
+
 Hand-authored rather than scraped from page titles: a scrape is less work until a title
 is formatted differently, and wrong attribution on a recitation is the failure
 `matchFilename`'s own comment calls the worst this app can have.
@@ -151,7 +156,8 @@ implementation does not go looking for work that is not there:
   single median would delete them; a 2× outlier within one imam's group is still
   caught; a group of six goes unjudged rather than mis-judged.
 - `data.test.ts` — every entry carrying `voice` also carries `voiceEn`; every
-  `haram-1447` surah has a voice; every voice id resolves against `imams.json`.
+  `haram-1447` surah has both; every id in `voices-haram-1447.json` resolves against
+  `imams.json`, and no catalog `voice` is blank.
 - MediaSession artist falls back to `reciter.fullName` when `voice` is absent, proving
   the existing four entries are unchanged.
 
