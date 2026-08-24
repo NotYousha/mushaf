@@ -16,6 +16,8 @@ import {
 import { loadPosition, getPref, setPref } from './db/prefs'
 import {
   deleteFace,
+  exportFaces,
+  importFaces,
   loadFaces,
   putFace,
   revokeFaces,
@@ -1430,6 +1432,22 @@ export default function App() {
                   await deleteFace(imamId)
                   await refreshFaces()
                 }}
+                onExport={async () => {
+                  const doc = await exportFaces()
+                  const blob = new Blob([JSON.stringify(doc)], { type: 'application/json' })
+                  const url = URL.createObjectURL(blob)
+                  const a = document.createElement('a')
+                  a.href = url
+                  a.download = `mushaf-photos-${doc.saved.replace(/[: ]/g, '-')}.json`
+                  a.click()
+                  // Give the download a moment to start before the URL goes.
+                  setTimeout(() => URL.revokeObjectURL(url), 10_000)
+                }}
+                onImport={async (file) => {
+                  const n = await importFaces(await file.text())
+                  await refreshFaces()
+                  return n
+                }}
               />
 
               <VerifyPanel
@@ -1516,12 +1534,34 @@ export default function App() {
                   the collection identifies the recording, the imam
                   identifies the recitation. */}
               {(liveWho || voiceLabel(currentView, lang)) && (
-                <div className="reciter-voice">
-                  {t.recitedBy}{' '}
-                  {liveWho
-                    ? inScript(lang, liveWho.name, liveWho.nameEn)
-                    : voiceLabel(currentView, lang)}
-                </div>
+                /* The name is the control. Whoever is reciting is what a
+                   listener is already looking at, so stepping to the next one
+                   belongs here rather than behind an unlabelled icon in a row
+                   that only appears once the player is opened. */
+                <button
+                  type="button"
+                  className="reciter-voice"
+                  disabled={nextVoice === null}
+                  aria-label={t.nextReciter}
+                  onClick={() => {
+                    if (!nextVoice) return
+                    if (nextVoice.kind === 'within') engine.current!.seek(nextVoice.at)
+                    else void playSurah(nextVoice.surah)
+                  }}
+                >
+                  <span className="rv-label">{t.recitedBy}</span>{' '}
+                  <span className="rv-name">
+                    {liveWho
+                      ? inScript(lang, liveWho.name, liveWho.nameEn)
+                      : voiceLabel(currentView, lang)}
+                  </span>
+                  {nextVoice !== null && (
+                    <span className="rv-next" aria-hidden="true">
+                      <NextVoice size={15} />
+                      {t.nextReciter}
+                    </span>
+                  )}
+                </button>
               )}
             </div>
 

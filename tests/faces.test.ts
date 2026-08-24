@@ -115,3 +115,49 @@ describe('reading portraits never breaks the app', () => {
     await db.delete('faces', 'legacy')
   })
 })
+
+/**
+ * Browser storage is per device and per browser: a photograph added on a phone
+ * is on that phone and nowhere else. A portable file is the way across, and
+ * the same file is what can later be bundled so everyone gets them.
+ */
+describe('moving portraits between devices', () => {
+  it('round-trips a portrait and its framing', async () => {
+    const { exportFaces, importFaces, loadFaces, setFraming } = await import(
+      '../src/db/faces'
+    )
+    const db = await getDB()
+    await db.put(
+      'faces',
+      { buffer: new Uint8Array([9, 8, 7, 6]).buffer, type: 'image/webp', storedAt: 1 },
+      'sudais',
+    )
+    await setFraming('sudais', 'card', { zoom: 180, x: 30, y: 20 })
+
+    const doc = await exportFaces()
+    expect(doc.kind).toBe('mushaf-faces')
+    expect(Object.keys(doc.faces)).toContain('sudais')
+
+    await db.clear('faces')
+    expect((await loadFaces()).size).toBe(0)
+
+    const n = await importFaces(JSON.stringify(doc))
+    expect(n).toBe(1)
+
+    const back = (await db.get('faces', 'sudais')) as {
+      buffer: ArrayBuffer
+      frames: { card: { zoom: number; x: number; y: number } }
+    }
+    expect(new Uint8Array(back.buffer)).toEqual(new Uint8Array([9, 8, 7, 6]))
+    expect(back.frames.card).toEqual({ zoom: 180, x: 30, y: 20 })
+    await db.clear('faces')
+  })
+
+  it('refuses a file that is not ours, rather than half-importing it', async () => {
+    const { importFaces } = await import('../src/db/faces')
+    await expect(importFaces('not json at all')).rejects.toThrow(/readable/i)
+    await expect(importFaces(JSON.stringify({ kind: 'something-else' }))).rejects.toThrow(
+      /portraits file/i,
+    )
+  })
+})

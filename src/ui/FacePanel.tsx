@@ -20,6 +20,8 @@ type Props = {
   onPick: (imamId: string, file: File) => Promise<void>
   onFrame: (imamId: string, surface: Surface, framing: Framing) => Promise<void>
   onRemove: (imamId: string) => Promise<void>
+  onExport: () => Promise<void>
+  onImport: (file: File) => Promise<number>
 }
 
 const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n))
@@ -35,7 +37,17 @@ const clamp = (n: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, n
  * centre in a photograph, and a crop chosen on import cannot be undone — so
  * the crop stays adjustable: drag the preview to move, the slider to zoom.
  */
-export function FacePanel({ t, lang, base, faces, onPick, onFrame, onRemove }: Props) {
+export function FacePanel({
+  t,
+  lang,
+  base,
+  faces,
+  onPick,
+  onFrame,
+  onRemove,
+  onExport,
+  onImport,
+}: Props) {
   const [busy, setBusy] = useState<string | null>(null)
   const [failed, setFailed] = useState<{ id: string; message: string } | null>(null)
   /** Which row is open for framing, and its live values while dragging. */
@@ -45,6 +57,8 @@ export function FacePanel({ t, lang, base, faces, onPick, onFrame, onRemove }: P
   const [draft, setDraft] = useState<Framing>(DEFAULT_FRAMING)
   const inputs = useRef(new Map<string, HTMLInputElement | null>())
   const drag = useRef<{ x: number; y: number; fx: number; fy: number } | null>(null)
+  const transferInput = useRef<HTMLInputElement | null>(null)
+  const [moved, setMoved] = useState<string | null>(null)
 
   const roster = allImams()
   const groups = PLACES.map((m) => ({
@@ -116,6 +130,39 @@ export function FacePanel({ t, lang, base, faces, onPick, onFrame, onRemove }: P
     <section className="faces">
       <h2 style={{ marginTop: '1.6rem' }}>{t.photoFraming}</h2>
       <p className="faces-intro">{t.facesIntro}</p>
+
+      {/* Browser storage is per device: a photograph added on a phone is on
+          that phone and nowhere else. This is the way across. */}
+      <div className="faces-transfer">
+        <button
+          type="button"
+          className="face-add"
+          disabled={!faces.size}
+          onClick={() => void onExport()}
+        >
+          {t.facesExport}
+        </button>
+        <label className="face-add">
+          {t.facesImport}
+          <input
+            ref={transferInput}
+            type="file"
+            accept="application/json,.json"
+            onChange={(e) => {
+              const f = e.target.files?.[0]
+              if (!f) return
+              setMoved(null)
+              void onImport(f)
+                .then((n) => setMoved(t.facesImported(n)))
+                .catch((err) => setMoved(err instanceof Error ? err.message : String(err)))
+                .finally(() => {
+                  if (transferInput.current) transferInput.current.value = ''
+                })
+            }}
+          />
+        </label>
+        {moved && <span className="faces-moved">{moved}</span>}
+      </div>
 
       {groups.map((g) => (
         <div key={g.place} className="faces-group">

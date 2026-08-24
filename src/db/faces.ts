@@ -274,3 +274,89 @@ export function revokeFaces(faces: Map<string, Face> | null | undefined) {
   if (!faces) return
   for (const f of faces.values()) URL.revokeObjectURL(f.url)
 }
+
+/* ---------------- moving portraits between devices ---------------- */
+
+/**
+ * Everything stored, as one portable file.
+ *
+ * Browser storage is per device and per browser: a photograph added on a phone
+ * is on that phone and nowhere else, and no amount of reinstalling changes
+ * that. This is the way across — export on one device, import on the other.
+ *
+ * The pictures are base64 inside JSON rather than a zip so the whole thing is
+ * one file with no library, small enough to send over a chat, and readable
+ * enough to be bundled into the app later if these should ship for everyone.
+ */
+export type FaceExport = {
+  kind: 'mushaf-faces'
+  version: 1
+  saved: string
+  faces: Record<string, { type: string; data: string; frames: Framings }>
+}
+
+const toBase64 = (buf: ArrayBuffer) => {
+  const bytes = new Uint8Array(buf)
+  let s = ''
+  // Chunked: a single spread of a megabyte-long array overflows the stack.
+  for (let i = 0; i < bytes.length; i += 8192) {
+    s += String.fromCharCode(...bytes.subarray(i, i + 8192))
+  }
+  return btoa(s)
+}
+
+const fromBase64 = (b64: string) => {
+  const bin = atob(b64)
+  const out = new Uint8Array(bin.length)
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i)
+  return out.buffer
+}
+
+export async function exportFaces(): Promise<FaceExport> {
+  const db = await getDB()
+  const keys = await db.getAllKeys('faces')
+  const vals = (await db.getAll('faces')) as FaceRecord[]
+  const faces: FaceExport['faces'] = {}
+  keys.forEach((k, i) => {
+    const rec = vals[i]
+    if (!rec?.buffer) return
+    faces[String(k)] = {
+      type: rec.type,
+      data: toBase64(rec.buffer),
+      frames: framingsOf(rec),
+    }
+  })
+  return {
+    kind: 'mushaf-faces',
+    version: 1,
+    saved: new Date().toISOString().slice(0, 16).replace('T', ' '),
+    faces,
+  }
+}
+
+/** Returns how many were taken in. Anything unrecognisable is refused whole. */
+export async function importFaces(text: string): Promise<number> {
+  let doc: FaceExport
+  try {
+    doc = JSON.parse(text)
+  } catch {
+    throw new Error('That file is not readable.')
+  }
+  if (doc?.kind !== 'mushaf-faces' || !doc.faces) {
+    throw new Error('That is not a portraits file from this app.')
+  }
+  const db = await getDB()
+  let n = 0
+  for (const [id, f] of Object.entries(doc.faces)) {
+    if (!f?.data) continue
+    const rec: FaceRecord = {
+      buffer: fromBase64(f.data),
+      type: f.type || 'image/webp',
+      storedAt: Date.now(),
+      frames: f.frames ?? DEFAULT_FRAMINGS,
+    }
+    await db.put('faces', rec, id)
+    n++
+  }
+  return n
+}

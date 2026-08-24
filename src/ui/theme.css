@@ -2075,11 +2075,52 @@ body {
    supporting detail under the entry name, not competing with it. The label
    and the name may be in opposite scripts, so the direction comes from the
    text rather than being pinned. */
+/* Whoever is reciting right now, and a way to step to the next one. On a
+   Taraweeh year the name changes mid-surah, so this is the liveliest line on
+   the screen — and the natural place to press to move on. */
 .reciter-voice {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.3rem;
+  font: inherit;
   font-size: 0.82rem;
   color: var(--muted);
-  margin-top: 0.15rem;
+  margin-top: 0.25rem;
+  padding: 0.25rem 0.6rem;
+  border: 1px solid var(--accent-line);
+  border-radius: 999px;
+  background: none;
+  cursor: pointer;
   unicode-bidi: plaintext;
+}
+
+.reciter-voice:disabled {
+  border-color: transparent;
+  cursor: default;
+}
+
+.rv-name {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+/* The invitation, kept quiet: present enough to be found, small enough not to
+   compete with the name it sits beside. */
+.rv-next {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  font-size: 0.68rem;
+  color: var(--accent-deep);
+  border-inline-start: 1px solid var(--accent-line);
+  padding-inline-start: 0.45rem;
+  margin-inline-start: 0.15rem;
+}
+
+.reciter-voice:disabled .rv-next {
+  display: none;
 }
 
 /* ============ printed-page mushaf ============ */
@@ -2533,4 +2574,24 @@ body {
   color: var(--ink-soft);
   cursor: pointer;
   white-space: nowrap;
+}
+
+/* Moving portraits between devices. */
+.faces-transfer {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.9rem;
+}
+
+.faces-transfer .face-add:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.faces-moved {
+  font-size: 0.74rem;
+  color: var(--ready);
+  unicode-bidi: plaintext;
 }
