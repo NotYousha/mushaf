@@ -396,6 +396,25 @@ body {
   text-overflow: ellipsis;
 }
 
+/* Who recited this surah, on a compilation. Quieter than the surah name and
+   quieter than the gloss above: it is the third thing you read in the row,
+   not the first.
+
+   Unlike .name-plain this cannot pin a direction. The gloss is always Latin,
+   but voiceLabel returns Arabic to an Arabic reader and the transliteration
+   to everyone else, so the base direction has to come from the text itself
+   or one of the two renders with its punctuation adrift. */
+.name-voice {
+  display: block;
+  font-size: 0.76rem;
+  color: var(--muted);
+  opacity: 0.85;
+  unicode-bidi: plaintext;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .row-end {
   display: flex;
   align-items: center;

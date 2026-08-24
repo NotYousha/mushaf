@@ -1,5 +1,6 @@
 import { memo } from 'react'
 import type { SurahView } from '../catalog/types'
+import { voiceLabel } from '../catalog/voice'
 import type { Strings, Lang } from '../i18n'
 import { Play, Handle, Download, Saved } from './Icons'
 
@@ -85,6 +86,13 @@ export const SurahList = memo(function SurahList({
                     <span className="name-plain">
                       {s.nameEn} · {s.translation}
                     </span>
+                  )}
+                  {/* Not gated on language the way the gloss above is. A
+                      gloss is a convenience for one language; who is
+                      reciting is information every reader wants, and
+                      voiceLabel already picks the right script. */}
+                  {voiceLabel(s, lang) && (
+                    <span className="name-voice">{voiceLabel(s, lang)}</span>
                   )}
                 </span>
               </button>
