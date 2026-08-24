@@ -13,6 +13,9 @@ export const ar: Strings = {
 
   reciter: 'القارئ',
   recitedBy: 'قرأها',
+  haramYears: 'تراويح الحرم المكي — حسب العام',
+  haramCount: (n: number) => `${n} عامًا`,
+  haramLed: 'أَمَّ الصلاة',
   saved: 'محفوظة',
   resumeAt: (p: number) => `متابعة التحميل من ${p}%`,
   streaming: 'بث',

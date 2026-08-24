@@ -19,6 +19,10 @@ export const en = {
   reciter: 'Reciter',
   /** Precedes an imam's name on a surah from a multi-voice compilation. */
   recitedBy: 'Recited by',
+  /** The Grand Mosque year list, which stands apart from the reciter strip. */
+  haramYears: 'Grand Mosque — Taraweeh by year',
+  haramCount: (n: number) => `${n} years`,
+  haramLed: 'Led by',
   saved: 'saved',
   resumeAt: (p: number) => `Resume from ${p}%`,
   streaming: 'streaming',

@@ -83,6 +83,7 @@ import {
 } from './ui/theming'
 import { isHafs, riwayahLabel } from './catalog/riwayah'
 import { artistFor, artistForEn, voiceLabel } from './catalog/voice'
+import { arabicDigits, imamsOf } from './catalog/haram'
 import { Splash } from './ui/Splash'
 import './ui/theme.css'
 import './ui/themes.css'
@@ -144,6 +145,22 @@ export default function App() {
   )
 
   const surahs = useMemo(() => (reciter ? buildView(reciter, surahMeta) : []), [reciter])
+
+  /**
+   * The reciter strip holds the individual mushafs; the Grand Mosque's
+   * thirty-three years get their own list.
+   *
+   * They are all ordinary reciters underneath — switching to one, saving from
+   * it and playing it go through exactly the same paths. Only where they are
+   * offered differs, because thirty-three more chips in a horizontal strip
+   * would bury the four mushafs that belong there and make the strip a thing
+   * to scroll past rather than choose from.
+   */
+  const individual = useMemo(() => reciters.filter((r) => !r.group), [reciters])
+  const haramYears = useMemo(
+    () => reciters.filter((r) => r.group === 'haram' && r.year),
+    [reciters],
+  )
 
   const urls = useMemo(
     () => new Map(surahs.filter((s) => s.url).map((s) => [s.surah, s.url as string])),
@@ -822,9 +839,9 @@ export default function App() {
           </div>
         </div>
 
-        {reciters.length > 1 && (
+        {individual.length > 1 && (
           <div className="reciters" role="tablist" aria-label="القارئ">
-            {reciters.map((r) => (
+            {individual.map((r) => (
               <button
                 key={r.id}
                 role="tab"
@@ -844,6 +861,50 @@ export default function App() {
               </button>
             ))}
           </div>
+        )}
+
+        {haramYears.length > 0 && (
+          <section className="years">
+            <div className="years-head">
+              <h3>{t.haramYears}</h3>
+              <span className="years-count">{t.haramCount(haramYears.length)}</span>
+            </div>
+            {/* Newest first: the year someone wants is nearly always the last
+                one, and 1414 is a long scroll away from the top. */}
+            <div className="years-scroll" role="tablist" aria-label={t.haramYears}>
+              {haramYears.map((r) => {
+                const selected = r.id === reciterId
+                const led = imamsOf(r.year!)
+                const arabicScript = lang === 'ar' || lang === 'ur'
+                return (
+                  <button
+                    key={r.id}
+                    role="tab"
+                    aria-selected={selected}
+                    className={`year${selected ? ' is-on' : ''}`}
+                    ref={selected ? selectedChip : undefined}
+                    onClick={() => void switchReciter(r.id)}
+                  >
+                    <span className="year-num">
+                      {arabicScript ? arabicDigits(r.year!) : r.year}
+                    </span>
+                    <span className="year-body">
+                      {r.ce ? <span className="year-ce">{r.ce}</span> : null}
+                      {led.length > 0 && (
+                        <span className="year-imams">
+                          <span className="year-led">{t.haramLed}</span>{' '}
+                          {led.map((i) => (arabicScript ? i.name : i.nameEn)).join(' · ')}
+                        </span>
+                      )}
+                    </span>
+                    <span className="year-size">
+                      {formatBytes(r.surahs.reduce((a, s) => a + s.bytes, 0))}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+          </section>
         )}
 
         {tab === 'quran' && (
@@ -1029,7 +1090,20 @@ export default function App() {
               />
 
               <h2 style={{ marginTop: '1.6rem' }}>{t.reciters}</h2>
-              {reciters.map((r) => (
+              {/* One paragraph per Grand Mosque year would be thirty-three of
+                  them saying nearly the same thing. They are described once,
+                  and chosen from the year list instead. */}
+              {haramYears.length > 0 && (
+                <p>
+                  <strong>{t.haramYears}</strong>
+                  <br />
+                  {haramYears[haramYears.length - 1].year}–{haramYears[0].year} ·{' '}
+                  {t.haramCount(haramYears.length)}
+                  <br />
+                  <span style={{ color: 'var(--muted)' }}>{haramYears[0].note}</span>
+                </p>
+              )}
+              {individual.map((r) => (
                 <p key={r.id}>
                   <strong>{r.fullName}</strong>
                   <br />

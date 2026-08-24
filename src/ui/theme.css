@@ -835,6 +835,107 @@ body {
   display: none;
 }
 
+/* ============ Grand Mosque, by year ============
+   Thirty-three years cannot go in the strip above: a horizontal run of that
+   many chips is a thing you scroll past rather than choose from. A vertical
+   list newest-first puts the year most people want under the heading, and
+   caps its own height so it never takes the whole screen from the surahs. */
+.years {
+  padding: 0 1.2rem 0.85rem;
+}
+
+.years-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin-bottom: 0.45rem;
+}
+
+.years-head h3 {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.years-count {
+  font-size: 0.74rem;
+  color: var(--muted);
+}
+
+.years-scroll {
+  max-height: 15.5rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--accent-line);
+  border-radius: 0.9rem;
+  background: var(--card-2);
+}
+
+.year {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.7rem;
+  width: 100%;
+  padding: 0.55rem 0.85rem;
+  border: 0;
+  border-bottom: 1px solid var(--accent-line);
+  background: none;
+  color: var(--ink-soft);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.year:last-child {
+  border-bottom: 0;
+}
+
+.year.is-on {
+  background: var(--accent-soft);
+  color: var(--ink);
+}
+
+.year-num {
+  font-size: 1.02rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.year-body {
+  display: grid;
+  gap: 0.05rem;
+  min-width: 0;
+}
+
+.year-ce {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+/* The imams who led that year. Truncated rather than wrapped: seven names
+   would make one row three lines tall and push the rest off the list. */
+.year-imams {
+  font-size: 0.74rem;
+  color: var(--muted);
+  unicode-bidi: plaintext;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.year-led {
+  opacity: 0.7;
+}
+
+.year-size {
+  font-size: 0.72rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
 .chip {
   flex: none;
   display: grid;

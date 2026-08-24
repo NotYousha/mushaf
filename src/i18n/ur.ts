@@ -14,6 +14,9 @@ export const ur: Strings = {
 
   reciter: 'قاری',
   recitedBy: 'پڑھنے والے',
+  haramYears: 'حرم مکی تراویح — سال کے اعتبار سے',
+  haramCount: (n: number) => `${n} سال`,
+  haramLed: 'امامت',
   saved: 'محفوظ شدہ',
   resumeAt: (p: number) => `${p}% سے دوبارہ شروع کریں`,
   streaming: 'اسٹریمنگ',

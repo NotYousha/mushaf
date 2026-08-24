@@ -16,8 +16,14 @@
  *                   sends no CORS header and is unreachable from some
  *                   networks entirely — the proxy fixes both.
  *
- *   /h/{1-114}.mp3  The Grand Mosque's mushaf for 1447, assembled from that
- *                   Ramadan's Taraweeh and Tahajjud. Archive.org does send
+ *   /haram/{year}/{1-114}.mp3
+ *                   The Grand Mosque's mushaf, one archive.org item per year
+ *                   (Mecca{year}), each assembled from that Ramadan's
+ *                   Taraweeh and Tahajjud. Thirty-three years, 1414-1447,
+ *                   except 1416 whose item is missing surah 12.
+ *                   /h/{1-114}.mp3 is 1447 under the name it first shipped
+ *                   with, kept because that catalog is on people's devices.
+ *                   Archive.org does send
  *                   Access-Control-Allow-Origin: *, so this one looks as
  *                   though it needs no proxy — it does. Archive sends no
  *                   Access-Control-Expose-Headers, and neither ETag nor
@@ -83,14 +89,21 @@ const HARAMAIN_PAGE_TTL = 7 * 24 * 60 * 60
  * individual ones go unhealthy; /download always redirects to a live one,
  * which the runtime follows.
  */
-const HARAM_1447 = {
-  base: 'https://archive.org/download/Mecca1447',
-  name: 'Grand Mosque 1447 — Taraweeh and Tahajjud',
-}
+const HARAM_FIRST = 1414
+const HARAM_LAST = 1447
+/** Its item is missing surah 12, so the year is not served at all. */
+const HARAM_SKIP = new Set([1416])
 
-/** Files are named 001.mp3 through 114.mp3, with no surah name to encode. */
-const resolveHaram1447 = (surah) =>
-  `${HARAM_1447.base}/${String(surah).padStart(3, '0')}.mp3`
+const haramYearOk = (year) =>
+  Number.isInteger(year) && year >= HARAM_FIRST && year <= HARAM_LAST && !HARAM_SKIP.has(year)
+
+/**
+ * Files are named 001.mp3 through 114.mp3 in every year's item, with no surah
+ * name to encode. The year is bounded above rather than interpolated freely,
+ * so this cannot be used to fetch arbitrary archive.org items.
+ */
+const resolveHaram = (year, surah) =>
+  `https://archive.org/download/Mecca${year}/${String(surah).padStart(3, '0')}.mp3`
 
 const ALLOWED_ORIGINS = [
   'https://notyousha.github.io',
@@ -261,11 +274,6 @@ const ROUTES = {
     resolve: (surah, ctx) => resolveHaramain(HARAMAIN.j, surah, ctx),
     name: HARAMAIN.j.name,
   },
-  h: {
-    ttl: HARAMAIN_PAGE_TTL,
-    resolve: (surah) => resolveHaram1447(surah),
-    name: HARAM_1447.name,
-  },
 }
 
 export default {
@@ -290,7 +298,8 @@ export default {
             '/b/{1-114}.mp3': ROUTES.b.name,
             '/d/{1-114}.mp3': ROUTES.d.name,
             '/t/{1-114}.mp3': ROUTES.t.name,
-            '/h/{1-114}.mp3': ROUTES.h.name,
+            '/haram/{year}/{1-114}.mp3': `Grand Mosque, ${HARAM_FIRST}-${HARAM_LAST} except 1416`,
+            '/h/{1-114}.mp3': 'Grand Mosque 1447 (alias, kept for shipped catalogs)',
           },
           '/count/{d,t}': 'how many surahs are published',
         }),
@@ -324,21 +333,54 @@ export default {
       }
     }
 
-    const match = /^\/([bdtjh])\/(\d{1,3})\.mp3$/.exec(url.pathname)
-    if (!match) {
-      return new Response('Not found. Use /b, /d, /t, /j or /h + /{1-114}.mp3', {
-        status: 404,
-        headers: cors,
-      })
+    /*
+     * Two path shapes reach the same pipeline.
+     *
+     *   /{b,d,t,j}/{surah}.mp3      one sheikh's mushaf, resolved by scraping
+     *   /haram/{year}/{surah}.mp3   the Grand Mosque, one item per year
+     *
+     * /h/{surah}.mp3 is the Grand Mosque's 1447 under its original name, kept
+     * because it shipped in a catalog that is already on people's devices.
+     */
+    let route
+    let surah
+    let cacheKey
+
+    const haram = /^\/haram\/(\d{4})\/(\d{1,3})\.mp3$/.exec(url.pathname)
+    const legacy = /^\/h\/(\d{1,3})\.mp3$/.exec(url.pathname)
+    const single = /^\/([bdtj])\/(\d{1,3})\.mp3$/.exec(url.pathname)
+
+    if (haram || legacy) {
+      const year = haram ? Number(haram[1]) : 1447
+      surah = Number(haram ? haram[2] : legacy[1])
+      if (!haramYearOk(year)) {
+        return new Response(
+          `No Grand Mosque mushaf for ${year}. Years ${HARAM_FIRST}-${HARAM_LAST}, except 1416.`,
+          { status: 404, headers: cors },
+        )
+      }
+      route = {
+        ttl: HARAMAIN_PAGE_TTL,
+        // A pure function of year and surah, so there is nothing to look up
+        // and the memo below only ever stores what this returned.
+        resolve: () => resolveHaram(year, surah),
+        name: `Grand Mosque ${year} — Taraweeh and Tahajjud`,
+      }
+      cacheKey = `haram-${year}-${surah}`
+    } else if (single) {
+      route = ROUTES[single[1]]
+      surah = Number(single[2])
+      cacheKey = `${single[1]}-${surah}`
+    } else {
+      return new Response(
+        'Not found. Use /b, /d, /t or /j + /{1-114}.mp3, or /haram/{year}/{1-114}.mp3',
+        { status: 404, headers: cors },
+      )
     }
 
-    const route = ROUTES[match[1]]
-    const surah = Number(match[2])
     if (!Number.isInteger(surah) || surah < 1 || surah > SURAH_COUNT) {
       return new Response(`Surah must be 1-${SURAH_COUNT}`, { status: 400, headers: cors })
     }
-
-    const cacheKey = `${match[1]}-${surah}`
 
     try {
       let target = await memo(cacheKey, route.ttl, ctx, () => route.resolve(surah, ctx))

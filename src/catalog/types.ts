@@ -34,6 +34,18 @@ export type Reciter = {
   /** File in public/, shown in the player medallion. */
   photo?: string | null
   source?: string
+  /**
+   * A family this entry belongs to, when it is one of many of a kind.
+   *
+   * 'haram' marks a year of the Grand Mosque's mushaf. Thirty-three of them
+   * would bury the four individual mushafs in the reciter strip, so they are
+   * held out of it and shown in their own year list instead.
+   */
+  group?: string
+  /** Hijri year, for a grouped entry that is one. */
+  year?: number
+  /** The Gregorian year it fell in, as the source itself states it. */
+  ce?: number | null
   released: number
   total: number
   surahs: CatalogEntry[]

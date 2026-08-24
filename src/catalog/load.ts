@@ -1,14 +1,24 @@
 import bundled from '../../data/catalog.json'
 import meta from '../../data/surahs.json'
 import type { Catalog, Reciter, SurahMeta, SurahView } from './types'
+import { haramReciters } from './haram'
 
 /** Deployment base, so audio shipped with the app resolves from a subpath. */
 const BASE = import.meta.env?.BASE_URL ?? '/'
 
 const catalog = bundled as unknown as Catalog
 
+/**
+ * The four individual mushafs, then every year of the Grand Mosque's.
+ *
+ * The years are expanded from a folded-up file rather than stored here — see
+ * src/catalog/haram.ts for why — but from this point on they are ordinary
+ * reciters and nothing downstream treats them differently.
+ */
+const allReciters = (): Reciter[] => [...catalog.reciters, ...haramReciters()]
+
 export function getReciters(): Reciter[] {
-  return catalog.reciters
+  return allReciters()
 }
 
 export function buildView(reciter: Reciter, m: SurahMeta[]): SurahView[] {
@@ -45,24 +55,29 @@ export function buildView(reciter: Reciter, m: SurahMeta[]): SurahView[] {
  * new build. A remote copy is only accepted when every reciter it carries is
  * a superset of the bundled one — a truncated or corrupt response must never
  * remove surahs the user can already see.
+ *
+ * The remote manifest only ever describes the individual mushafs. The Grand
+ * Mosque years are finished recordings that cannot grow, so they are appended
+ * locally in every branch rather than being carried over the wire — otherwise
+ * a successful refresh would silently drop all thirty-three of them.
  */
 export async function loadCatalog(remoteUrl?: string): Promise<Reciter[]> {
-  if (!remoteUrl) return catalog.reciters
+  if (!remoteUrl) return allReciters()
   try {
     const res = await fetch(remoteUrl, { cache: 'no-cache' })
-    if (!res.ok) return catalog.reciters
+    if (!res.ok) return allReciters()
     const remote = (await res.json()) as Catalog
     if (!Array.isArray(remote.reciters) || !remote.reciters.length) {
-      return catalog.reciters
+      return allReciters()
     }
     const ok = catalog.reciters.every((local) => {
       const r = remote.reciters.find((x) => x.id === local.id)
       return r && Array.isArray(r.surahs) && r.surahs.length >= local.surahs.length
     })
-    return ok ? remote.reciters : catalog.reciters
+    return ok ? [...remote.reciters, ...haramReciters()] : allReciters()
   } catch {
     // Offline or unreachable. The bundled catalog stands.
-    return catalog.reciters
+    return allReciters()
   }
 }
 
