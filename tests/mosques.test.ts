@@ -112,7 +112,7 @@ describe('years withheld for cause', () => {
 
   it('withholds the Madinah years that failed a check', () => {
     const gone = excludedYears('madinah')
-    for (const y of [1415, 1421, 1422, 1423, 1437, 1441, 1443, 1446]) {
+    for (const y of [1415, 1421, 1422, 1423, 1437, 1441, 1443]) {
       expect(gone[y], `madinah ${y}`).toBeTruthy()
       expect(of('madinah').some((r) => r.year === y), `madinah ${y} must not ship`).toBe(false)
     }
@@ -158,6 +158,69 @@ describe('per-year attribution', () => {
   it('names imams for every year the source describes', () => {
     const silent = all.filter((r) => imamsOf(r.group as Place, r.year!).length === 0)
     expect(silent.map((r) => r.id).sort()).toEqual(['haram-1414', 'haram-1419', 'nabawi-1432'])
+  })
+
+  /**
+   * The items cross-list, in both directions: the Madinah 1440 description is
+   * simply the Makkah roster — which is how Yasser Al-Dosari, who has never
+   * led at the Prophet's Mosque, came to be named there — and two Makkah items
+   * name Al-Budair, who is a Madinah imam.
+   *
+   * Naming a sheikh who was not in that city is the worst thing this data can
+   * say, so an imam is only ever attributed to a mosque his roster entry says
+   * he served at. Al-Juhany and Al-Muaiqly list both, because they genuinely
+   * moved from the Prophet's Mosque to Makkah.
+   */
+  it('never attributes a year to an imam of the other mosque', () => {
+    for (const r of all) {
+      const place = r.group as Place
+      for (const who of imamsOf(place, r.year!)) {
+        const entry = Object.values(roster).find((x) => x.nameEn === who.nameEn)!
+        expect(
+          (entry as { serves?: string[] }).serves,
+          `${r.id} names ${who.nameEn}`,
+        ).toContain(place)
+      }
+    }
+  })
+
+  it('keeps the two men who led at both mosques available to both', () => {
+    for (const id of ['juhany', 'muaiqly']) {
+      expect((roster[id] as unknown as { serves: string[] }).serves.sort()).toEqual([
+        'madinah',
+        'makkah',
+      ])
+    }
+  })
+
+  /**
+   * Two surnames belong to two different people each. Matching on the surname
+   * alone put Abdurrahman As-Sudais in a Madinah year that names Ali As-Sudais,
+   * and Khalid Al-Ghamdi in one that names Saad Al-Ghamdi.
+   */
+  it('tells apart the imams who share a surname', () => {
+    expect(roster['sudais'].nameEn).not.toBe(roster['sudais-ali'].nameEn)
+    expect(roster['ghamdi'].nameEn).not.toBe(roster['ghamdi-saad'].nameEn)
+    for (const id of ['sudais', 'sudais-ali', 'ghamdi', 'ghamdi-saad']) {
+      // Each must match on more than the shared surname.
+      const m = (roster[id] as unknown as { match: string }).match
+      expect(m.split(' ').length, id).toBeGreaterThan(1)
+    }
+  })
+
+  /**
+   * Madinah 1446 is served from a different item. The Nabawi1446 item holds
+   * the uploader's sped-up variant — Al-Baqarah in 54 minutes rather than 107
+   * — which is the whole recitation accelerated, not that year's Taraweeh.
+   */
+  it('serves Madinah 1446 at ordinary speed', () => {
+    const y = doc.mosques.madinah.find((x) => x.year === 1446)
+    expect(y, 'madinah 1446 must be published').toBeDefined()
+    const hours = y!.secs.reduce((a, b) => a + b, 0) / 3600
+    expect(hours).toBeGreaterThan(20)
+    // Within a few per cent of its neighbour, rather than half of it.
+    const prev = doc.mosques.madinah.find((x) => x.year === 1445)!
+    expect(y!.secs[1] / prev.secs[1]).toBeGreaterThan(0.8)
   })
 
   // It would be far easier to paste one roster onto every year, and it would

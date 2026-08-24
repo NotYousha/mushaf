@@ -107,12 +107,57 @@ const MOSQUES = {
     item: 'Nabawi',
     first: 1416,
     last: 1447,
-    skip: new Set([1421, 1422, 1423, 1437, 1441, 1443, 1446]),
+    skip: new Set([1421, 1422, 1423, 1437, 1441, 1443]),
   },
 }
 
 const mosqueYearOk = (m, year) =>
   Number.isInteger(year) && year >= m.first && year <= m.last && !m.skip.has(year)
+
+/**
+ * Years served from a different item than the naming scheme implies.
+ *
+ * The uploader publishes a "حدر مسرع" — sped-up — variant beside the real
+ * recording, and for Madinah 1446 that is what the Nabawi1446 item holds:
+ * every surah runs at roughly half the length, Al-Baqarah in 54 minutes
+ * rather than 107. The audio is not wrong, it is accelerated, which is not
+ * what anyone means by that year's Taraweeh. This item is the ordinary-speed
+ * copy at the same 128 kbps as the rest of the catalog.
+ *
+ * Its files are named in Arabic — "002 - البقرة .mp3", with a space before
+ * the extension — so the name has to be read from the item rather than built
+ * from the surah number, which is why this route resolves through metadata.
+ */
+const ITEM_OVERRIDES = {
+  'nabawi-1446': 'v202506bbbbbb',
+}
+
+async function resolveArchiveItem(item, surah, ctx) {
+  const names = JSON.parse(
+    await memo(`item-files-${item}`, HARAMAIN_PAGE_TTL, ctx, async () => {
+      const r = await fetch(`https://archive.org/metadata/${item}`)
+      if (!r.ok) throw new Error(`metadata returned ${r.status}`)
+      const j = await r.json()
+      const map = {}
+      for (const f of j.files || []) {
+        const m = /^(\d{3})[^/]*\.mp3$/i.exec(f.name)
+        if (!m) continue
+        const n = Number(m[1])
+        // First match wins: some items carry an extra 115th file.
+        if (n >= 1 && n <= 114 && !map[n]) map[n] = f.name
+      }
+      if (Object.keys(map).length < 114) throw new Error(`${item} maps only ${Object.keys(map).length} surahs`)
+      return JSON.stringify(map)
+    }),
+  )
+  const name = names[surah]
+  if (!name) {
+    const err = new Error(`surah ${surah} is not in ${item}`)
+    err.notFound = true
+    throw err
+  }
+  return `https://archive.org/download/${item}/${encodeURIComponent(name)}`
+}
 
 /**
  * Files are named 001.mp3 through 114.mp3 in every item, with no surah name to
@@ -379,11 +424,14 @@ export default {
           { status: 404, headers: cors },
         )
       }
+      const override = ITEM_OVERRIDES[`${key}-${year}`]
       route = {
         ttl: HARAMAIN_PAGE_TTL,
-        // A pure function of mosque, year and surah, so there is nothing to
-        // look up and the memo below only ever stores what this returned.
-        resolve: () => resolveMosque(m, year, surah),
+        // Ordinarily a pure function of mosque, year and surah, so there is
+        // nothing to look up. A year served from an override item has Arabic
+        // filenames that must be read from the item instead.
+        resolve: (_s, c) =>
+          override ? resolveArchiveItem(override, surah, c) : resolveMosque(m, year, surah),
         name: `${key} ${year} — Taraweeh and Tahajjud`,
       }
       cacheKey = `${key}-${year}-${surah}`

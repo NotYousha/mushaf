@@ -57,8 +57,9 @@ const MOSQUES = {
       1422: 'holds the same audio as the Makkah item for this year',
       1421: 'holds the same audio as the Makkah item for this year',
       // Roughly half the seconds per letter of every other year: not a quick
-      // reciter, a recording that is not the whole thing.
-      1446: 'runs at half the pace of every other year — not a full mushaf',
+      // reciter, a recording that is not the whole thing. 1446 had the same
+      // problem and is now served from an ordinary-speed copy instead — see
+      // OVERRIDES below.
       1443: 'runs at half the pace of every other year — not a full mushaf',
       1415: 'twenty surahs disagree with the item\'s own pace',
       // Al-Baqarah is not the largest file here, so the numbering is shifted
@@ -66,6 +67,20 @@ const MOSQUES = {
       1437: 'file numbering is shifted — the largest file is not Al-Baqarah',
     },
   },
+}
+
+/**
+ * Years taken from a different item than the naming scheme implies.
+ *
+ * The uploader publishes a sped-up "حدر مسرع" variant beside the real one, and
+ * for Madinah 1446 that is what Nabawi1446 holds: Al-Baqarah in 54 minutes
+ * rather than 107, which is the whole recitation accelerated rather than the
+ * Taraweeh anyone means. This item is the ordinary-speed copy at the same
+ * 128 kbps as the rest of the catalog. Its files are named in Arabic, so the
+ * names are read from the item rather than built from the surah number.
+ */
+const OVERRIDES = {
+  'madinah-1446': 'v202506bbbbbb',
 }
 
 const imams = JSON.parse(readFileSync('data/imams.json', 'utf8'))
@@ -97,17 +112,41 @@ const MATCHERS = Object.entries(imams)
 
 const idFor = (name) => MATCHERS.find((m) => name.includes(m.key))?.id ?? null
 
-async function yearData(mosque, year) {
-  const id = mosque.item(year)
+const metadataOf = async (id) => {
   const res = await fetch(`https://archive.org/metadata/${id}`, {
     signal: AbortSignal.timeout(90_000),
   })
   if (!res.ok) throw new Error(`metadata HTTP ${res.status}`)
-  const meta = await res.json()
+  return res.json()
+}
 
-  const files = (meta.files || []).filter((f) => /^\d{3}\.mp3$/.test(f.name))
-  const bytesBy = new Map(files.map((f) => [Number(f.name.slice(0, 3)), Number(f.size || 0)]))
-  const secsBy = new Map(files.map((f) => [Number(f.name.slice(0, 3)), Number(f.length || 0)]))
+async function yearData(mosque, year, place) {
+  const canonical = mosque.item(year)
+  const id = OVERRIDES[`${place}-${year}`] ?? canonical
+  const meta = await metadataOf(id)
+  /**
+   * Audio from the item that has it, attribution from the item that names it.
+   *
+   * An override comes from a different uploader whose description is pages of
+   * download instructions rather than a list of imams. The canonical item has
+   * the roster in the usual shape, and it is the same Ramadan either way — so
+   * the names are read from there and only the audio comes from the override.
+   */
+  const attribution = id === canonical ? meta : await metadataOf(canonical)
+
+  // An override item names its files in Arabic, so match on the leading three
+  // digits rather than the whole name. First match wins: some items carry an
+  // extra file beyond the 114.
+  const bytesBy = new Map()
+  const secsBy = new Map()
+  for (const f of meta.files || []) {
+    const m = /^(\d{3})[^/]*\.mp3$/i.exec(f.name)
+    if (!m) continue
+    const n = Number(m[1])
+    if (n < 1 || n > 114 || bytesBy.has(n)) continue
+    bytesBy.set(n, Number(f.size || 0))
+    secsBy.set(n, Number(f.length || 0))
+  }
 
   const bytes = []
   for (let s = 1; s <= 114; s++) {
@@ -138,15 +177,37 @@ async function yearData(mosque, year) {
     }
   }
 
-  const names = namesFrom(meta.metadata?.description)
+  const names = namesFrom(attribution.metadata?.description)
   const unknown = names.filter((n) => !idFor(n))
   if (unknown.length) throw new Error(`unrecognised imam(s): ${unknown.join(' / ')}`)
   if (!names.length) console.warn(`    ${id}: names no imams`)
 
-  const ce = Number(/(\d{4})\s*ميلادي/.exec(String(meta.metadata?.title || ''))?.[1]) || null
+  /**
+   * Keep only imams who actually led at this mosque.
+   *
+   * The items cross-list, in both directions: the Madinah 1440 description is
+   * simply the Makkah roster, and two Makkah items name Al-Budair, who is a
+   * Prophet's Mosque imam. Attributing a recitation to a sheikh who was not
+   * even in that city is the worst thing this data can say, so an imam whose
+   * roster entry does not include this mosque is dropped rather than shown.
+   *
+   * `serves` lists both mosques for the men who genuinely led at both — Al
+   * Juhany and Al-Muaiqly were at the Prophet's Mosque before Makkah — so a
+   * real move is not mistaken for a copy-paste.
+   */
+  let ids = [...new Set(names.map(idFor))].filter(Boolean)
+  const foreign = ids.filter((i) => !(imams[i].serves ?? []).includes(place))
+  if (foreign.length) {
+    console.warn(
+      `    ${id}: dropping ${foreign.map((i) => imams[i].nameEn).join(', ')} — not ${place} imam(s)`,
+    )
+    ids = ids.filter((i) => !foreign.includes(i))
+  }
+
+  const ce = Number(/(\d{4})\s*ميلادي/.exec(String(attribution.metadata?.title || ''))?.[1]) || null
   const secs = Array.from({ length: 114 }, (_, i) => Math.round(secsBy.get(i + 1) || 0))
 
-  return { year, ce, imams: [...new Set(names.map(idFor))].filter(Boolean), bytes, secs }
+  return { year, ce, imams: ids, bytes, secs }
 }
 
 const out = {}
@@ -162,7 +223,7 @@ for (const [key, mosque] of Object.entries(MOSQUES)) {
       const y = queue.shift()
       if (y === undefined) return
       try {
-        done.set(y, await yearData(mosque, y))
+        done.set(y, await yearData(mosque, y, key))
       } catch (e) {
         failed.push({ year: y, error: e.message })
         console.error(`    ${y} REJECTED — ${e.message}`)

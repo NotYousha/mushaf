@@ -64,44 +64,41 @@ export const Forward = ({ size }: P) => (
 /**
  * Jump back or forward by a fixed number of seconds.
  *
- * The arc carries the digits, the way every player draws this, so the amount
- * is readable at a glance rather than guessed from the icon. `label` is the
- * number already written in the reader's own digits — ١٠ for an Arabic
- * reader, 10 for everyone else — so this component never formats it itself.
+ * A near-closed circle with the gap at the top, the arrowhead sitting exactly
+ * on the arc's own endpoint and tangent to it, and the amount inside. The two
+ * are mirror images about x=12, so they cannot drift apart.
+ *
+ * `label` arrives already written in the reader's digits — ١٠ for an Arabic
+ * reader, 10 for everyone else — so this never formats a number itself.
  */
+const skipDigits = (label: string) => (
+  <text
+    x="12"
+    y="15.4"
+    textAnchor="middle"
+    fontSize="8.5"
+    fontWeight="700"
+    letterSpacing="-0.4"
+    stroke="none"
+    fill="currentColor"
+  >
+    {label}
+  </text>
+)
+
 export const SkipBack = ({ size, label }: P & { label: string }) => (
-  <svg {...s(size)} stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M12.5 4.5a7.5 7.5 0 1 0 7.3 9.2" />
-    <path d="M12.5 1.7 9.4 4.5l3.1 2.8" />
-    <text
-      x="12"
-      y="15.6"
-      textAnchor="middle"
-      fontSize="8"
-      fontWeight="600"
-      stroke="none"
-      fill="currentColor"
-    >
-      {label}
-    </text>
+  <svg {...s(size)} stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M7.76 6.54A7.4 7.4 0 1 0 16.24 6.54" />
+    <path d="M16.24 6.54 19.87 6.76 17.69 9.87Z" fill="currentColor" />
+    {skipDigits(label)}
   </svg>
 )
 
 export const SkipForward = ({ size, label }: P & { label: string }) => (
-  <svg {...s(size)} stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M11.5 4.5a7.5 7.5 0 1 1-7.3 9.2" />
-    <path d="M11.5 1.7 14.6 4.5l-3.1 2.8" />
-    <text
-      x="12"
-      y="15.6"
-      textAnchor="middle"
-      fontSize="8"
-      fontWeight="600"
-      stroke="none"
-      fill="currentColor"
-    >
-      {label}
-    </text>
+  <svg {...s(size)} stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M16.24 6.54A7.4 7.4 0 1 1 7.76 6.54" />
+    <path d="M7.76 6.54 4.13 6.76 6.31 9.87Z" fill="currentColor" />
+    {skipDigits(label)}
   </svg>
 )
 
