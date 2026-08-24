@@ -82,3 +82,33 @@ describe('the imam roster the settings list is built from', () => {
     }
   })
 })
+
+/**
+ * A portrait is a decoration. Reading them happens at boot, so a store that
+ * will not open must never take the whole app down with it — which is exactly
+ * what a blank screen was.
+ */
+describe('reading portraits never breaks the app', () => {
+  it('returns an empty map rather than throwing', async () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const { loadFaces, revokeFaces } = await import('../src/db/faces')
+    const faces = await loadFaces()
+    expect(faces).toBeInstanceOf(Map)
+    // Revoking an empty or missing map is a no-op, never a throw.
+    expect(() => revokeFaces(faces)).not.toThrow()
+    expect(() => revokeFaces(null)).not.toThrow()
+    spy.mockRestore()
+  })
+
+  it('defaults the framing of a record saved without one', async () => {
+    const { loadFaces, DEFAULT_FRAMING } = await import('../src/db/faces')
+    const db = await getDB()
+    await db.put('faces', { buffer: new Uint8Array([1]).buffer, type: 'image/webp' }, 'legacy')
+    const faces = await loadFaces()
+    const f = faces.get('legacy')!
+    expect(f.zoom).toBe(DEFAULT_FRAMING.zoom)
+    expect(f.x).toBe(DEFAULT_FRAMING.x)
+    expect(f.y).toBe(DEFAULT_FRAMING.y)
+    await db.delete('faces', 'legacy')
+  })
+})

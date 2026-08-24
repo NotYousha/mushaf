@@ -14,7 +14,14 @@ import {
   purgeSuspectAudio,
 } from './db/audio'
 import { loadPosition, getPref, setPref } from './db/prefs'
-import { deleteFace, loadFaces, putFace, revokeFaces } from './db/faces'
+import {
+  deleteFace,
+  loadFaces,
+  putFace,
+  revokeFaces,
+  setFraming,
+  type Face,
+} from './db/faces'
 import { addPeek, addStumble } from './db/practice'
 import { DownloadQueue } from './download/queue'
 import { CatalogSource } from './sources/CatalogSource'
@@ -143,7 +150,7 @@ export default function App() {
    */
   const [yearsOpen, setYearsOpen] = useState<Place | null>(null)
   /** Portraits the listener has added, imam id to object URL. */
-  const [faces, setFaces] = useState<Map<string, string>>(new Map())
+  const [faces, setFaces] = useState<Map<string, Face>>(new Map())
   const [queued, setQueued] = useState(0)
   const [canCast, setCanCast] = useState(false)
   const [persisted, setPersisted] = useState<boolean | null>(null)
@@ -243,7 +250,7 @@ export default function App() {
    */
   useEffect(() => {
     let alive = true
-    let held: Map<string, string> | null = null
+    let held: Map<string, Face> | null = null
     void loadFaces().then((m) => {
       if (!alive) {
         revokeFaces(m)
@@ -258,10 +265,17 @@ export default function App() {
     }
   }, [])
 
+  /**
+   * Reload the portraits, releasing the ones being replaced.
+   *
+   * The revoke happens here rather than inside the state updater: an updater
+   * must be pure, and React is free to call it more than once — which would
+   * revoke a URL the next render still needs.
+   */
   const refreshFaces = useCallback(async () => {
     const next = await loadFaces()
     setFaces((prev) => {
-      revokeFaces(prev)
+      queueMicrotask(() => revokeFaces(prev))
       return next
     })
   }, [])
@@ -728,7 +742,7 @@ export default function App() {
    * needs none of the per-reciter framing the bundled originals do.
    */
   const mine = currentView?.voiceId ? faces.get(currentView.voiceId) : undefined
-  const face = mine ?? currentView?.voicePhoto ?? reciter?.photo ?? null
+  const face = mine?.url ?? currentView?.voicePhoto ?? reciter?.photo ?? null
   const faceIsMine = !!mine
   const facePerson = currentView?.voiceId ?? reciter?.id ?? ''
 
@@ -1337,6 +1351,10 @@ export default function App() {
                   await putFace(imamId, file)
                   await refreshFaces()
                 }}
+                onFrame={async (imamId, framing) => {
+                  await setFraming(imamId, framing)
+                  await refreshFaces()
+                }}
                 onRemove={async (imamId) => {
                   await deleteFace(imamId)
                   await refreshFaces()
@@ -1402,11 +1420,12 @@ export default function App() {
                   ['--face-src' as string]: `url('${faceIsMine ? face : `${import.meta.env.BASE_URL}${face}`}')`,
                   // An imported photo is cropped square on the way in, so it
                   // wants none of the nudging the uncropped originals need.
-                  ...(faceIsMine
+                  // An imported photo carries the listener's own framing.
+                  ...(mine
                     ? {
-                        ['--face-zoom' as string]: '100%',
-                        ['--face-x' as string]: '50%',
-                        ['--face-y' as string]: '50%',
+                        ['--face-zoom' as string]: `${mine.zoom}%`,
+                        ['--face-x' as string]: `${mine.x}%`,
+                        ['--face-y' as string]: `${mine.y}%`,
                       }
                     : {}),
                 }}

@@ -2349,3 +2349,134 @@ body {
 .face-remove:hover {
   color: var(--warn);
 }
+
+/* The framing editor: drag the circle to move the picture, slider to zoom. */
+.face-row.is-editing {
+  grid-template-areas:
+    'thumb name actions'
+    'editor editor editor';
+}
+
+.face-editor {
+  grid-area: editor;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.7rem 0 0.3rem;
+}
+
+.face-stage {
+  width: 7rem;
+  height: 7rem;
+  flex: none;
+  border-radius: 50%;
+  background-color: var(--tile);
+  background-repeat: no-repeat;
+  border: 2px solid var(--accent-soft);
+  box-shadow: 0 0 0 1px var(--accent-line);
+  cursor: grab;
+  /* The drag is ours; the browser must not pan the page under the finger. */
+  touch-action: none;
+  user-select: none;
+}
+
+.face-stage:active {
+  cursor: grabbing;
+}
+
+.face-controls {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.face-zoom {
+  display: grid;
+  gap: 0.2rem;
+  font-size: 0.76rem;
+  color: var(--muted);
+}
+
+.face-zoom input {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+.face-hint {
+  margin: 0;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.face-frame-btn,
+.face-reset {
+  font: inherit;
+  font-size: 0.76rem;
+  border: 1px solid var(--accent-line);
+  border-radius: 999px;
+  background: none;
+  color: var(--ink-soft);
+  cursor: pointer;
+  padding: 0.25rem 0.6rem;
+  white-space: nowrap;
+}
+
+.face-reset {
+  justify-self: start;
+}
+
+/* ============ the crash screen ============
+   Deliberately plain and theme-independent: it has to render when whatever
+   broke might be the theme itself. */
+.crash {
+  max-width: 30rem;
+  margin: 0 auto;
+  padding: 2.5rem 1.4rem;
+  font-family: system-ui, sans-serif;
+  color: #e8e2d4;
+  background: #14110c;
+  min-height: 100dvh;
+  text-align: center;
+}
+
+.crash h1 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0 0 1rem;
+}
+
+.crash-msg {
+  font-size: 0.85rem;
+  color: #d9b46a;
+  background: rgb(255 255 255 / 0.05);
+  border-radius: 0.6rem;
+  padding: 0.7rem 0.9rem;
+  word-break: break-word;
+  unicode-bidi: plaintext;
+}
+
+.crash-actions {
+  display: flex;
+  gap: 0.6rem;
+  justify-content: center;
+  margin: 1.2rem 0;
+  flex-wrap: wrap;
+}
+
+.crash-actions button {
+  font: inherit;
+  font-size: 0.85rem;
+  padding: 0.6rem 1.1rem;
+  border-radius: 999px;
+  border: 1px solid rgb(255 255 255 / 0.25);
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.crash-note {
+  font-size: 0.78rem;
+  opacity: 0.7;
+  line-height: 1.7;
+}

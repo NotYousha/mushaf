@@ -20,6 +20,8 @@ export const hi: Strings = {
   faceAdd: 'तस्वीर जोड़ें',
   faceReplace: 'बदलें',
   faceRemove: 'हटाएँ',
+  faceAdjust: 'समायोजित करें',
+  faceDone: 'हो गया',
   facePickFailed: 'यह तस्वीर पढ़ी नहीं जा सकी।',
   dismiss: 'बंद करें',
   skipBack: (n: number | string) => `${n} सेकंड पीछे`,

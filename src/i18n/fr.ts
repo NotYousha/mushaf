@@ -20,6 +20,8 @@ export const fr: Strings = {
   faceAdd: 'Ajouter une photo',
   faceReplace: 'Remplacer',
   faceRemove: 'Retirer',
+  faceAdjust: 'Ajuster',
+  faceDone: 'Terminé',
   facePickFailed: 'Cette image n’a pas pu être lue.',
   dismiss: 'Fermer',
   skipBack: (n: number | string) => `${n} secondes en arrière`,

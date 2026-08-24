@@ -13,3 +13,11 @@ if (typeof Blob !== 'undefined' && !Blob.prototype.arrayBuffer) {
     })
   }
 }
+
+// jsdom has no object URLs. The app makes one per stored portrait, so without
+// these the storage tests exercise the error path rather than the real one.
+if (typeof URL !== 'undefined' && !URL.createObjectURL) {
+  let n = 0
+  URL.createObjectURL = () => `blob:mushaf-test/${++n}`
+  URL.revokeObjectURL = () => {}
+}

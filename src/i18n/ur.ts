@@ -20,6 +20,8 @@ export const ur: Strings = {
   faceAdd: 'تصویر شامل کریں',
   faceReplace: 'تبدیل کریں',
   faceRemove: 'ہٹائیں',
+  faceAdjust: 'ترتیب',
+  faceDone: 'ہو گیا',
   facePickFailed: 'یہ تصویر پڑھی نہیں جا سکی۔',
   dismiss: 'بند کریں',
   skipBack: (n: number | string) => `${n} سیکنڈ پیچھے`,

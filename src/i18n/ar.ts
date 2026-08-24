@@ -19,6 +19,8 @@ export const ar: Strings = {
   faceAdd: 'إضافة صورة',
   faceReplace: 'تغيير',
   faceRemove: 'إزالة',
+  faceAdjust: 'ضبط',
+  faceDone: 'تم',
   facePickFailed: 'تعذّرت قراءة هذه الصورة.',
   dismiss: 'إغلاق',
   skipBack: (n: number | string) => `للخلف ${n} ثوانٍ`,

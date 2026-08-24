@@ -25,6 +25,8 @@ export const en = {
   faceAdd: 'Add photo',
   faceReplace: 'Replace',
   faceRemove: 'Remove',
+  faceAdjust: 'Adjust',
+  faceDone: 'Done',
   facePickFailed: 'That image could not be read.',
   dismiss: 'Dismiss',
   /** The transport's fixed jump, in seconds. */
