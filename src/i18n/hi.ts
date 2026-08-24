@@ -13,6 +13,7 @@ export const hi: Strings = {
   tabMore: 'अधिक',
 
   reciter: 'क़ारी',
+  recitedBy: 'पढ़ने वाले',
   saved: 'सहेजा गया',
   resumeAt: (p: number) => `${p}% से जारी रखें`,
   streaming: 'स्ट्रीमिंग',

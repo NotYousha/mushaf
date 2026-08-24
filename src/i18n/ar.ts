@@ -12,6 +12,7 @@ export const ar: Strings = {
   tabMore: 'المزيد',
 
   reciter: 'القارئ',
+  recitedBy: 'قرأها',
   saved: 'محفوظة',
   resumeAt: (p: number) => `متابعة التحميل من ${p}%`,
   streaming: 'بث',

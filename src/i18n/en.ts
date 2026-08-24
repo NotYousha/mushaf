@@ -17,6 +17,8 @@ export const en = {
   tabMore: 'More',
 
   reciter: 'Reciter',
+  /** Precedes an imam's name on a surah from a multi-voice compilation. */
+  recitedBy: 'Recited by',
   saved: 'saved',
   resumeAt: (p: number) => `Resume from ${p}%`,
   streaming: 'streaming',

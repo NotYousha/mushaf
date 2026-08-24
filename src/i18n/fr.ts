@@ -13,6 +13,7 @@ export const fr: Strings = {
   tabMore: 'Plus',
 
   reciter: 'Récitateur',
+  recitedBy: 'Récité par',
   saved: 'enregistrée',
   resumeAt: (p: number) => `Reprendre à ${p}%`,
   streaming: 'diffusion',

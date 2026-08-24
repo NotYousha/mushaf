@@ -13,6 +13,7 @@ export const ur: Strings = {
   tabMore: 'مزید',
 
   reciter: 'قاری',
+  recitedBy: 'پڑھنے والے',
   saved: 'محفوظ شدہ',
   resumeAt: (p: number) => `${p}% سے دوبارہ شروع کریں`,
   streaming: 'اسٹریمنگ',
