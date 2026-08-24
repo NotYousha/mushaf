@@ -21,6 +21,8 @@ export const fr: Strings = {
   faceReplace: 'Remplacer',
   faceRemove: 'Retirer',
   faceAdjust: 'Ajuster',
+  buildLabel: 'Version',
+  checkUpdate: 'Mettre à jour',
   faceDone: 'Terminé',
   facePickFailed: 'Cette image n’a pas pu être lue.',
   dismiss: 'Fermer',

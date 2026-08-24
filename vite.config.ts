@@ -7,12 +7,27 @@ import { VitePWA } from 'vite-plugin-pwa'
 // that prefix. Overridable for local dev and other hosts.
 const base = process.env.BASE_PATH ?? '/mushaf/'
 
+/**
+ * A visible build stamp.
+ *
+ * An installed PWA can go on serving a cached app for days, which makes "it
+ * still does the old thing" impossible to tell apart from "the fix did not
+ * work". Settings shows this, so the question can be settled in one glance.
+ */
+const BUILD = JSON.stringify(
+  `${new Date().toISOString().slice(0, 16).replace('T', ' ')} ${(process.env.GITHUB_SHA ?? 'local').slice(0, 7)}`,
+)
+
 export default defineConfig({
   base,
+  define: { __BUILD__: BUILD },
   plugins: [
     react(),
     VitePWA({
       registerType: 'autoUpdate',
+      // Registered by src/pwa.ts instead, so the app can force a check and
+      // reload rather than waiting for the browser to notice on its own.
+      injectRegister: false,
       manifest: {
         name: "Al-Mau'iza — الموعظة",
         short_name: "Al-Mau'iza",

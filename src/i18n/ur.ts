@@ -21,6 +21,8 @@ export const ur: Strings = {
   faceReplace: 'تبدیل کریں',
   faceRemove: 'ہٹائیں',
   faceAdjust: 'ترتیب',
+  buildLabel: 'ورژن',
+  checkUpdate: 'ابھی اپ ڈیٹ کریں',
   faceDone: 'ہو گیا',
   facePickFailed: 'یہ تصویر پڑھی نہیں جا سکی۔',
   dismiss: 'بند کریں',

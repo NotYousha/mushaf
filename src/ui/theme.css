@@ -2509,3 +2509,28 @@ body {
   border-radius: 0.7rem;
   background-size: cover;
 }
+
+/* Which build is running, and a way to force the next one. */
+.build-stamp {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin: 1.6rem 0 0;
+  font-size: 0.74rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  unicode-bidi: plaintext;
+}
+
+.build-update {
+  font: inherit;
+  font-size: 0.74rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid var(--accent-line);
+  background: none;
+  color: var(--ink-soft);
+  cursor: pointer;
+  white-space: nowrap;
+}

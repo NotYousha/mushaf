@@ -20,6 +20,8 @@ export const ar: Strings = {
   faceReplace: 'تغيير',
   faceRemove: 'إزالة',
   faceAdjust: 'ضبط',
+  buildLabel: 'الإصدار',
+  checkUpdate: 'تحديث الآن',
   faceDone: 'تم',
   facePickFailed: 'تعذّرت قراءة هذه الصورة.',
   dismiss: 'إغلاق',

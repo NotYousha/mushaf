@@ -98,6 +98,7 @@ import { artistFor, artistForEn, voiceLabel } from './catalog/voice'
 import { arabicDigits, imamsOf, PLACES, type Place } from './catalog/mosques'
 import { digits, inScript, isArabicScript } from './i18n/script'
 import { Splash } from './ui/Splash'
+import { BUILD } from './pwa'
 import './ui/theme.css'
 import './ui/themes.css'
 import './ui/glass.css'
@@ -1341,6 +1342,37 @@ export default function App() {
                   ) : null}
                 </p>
               ))}
+
+              {/* Which build is actually running. An installed app can serve
+                  a cached copy for days, and without this there is no way to
+                  tell "the fix did not work" from "the fix never arrived". */}
+              <p className="build-stamp">
+                {t.buildLabel} {BUILD}
+                <button
+                  type="button"
+                  className="build-update"
+                  onClick={() => {
+                    // Drop every cache and re-register, which is the only
+                    // thing that reliably shifts a stuck home-screen app.
+                    void (async () => {
+                      try {
+                        if ('serviceWorker' in navigator) {
+                          const regs = await navigator.serviceWorker.getRegistrations()
+                          await Promise.all(regs.map((r) => r.unregister()))
+                        }
+                        if ('caches' in window) {
+                          const keys = await caches.keys()
+                          await Promise.all(keys.map((k) => caches.delete(k)))
+                        }
+                      } finally {
+                        window.location.reload()
+                      }
+                    })()
+                  }}
+                >
+                  {t.checkUpdate}
+                </button>
+              </p>
 
               <FacePanel
                 t={t}

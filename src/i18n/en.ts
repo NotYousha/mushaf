@@ -26,6 +26,8 @@ export const en = {
   faceReplace: 'Replace',
   faceRemove: 'Remove',
   faceAdjust: 'Adjust',
+  buildLabel: 'Version',
+  checkUpdate: 'Update now',
   faceDone: 'Done',
   facePickFailed: 'That image could not be read.',
   dismiss: 'Dismiss',

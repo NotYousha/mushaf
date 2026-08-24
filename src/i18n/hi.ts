@@ -21,6 +21,8 @@ export const hi: Strings = {
   faceReplace: 'बदलें',
   faceRemove: 'हटाएँ',
   faceAdjust: 'समायोजित करें',
+  buildLabel: 'संस्करण',
+  checkUpdate: 'अभी अपडेट करें',
   faceDone: 'हो गया',
   facePickFailed: 'यह तस्वीर पढ़ी नहीं जा सकी।',
   dismiss: 'बंद करें',
