@@ -84,6 +84,7 @@ import {
 import { isHafs, riwayahLabel } from './catalog/riwayah'
 import { artistFor, artistForEn, voiceLabel } from './catalog/voice'
 import { arabicDigits, imamsOf } from './catalog/haram'
+import { inScript, isArabicScript } from './i18n/script'
 import { Splash } from './ui/Splash'
 import './ui/theme.css'
 import './ui/themes.css'
@@ -866,7 +867,10 @@ export default function App() {
                   void switchReciter(r.id)
                 }}
               >
-                <span className="chip-name">{r.name}</span>
+                {/* A name, not a translation: the same name written so the
+                    reader can say it. Hardcoding the Arabic here is what put
+                    an English section label next to ياسر الدوسري in one row. */}
+                <span className="chip-name">{inScript(lang, r.name, r.nameEn)}</span>
                 {riwayahLabel(r, lang) && (
                   <span className="chip-riwayah">({riwayahLabel(r, lang)})</span>
                 )}
@@ -891,7 +895,7 @@ export default function App() {
                 <span className="chip-name">{t.haramShort}</span>
                 <span className="chip-meta">
                   {haramYear !== null
-                    ? lang === 'ar' || lang === 'ur'
+                    ? isArabicScript(lang)
                       ? arabicDigits(haramYear)
                       : haramYear
                     : t.haramCount(haramYears.length)}
@@ -919,7 +923,7 @@ export default function App() {
               {haramYears.map((r) => {
                 const selected = r.id === reciterId
                 const led = imamsOf(r.year!)
-                const arabicScript = lang === 'ar' || lang === 'ur'
+                const arabicScript = isArabicScript(lang)
                 return (
                   <button
                     key={r.id}
@@ -942,7 +946,7 @@ export default function App() {
                       {led.length > 0 && (
                         <span className="year-imams">
                           <span className="year-led">{t.haramLed}</span>{' '}
-                          {led.map((i) => (arabicScript ? i.name : i.nameEn)).join(' · ')}
+                          {led.map((i) => inScript(lang, i.name, i.nameEn)).join(' · ')}
                         </span>
                       )}
                     </span>
@@ -1063,7 +1067,7 @@ export default function App() {
 
               {reciter && (
                 <ImportPanel
-                  reciterName={reciter.name}
+                  reciterName={inScript(lang, reciter.name, reciter.nameEn)}
                   meta={surahMeta}
                   t={t}
                   onSave={saveImported}
@@ -1155,9 +1159,9 @@ export default function App() {
               )}
               {individual.map((r) => (
                 <p key={r.id}>
-                  <strong>{r.fullName}</strong>
+                  <strong>{inScript(lang, r.fullName, r.nameEn)}</strong>
                   <br />
-                  {r.mushaf}
+                  {inScript(lang, r.mushaf, r.mushafEn)}
                   <br />
                   {t.recorded(r.surahs.length)}
                   {r.note ? (
@@ -1415,7 +1419,13 @@ export default function App() {
         >
           <div className="dialog" onClick={(e) => e.stopPropagation()}>
             <h3>{t.confirmTitle}</h3>
-            <p>{t.confirmBody(reciter.name, missing.length, formatBytes(missingBytes))}</p>
+            <p>
+              {t.confirmBody(
+                inScript(lang, reciter.name, reciter.nameEn),
+                missing.length,
+                formatBytes(missingBytes),
+              )}
+            </p>
             <div className="dialog-actions">
               <button className="btn" onClick={() => setConfirmAll(false)}>
                 {t.confirmNo}
@@ -1436,7 +1446,9 @@ export default function App() {
           currentView && reciter
             ? {
                 title: `${t.surahWord} ${currentView.name}`,
-                reciter: artistForEn(currentView, reciter),
+                reciter: isArabicScript(lang)
+                  ? artistFor(currentView, reciter)
+                  : artistForEn(currentView, reciter),
                 // Still the entry's id: the dock uses it to frame the photo,
                 // which is the collection's image, not the imam's.
                 reciterId: reciter.id,

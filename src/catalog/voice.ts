@@ -1,18 +1,11 @@
 import type { Lang } from '../i18n'
+import { inScript } from '../i18n/script'
 import type { Reciter, SurahView } from './types'
-
-/**
- * An imam's name is a proper noun, so it is not translated — only written in
- * whichever script the reader is already reading. Same reasoning as BRAND
- * in src/brand.ts and riwayahLabel in ./riwayah.ts.
- */
-const ARABIC_SCRIPT: Lang[] = ['ar', 'ur']
 
 /** Who recites this surah, or null when the entry has a single voice. */
 export function voiceLabel(s: SurahView, lang: Lang): string | null {
   if (!s.voice) return null
-  if (ARABIC_SCRIPT.includes(lang)) return s.voice
-  return s.voiceEn ?? s.voice
+  return inScript(lang, s.voice, s.voiceEn)
 }
 
 /**

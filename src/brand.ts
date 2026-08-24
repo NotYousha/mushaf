@@ -1,4 +1,5 @@
 import type { Lang } from './i18n'
+import { isArabicScript } from './i18n/script'
 
 /**
  * The app's name.
@@ -15,10 +16,7 @@ export const BRAND = {
   quranLatin: 'Al Quran',
 }
 
-const ARABIC_SCRIPT: Lang[] = ['ar', 'ur']
-
-export const brandName = (lang: Lang) =>
-  ARABIC_SCRIPT.includes(lang) ? BRAND.ar : BRAND.latin
+export const brandName = (lang: Lang) => (isArabicScript(lang) ? BRAND.ar : BRAND.latin)
 
 export const brandSecondary = (lang: Lang) =>
-  ARABIC_SCRIPT.includes(lang) ? BRAND.latin : BRAND.ar
+  isArabicScript(lang) ? BRAND.latin : BRAND.ar

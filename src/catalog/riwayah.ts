@@ -1,5 +1,6 @@
 import type { Reciter } from './types'
 import type { Lang } from '../i18n'
+import { inScript } from '../i18n/script'
 
 /**
  * Everything here is built on the Hafs text: the bundled Quran, the mushaf
@@ -13,7 +14,5 @@ export const isHafs = (r: Reciter | null | undefined) => !r?.riwayah
 /** The riwayah as it should appear beside the reciter's name, in brackets. */
 export function riwayahLabel(r: Reciter | null | undefined, lang: Lang): string | null {
   if (!r?.riwayah) return null
-  // Arabic and Urdu both read the Arabic naming naturally; the Latin-script
-  // languages get the transliteration.
-  return lang === 'ar' || lang === 'ur' ? r.riwayah : (r.riwayahEn ?? r.riwayah)
+  return inScript(lang, r.riwayah, r.riwayahEn)
 }
