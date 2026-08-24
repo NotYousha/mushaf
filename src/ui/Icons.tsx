@@ -61,6 +61,50 @@ export const Forward = ({ size }: P) => (
   </svg>
 )
 
+/**
+ * Jump back or forward by a fixed number of seconds.
+ *
+ * The arc carries the digits, the way every player draws this, so the amount
+ * is readable at a glance rather than guessed from the icon. `label` is the
+ * number already written in the reader's own digits — ١٠ for an Arabic
+ * reader, 10 for everyone else — so this component never formats it itself.
+ */
+export const SkipBack = ({ size, label }: P & { label: string }) => (
+  <svg {...s(size)} stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M12.5 4.5a7.5 7.5 0 1 0 7.3 9.2" />
+    <path d="M12.5 1.7 9.4 4.5l3.1 2.8" />
+    <text
+      x="12"
+      y="15.6"
+      textAnchor="middle"
+      fontSize="8"
+      fontWeight="600"
+      stroke="none"
+      fill="currentColor"
+    >
+      {label}
+    </text>
+  </svg>
+)
+
+export const SkipForward = ({ size, label }: P & { label: string }) => (
+  <svg {...s(size)} stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M11.5 4.5a7.5 7.5 0 1 1-7.3 9.2" />
+    <path d="M11.5 1.7 14.6 4.5l-3.1 2.8" />
+    <text
+      x="12"
+      y="15.6"
+      textAnchor="middle"
+      fontSize="8"
+      fontWeight="600"
+      stroke="none"
+      fill="currentColor"
+    >
+      {label}
+    </text>
+  </svg>
+)
+
 export const Moon = ({ size }: P) => (
   <svg {...s(size)} stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
     <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z" />

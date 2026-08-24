@@ -19,12 +19,16 @@ export const en = {
   reciter: 'Reciter',
   /** Precedes an imam's name on a surah from a multi-voice compilation. */
   recitedBy: 'Recited by',
+  dismiss: 'Dismiss',
+  /** The transport's fixed jump, in seconds. */
+  skipBack: (n: number | string) => `Back ${n} seconds`,
+  skipForward: (n: number | string) => `Forward ${n} seconds`,
   /** The Grand Mosque year list, which stands apart from the reciter strip. */
   haramYears: 'Grand Mosque — Taraweeh by year',
   /** Short enough for a chip in the reciter strip. */
   haramShort: 'Haram Taraweeh',
   haramPick: 'Choose a year',
-  haramCount: (n: number) => `${n} years`,
+  haramCount: (n: number | string) => `${n} years`,
   haramLed: 'Led by',
   saved: 'saved',
   resumeAt: (p: number) => `Resume from ${p}%`,

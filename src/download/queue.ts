@@ -143,6 +143,12 @@ export class DownloadQueue {
             // against one arbitrary surah as well would leave a stale
             // "out of space" beside it after the listener frees room.
             this.outOfSpace = true
+          } else if ((e as { name?: string })?.name === 'AbortError') {
+            // Cancelling is not a failure. Filing it as one left "could not
+            // save: the user aborted a request" on screen permanently — the
+            // failed map is only ever cleared by re-enqueueing that exact
+            // surah, so it re-asserted itself on every later queue event and
+            // stomped whatever the app was actually trying to say.
           } else {
             // One surah failing must not stall the rest of the queue.
             this.failed[key] = e instanceof Error ? e.message : String(e)

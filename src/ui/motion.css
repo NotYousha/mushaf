@@ -516,7 +516,10 @@
   order: 3;
   flex: none;
   width: auto;
-  padding: 0.25rem 0.9rem 0.35rem 0;
+  /* Logical, so the collapsed transport keeps its gutter on the same side
+     as the text rather than always on the physical right. */
+  padding-block: 0.25rem 0.35rem;
+  padding-inline: 0 0.9rem;
 }
 
 /* A line, not a slider: the handle would be a fiddly target on a 3px bar,

@@ -62,6 +62,8 @@ import {
   Talqeen as TalqeenIcon,
   Stumble,
   Chevron,
+  SkipBack,
+  SkipForward,
 } from './ui/Icons'
 import { stringsFor, type Lang } from './i18n'
 import { brandName, brandSecondary } from './brand'
@@ -84,7 +86,7 @@ import {
 import { isHafs, riwayahLabel } from './catalog/riwayah'
 import { artistFor, artistForEn, voiceLabel } from './catalog/voice'
 import { arabicDigits, imamsOf, PLACES, type Place } from './catalog/mosques'
-import { inScript, isArabicScript } from './i18n/script'
+import { digits, inScript, isArabicScript } from './i18n/script'
 import { Splash } from './ui/Splash'
 import './ui/theme.css'
 import './ui/themes.css'
@@ -94,6 +96,9 @@ import './ui/desktop.css'
 
 type Tab = 'quran' | 'library' | 'text' | 'hifz' | 'more'
 const SPEEDS = [1, 1.25, 1.5, 0.75]
+/** The transport's fixed jump. Ten seconds is the convention, and it is short
+ *  enough to land back on the start of an ayah you half-caught. */
+const SKIP_SECONDS = 10
 
 const dlKey = (reciterId: string, surah: number) => `${reciterId}:${surah}`
 
@@ -376,7 +381,11 @@ export default function App() {
       // The imam, not the collection: "Taraweeh 1447" on a lock screen or a
       // head unit says nothing about the voice being heard.
       updateMetadata(s, artistFor(s, reciter), import.meta.env.BASE_URL)
-      setNavAvailability(prevSurah(surah, playable) !== null, nextSurah(surah, repeat, playable) !== null)
+      setNavAvailability(
+        prevSurah(surah, playable) !== null,
+        nextSurah(surah, repeat, playable) !== null,
+        engine.current!.handlers,
+      )
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [surahs, playable, speedIdx, reciter, downloadedHere, rejected],
@@ -425,8 +434,11 @@ export default function App() {
         const el = engine.current!.el
         const starts = current !== null ? ayahStartsFor(reciterId, current) : null
         if (!starts?.length) {
-          // No timings loaded for this reciter: a plain skip is still useful.
-          el.currentTime = Math.max(0, el.currentTime + dir * 15)
+          // No timings for this reciter, so fall back to the same fixed jump
+          // the transport's own skip buttons make.
+          const end = Number.isFinite(el.duration) ? el.duration : null
+          const next = el.currentTime + dir * SKIP_SECONDS
+          el.currentTime = Math.max(0, end === null ? next : Math.min(next, end - 0.25))
           return
         }
         const now = el.currentTime * 1000
@@ -637,6 +649,21 @@ export default function App() {
     await setPref('reciterId', id)
   }
 
+  /**
+   * Jump by a fixed number of seconds, clamped to the recording.
+   *
+   * Clamping at both ends matters here: these are two-hour Taraweeh files, and
+   * seeking past the end makes some browsers fire `ended` and advance to the
+   * next surah — so an over-shoot at the tail would skip a surah rather than
+   * land at its close.
+   */
+  const skipBy = (seconds: number) => {
+    const el = engine.current!.el
+    const end = Number.isFinite(el.duration) ? el.duration : null
+    const next = el.currentTime + seconds
+    engine.current!.seek(Math.max(0, end === null ? next : Math.min(next, end - 0.25)))
+  }
+
   const toggle = async () => {
     if (current === null) {
       if (playable.length) await playSurah(playable[0])
@@ -699,6 +726,21 @@ export default function App() {
     await setPref('lang', next)
   }
 
+  /**
+   * Direction and language belong on <html>, not on a wrapper.
+   *
+   * Below the wrapper it would leave the scrollbar on the wrong side, the
+   * page canvas unflipped, and native controls — the import panel's select —
+   * laid out against the text. The lang attribute matters as much: it picks
+   * the font fallback, the hyphenation and the screen reader's voice, and it
+   * was hardcoded to English for every language.
+   */
+  useEffect(() => {
+    const el = document.documentElement
+    el.setAttribute('lang', lang)
+    el.setAttribute('dir', t.dir)
+  }, [lang, t.dir])
+
   /** Everything not already saved for this reciter. */
   const missing = useMemo(
     () => [...urls.entries()].filter(([n]) => !downloadedHere.has(n)),
@@ -716,7 +758,15 @@ export default function App() {
   )
 
   const startDownloadAll = () => {
-    for (const [n, u] of missing) queue.current!.enqueue({ reciterId, surah: n, url: u })
+    // The byte count has to travel with the job. Without it the queue reads
+    // every bulk download as small and runs three at once — which for a
+    // Taraweeh year of 40-95 MB surahs is exactly the three-stuck-at-30%
+    // state the single-file limit exists to prevent, while tapping any one of
+    // those same surahs on its own behaved correctly.
+    for (const [n, u] of missing) {
+      const s = surahs.find((x) => x.surah === n)
+      queue.current!.enqueue({ reciterId, surah: n, url: u, bytes: s?.bytes })
+    }
     setConfirmAll(false)
   }
 
@@ -880,7 +930,9 @@ export default function App() {
                 {riwayahLabel(r, lang) && (
                   <span className="chip-riwayah">({riwayahLabel(r, lang)})</span>
                 )}
-                <span className="chip-meta">{r.surahs.length}/114</span>
+                <span className="chip-meta">
+                  {digits(lang, r.surahs.length)}/{digits(lang, 114)}
+                </span>
               </button>
             ))}
 
@@ -910,7 +962,7 @@ export default function App() {
                       ? isArabicScript(lang)
                         ? arabicDigits(openYear)
                         : openYear
-                      : t.haramCount(years.length)}
+                      : t.haramCount(digits(lang, years.length))}
                     <Chevron size={12} />
                   </span>
                 </button>
@@ -938,7 +990,7 @@ export default function App() {
                   <h3>
                     {t.haramPick} · {inScript(lang, m.ar, m.en)}
                   </h3>
-                  <span className="years-count">{t.haramCount(years.length)}</span>
+                  <span className="years-count">{t.haramCount(digits(lang, years.length))}</span>
                 </div>
                 {/* Newest first: the year someone wants is nearly always the
                     last one, and the oldest is a long scroll from the top. */}
@@ -977,7 +1029,7 @@ export default function App() {
                           )}
                         </span>
                         <span className="year-size">
-                          {formatBytes(r.surahs.reduce((a, s) => a + s.bytes, 0))}
+                          {formatBytes(r.surahs.reduce((a, s) => a + s.bytes, 0), lang)}
                         </span>
                       </button>
                     )
@@ -1034,7 +1086,7 @@ export default function App() {
                 />
               </div>
               <p>
-                {t.usedOf(formatBytes(quota.usage), formatBytes(quota.quota))} ·{' '}
+                {t.usedOf(formatBytes(quota.usage, lang), formatBytes(quota.quota, lang))} ·{' '}
                 {t.savedCount(downloadedHere.size)}
               </p>
 
@@ -1071,13 +1123,13 @@ export default function App() {
                   disabled={!missing.length}
                   onClick={() => setConfirmAll(true)}
                 >
-                  {t.downloadAllSize(formatBytes(missingBytes))}
+                  {t.downloadAllSize(formatBytes(missingBytes, lang))}
                 </button>
               )}
 
               {!canDownloadAll(missingBytes, quota.free) && missing.length > 0 && (
                 <p className="verify-err">
-                  {t.notEnoughSpace(formatBytes(missingBytes), formatBytes(quota.free))}
+                  {t.notEnoughSpace(formatBytes(missingBytes, lang), formatBytes(quota.free, lang))}
                 </p>
               )}
 
@@ -1182,7 +1234,7 @@ export default function App() {
                     <strong>{inScript(lang, m.ar, m.en)}</strong>
                     <br />
                     {years[years.length - 1].year}–{years[0].year} ·{' '}
-                    {t.haramCount(years.length)}
+                    {t.haramCount(digits(lang, years.length))}
                     <br />
                     <span style={{ color: 'var(--muted)' }}>{years[0].note}</span>
                   </p>
@@ -1365,12 +1417,30 @@ export default function App() {
               <Back size={26} />
             </button>
 
+            {/* Either side of play, which is where a thumb expects them.
+                Folded away with the rest when the player is a strip. */}
+            <button
+              className="ctrl"
+              aria-label={t.skipBack(SKIP_SECONDS)}
+              onClick={() => skipBy(-SKIP_SECONDS)}
+            >
+              <SkipBack size={24} label={digits(lang, SKIP_SECONDS)} />
+            </button>
+
             <button
               className="ctrl big"
               aria-label={playing ? t.pause : t.play}
               onClick={toggle}
             >
               {busy ? '…' : playing ? <Pause size={26} /> : <Play size={26} />}
+            </button>
+
+            <button
+              className="ctrl"
+              aria-label={t.skipForward(SKIP_SECONDS)}
+              onClick={() => skipBy(SKIP_SECONDS)}
+            >
+              <SkipForward size={24} label={digits(lang, SKIP_SECONDS)} />
             </button>
 
             {/* Kept when folded: moving to the next surah is the one thing
@@ -1427,16 +1497,15 @@ export default function App() {
               <p className="mushaf-note">{t.castOffline}</p>
             )}
             <div className="times">
-              <span>{formatTime(time)}</span>
+              <span>{formatTime(time, lang)}</span>
               <span className="badge">
                 {mode === 'offline' ? t.saved : t.streaming}
                 {sleepAt ? ` · ${sleepAt}د` : ''}
               </span>
-              <span>-{formatTime(Math.max(0, duration - time))}</span>
+              <span>-{formatTime(Math.max(0, duration - time), lang)}</span>
             </div>
           </div>
 
-          {error && <p className="err">{error}</p>}
         </div>
       )}
 
@@ -1454,7 +1523,7 @@ export default function App() {
               {t.confirmBody(
                 inScript(lang, reciter.name, reciter.nameEn),
                 missing.length,
-                formatBytes(missingBytes),
+                formatBytes(missingBytes, lang),
               )}
             </p>
             <div className="dialog-actions">
@@ -1466,6 +1535,25 @@ export default function App() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Outside the player sheet on purpose. This used to render inside it,
+          and the sheet starts collapsed — so every message the app can raise
+          was invisible by default: a surah that would not play, a download
+          that failed, the disk filling up mid-save. A toast above the dock is
+          reachable whatever else is open. */}
+      {error && (
+        <div className="toast" role="status" aria-live="polite">
+          <p className="err">{error}</p>
+          <button
+            type="button"
+            className="toast-x"
+            aria-label={t.dismiss}
+            onClick={() => setError(null)}
+          >
+            ×
+          </button>
         </div>
       )}
 

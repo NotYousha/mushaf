@@ -126,7 +126,12 @@ body {
 }
 
 .app {
-  direction: rtl;
+  /* Direction is NOT set here. It used to be `direction: rtl`, which quietly
+     defeated the whole language setting: the browser implements dir="ltr"
+     through a user-agent rule, and any author rule beats user-agent origin —
+     so this one line overrode the dir attribute on its own element and the
+     app stayed right-to-left in English, Hindi and French. Direction now
+     comes from dir on <html>, set from the chosen language. */
   /* A fixed viewport box, not min-height: the player and tab bar are pinned
      and only the surah list scrolls, inside its own overflow container. */
   height: 100dvh;
@@ -264,7 +269,7 @@ body {
   font-size: 1rem;
   color: var(--ink-strong);
   outline: none;
-  text-align: right;
+  text-align: start;
 }
 
 .search input::placeholder {
@@ -370,7 +375,7 @@ body {
 
 .names {
   min-width: 0;
-  text-align: right;
+  text-align: start;
 }
 
 .name-ar {
@@ -390,7 +395,7 @@ body {
   color: var(--muted);
   margin-top: -0.1rem;
   direction: ltr;
-  text-align: right;
+  text-align: end;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -478,8 +483,16 @@ body {
 .mini-pct {
   position: absolute;
   bottom: -0.15rem;
+  /* Centred with a logical inset and a logical nudge. Pairing
+     inset-inline-start with translateX(-50%) only centres in LTR: in RTL the
+     inset resolves to `right` and the physical translate then pushes the
+     badge further off instead of back, by its own width. `translate` with a
+     percentage is resolved against the element, and margin-inline-start
+     mirrors with the writing mode, so this holds either way. */
   inset-inline-start: 50%;
-  transform: translateX(-50%);
+  margin-inline-start: -1.1rem;
+  width: 2.2rem;
+  text-align: center;
   font-size: 0.55rem;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.02em;
@@ -505,7 +518,9 @@ body {
 
 .frontier .fade {
   height: 1px;
-  background: linear-gradient(270deg, var(--accent-soft), transparent);
+  /* `to inline-start` rather than a fixed angle, so the soft end stays on
+     the side the text runs from in either direction. */
+  background: linear-gradient(to inline-start, var(--accent-soft), transparent);
   margin-bottom: 0.8rem;
 }
 
@@ -761,6 +776,11 @@ body {
   display: block;
   height: 100%;
   background: var(--accent);
+  /* Pinned, so the storage bar fills the same way as the transport bar above
+     it. Left to itself a percentage-width block grows from the inline start,
+     which put the two bars filling in opposite directions on the same
+     screen. */
+  margin-inline-end: auto;
 }
 
 .btn {
@@ -772,7 +792,8 @@ body {
   background: none;
   color: var(--ink);
   cursor: pointer;
-  margin: 0 0 0.5rem 0.5rem;
+  margin: 0 0 0.5rem;
+  margin-inline-end: 0.5rem;
 }
 
 .btn.solid {
@@ -790,7 +811,7 @@ body {
   font-family: var(--font-ar);
   font-size: 1.65rem;
   line-height: 2.6;
-  text-align: right;
+  text-align: start;
   color: var(--ink-strong);
 }
 
@@ -813,6 +834,54 @@ body {
   font-size: 0.8rem;
   padding: 0 0 0.6rem;
   margin: 0;
+}
+
+/* Messages sit above the dock rather than inside the player sheet, which
+   starts collapsed — every message the app raises used to be invisible by
+   default because of that. Fixed to the viewport so it is reachable whatever
+   is open, and clear of both the dock and the home indicator. */
+.toast {
+  position: fixed;
+  inset-inline: 0;
+  bottom: calc(5.6rem + env(safe-area-inset-bottom));
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: min(26rem, calc(100% - 2.4rem));
+  margin: 0 auto;
+  padding: 0.6rem 0.5rem 0.1rem 0.9rem;
+  border-radius: 0.9rem;
+  border: 1px solid var(--accent-line);
+  background: var(--card);
+  box-shadow: 0 6px 22px rgb(var(--shadow-rgb) / 0.22);
+  unicode-bidi: plaintext;
+}
+
+.toast .err {
+  flex: 1;
+  min-width: 0;
+  text-align: start;
+  padding-bottom: 0.5rem;
+}
+
+.toast-x {
+  flex: none;
+  align-self: flex-start;
+  width: 1.9rem;
+  height: 1.9rem;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--muted);
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.toast-x:hover {
+  background: var(--card-2);
+  color: var(--ink);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1176,7 +1245,7 @@ body {
   font-size: 0.72rem;
   color: var(--ready);
   direction: ltr;
-  text-align: right;
+  text-align: end;
 }
 
 .surah-select {

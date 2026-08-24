@@ -1,6 +1,7 @@
 import { memo } from 'react'
 import type { SurahView } from '../catalog/types'
 import { voiceLabel } from '../catalog/voice'
+import { digits } from '../i18n/script'
 import type { Strings, Lang } from '../i18n'
 import { Play, Handle, Download, Saved } from './Icons'
 
@@ -77,7 +78,7 @@ export const SurahList = memo(function SurahList({
                 onClick={() => onPlay(s.surah)}
                 aria-current={active ? 'true' : undefined}
               >
-                <span className="numeral">{s.surah}</span>
+                <span className="numeral">{digits(lang, s.surah)}</span>
                 <span className="names">
                   <span className="name-ar">
                     {t.surahWord} {s.name}
@@ -99,7 +100,7 @@ export const SurahList = memo(function SurahList({
 
               <span className="row-end">
                 {pct !== undefined ? (
-                  <span className="ring">{Math.round(pct * 100)}%</span>
+                  <span className="ring">{digits(lang, Math.round(pct * 100))}%</span>
                 ) : (
                   <button
                     type="button"
@@ -116,7 +117,7 @@ export const SurahList = memo(function SurahList({
                   >
                     {have ? <Saved size={20} /> : <Download size={20} />}
                     {held !== undefined && (
-                      <span className="mini-pct">{Math.round(held * 100)}%</span>
+                      <span className="mini-pct">{digits(lang, Math.round(held * 100))}%</span>
                     )}
                   </button>
                 )}
@@ -149,7 +150,7 @@ export const SurahList = memo(function SurahList({
         {upcoming.map((s) => (
           <li key={s.surah} className="row is-off">
             <span className="row-main">
-              <span className="numeral">{s.surah}</span>
+              <span className="numeral">{digits(lang, s.surah)}</span>
               <span className="names">
                 <span className="name-ar">
                   {t.surahWord} {s.name}

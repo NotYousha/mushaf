@@ -54,15 +54,35 @@ export function registerMediaHandlers(ref: { current: MediaHandlers | null }) {
 }
 
 /** Grey out a transport button rather than leaving it lit and inert. */
-export function setNavAvailability(hasPrev: boolean, hasNext: boolean) {
+/**
+ * Grey out a transport button rather than leaving it lit and inert — and put
+ * it back when it applies again.
+ *
+ * Restoring is the whole point. This used to only ever remove handlers, so
+ * starting at surah 1 (which is what pressing play with nothing chosen does)
+ * nulled `previoustrack` for the life of the page, and reaching the last
+ * surah nulled `nexttrack` the same way. In a car, the buttons died from the
+ * first surah played and only a reload brought them back.
+ *
+ * The live handlers are the ones registered by registerMediaHandlers, so the
+ * ref is passed back in here rather than captured.
+ */
+export function setNavAvailability(
+  hasPrev: boolean,
+  hasNext: boolean,
+  ref?: { current: MediaHandlers | null },
+) {
   const s = ms()
   if (!s) return
-  try {
-    if (!hasNext) s.setActionHandler('nexttrack', null)
-    if (!hasPrev) s.setActionHandler('previoustrack', null)
-  } catch {
-    /* ignore */
+  const set = (action: MediaSessionAction, fn: (() => void) | null) => {
+    try {
+      s.setActionHandler(action, fn)
+    } catch {
+      /* older engines reject actions they do not know */
+    }
   }
+  set('nexttrack', hasNext && ref ? () => ref.current?.next() : null)
+  set('previoustrack', hasPrev && ref ? () => ref.current?.prev() : null)
 }
 
 export function setPlaybackState(state: MediaSessionPlaybackState) {

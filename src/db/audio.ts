@@ -140,6 +140,12 @@ export async function purgeSuspectAudio(before = QUEUE_FIX_AT): Promise<number> 
   let removed = 0
   for (let i = 0; i < keys.length; i++) {
     const rec = vals[i]
+    // Never the listener's own files. The bug being repaired was in the
+    // download queue; an imported recording was never misfiled by it, and
+    // deleting one destroys audio that cannot simply be fetched again — it
+    // came off their device, and it is usually a surah the catalog does not
+    // carry at all.
+    if (rec?.sourceId === 'import') continue
     // A record with no timestamp predates the field, so it is also suspect.
     if (!rec?.storedAt || rec.storedAt < before) {
       await db.delete('audio', keys[i])

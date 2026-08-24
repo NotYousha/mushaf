@@ -24,3 +24,20 @@ export const isArabicScript = (lang: Lang) => lang === 'ar' || lang === 'ur'
  */
 export const inScript = (lang: Lang, arabic: string, latin?: string | null): string =>
   isArabicScript(lang) ? arabic : (latin ?? arabic)
+
+const ARABIC_INDIC = '٠١٢٣٤٥٦٧٨٩'
+
+/** ١٢٣ from 123. Digits only — anything else in the string is left alone. */
+export const toArabicDigits = (n: number | string) =>
+  String(n).replace(/\d/g, (d) => ARABIC_INDIC[Number(d)])
+
+/**
+ * A number written the way the reader writes numbers.
+ *
+ * Arabic and Urdu get Arabic-Indic digits; the Latin-script languages keep
+ * Western ones. Use this for anything a person reads. Do NOT use it for a
+ * value something else has to parse — a URL, a key, an aria-valuenow, a CSS
+ * length, a filename — those must stay Western or they stop working.
+ */
+export const digits = (lang: Lang, n: number | string): string =>
+  isArabicScript(lang) ? toArabicDigits(n) : String(n)
