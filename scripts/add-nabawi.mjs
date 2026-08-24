@@ -71,7 +71,6 @@ const entry = {
   total: 114,
   surahs: meta.map((m) => ({
     surah: m.surah,
-    name: m.name,
     url: `${WORKER}/b/${m.surah}.mp3`,
     fallbackUrl: null,
     bytes: results.get(m.surah),

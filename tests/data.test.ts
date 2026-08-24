@@ -177,14 +177,60 @@ describe('bundled data', () => {
 
   })
 
-  it('flags only remapped entries as needing an ear check', () => {
-    // Everything else is resolved from its own source page, so the
-    // name-to-audio association comes from the source, not a guess.
+  describe('Haram 1447 — a compilation, not one sheikh', () => {
+    const h = reciters.find((r) => r.id === 'haram-1447')!
+
+    it('is present and complete', () => {
+      expect(h).toBeDefined()
+      expect(h.surahs).toHaveLength(114)
+      expect(h.released).toBe(h.surahs.length)
+    })
+
+    // archive.org sends Access-Control-Allow-Origin: * but no
+    // Access-Control-Expose-Headers, and neither ETag nor Content-Range is
+    // CORS-safelisted — so a browser reads null for both and can neither
+    // size nor resume a download. Pointing straight at the item would look
+    // like it worked until someone tried to save a surah.
+    it('routes every surah through the CORS proxy', () => {
+      for (const s of h.surahs) {
+        expect(s.url).toMatch(/workers\.dev\/h\/\d+\.mp3$/)
+        expect(s.url).not.toMatch(/archive\.org|\.us\.archive/)
+      }
+    })
+
+    // Hafs, so the mushaf pages apply and must not stand down for it.
+    it('carries no riwayah, so the Hafs pages stand', () => {
+      expect(Object.prototype.hasOwnProperty.call(h, 'riwayah')).toBe(false)
+    })
+
+    // Attribution is designed for and supported, but no source records which
+    // of the seven imams recited which surah. Better to say nothing than to
+    // assert a guess. When the map arrives this expectation inverts.
+    it('claims no per-surah imam until the map exists', () => {
+      for (const s of h.surahs) {
+        const e = s as unknown as { voice?: string; voiceEn?: string }
+        expect(e.voice).toBeUndefined()
+        expect(e.voiceEn).toBeUndefined()
+      }
+    })
+  })
+
+  it('asks for an ear check only where something is genuinely unproven', () => {
     for (const r of reciters) {
       const unverified = r.surahs.filter((s) => !s.verified).map((s) => s.surah)
       if (r.id === 'burhaji-nabawi') {
+        // Identified by duration rather than by the source, so an ear
+        // settles them.
         expect(unverified.sort((a, b2) => a - b2)).toEqual([94, 95, 96, 98, 102])
+      } else if (r.id === 'haram-1447') {
+        // A compilation of seven imams with no record of which surah is
+        // whose. One median across seven paces would delete good recordings
+        // rather than find bad ones, so the length check is not run and
+        // nothing here is asserted.
+        expect(unverified).toHaveLength(114)
       } else {
+        // Everything else is resolved from its own source page, so the
+        // name-to-audio association comes from the source, not a guess.
         expect(unverified).toHaveLength(0)
       }
     }
