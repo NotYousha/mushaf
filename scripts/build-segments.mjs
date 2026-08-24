@@ -80,7 +80,11 @@ function chaptersOf(desc, match) {
     if (!t) continue
     const id = match.find((x) => x.keys.some((k) => t.includes(k) || k.includes(t)))?.id
     if (!id) continue
-    if (out.length && out[out.length - 1].id === id) continue
+    if (out.length && out[out.length - 1][1] === id) continue
+    // Two names against the same second happen where a line was mistyped.
+    // Keeping both leaves a stretch of zero length, which is not a stretch;
+    // the first one at that second stands.
+    if (out.length && out[out.length - 1][0] >= at) continue
     out.push([at, id])
   }
   return out.sort((x, y) => x[0] - y[0])
@@ -235,6 +239,39 @@ for (const { place, year, collection } of YEARS) {
 
 writeFileSync('data/segments.json', JSON.stringify(out, null, 1) + '\n')
 console.log('\nwrote data/segments.json')
+
+/**
+ * The chapter lists are the better record of who recited.
+ *
+ * The hashtags name the imams of a surah, but not always all of them — one
+ * 1446 surah lists a sheikh in its chapters who never appears in its tags. Both
+ * come from the same description, so where they disagree it is the tags that
+ * are short, and the surah-level attribution is widened to match rather than
+ * left contradicting the stretch playing underneath it.
+ */
+const voicesPath = 'data/voices.json'
+const voices = JSON.parse(readFileSync(voicesPath, 'utf8'))
+let widened = 0
+for (const [key, surahs] of Object.entries(out)) {
+  const year = (voices[key] ??= {})
+  for (const [surah, list] of Object.entries(surahs)) {
+    const named = new Set(year[surah] ?? [])
+    const before = named.size
+    for (const [, id] of list) named.add(id)
+    if (named.size !== before) {
+      widened++
+      // Keep the chapter order: it is the order they actually recited in.
+      const ordered = []
+      for (const [, id] of list) if (!ordered.includes(id)) ordered.push(id)
+      for (const id of year[surah] ?? []) if (!ordered.includes(id)) ordered.push(id)
+      year[surah] = ordered
+    }
+  }
+}
+if (widened) {
+  writeFileSync(voicesPath, JSON.stringify(voices, null, 1) + '\n')
+  console.log(`widened the attribution of ${widened} surah(s) to match their chapters`)
+}
 for (const [key, map] of Object.entries(out)) {
   const total = Object.values(map).reduce((a, v) => a + v.length, 0)
   console.log(`  ${key}: ${Object.keys(map).length} surahs, ${total} stretches`)
