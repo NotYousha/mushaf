@@ -4,7 +4,7 @@ let dbPromise: Promise<IDBPDatabase> | null = null
 
 export function getDB(): Promise<IDBPDatabase> {
   if (!dbPromise) {
-    dbPromise = openDB('mushaf', 3, {
+    dbPromise = openDB('mushaf', 4, {
       upgrade(db) {
         // 'audio' predates chunked downloads. It is kept so surahs saved by
         // an earlier build keep playing rather than needing a re-download.
@@ -21,6 +21,10 @@ export function getDB(): Promise<IDBPDatabase> {
         // review outcomes (streaks) that outlive any individual stumble.
         if (!db.objectStoreNames.contains('stumbles')) db.createObjectStore('stumbles')
         if (!db.objectStoreNames.contains('pages')) db.createObjectStore('pages')
+        // Portraits the listener supplied, one per imam, added in v4. Kept out
+        // of 'prefs' because these are large binaries and prefs is read whole
+        // on nearly every screen.
+        if (!db.objectStoreNames.contains('faces')) db.createObjectStore('faces')
       },
     })
   }

@@ -15,6 +15,12 @@ export const hi: Strings = {
   reciter: 'क़ारी',
   recitedBy: 'पढ़ने वाले',
   nextReciter: 'अगला क़ारी',
+  facesIntro:
+    'रमज़ान में कई इमाम नमाज़ पढ़ाते हैं। किसी की तस्वीर जोड़ें, वह उनकी तिलावत के दौरान दिखेगी। तस्वीरें इसी डिवाइस पर रहती हैं।',
+  faceAdd: 'तस्वीर जोड़ें',
+  faceReplace: 'बदलें',
+  faceRemove: 'हटाएँ',
+  facePickFailed: 'यह तस्वीर पढ़ी नहीं जा सकी।',
   dismiss: 'बंद करें',
   skipBack: (n: number | string) => `${n} सेकंड पीछे`,
   skipForward: (n: number | string) => `${n} सेकंड आगे`,

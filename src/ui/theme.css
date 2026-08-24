@@ -2228,3 +2228,124 @@ body {
   outline: 2px solid var(--sw-accent);
   outline-offset: 2px;
 }
+
+/* ============ reciter photos ============
+   One row per imam, ordered by how much of the Quran he actually recites, so
+   the faces a listener meets most are the ones asked for first. */
+.faces-intro {
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin: 0 0 0.9rem;
+}
+
+.faces-group h3 {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  margin: 1rem 0 0.4rem;
+}
+
+.faces-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--accent-line);
+  border-radius: 0.9rem;
+  overflow: hidden;
+}
+
+.face-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid var(--accent-line);
+  background: var(--card-2);
+}
+
+.face-row:last-child {
+  border-bottom: 0;
+}
+
+.face-thumb {
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 50%;
+  flex: none;
+  background-color: var(--tile);
+  background-size: cover;
+  background-position: center;
+  border: 1px solid var(--accent-line);
+}
+
+/* No picture yet: a quiet ring rather than a broken image. */
+.face-thumb.is-empty {
+  border-style: dashed;
+  opacity: 0.6;
+}
+
+.face-name {
+  min-width: 0;
+  font-size: 0.88rem;
+  unicode-bidi: plaintext;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.face-err {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--warn);
+}
+
+.face-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.face-has {
+  color: var(--ready);
+  display: grid;
+  place-items: center;
+}
+
+/* The input itself is hidden: a bare file input cannot be styled to sit in a
+   dense row, and the label is the control people actually press. */
+.face-add {
+  font-size: 0.76rem;
+  padding: 0.3rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid var(--accent-line);
+  color: var(--ink-soft);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.face-add input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.face-add:focus-within {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.face-remove {
+  font: inherit;
+  font-size: 0.76rem;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0.3rem 0.2rem;
+}
+
+.face-remove:hover {
+  color: var(--warn);
+}

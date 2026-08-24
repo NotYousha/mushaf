@@ -28,7 +28,7 @@ type Doc = { mosques: Record<Place, YearRow[]>; excluded: Record<Place, Record<s
 const doc = data as unknown as Doc
 const roster = imamRoster as Record<
   string,
-  { name: string; nameEn: string; photo?: string }
+  { name: string; nameEn: string; photo?: string; serves?: string[] }
 >
 /** surah -> the imams who recited it, for the years that publish it. */
 const voices = voiceMap as Record<string, Record<string, string[]>>
@@ -80,6 +80,48 @@ export function imamsOf(place: Place, year: number): { name: string; nameEn: str
 
 /** Why a year is missing, for anyone who goes looking for it. */
 export const excludedYears = (place: Place) => doc.excluded?.[place] ?? {}
+
+export type Imam = {
+  id: string
+  name: string
+  nameEn: string
+  /** A portrait shipped with the app, for the few we have one for. */
+  photo?: string
+  /** Which mosque or mosques he led at. */
+  serves: Place[]
+}
+
+/**
+ * Everyone who leads in any published year, grouped by mosque and ordered by
+ * how many surahs they actually recite — so the names a listener meets most
+ * are the ones at the top of a settings list.
+ *
+ * The roster itself is keyed by id and private; this is the way out of it.
+ */
+export function allImams(): Imam[] {
+  const weight = new Map<string, number>()
+  for (const map of Object.values(voices)) {
+    for (const ids of Object.values(map)) {
+      for (const id of ids) weight.set(id, (weight.get(id) ?? 0) + 1)
+    }
+  }
+  // Everyone named on a year counts, even where no surah-level map exists.
+  for (const place of ['makkah', 'madinah'] as Place[]) {
+    for (const row of rowsOf(place)) {
+      for (const id of row.imams) if (!weight.has(id)) weight.set(id, 0)
+    }
+  }
+  return Object.entries(roster)
+    .filter(([id]) => weight.has(id))
+    .map(([id, who]) => ({
+      id,
+      name: who.name,
+      nameEn: who.nameEn,
+      photo: who.photo,
+      serves: (who.serves ?? []) as Place[],
+    }))
+    .sort((a, b) => (weight.get(b.id) ?? 0) - (weight.get(a.id) ?? 0))
+}
 
 
 /**

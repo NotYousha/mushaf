@@ -15,6 +15,12 @@ export const ur: Strings = {
   reciter: 'قاری',
   recitedBy: 'پڑھنے والے',
   nextReciter: 'اگلا قاری',
+  facesIntro:
+    'رمضان میں کئی ائمہ امامت کراتے ہیں۔ کسی کی تصویر شامل کریں، وہ اُن کی تلاوت کے دوران دکھائی دے گی۔ تصاویر اسی ڈیوائس پر رہتی ہیں۔',
+  faceAdd: 'تصویر شامل کریں',
+  faceReplace: 'تبدیل کریں',
+  faceRemove: 'ہٹائیں',
+  facePickFailed: 'یہ تصویر پڑھی نہیں جا سکی۔',
   dismiss: 'بند کریں',
   skipBack: (n: number | string) => `${n} سیکنڈ پیچھے`,
   skipForward: (n: number | string) => `${n} سیکنڈ آگے`,

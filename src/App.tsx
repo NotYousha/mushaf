@@ -14,6 +14,7 @@ import {
   purgeSuspectAudio,
 } from './db/audio'
 import { loadPosition, getPref, setPref } from './db/prefs'
+import { deleteFace, loadFaces, putFace, revokeFaces } from './db/faces'
 import { addPeek, addStumble } from './db/practice'
 import { DownloadQueue } from './download/queue'
 import { CatalogSource } from './sources/CatalogSource'
@@ -28,6 +29,7 @@ import { nextSurah, nextVoiceChange, prevSurah, type RepeatMode } from './player
 import { getQuota, requestPersistence, canDownloadAll } from './storage/quota'
 import { SurahList, plainName } from './ui/SurahList'
 import { VerifyPanel } from './ui/VerifyPanel'
+import { FacePanel } from './ui/FacePanel'
 import { MushafView, ayahStartsFor } from './ui/MushafView'
 import { HifzBoard } from './ui/HifzBoard'
 import { ForkDrill } from './ui/ForkDrill'
@@ -140,6 +142,8 @@ export default function App() {
    * time, so the two never stack.
    */
   const [yearsOpen, setYearsOpen] = useState<Place | null>(null)
+  /** Portraits the listener has added, imam id to object URL. */
+  const [faces, setFaces] = useState<Map<string, string>>(new Map())
   const [queued, setQueued] = useState(0)
   const [canCast, setCanCast] = useState(false)
   const [persisted, setPersisted] = useState<boolean | null>(null)
@@ -227,6 +231,39 @@ export default function App() {
       ),
     )
     setQuota(await getQuota())
+  }, [])
+
+  /**
+   * Portraits are read once and held as object URLs.
+   *
+   * The player re-renders about four times a second while playing, so making
+   * a URL per render would leak one every time. Replacing the map revokes the
+   * old URLs first, following the same revoke-before-create discipline the
+   * player engine uses for audio.
+   */
+  useEffect(() => {
+    let alive = true
+    let held: Map<string, string> | null = null
+    void loadFaces().then((m) => {
+      if (!alive) {
+        revokeFaces(m)
+        return
+      }
+      held = m
+      setFaces(m)
+    })
+    return () => {
+      alive = false
+      revokeFaces(held)
+    }
+  }, [])
+
+  const refreshFaces = useCallback(async () => {
+    const next = await loadFaces()
+    setFaces((prev) => {
+      revokeFaces(prev)
+      return next
+    })
   }, [])
 
   useEffect(() => {
@@ -683,7 +720,16 @@ export default function App() {
    * changes from surah to surah, and the face has to change with him or it is
    * telling the listener something untrue.
    */
-  const face = currentView?.voicePhoto ?? reciter?.photo ?? null
+  /**
+   * The portrait to show, and whose it is.
+   *
+   * The listener's own picture of this surah's imam wins, then a shipped one,
+   * then the entry's. A user photo is already cropped square on import, so it
+   * needs none of the per-reciter framing the bundled originals do.
+   */
+  const mine = currentView?.voiceId ? faces.get(currentView.voiceId) : undefined
+  const face = mine ?? currentView?.voicePhoto ?? reciter?.photo ?? null
+  const faceIsMine = !!mine
   const facePerson = currentView?.voiceId ?? reciter?.id ?? ''
 
   /**
@@ -1282,6 +1328,21 @@ export default function App() {
                 </p>
               ))}
 
+              <FacePanel
+                t={t}
+                lang={lang}
+                base={import.meta.env.BASE_URL}
+                faces={faces}
+                onPick={async (imamId, file) => {
+                  await putFace(imamId, file)
+                  await refreshFaces()
+                }}
+                onRemove={async (imamId) => {
+                  await deleteFace(imamId)
+                  await refreshFaces()
+                }}
+              />
+
               <VerifyPanel
                 reciterId={reciterId}
                 surahs={checkable}
@@ -1338,7 +1399,16 @@ export default function App() {
                 aria-hidden="true"
                 data-reciter={facePerson}
                 style={{
-                  ['--face-src' as string]: `url('${import.meta.env.BASE_URL}${face}')`,
+                  ['--face-src' as string]: `url('${faceIsMine ? face : `${import.meta.env.BASE_URL}${face}`}')`,
+                  // An imported photo is cropped square on the way in, so it
+                  // wants none of the nudging the uncropped originals need.
+                  ...(faceIsMine
+                    ? {
+                        ['--face-zoom' as string]: '100%',
+                        ['--face-x' as string]: '50%',
+                        ['--face-y' as string]: '50%',
+                      }
+                    : {}),
                 }}
               />
             )}

@@ -15,6 +15,12 @@ export const fr: Strings = {
   reciter: 'Récitateur',
   recitedBy: 'Récité par',
   nextReciter: 'Récitateur suivant',
+  facesIntro:
+    'Plusieurs imams dirigent la prière durant le Ramadan. Ajoutez une photo pour l’un d’eux et elle apparaîtra pendant sa récitation. Les photos restent sur cet appareil.',
+  faceAdd: 'Ajouter une photo',
+  faceReplace: 'Remplacer',
+  faceRemove: 'Retirer',
+  facePickFailed: 'Cette image n’a pas pu être lue.',
   dismiss: 'Fermer',
   skipBack: (n: number | string) => `${n} secondes en arrière`,
   skipForward: (n: number | string) => `${n} secondes en avant`,

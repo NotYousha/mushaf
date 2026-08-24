@@ -20,6 +20,12 @@ export const en = {
   /** Precedes an imam's name on a surah from a multi-voice compilation. */
   recitedBy: 'Recited by',
   nextReciter: 'Next reciter',
+  facesIntro:
+    'Several imams lead across a Ramadan. Add a photo for any of them and it appears while he is reciting. Photos stay on this device.',
+  faceAdd: 'Add photo',
+  faceReplace: 'Replace',
+  faceRemove: 'Remove',
+  facePickFailed: 'That image could not be read.',
   dismiss: 'Dismiss',
   /** The transport's fixed jump, in seconds. */
   skipBack: (n: number | string) => `Back ${n} seconds`,

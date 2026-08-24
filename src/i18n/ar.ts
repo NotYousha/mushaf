@@ -14,6 +14,12 @@ export const ar: Strings = {
   reciter: 'القارئ',
   recitedBy: 'قرأها',
   nextReciter: 'القارئ التالي',
+  facesIntro:
+    'يؤم الصلاة عدة أئمة خلال رمضان. أضف صورة لأي منهم لتظهر أثناء تلاوته. تبقى الصور على هذا الجهاز.',
+  faceAdd: 'إضافة صورة',
+  faceReplace: 'تغيير',
+  faceRemove: 'إزالة',
+  facePickFailed: 'تعذّرت قراءة هذه الصورة.',
   dismiss: 'إغلاق',
   skipBack: (n: number | string) => `للخلف ${n} ثوانٍ`,
   skipForward: (n: number | string) => `للأمام ${n} ثوانٍ`,
