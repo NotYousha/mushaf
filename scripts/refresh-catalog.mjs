@@ -347,7 +347,6 @@ async function refresh(id) {
       .map((surah) => {
         return {
         surah,
-        name: meta[surah - 1].name,
         // A locally hosted file wins; otherwise a remapped surah is fetched
         // from the file that actually holds it.
         url: src.localFiles?.[surah]

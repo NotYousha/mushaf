@@ -19,6 +19,8 @@ export function buildView(reciter: Reciter, m: SurahMeta[]): SurahView[] {
       surah: md.surah,
       name: md.name,
       nameEn: md.nameEn,
+      // Note: `name` above comes from the surah metadata, not from the
+      // catalog entry — the entry never carried a usable one.
       translation: md.translation,
       ayahs: md.ayahs,
       released: !!e,
@@ -29,6 +31,8 @@ export function buildView(reciter: Reciter, m: SurahMeta[]): SurahView[] {
       url: e?.url ? (/^https?:\/\//.test(e.url) ? e.url : `${BASE}${e.url}`) : null,
       fallbackUrl: e?.fallbackUrl ?? null,
       bytes: e?.bytes ?? 0,
+      voice: e?.voice ?? null,
+      voiceEn: e?.voiceEn ?? null,
     }
   })
 }

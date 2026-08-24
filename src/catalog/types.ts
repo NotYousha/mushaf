@@ -1,10 +1,16 @@
 export type CatalogEntry = {
   surah: number
-  name: string
   url: string
   fallbackUrl?: string | null
   bytes: number
   verified: boolean
+  /**
+   * Who recites this surah, when the entry is a compilation rather than one
+   * sheikh's mushaf — Taraweeh at the Haram rotates imams across the month.
+   * Absent means the entry has a single voice, already named on the reciter.
+   */
+  voice?: string
+  voiceEn?: string
 }
 
 export type Reciter = {
@@ -60,4 +66,7 @@ export type SurahView = {
    *  individual nodes go unhealthy, so playback retries here on error. */
   fallbackUrl: string | null
   bytes: number
+  /** Who recites this surah, or null for a single-voice mushaf. */
+  voice: string | null
+  voiceEn: string | null
 }

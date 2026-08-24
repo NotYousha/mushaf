@@ -71,6 +71,33 @@ describe('bundled data', () => {
     }
   })
 
+  // A compilation entry names the imam per surah. Attribution that is present
+  // in one script and missing in the other renders as a blank line for half
+  // the languages, so both are required together.
+  it('gives every attributed surah both scripts', () => {
+    for (const r of reciters) {
+      for (const s of r.surahs) {
+        const e = s as { voice?: string; voiceEn?: string }
+        expect(Boolean(e.voice)).toBe(Boolean(e.voiceEn))
+        if (e.voice) {
+          expect(e.voice.trim().length).toBeGreaterThan(0)
+          expect(e.voiceEn!.trim().length).toBeGreaterThan(0)
+        }
+      }
+    }
+  })
+
+  // `name` held the surah's Arabic name, which buildView overwrites from
+  // surahs.json anyway. It was dead, and a dead `name` beside a live `voice`
+  // invites being repurposed by mistake.
+  it('no longer carries a dead per-entry name', () => {
+    for (const r of reciters) {
+      for (const s of r.surahs) {
+        expect(Object.prototype.hasOwnProperty.call(s, 'name')).toBe(false)
+      }
+    }
+  })
+
   describe('Al-Dosari — still being recorded', () => {
     const d = reciters.find((r) => r.id === 'dosari')!
 
