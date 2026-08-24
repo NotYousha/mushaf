@@ -141,3 +141,60 @@ describe('position reporting to the OS', () => {
     expect(calls).toHaveLength(1)
   })
 })
+
+/**
+ * `seeking` fires without a matching `seeked` more often than it should — a
+ * jump into an unbuffered stretch of a two-hour stream can stall for good.
+ * Left unguarded the flag stays raised, position is never reported again, and
+ * the lock screen sits frozen: exactly the failure the throttle exists to
+ * prevent.
+ */
+describe('a seek that never lands', () => {
+  const el = () =>
+    ({ duration: 600, currentTime: 30, playbackRate: 1 }) as unknown as HTMLAudioElement
+
+  it('gives up and starts reporting again', async () => {
+    vi.useFakeTimers()
+    try {
+      const { setPosition, setSeeking } = await import('../src/player/mediaSession')
+      const calls: unknown[] = []
+      ;(navigator as unknown as { mediaSession: unknown }).mediaSession = {
+        setPositionState: (s: unknown) => calls.push(s),
+      }
+
+      setSeeking(true)
+      setPosition(el())
+      expect(calls, 'silent while seeking').toHaveLength(0)
+
+      // No 'seeked' ever arrives.
+      vi.advanceTimersByTime(5000)
+      setPosition(el())
+      expect(calls, 'reporting resumes').toHaveLength(1)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+
+  it('cancels the give-up timer when the seek does land', async () => {
+    vi.useFakeTimers()
+    try {
+      const { setPosition, setSeeking } = await import('../src/player/mediaSession')
+      const calls: unknown[] = []
+      ;(navigator as unknown as { mediaSession: unknown }).mediaSession = {
+        setPositionState: (s: unknown) => calls.push(s),
+      }
+
+      setSeeking(true)
+      setSeeking(false)
+      setPosition(el())
+      expect(calls).toHaveLength(1)
+      // The stale timer must not re-fire and clobber anything later.
+      vi.advanceTimersByTime(6000)
+      setSeeking(true)
+      setPosition(el())
+      expect(calls, 'still suppressed by the new seek').toHaveLength(1)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+})

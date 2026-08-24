@@ -109,15 +109,38 @@ export function setPlaybackState(state: MediaSessionPlaybackState) {
  * at all and let the OS lead.
  */
 const POSITION_EVERY_MS = 1000
+/**
+ * How long silence may last before we assume the seek is never landing.
+ *
+ * `seeking` fires without a matching `seeked` more often than it should — a
+ * jump into an unbuffered stretch of a two-hour stream can stall indefinitely.
+ * Without this the flag would stay raised, position would never be reported
+ * again, and the lock screen would sit frozen: the exact failure this code is
+ * meant to prevent.
+ */
+const SEEK_GIVE_UP_MS = 4000
+
 let lastPositionAt = 0
 let seeking = false
+let seekTimer: ReturnType<typeof setTimeout> | null = null
 
 /** Called from the engine's seeking/seeked listeners. */
 export function setSeeking(active: boolean) {
   seeking = active
+  if (seekTimer) {
+    clearTimeout(seekTimer)
+    seekTimer = null
+  }
+  if (active) {
+    seekTimer = setTimeout(() => {
+      seeking = false
+      seekTimer = null
+    }, SEEK_GIVE_UP_MS)
+    return
+  }
   // Report once the moment it lands, so the bar settles where it was dropped
   // rather than waiting out the interval.
-  if (!active) lastPositionAt = 0
+  lastPositionAt = 0
 }
 
 export function setPosition(el: HTMLAudioElement, force = false) {

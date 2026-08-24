@@ -74,6 +74,11 @@ export class PlayerEngine {
       setSeeking(false)
       setPosition(this.el, true)
     })
+    // A stall during a seek must not leave the lock screen frozen.
+    this.el.addEventListener('stalled', () => setSeeking(false))
+    this.el.addEventListener('error', () => setSeeking(false))
+    // The moment sound actually starts is when the OS most needs an anchor.
+    this.el.addEventListener('playing', () => setPosition(this.el, true))
     this.el.addEventListener('loadedmetadata', () => {
       // A resource load resets playbackRate to defaultPlaybackRate, which
       // silently dropped the listener's chosen speed back to 1x on every
