@@ -16,6 +16,15 @@
  *                   sends no CORS header and is unreachable from some
  *                   networks entirely — the proxy fixes both.
  *
+ *   /h/{1-114}.mp3  The Grand Mosque's mushaf for 1447, assembled from that
+ *                   Ramadan's Taraweeh and Tahajjud. Archive.org does send
+ *                   Access-Control-Allow-Origin: *, so this one looks as
+ *                   though it needs no proxy — it does. Archive sends no
+ *                   Access-Control-Expose-Headers, and neither ETag nor
+ *                   Content-Range is CORS-safelisted, so a browser reads
+ *                   null for both: no total to size the download against
+ *                   and no validator to resume with.
+ *
  * Every route resolves the real audio URL on demand, caches that resolution, and
  * stream the file back with CORS attached. Range requests pass through, so
  * seeking works without pulling a whole surah.
@@ -60,6 +69,28 @@ const HARAMAIN = {
 }
 const HARAMAIN_INDEX_TTL = 6 * 60 * 60
 const HARAMAIN_PAGE_TTL = 7 * 24 * 60 * 60
+
+/* ---------------- Haram 1447 Taraweeh ----------------
+ * Unlike the mushafs above, this one is not a single sheikh's. Taraweeh and
+ * Tahajjud at the Grand Mosque rotate imams across the month, so the
+ * attribution belongs per surah in the catalog rather than on the reciter.
+ *
+ * Ramadan 1447 is over, so this list does not grow: there is no index to
+ * scrape and no /count/h route.
+ *
+ * The item is addressed through archive.org/download rather than the node it
+ * currently lives on (ia801807 at the time of writing). Nodes rotate and
+ * individual ones go unhealthy; /download always redirects to a live one,
+ * which the runtime follows.
+ */
+const HARAM_1447 = {
+  base: 'https://archive.org/download/Mecca1447',
+  name: 'Grand Mosque 1447 — Taraweeh and Tahajjud',
+}
+
+/** Files are named 001.mp3 through 114.mp3, with no surah name to encode. */
+const resolveHaram1447 = (surah) =>
+  `${HARAM_1447.base}/${String(surah).padStart(3, '0')}.mp3`
 
 const ALLOWED_ORIGINS = [
   'https://notyousha.github.io',
@@ -230,6 +261,11 @@ const ROUTES = {
     resolve: (surah, ctx) => resolveHaramain(HARAMAIN.j, surah, ctx),
     name: HARAMAIN.j.name,
   },
+  h: {
+    ttl: HARAMAIN_PAGE_TTL,
+    resolve: (surah) => resolveHaram1447(surah),
+    name: HARAM_1447.name,
+  },
 }
 
 export default {
@@ -254,6 +290,7 @@ export default {
             '/b/{1-114}.mp3': ROUTES.b.name,
             '/d/{1-114}.mp3': ROUTES.d.name,
             '/t/{1-114}.mp3': ROUTES.t.name,
+            '/h/{1-114}.mp3': ROUTES.h.name,
           },
           '/count/{d,t}': 'how many surahs are published',
         }),
@@ -287,9 +324,9 @@ export default {
       }
     }
 
-    const match = /^\/([bdtj])\/(\d{1,3})\.mp3$/.exec(url.pathname)
+    const match = /^\/([bdtjh])\/(\d{1,3})\.mp3$/.exec(url.pathname)
     if (!match) {
-      return new Response('Not found. Use /b, /d, /t or /j + /{1-114}.mp3', {
+      return new Response('Not found. Use /b, /d, /t, /j or /h + /{1-114}.mp3', {
         status: 404,
         headers: cors,
       })

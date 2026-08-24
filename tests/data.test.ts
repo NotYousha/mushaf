@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import catalog from '../data/catalog.json'
 import surahs from '../data/surahs.json'
+import imams from '../data/imams.json'
 
 const reciters = catalog.reciters
 
@@ -96,6 +97,31 @@ describe('bundled data', () => {
         expect(Object.prototype.hasOwnProperty.call(s, 'name')).toBe(false)
       }
     }
+  })
+
+  // The roster the Haram 1447 compilation attributes against. Its names are
+  // the source item's own, not a guess: the archive item lists the seven
+  // imams who led that Ramadan.
+  describe('the imam roster', () => {
+    const roster = imams as Record<string, { name: string; nameEn: string }>
+
+    it('gives every imam both scripts', () => {
+      for (const [id, who] of Object.entries(roster)) {
+        expect(who.name.trim().length, id).toBeGreaterThan(0)
+        expect(who.nameEn.trim().length, id).toBeGreaterThan(0)
+      }
+    })
+
+    // Where an imam is also a reciter in his own right, the same person must
+    // read the same way in the list and in the player.
+    it('spells a shared name the way the catalog already does', () => {
+      for (const id of ['dosari', 'turki', 'juhany']) {
+        const r = reciters.find((x) => x.id === id)!
+        expect(roster[id], id).toBeDefined()
+        expect(roster[id].name).toBe(r.name)
+        expect(roster[id].nameEn).toBe(r.nameEn)
+      }
+    })
   })
 
   describe('Al-Dosari — still being recorded', () => {
