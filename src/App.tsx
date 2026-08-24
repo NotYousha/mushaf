@@ -339,7 +339,9 @@ export default function App() {
       engine.current!.setRate(SPEEDS[speedIdx])
       await engine.current!.play()
 
-      updateMetadata(s, reciter.fullName, import.meta.env.BASE_URL)
+      // The imam, not the collection: "Taraweeh 1447" on a lock screen or a
+      // head unit says nothing about the voice being heard.
+      updateMetadata(s, artistFor(s, reciter), import.meta.env.BASE_URL)
       setNavAvailability(prevSurah(surah, playable) !== null, nextSurah(surah, repeat, playable) !== null)
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -691,7 +693,7 @@ export default function App() {
         ? {
             surah: currentView.surah,
             title: `${t.surahWord} ${currentView.name}`,
-            reciter: reciter.fullName,
+            reciter: artistFor(currentView, reciter),
             artwork: reciter.photo
               ? `${import.meta.env.BASE_URL}${reciter.photo}`
               : null,
@@ -1310,7 +1312,9 @@ export default function App() {
           currentView && reciter
             ? {
                 title: `${t.surahWord} ${currentView.name}`,
-                reciter: reciter.nameEn,
+                reciter: artistForEn(currentView, reciter),
+                // Still the entry's id: the dock uses it to frame the photo,
+                // which is the collection's image, not the imam's.
                 reciterId: reciter.id,
                 artwork: reciter.photo
                   ? `${import.meta.env.BASE_URL}${reciter.photo}`
