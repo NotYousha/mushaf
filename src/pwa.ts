@@ -16,6 +16,27 @@ import { registerSW } from 'virtual:pwa-register'
 export function keepFresh() {
   if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return
 
+  /**
+   * Register the worker ourselves, bypassing the HTTP cache for the script.
+   *
+   * This is the bug that keeps a stale app stuck. A service worker script is
+   * fetched through the ordinary HTTP cache unless updateViaCache says
+   * otherwise, and GitHub Pages serves it with a cache header — so a browser
+   * can go on using yesterday's worker, and therefore yesterday's app, without
+   * ever discovering that a new one exists. `none` makes every update check
+   * ask the network.
+   */
+  if ('serviceWorker' in navigator) {
+    void navigator.serviceWorker
+      .register(`${import.meta.env.BASE_URL}sw.js`, {
+        scope: import.meta.env.BASE_URL,
+        updateViaCache: 'none',
+      })
+      .catch(() => {
+        /* registerSW below is the fallback */
+      })
+  }
+
   const update = registerSW({
     immediate: true,
     onNeedRefresh() {
