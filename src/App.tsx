@@ -173,6 +173,14 @@ export default function App() {
   const [theme, setTheme] = useState<ThemeId>(DEFAULT_THEME)
   const [appearance, setAppearance] = useState<Mode>('system')
 
+  /**
+   * Where the last session stopped, until it is used once.
+   *
+   * Held in a ref rather than state: it must survive the render that follows
+   * restoring it, and it must not make the app think the playhead has moved.
+   */
+  const resumeAt = useRef<number | null>(null)
+
   const engine = useRef<PlayerEngine | null>(null)
   if (!engine.current) engine.current = new PlayerEngine()
 
@@ -322,6 +330,18 @@ export default function App() {
       if (pos && rs.some((r) => r.id === pos.reciterId)) {
         setReciterId(pos.reciterId)
         setCurrent(pos.surah)
+        /**
+         * And where in it.
+         *
+         * The engine has been writing the playhead every five seconds, on
+         * pause and on the app going to the background, and the app was
+         * reading everything back except the one number that matters. Someone
+         * an hour and a half into a Taraweeh night closed the app and came
+         * back to 00:00 of a hundred-minute recording, with a four-pixel
+         * scrubber to find their place again.
+         */
+        setTime(pos.seconds)
+        resumeAt.current = pos.seconds
       }
     })()
   }, [refreshDownloaded])
@@ -741,9 +761,18 @@ export default function App() {
       if (playable.length) await playSurah(playable[0])
       return
     }
-    if (playing) engine.current!.pause()
-    else if (engine.current!.surah === current) await engine.current!.play()
-    else await playSurah(current)
+    if (playing) {
+      engine.current!.pause()
+      return
+    }
+    if (engine.current!.surah === current) {
+      await engine.current!.play()
+      return
+    }
+    // First press after opening the app: pick up where the last one stopped.
+    const from = resumeAt.current ?? 0
+    resumeAt.current = null
+    await playSurah(current, from)
   }
 
   const currentView = surahs.find((s) => s.surah === current) ?? null

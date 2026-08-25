@@ -126,6 +126,8 @@ body {
 }
 
 .app {
+  /* A stacking context, so the ornament above can sit behind the words. */
+  isolation: isolate;
   /* Direction is NOT set here. It used to be `direction: rtl`, which quietly
      defeated the whole language setting: the browser implements dir="ltr"
      through a user-agent rule, and any author rule beats user-agent origin —
@@ -160,6 +162,19 @@ body {
   position: absolute;
   inset: 0;
   pointer-events: none;
+  /**
+   * Behind the words, not over them.
+   *
+   * An absolutely positioned pseudo-element on a positioned parent paints
+   * above every non-positioned descendant — and the list rows, the surah
+   * names and the lines of the mushaf are all non-positioned. So this
+   * ornament was being laid over the Quran: a five per cent gold veil across
+   * every ayah, which is why the whole app read slightly hazy and nothing
+   * looked crisp. `isolation` on .app gives the negative index something to
+   * be negative within, so the pattern sits above the ground and below the
+   * text rather than disappearing behind both.
+   */
+  z-index: -1;
   background: var(--accent);
   opacity: var(--pattern-opacity, 0.05);
   -webkit-mask-image: var(--pattern);
