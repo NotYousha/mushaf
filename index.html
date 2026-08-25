@@ -27,11 +27,15 @@
       promised in a policy document. Audio is the only outside origin, and it
       is our own proxy. There is no analytics, ad, or font vendor to allow —
       which is why this policy can be written at all.
+
+      The hash in script-src is the theme boot script further down, admitted by
+      its exact text. 'unsafe-inline' would have admitted it too, and every
+      injected script along with it; a hash gives up nothing.
     -->
     <meta
       http-equiv="Content-Security-Policy"
       content="default-src 'self';
-               script-src 'self';
+               script-src 'self' 'sha256-+ocKC4ud8vpzW4l2+2gDQ+vpIgEKCmpXVV7r9FX2v+0=';
                style-src 'self' 'unsafe-inline';
                font-src 'self';
                img-src 'self' data: blob:;
@@ -46,8 +50,52 @@
     <link rel="stylesheet" href="./fonts/fonts.css" />
     <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png" />
     <link rel="apple-touch-icon" href="./icon-192.png" />
-    <!-- Before first paint, so a dark theme never flashes cream. -->
-    <script src="./theme-boot.js"></script>
+    <!--
+      The theme, stamped before anything is drawn.
+
+      The preference lives in IndexedDB with every other setting, and that
+      cannot be read without awaiting: by the time React has it the page has
+      already painted, so a dark theme would open with a flash of cream on
+      every launch. localStorage is kept as a write-through copy purely so it
+      can be read here, synchronously, in the head.
+
+      Inline rather than a file so it cannot arrive late or fail to arrive at
+      all — a cold service worker on an iPhone serves the first request of a
+      launch slowest, which is exactly the moment this has to be right. The
+      hash in the policy above is what lets it run; tests/themeboot.test.ts
+      recomputes that hash from this text, so editing the script without
+      updating the hash fails the suite rather than quietly restoring the flash
+      in production.
+    -->
+    <script>
+      ;(function () {
+        var THEMES = ['mushaf', 'kiswah', 'lapis', 'zellij', 'rawdah', 'vellum', 'tahajjud']
+        var theme = 'mushaf'
+        var mode = 'system'
+        try {
+          var t = localStorage.getItem('mushaf:theme')
+          var m = localStorage.getItem('mushaf:mode')
+          if (THEMES.indexOf(t) !== -1) theme = t
+          if (m === 'light' || m === 'dark' || m === 'system') mode = m
+        } catch (e) {
+          /* Site data blocked, or a private window. Nothing was readable, so
+             the defaults above stand — the same ones the app itself falls back
+             to, so the two cannot disagree and nothing moves after mount. */
+        }
+        if (mode === 'system') {
+          mode = 'light'
+          try {
+            if (window.matchMedia('(prefers-color-scheme: dark)').matches) mode = 'dark'
+          } catch (e) {
+            /* No matchMedia. Light is the safer guess: iOS reserves the status
+               bar with dark text either way, and every theme has a day palette. */
+          }
+        }
+        var root = document.documentElement
+        root.setAttribute('data-theme', theme)
+        root.setAttribute('data-mode', mode)
+      })()
+    </script>
     <title>الموعظة — Al-Mau'iza</title>
   </head>
   <body>

@@ -102,8 +102,57 @@ export const THEMES: Theme[] = [
 ]
 
 export const DEFAULT_THEME: ThemeId = 'mushaf'
+export const DEFAULT_MODE: Mode = 'system'
+
+/**
+ * Where the boot script in index.html and this module meet.
+ *
+ * The preference itself lives in IndexedDB with every other setting. These two
+ * keys hold a copy of it that can be read without awaiting anything, which is
+ * the only reason they exist.
+ */
+export const THEME_KEY = 'mushaf:theme'
+export const MODE_KEY = 'mushaf:mode'
 
 const isTheme = (v: unknown): v is ThemeId => THEMES.some((t) => t.id === v)
+
+const isMode = (v: unknown): v is Mode => v === 'system' || v === 'light' || v === 'dark'
+
+/**
+ * A theme retired between releases is still sitting in the storage of everyone
+ * who chose it, and `data-theme="oldname"` matches no block in themes.css: the
+ * page would come up in the default palette while the picker showed nothing
+ * selected. Every stored value is passed through here on its way back into the
+ * app so that mismatch can only ever become a real choice.
+ */
+export const asTheme = (v: unknown, fallback: ThemeId = DEFAULT_THEME): ThemeId =>
+  isTheme(v) ? v : fallback
+
+export const asMode = (v: unknown, fallback: Mode = DEFAULT_MODE): Mode =>
+  isMode(v) ? v : fallback
+
+/**
+ * The choice the boot script acted on, so React's first render agrees with what
+ * is already stamped on <html>.
+ *
+ * Seeding state from IndexedDB is impossible — it cannot be read without
+ * awaiting — so without this the app mounts holding the default theme, stamps
+ * cream over whatever the boot script had got right, and only puts the real
+ * palette back when IndexedDB answers a second later. That overwrite, not the
+ * boot script, is what the flash of cream on launch actually was.
+ */
+export function bootPreference(): { theme: ThemeId; mode: Mode } {
+  try {
+    return {
+      theme: asTheme(localStorage.getItem(THEME_KEY)),
+      mode: asMode(localStorage.getItem(MODE_KEY)),
+    }
+  } catch {
+    // Site data blocked. Nothing can be recovered, but the boot script fell
+    // back to these same defaults, so the two still agree and nothing moves.
+    return { theme: DEFAULT_THEME, mode: DEFAULT_MODE }
+  }
+}
 
 export const themeById = (id: string): Theme =>
   THEMES.find((t) => t.id === id) ?? THEMES[0]
@@ -125,18 +174,18 @@ export const resolveMode = (mode: Mode): 'light' | 'dark' =>
  */
 export function applyTheme(themeId: string, mode: Mode) {
   if (typeof document === 'undefined') return
-  const id = isTheme(themeId) ? themeId : DEFAULT_THEME
+  const id = asTheme(themeId)
   const resolved = resolveMode(mode)
   const root = document.documentElement
   root.setAttribute('data-theme', id)
   root.setAttribute('data-mode', resolved)
 
-  // Mirrored so theme-boot.js can stamp this again on the next launch
-  // before the page paints. IndexedDB is the source of truth; this is only
-  // a copy that can be read synchronously.
+  // Mirrored so the boot script in index.html can stamp this again on the next
+  // launch before the page paints. IndexedDB is the source of truth; this is
+  // only a copy that can be read synchronously.
   try {
-    localStorage.setItem('mushaf:theme', id)
-    localStorage.setItem('mushaf:mode', mode)
+    localStorage.setItem(THEME_KEY, id)
+    localStorage.setItem(MODE_KEY, mode)
   } catch {
     /* private window; the flash is the only cost */
   }
