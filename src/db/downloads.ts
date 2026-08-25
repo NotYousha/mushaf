@@ -25,6 +25,26 @@ export type Manifest = {
   chunkSize: number
   /** Strong validator, so a resume can prove the file has not changed. */
   etag: string | null
+  /**
+   * Weak validator, for the hosts that send no ETag.
+   *
+   * Without either of these a resume cannot prove anything, and `If-Range`
+   * simply is not sent — the server honours the range, answers 206, and the
+   * bytes already on disk get spliced onto bytes from a different recording.
+   * `If-Range` accepts an HTTP-date, so this is the fallback.
+   */
+  lastModified: string | null
+  /**
+   * How many chunks are actually on disk.
+   *
+   * Not derivable from the byte count. HTTP is free to answer a range request
+   * with less than was asked for, and the index used to be
+   * `floor(bytesWritten / chunkSize)` — so two short responses landed on the
+   * same index, one overwrote the other, and the file assembled short and out
+   * of order while the manifest said `complete`. This is the authority for how
+   * many chunks exist, for writing and for deleting.
+   */
+  chunks: number
   state: 'partial' | 'complete'
   updatedAt: number
 }
@@ -50,15 +70,19 @@ export async function putManifest(m: Manifest) {
  * never claim bytes that are not there and a resume can never begin from a
  * hole in the middle of the file.
  */
-export async function commitChunk(
-  m: Manifest,
-  index: number,
-  buf: ArrayBuffer,
-): Promise<Manifest> {
+/**
+ * Append one chunk.
+ *
+ * The index is the manifest's own count, not a number the caller works out
+ * from the byte offset — see Manifest.chunks.
+ */
+export async function commitChunk(m: Manifest, buf: ArrayBuffer): Promise<Manifest> {
   const db = await getDB()
+  const index = chunkCount(m)
   const next: Manifest = {
     ...m,
     bytesWritten: m.bytesWritten + buf.byteLength,
+    chunks: index + 1,
     updatedAt: Date.now(),
   }
   const tx = db.transaction(['chunks', 'downloads'], 'readwrite')
@@ -69,9 +93,22 @@ export async function commitChunk(
 }
 
 /** Rebuild the audio without ever holding the whole file in the JS heap. */
+/**
+ * How many chunks a manifest has, tolerating one written before it counted.
+ *
+ * A manifest from an earlier build has no `chunks`, so its count has to be
+ * derived the old way. That derivation is exactly what was wrong, but for a
+ * download that only ever saw full-size responses it is right — and it is the
+ * only information those manifests carry.
+ */
+export const chunkCount = (m: Manifest): number =>
+  Number.isFinite(m.chunks)
+    ? m.chunks
+    : Math.ceil(m.bytesWritten / m.chunkSize)
+
 export async function assembleBlob(m: Manifest): Promise<Blob | null> {
   const db = await getDB()
-  const count = Math.ceil(m.totalBytes / m.chunkSize)
+  const count = chunkCount(m)
   // Blob parts are held by reference, so this accumulates without copying
   // every chunk into one large buffer.
   const parts: BlobPart[] = []
@@ -89,8 +126,10 @@ export async function deleteDownload(key: string, m?: Manifest) {
   const db = await getDB()
   const manifest = m ?? ((await db.get('downloads', key)) as Manifest | undefined)
   if (manifest) {
-    const count = Math.ceil(manifest.totalBytes / manifest.chunkSize)
-    for (let i = 0; i < count; i++) await db.delete('chunks', chunkKey(key, i))
+    const count = chunkCount(manifest)
+    if (Number.isFinite(count)) {
+      for (let i = 0; i < count; i++) await db.delete('chunks', chunkKey(key, i))
+    }
   }
   // The manifest goes last. A crash mid-delete then leaves a manifest
   // pointing at missing chunks, which resume repairs, rather than orphaned

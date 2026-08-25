@@ -50,14 +50,19 @@ async function fetchRange(
   url: string,
   from: number,
   size: number,
-  etag: string | null,
+  validator: string | null,
   signal?: AbortSignal,
 ) {
   const headers: Record<string, string> = { Range: `bytes=${from}-${from + size - 1}` }
   // If the file changed since the last session the server answers 200 with
   // the whole body instead of 206, which is how a stale resume is detected
   // rather than silently splicing two different recordings together.
-  if (etag && from > 0) headers['If-Range'] = etag
+  //
+  // The validator is the ETag where there is one and Last-Modified otherwise —
+  // If-Range accepts an HTTP-date. With neither, this header cannot be sent at
+  // all, the server has nothing to check, and the resume is unsafe: the caller
+  // restarts from zero instead.
+  if (validator && from > 0) headers['If-Range'] = validator
   return fetch(url, { headers, signal })
 }
 
@@ -100,6 +105,23 @@ export async function downloadChunked(
   let from = m?.bytesWritten ?? 0
   let total = m?.totalBytes ?? Infinity
 
+  /*
+   * A resume needs something to prove the file has not changed.
+   *
+   * With no ETag and no Last-Modified there is nothing to send as If-Range, so
+   * the server just honours the range and answers 206 — and the bytes on disk,
+   * which came from the file as it was yesterday, get spliced onto bytes from
+   * the file as it is today. It completes, reports no error, and plays two
+   * different recordings of the same surah. Re-downloading is cheaper than
+   * that.
+   */
+  if (m && from > 0 && !m.etag && !m.lastModified) {
+    await deleteDownload(key, m)
+    m = undefined
+    from = 0
+    total = Infinity
+  }
+
   while (from < total) {
     if (opts.signal?.aborted) throw new DOMException('aborted', 'AbortError')
 
@@ -108,7 +130,13 @@ export async function downloadChunked(
 
     for (let attempt = 0; attempt < RETRIES; attempt++) {
       try {
-        res = await fetchRange(url, from, chunkSize, m?.etag ?? null, opts.signal)
+        res = await fetchRange(
+          url,
+          from,
+          chunkSize,
+          m?.etag ?? m?.lastModified ?? null,
+          opts.signal,
+        )
         break
       } catch (e) {
         lastError = e
@@ -156,6 +184,8 @@ export async function downloadChunked(
         bytesWritten: 0,
         chunkSize,
         etag: res.headers.get('etag'),
+        lastModified: res.headers.get('last-modified'),
+        chunks: 0,
         state: 'partial',
         updatedAt: Date.now(),
       }
@@ -163,7 +193,7 @@ export async function downloadChunked(
     }
 
     try {
-      m = await commitChunk(m, Math.floor(from / chunkSize), buf)
+      m = await commitChunk(m, buf)
     } catch (e) {
       if (isQuota(e)) throw new OutOfSpaceError()
       throw e

@@ -85,7 +85,7 @@ import {
   NextVoice,
   Home as HomeIcon,
 } from './ui/Icons'
-import { stringsFor, type Lang } from './i18n'
+import { stringsFor, type Lang, bootLang, LANG_KEY } from './i18n'
 import { brandName, brandSecondary } from './brand'
 import { LangPicker } from './ui/LangPicker'
 import { ThemePicker } from './ui/ThemePicker'
@@ -170,7 +170,9 @@ export default function App() {
   const [quota, setQuota] = useState({ usage: 0, quota: 0, free: 0 })
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
-  const [lang, setLang] = useState<Lang>('ar')
+  // Seeded from the same synchronous copy the boot script read, so the first
+  // render agrees with what is already stamped rather than flipping to it.
+  const [lang, setLang] = useState<Lang>(() => bootLang())
   const t = stringsFor(lang)
   const [confirmAll, setConfirmAll] = useState(false)
   /**
@@ -348,7 +350,9 @@ export default function App() {
       setReciterId(rs.some((r) => r.id === savedId) ? savedId : (rs[0]?.id ?? 'dosari'))
       setVerdicts(await getVerdicts())
       setFavourites(await getPref<string[]>('favourites', []))
-      setLang(await getPref<Lang>('lang', 'ar'))
+      // IndexedDB is still the source of truth; the fallback is what was
+      // already stamped, not a hardcoded language.
+      setLang(await getPref<Lang>('lang', bootLang()))
       setPlayerMin(await getPref<boolean>('playerMin', true))
       // Falling back to the synchronous copy rather than to the default: iOS
       // evicts IndexedDB from apps it considers unused while leaving
@@ -1263,6 +1267,12 @@ export default function App() {
 
   const changeLang = async (next: Lang) => {
     setLang(next)
+    // Mirrored for the next launch's boot script, the way applyTheme does.
+    try {
+      localStorage.setItem(LANG_KEY, next)
+    } catch {
+      /* private window; a flash on next launch is the only cost */
+    }
     await setPref('lang', next)
   }
 

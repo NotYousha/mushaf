@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="ar" dir="rtl">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -35,7 +35,7 @@
     <meta
       http-equiv="Content-Security-Policy"
       content="default-src 'self';
-               script-src 'self' 'sha256-xLXZy6LmWXBpDp72vHtz9GyhD9Kgj2TWiS4Lzi5cV1g=';
+               script-src 'self' 'sha256-t6PmvZkam6I8UddHy8NW6tb76xumByjq/lsqLc71wHY=';
                style-src 'self' 'unsafe-inline';
                font-src 'self';
                img-src 'self' data: blob:;
@@ -79,13 +79,19 @@
     <script>
       ;(function () {
         var THEMES = ['isha', 'mushaf', 'kiswah', 'lapis', 'zellij', 'rawdah', 'vellum', 'tahajjud']
+        // Language to writing direction. Kept here rather than imported for the
+        // same reason the theme list is: this has to run before anything loads.
+        var DIRS = { ar: 'rtl', en: 'ltr', ur: 'rtl', hi: 'ltr', fr: 'ltr' }
         var theme = 'isha'
         var mode = 'system'
+        var lang = 'ar'
         try {
           var t = localStorage.getItem('mushaf:theme')
           var m = localStorage.getItem('mushaf:mode')
+          var l = localStorage.getItem('mushaf:lang')
           if (THEMES.indexOf(t) !== -1) theme = t
           if (m === 'light' || m === 'dark' || m === 'system') mode = m
+          if (DIRS[l]) lang = l
         } catch (e) {
           /* Site data blocked, or a private window. Nothing was readable, so
              the defaults above stand — the same ones the app itself falls back
@@ -103,6 +109,17 @@
         var root = document.documentElement
         root.setAttribute('data-theme', theme)
         root.setAttribute('data-mode', mode)
+        /*
+         * Language and direction, before the first paint.
+         *
+         * Without this the app mounted holding a hardcoded Arabic, so an
+         * English reader got the whole interface right-to-left on every launch
+         * until IndexedDB answered — and the headings changed typeface on the
+         * way, because --font-name is the serif under dir=rtl and the sans
+         * under dir=ltr.
+         */
+        root.setAttribute('lang', lang)
+        root.setAttribute('dir', DIRS[lang])
       })()
     </script>
     <title>الموعظة — Al-Mau'iza</title>
