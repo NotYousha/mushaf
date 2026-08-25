@@ -75,6 +75,7 @@ const catalog = JSON.parse(readFileSync('data/catalog.json', 'utf8'))
 
 const SOURCES = {
   dosari: {
+    home: true,
     route: 'd',
     name: 'ياسر الدوسري',
     nameEn: 'Yasser Al-Dosari',
@@ -98,6 +99,7 @@ const SOURCES = {
    * plays, and it is his, so this is not worth wiping a library over.
    */
   turki: {
+    home: true,
     route: 't',
     name: 'بدر التركي',
     nameEn: 'Badr Al-Turki',
@@ -107,6 +109,7 @@ const SOURCES = {
     photo: 'turki.webp',
   },
   'burhaji-nabawi': {
+    home: true,
     route: 'b',
     // complete; no need to ask
     fixedCount: 114,
@@ -152,6 +155,7 @@ const SOURCES = {
    * is, and the mushaf page refuses to display Hafs text under it.
    */
   juhany: {
+    home: true,
     route: 'j',
     name: 'عبد الله الجهني',
     nameEn: 'Abdullah Al-Juhany',
@@ -175,6 +179,7 @@ const SOURCES = {
    * everything after it by one.
    */
   sudais: {
+    home: true,
     route: 'sd',
     // Spelled as data/imams.json spells him. He is also an imam in the
     // Taraweeh archive, and the same man must not read two ways.
@@ -187,6 +192,7 @@ const SOURCES = {
     note: 'ما زال قيد التسجيل — ولم تُنشر سورة الأعراف بعد.',
   },
   buayjan: {
+    home: true,
     route: 'bu',
     name: 'عبد الله البعيجان',
     nameEn: "Abdullah Al-Bu'ayjan",
@@ -206,6 +212,7 @@ const SOURCES = {
    * that disagrees with what is being recited.
    */
   afasy: {
+    home: true,
     route: 'af',
     // complete
     fixedCount: 114,
@@ -223,6 +230,7 @@ const SOURCES = {
    * surahs are fetched from the file that actually holds them. See the remap.
    */
   'turki-abdulaziz': {
+    home: true,
     route: 'az',
     // complete
     fixedCount: 114,
@@ -449,6 +457,8 @@ async function refresh(id) {
     fullName: src.fullName,
     mushaf: src.mushaf,
     ...(src.mushafEn ? { mushafEn: src.mushafEn } : {}),
+    // Absent means "not on the home screen" — see the Reciter type.
+    ...(src.home ? { home: true } : {}),
     // Absent means Hafs, which is what everything else assumes.
     ...(src.riwayah ? { riwayah: src.riwayah, riwayahEn: src.riwayahEn } : {}),
     ...(src.note ? { note: src.note } : {}),

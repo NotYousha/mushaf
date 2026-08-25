@@ -3,6 +3,7 @@ import catalog from '../data/catalog.json'
 import surahs from '../data/surahs.json'
 import imams from '../data/imams.json'
 import reciterFrames from '../data/reciter-frames.json'
+import { getReciters } from '../src/catalog/load'
 
 const reciters = catalog.reciters
 
@@ -105,6 +106,44 @@ describe('bundled data', () => {
           expect(g.y, `${id}.${surface}`).toBeLessThanOrEqual(100)
         }
       }
+    })
+  })
+
+  /**
+   * The home screen is a landing place; "See all" is the directory.
+   *
+   * The grid stops being glanceable at about a dozen faces and the roster only
+   * grows, so the home screen shows the mushafs marked for it. A reciter added
+   * without thinking about this lands nowhere — which is correct — but one that
+   * silently acquires the flag makes the home screen creep, so both directions
+   * are checked here.
+   */
+  describe('the home screen selection', () => {
+    // Through the loader, not the raw file: the mosque years are merged in at
+    // load, so this is the list the app actually shows.
+    const all = getReciters()
+    const individual = all.filter((r) => !r.group)
+    const home = individual.filter((r) => r.home)
+
+    it('shows a few, not all of them', () => {
+      expect(home.length).toBeGreaterThan(2)
+      expect(home.length).toBeLessThanOrEqual(8)
+      expect(home.length).toBeLessThanOrEqual(individual.length)
+    })
+
+    it('shows only mushafs that exist and have a portrait', () => {
+      for (const r of home) {
+        expect(r.surahs.length, r.id).toBeGreaterThan(0)
+        // A face is the whole point of that grid.
+        expect(r.photo, r.id).toBeTruthy()
+      }
+    })
+
+    // A Taraweeh year is not a reciter and never belongs in that grid.
+    it('never marks a mosque year', () => {
+      const years = all.filter((r) => r.group)
+      expect(years.length, 'the archive should be loaded').toBeGreaterThan(10)
+      for (const r of years) expect(r.home, r.id).toBeFalsy()
     })
   })
 

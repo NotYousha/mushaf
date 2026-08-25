@@ -43,6 +43,15 @@ export type Reciter = {
   riwayah?: string
   riwayahEn?: string
   note?: string
+  /**
+   * Whether this mushaf is one of the few shown on the home screen.
+   *
+   * The home screen is a landing place, not a directory: a grid that grows
+   * every time a reciter is added stops being glanceable somewhere around a
+   * dozen. Everyone is one tap away under "See all", which is the screen that
+   * is meant to be a directory. Absent means "not on the home screen".
+   */
+  home?: boolean
   /** File in public/, shown in the player medallion. */
   photo?: string | null
   /**

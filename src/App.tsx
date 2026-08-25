@@ -1143,7 +1143,14 @@ export default function App() {
    * one place — duplicating them into the panel is what put a framing meant
    * for one man onto another's face the last time.
    */
-  const homeFaces = useMemo<HomeFace[]>(
+  /**
+   * Every mushaf as a face, for the "See all" screen.
+   *
+   * The home screen takes a subset of this — see homeFaces below. Resolved
+   * once, here, because the rules for which picture wins and how it is cropped
+   * are not something to have two copies of.
+   */
+  const allFaces = useMemo<HomeFace[]>(
     () =>
       individual.map((r) => {
         const own = faces.get(r.id)
@@ -1160,6 +1167,18 @@ export default function App() {
         }
       }),
     [individual, faces, lang],
+  )
+
+  /**
+   * The few on the home screen.
+   *
+   * A landing screen is not a directory. The grid stops being glanceable at
+   * about a dozen faces, and the roster only grows — so the home screen shows
+   * the mushafs marked for it and "See all" shows every one.
+   */
+  const homeFaces = useMemo(
+    () => allFaces.filter((f) => individual.find((r) => r.id === f.id)?.home),
+    [allFaces, individual],
   )
 
   /** How many surahs each mushaf holds, to mark the ones still growing. */
@@ -1545,7 +1564,7 @@ export default function App() {
               <ReciterPanel
                 t={t}
                 lang={lang}
-                faces={homeFaces}
+                faces={allFaces}
                 activeId={reciterId}
                 counts={surahCounts}
                 places={placeCards}
