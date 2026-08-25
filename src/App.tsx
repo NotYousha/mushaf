@@ -15,6 +15,7 @@ import {
 } from './db/audio'
 import { loadPosition, getPref, setPref } from './db/prefs'
 import {
+  clearFaces,
   deleteFace,
   exportFaces,
   importFaces,
@@ -1465,6 +1466,11 @@ export default function App() {
                   a.click()
                   // Give the download a moment to start before the URL goes.
                   setTimeout(() => URL.revokeObjectURL(url), 10_000)
+                }}
+                onClearAll={async () => {
+                  const n = await clearFaces()
+                  await refreshFaces()
+                  return n
                 }}
                 onImport={async (file) => {
                   const n = await importFaces(await file.text())

@@ -21,6 +21,7 @@ type Props = {
   onFrame: (imamId: string, surface: Surface, framing: Framing) => Promise<void>
   onRemove: (imamId: string) => Promise<void>
   onExport: () => Promise<void>
+  onClearAll: () => Promise<number>
   onImport: (file: File) => Promise<number>
 }
 
@@ -47,6 +48,7 @@ export function FacePanel({
   onRemove,
   onExport,
   onImport,
+  onClearAll,
 }: Props) {
   const [busy, setBusy] = useState<string | null>(null)
   const [failed, setFailed] = useState<{ id: string; message: string } | null>(null)
@@ -161,6 +163,22 @@ export function FacePanel({
             }}
           />
         </label>
+        {/* Only worth offering while there is something overriding the
+            bundled set. A photo added by hand wins over the one that ships,
+            which is right until the app has its own — and then a picture on
+            the wrong imam keeps showing under a correct name. */}
+        {faces.size > 0 && (
+          <button
+            type="button"
+            className="face-remove"
+            onClick={() => {
+              setMoved(null)
+              void onClearAll().then((n) => setMoved(t.facesCleared(n)))
+            }}
+          >
+            {t.facesUseBundled}
+          </button>
+        )}
         {moved && <span className="faces-moved">{moved}</span>}
       </div>
 

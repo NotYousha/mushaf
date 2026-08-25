@@ -186,3 +186,32 @@ describe('bundled portraits are really there', () => {
     }
   })
 })
+
+/**
+ * A photograph added by hand wins over the one that ships. That is right while
+ * the app carries none — and wrong the moment it does: a picture attached to
+ * the wrong imam then keeps showing under a correct name, and the only clue is
+ * that the app disagrees with the roster.
+ */
+describe('falling back to the bundled portraits', () => {
+  it('clears what the listener added and reports how many', async () => {
+    const { clearFaces, loadFaces } = await import('../src/db/faces')
+    const db = await getDB()
+    for (const id of ['shamsan', 'baleela']) {
+      await db.put(
+        'faces',
+        { buffer: new Uint8Array([1]).buffer, type: 'image/webp', storedAt: 1 },
+        id,
+      )
+    }
+    expect((await loadFaces()).size).toBe(2)
+
+    expect(await clearFaces()).toBe(2)
+    expect((await loadFaces()).size).toBe(0)
+  })
+
+  it('is harmless when there is nothing to clear', async () => {
+    const { clearFaces } = await import('../src/db/faces')
+    expect(await clearFaces()).toBe(0)
+  })
+})

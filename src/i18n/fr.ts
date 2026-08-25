@@ -23,6 +23,8 @@ export const fr: Strings = {
   faceAdjust: 'Ajuster',
   buildLabel: 'Version',
   facesExport: 'Enregistrer les photos',
+  facesUseBundled: 'Utiliser les photos de l’application',
+  facesCleared: (n: number) => `${n} de vos photos retirées.`,
   facesImport: 'Charger des photos',
   facesImported: (n: number) => `${n} photos chargées.`,
   checkUpdate: 'Mettre à jour',

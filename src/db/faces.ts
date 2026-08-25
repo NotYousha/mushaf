@@ -360,3 +360,18 @@ export async function importFaces(text: string): Promise<number> {
   }
   return n
 }
+
+/**
+ * Drop every portrait the listener added, falling back to the bundled ones.
+ *
+ * Photographs added by hand take precedence over the ones that ship with the
+ * app, which is right while the app has none — and wrong the moment it does.
+ * A picture attached to the wrong imam then keeps showing under a correct
+ * name, and the only clue is that the app disagrees with itself.
+ */
+export async function clearFaces(): Promise<number> {
+  const db = await getDB()
+  const keys = await db.getAllKeys('faces')
+  await db.clear('faces')
+  return keys.length
+}
