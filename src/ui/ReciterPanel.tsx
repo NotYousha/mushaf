@@ -102,6 +102,9 @@ export function ReciterPanel({
                   }
                 />
                 <span className="face-cell-name">{f.label}</span>
+                {/* Set only where a second card carries the same name and
+                    face — see allFaces in App.tsx. */}
+                {f.tag && <span className="face-cell-tag">{f.tag}</span>}
                 {/*
                     Said only where it changes what you get.
 

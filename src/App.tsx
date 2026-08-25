@@ -1150,24 +1150,40 @@ export default function App() {
    * once, here, because the rules for which picture wins and how it is cropped
    * are not something to have two copies of.
    */
-  const allFaces = useMemo<HomeFace[]>(
-    () =>
-      individual.map((r) => {
-        const own = faces.get(r.id)
-        const mine = own?.url ?? null
-        const photo = mine ?? r.photo ?? null
-        return {
-          id: r.id,
-          label: inScript(lang, r.name, r.nameEn),
-          src: photo ? (mine ? photo : `${import.meta.env.BASE_URL}${photo}`) : null,
-          frame:
-            own?.player ??
-            r.frames?.player ??
-            (photo && !mine && !UNCROPPED_PHOTOS.has(photo) ? SQUARE_FRAME : null),
-        }
-      }),
-    [individual, faces, lang],
-  )
+  const allFaces = useMemo<HomeFace[]>(() => {
+    /*
+     * Several sheikhs are here more than once now — As-Sudais's Saudi Center
+     * recording beside his complete murattal, Al-Juhany's Ad-Duri beside his
+     * Hafs, Al-Buayjan's centre mushaf beside the Prophet's Mosque one. A
+     * cell is a face and a name, so those would be two cards a listener
+     * cannot tell apart. Where a name is shared, each card says which mushaf
+     * it is; where it is not, nothing is added, because the name has already
+     * answered the question.
+     */
+    const shared = new Set<string>()
+    const seen = new Set<string>()
+    for (const r of individual) {
+      const label = inScript(lang, r.name, r.nameEn)
+      if (seen.has(label)) shared.add(label)
+      seen.add(label)
+    }
+    return individual.map((r) => {
+      const own = faces.get(r.id)
+      const mine = own?.url ?? null
+      const photo = mine ?? r.photo ?? null
+      const label = inScript(lang, r.name, r.nameEn)
+      return {
+        id: r.id,
+        label,
+        tag: shared.has(label) && r.tag ? inScript(lang, r.tag, r.tagEn) : null,
+        src: photo ? (mine ? photo : `${import.meta.env.BASE_URL}${photo}`) : null,
+        frame:
+          own?.player ??
+          r.frames?.player ??
+          (photo && !mine && !UNCROPPED_PHOTOS.has(photo) ? SQUARE_FRAME : null),
+      }
+    })
+  }, [individual, faces, lang])
 
   /**
    * The few on the home screen.
@@ -2037,8 +2053,24 @@ export default function App() {
                     <span className="now-coll">{collectionLabel}</span>
                   </>
                 )}
-                {riwayahLabel(reciter, lang) && (
+                {/*
+                    Which of his mushafs this is, for the sheikhs who have more
+                    than one here — carried only on those, so this line stays
+                    two items long for everyone else.
+
+                    The riwayah wins where there is one. Al-Juhany's Ad-Duri is
+                    tagged "Ad-Duri" for a grid cell that has room for nothing
+                    longer, and printing that beside "Ad-Duri from Abu Amr
+                    al-Basri" would say the same word twice.
+                */}
+                {riwayahLabel(reciter, lang) ? (
                   <span className="now-riwayah">({riwayahLabel(reciter, lang)})</span>
+                ) : (
+                  reciter.tag && (
+                    <span className="now-riwayah">
+                      ({inScript(lang, reciter.tag, reciter.tagEn ?? reciter.tag)})
+                    </span>
+                  )
                 )}
                 {nextVoice !== null && (
                   <span className="now-next" aria-hidden="true">

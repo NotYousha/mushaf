@@ -489,6 +489,26 @@
   overflow: hidden;
 }
 
+/*
+ * Which of a sheikh's mushafs this is, under his name.
+ *
+ * Quieter and smaller than the name, because it is a distinguisher and not a
+ * title: it appears on the two or three cards that share a face, and the eye
+ * should land on the name first and on this only when it has to choose.
+ * Clamped to two lines, as "المصحف المرتل من المسجد النبوي" is shortened to a
+ * couple of words in the catalog rather than wrapped forever here.
+ */
+.face-cell-tag {
+  margin-block-start: -0.3rem;
+  font-size: 0.68rem;
+  line-height: 1.3;
+  color: var(--muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 /* ============ quality floor ============ */
 
 .home-round:focus-visible,

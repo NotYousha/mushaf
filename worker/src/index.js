@@ -203,6 +203,36 @@ const HARAMAIN = {
     collection: 66,
     name: 'Al-Buayjan — Saudi Center',
   },
+  /**
+   * Al-Buayjan's complete mushaf, recorded at the Prophet's Mosque.
+   *
+   * His Saudi Center murattal above is 77 surahs so far and has not moved in
+   * a while; this one is all 114, and the whole of it was checked rather than
+   * assumed — every surah resolves, every file answers a range request, and
+   * the durations are what the text implies. Two surahs sit on the
+   * aggregator's media host and one on an older node of it; the rest are on
+   * the site's own uploads, which is why this goes through the proxy like
+   * everything else.
+   */
+  bn: {
+    host: 'https://tilawatalharamain.com',
+    collection: 20,
+    name: "Al-Buayjan — Prophet's Mosque",
+  },
+  /*
+   * Al-Qarafi, in the riwayah of Hafs from Asim — every file of the aggregator's
+   * copy says so in its tags, and so does this collection's own page.
+   *
+   * Both published copies of this mushaf are compilations rather than one
+   * mastered album: the encodes vary from surah to surah and the pace varies
+   * with them. This one is the more coherent of the two, and the catalog's own
+   * length check drops whatever still does not belong.
+   */
+  qa: {
+    host: 'https://tilawatalharamain.com',
+    collection: 43,
+    name: 'Al-Qarafi — Hafs from Asim',
+  },
 }
 const HARAMAIN_INDEX_TTL = 6 * 60 * 60
 const HARAMAIN_PAGE_TTL = 7 * 24 * 60 * 60
@@ -315,7 +345,95 @@ const ARCHIVE_MUSHAFS = {
     item: 'x02507ccccc',
     name: 'Abdulaziz Al-Turki — Saudi Center',
   },
+  /*
+   * Al-Muaiqly's mushaf recorded in the King Fahd Complex's own studio — the
+   * item description says so outright, and mp3quran's copy of the same
+   * performance carries the complex's copyright tag. Not his 2008 murattal and
+   * not the Hunain set: those run at visibly different lengths.
+   */
+  mq: {
+    item: 'mushaf-almuaiqly',
+    name: 'Maher Al-Muaiqly — King Fahd Complex',
+  },
+  /*
+   * Baleelah's studio mushaf, which is the one his own site links to. Not the
+   * copy on mp3quran under his name: that is three recordings spliced together
+   * — sixty files from this studio set, fifty-three from a Haram compilation,
+   * and one lone surah recorded on a night of Ramadan 1445.
+   */
+  bl: {
+    item: 'alfirdwsiy1433356856356835683568568568mail_002',
+    name: 'Bandar Baleela — murattal',
+  },
+  /*
+   * Al-Budair's murattal, the one published under that name in 2010 — though
+   * the recording itself is older, and was already on the aggregators in 2006.
+   * What is emphatically not this is the set the largest aggregator now serves
+   * under his name: that is a compilation of live Taraweeh from both Harams,
+   * swapped in at some point after 2011, and it is a different performance
+   * from end to end.
+   */
+  bd: {
+    item: 'Salah_Albudair_MP3_Quran',
+    name: 'Salah Al-Budair — murattal',
+  },
+  /*
+   * Ash-Shuraim's complete mushaf assembled from the Grand Mosque itself —
+   * thirty-five years of prayers, 1408 to 1443, gathered into one khatmah.
+   * That is what makes it the comprehensive one, and it is a different
+   * recording from his studio murattal of 2007.
+   *
+   * This item names its files in Arabic and carries whole-juz and combined
+   * files beside the surahs, which is what the naming rules in archiveIndex
+   * are for.
+   */
+  sr: {
+    item: 'SaudAl-Shuraim-Musshaf-AlHaramAl-Makki',
+    name: 'Saud Ash-Shuraim — from the Grand Mosque',
+  },
+  /*
+   * Ash-Shamsan's mushaf is not finished. The Saudi Center has announced it
+   * and is publishing it a surah at a time, so this holds the seventy-odd that
+   * have aired — al-Baqarah, Aal-Imran and al-Kahf are not yet among them. The
+   * floor says so, and a gap then reads as "not recorded yet".
+   */
+  ws: {
+    item: 'Waleed-Al-Shamsan',
+    name: 'Al-Waleed Ash-Shamsan — still being recorded',
+    min: 60,
+  },
 }
+
+/* ---------------- complete mushafs on quranicaudio ----------------
+ * One directory per mushaf, files named 001.mp3 .. 114.mp3, served from
+ * Google storage with ranges and CORS and no index to scrape. Nothing about a
+ * URL here expires, so a resolution is really just a string.
+ *
+ * Both sheikhs below are already in the app from sources that are still being
+ * recorded — As-Sudais at twenty surahs, Al-Juhany's Ad-Duri at eighty-three
+ * of a hundred and fourteen because a third of its files sit on hosts that
+ * are down. These are separate entries rather than a way of filling those
+ * holes: a listener choosing a mushaf is choosing a performance, and quietly
+ * splicing a different one into the middle of it is how someone ends up
+ * hearing surah 21 and surah 22 read by the same man at two different paces,
+ * years apart, with nothing on screen saying so.
+ *
+ * All 114 of each were checked with a range request before being added.
+ */
+const QURANICAUDIO = {
+  sq: {
+    path: 'abdurrahmaan_as-sudays',
+    name: 'As-Sudais — complete murattal',
+  },
+  jq: {
+    path: 'abdullaah_3awwaad_al-juhaynee',
+    name: 'Al-Juhany — complete murattal, Hafs from Asim',
+  },
+}
+
+/** Static and unsigned, so this is a name, not a lookup. */
+const resolveQuranicAudio = (site, surah) =>
+  `https://download.quranicaudio.com/quran/${site.path}/${String(surah).padStart(3, '0')}.mp3`
 
 /* ---------------- the two mosques, by year ----------------
  * Unlike the mushafs above, these are not one sheikh's. Taraweeh and Tahajjud
@@ -372,24 +490,60 @@ const ITEM_OVERRIDES = {
   'nabawi-1446': 'v202506bbbbbb',
 }
 
-async function resolveArchiveItem(item, surah, ctx) {
-  const names = JSON.parse(
-    await memo(`item-files-${item}`, HARAMAIN_PAGE_TTL, ctx, async () => {
-      const r = await fetch(`https://archive.org/metadata/${item}`)
-      if (!r.ok) throw new Error(`metadata returned ${r.status}`)
-      const j = await r.json()
-      const map = {}
-      for (const f of j.files || []) {
-        const m = /^(\d{3})[^/]*\.mp3$/i.exec(f.name)
-        if (!m) continue
-        const n = Number(m[1])
-        // First match wins: some items carry an extra 115th file.
-        if (n >= 1 && n <= 114 && !map[n]) map[n] = f.name
-      }
-      if (Object.keys(map).length < 114) throw new Error(`${item} maps only ${Object.keys(map).length} surahs`)
-      return JSON.stringify(map)
-    }),
+/**
+ * An item's surah -> filename map, cached.
+ *
+ * `min` is how many files the item must hold before it is believed. A finished
+ * mushaf has all 114, and anything less means the metadata was misread or the
+ * item is broken — serving that would present a mushaf with holes as a whole
+ * one. A mushaf still being recorded sets a lower floor, and a gap is then a
+ * fact about the recording rather than a fault.
+ *
+ * Two things the naive read got wrong. Archive derives its own copies of every
+ * file — `001_64kb.mp3` beside `001.mp3` — and they match the same pattern, so
+ * only originals are considered. And an item may name its files rather than
+ * number them alone, mixing whole-juz and combined files in among the surahs;
+ * those are dropped by name, and where two files still claim one surah the
+ * shorter name wins, which is the plain surah over a variant of it.
+ */
+async function archiveIndex(item, ctx, min = SURAH_COUNT, opts) {
+  return JSON.parse(
+    await memo(
+      `item-files-${item}`,
+      HARAMAIN_PAGE_TTL,
+      ctx,
+      async () => {
+        const r = await fetch(`https://archive.org/metadata/${item}`)
+        if (!r.ok) throw new Error(`metadata returned ${r.status}`)
+        const j = await r.json()
+        const map = {}
+        for (const f of j.files || []) {
+          // Archive's own derivatives are named like the original and are not
+          // it; a 64 kbps copy must never stand in for the file it was made
+          // from.
+          if (f.source && f.source !== 'original') continue
+          const m = /^(\d{3})[^/]*\.mp3$/i.exec(f.name)
+          if (!m) continue
+          const n = Number(m[1])
+          if (n < 1 || n > SURAH_COUNT) continue
+          // Whole juz, and two surahs in one file: both start with a number
+          // that is a surah's, and neither is that surah.
+          if (/جزء|سورتي/.test(f.name)) continue
+          // The plainest name wins, so an alternate take does not displace the
+          // surah it is an alternate of.
+          if (!map[n] || f.name.length < map[n].length) map[n] = f.name
+        }
+        const held = Object.keys(map).length
+        if (held < min) throw new Error(`${item} maps only ${held} surahs`)
+        return JSON.stringify(map)
+      },
+      opts,
+    ),
   )
+}
+
+async function resolveArchiveItem(item, surah, ctx, min) {
+  const names = await archiveIndex(item, ctx, min)
   const name = names[surah]
   if (!name) {
     const err = new Error(`surah ${surah} is not in ${item}`)
@@ -589,7 +743,15 @@ async function publishedSurahs(key, ctx, opts) {
     )
     return Object.keys(index).map(Number).sort((a, b) => a - b)
   }
-  if (ARCHIVE_MUSHAFS[key] || key === 'b') {
+  if (ARCHIVE_MUSHAFS[key]) {
+    const a = ARCHIVE_MUSHAFS[key]
+    // What the item actually holds, rather than 1..114 assumed: one of these
+    // is a mushaf still being recorded.
+    return Object.keys(await archiveIndex(a.item, ctx, a.min, opts))
+      .map(Number)
+      .sort((x, y) => x - y)
+  }
+  if (QURANICAUDIO[key] || key === 'b') {
     return Array.from({ length: SURAH_COUNT }, (_, i) => i + 1)
   }
   const err = new Error(`unknown route ${key}`)
@@ -630,15 +792,67 @@ const ROUTES = {
     resolve: (surah, ctx) => resolveHaramain(HARAMAIN.bu, surah, ctx),
     name: HARAMAIN.bu.name,
   },
+  bn: {
+    ttl: HARAMAIN_PAGE_TTL,
+    resolve: (surah, ctx) => resolveHaramain(HARAMAIN.bn, surah, ctx),
+    name: HARAMAIN.bn.name,
+  },
+  qa: {
+    ttl: HARAMAIN_PAGE_TTL,
+    resolve: (surah, ctx) => resolveHaramain(HARAMAIN.qa, surah, ctx),
+    name: HARAMAIN.qa.name,
+  },
+  sq: {
+    ttl: HARAMAIN_PAGE_TTL,
+    resolve: (surah) => resolveQuranicAudio(QURANICAUDIO.sq, surah),
+    name: QURANICAUDIO.sq.name,
+  },
+  jq: {
+    ttl: HARAMAIN_PAGE_TTL,
+    resolve: (surah) => resolveQuranicAudio(QURANICAUDIO.jq, surah),
+    name: QURANICAUDIO.jq.name,
+  },
   af: {
     ttl: HARAMAIN_PAGE_TTL,
-    resolve: (surah, ctx) => resolveArchiveItem(ARCHIVE_MUSHAFS.af.item, surah, ctx),
+    resolve: (surah, ctx) =>
+      resolveArchiveItem(ARCHIVE_MUSHAFS.af.item, surah, ctx, ARCHIVE_MUSHAFS.af.min),
     name: ARCHIVE_MUSHAFS.af.name,
   },
   az: {
     ttl: HARAMAIN_PAGE_TTL,
-    resolve: (surah, ctx) => resolveArchiveItem(ARCHIVE_MUSHAFS.az.item, surah, ctx),
+    resolve: (surah, ctx) =>
+      resolveArchiveItem(ARCHIVE_MUSHAFS.az.item, surah, ctx, ARCHIVE_MUSHAFS.az.min),
     name: ARCHIVE_MUSHAFS.az.name,
+  },
+  mq: {
+    ttl: HARAMAIN_PAGE_TTL,
+    resolve: (surah, ctx) =>
+      resolveArchiveItem(ARCHIVE_MUSHAFS.mq.item, surah, ctx, ARCHIVE_MUSHAFS.mq.min),
+    name: ARCHIVE_MUSHAFS.mq.name,
+  },
+  bl: {
+    ttl: HARAMAIN_PAGE_TTL,
+    resolve: (surah, ctx) =>
+      resolveArchiveItem(ARCHIVE_MUSHAFS.bl.item, surah, ctx, ARCHIVE_MUSHAFS.bl.min),
+    name: ARCHIVE_MUSHAFS.bl.name,
+  },
+  bd: {
+    ttl: HARAMAIN_PAGE_TTL,
+    resolve: (surah, ctx) =>
+      resolveArchiveItem(ARCHIVE_MUSHAFS.bd.item, surah, ctx, ARCHIVE_MUSHAFS.bd.min),
+    name: ARCHIVE_MUSHAFS.bd.name,
+  },
+  sr: {
+    ttl: HARAMAIN_PAGE_TTL,
+    resolve: (surah, ctx) =>
+      resolveArchiveItem(ARCHIVE_MUSHAFS.sr.item, surah, ctx, ARCHIVE_MUSHAFS.sr.min),
+    name: ARCHIVE_MUSHAFS.sr.name,
+  },
+  ws: {
+    ttl: HARAMAIN_PAGE_TTL,
+    resolve: (surah, ctx) =>
+      resolveArchiveItem(ARCHIVE_MUSHAFS.ws.item, surah, ctx, ARCHIVE_MUSHAFS.ws.min),
+    name: ARCHIVE_MUSHAFS.ws.name,
   },
 }
 

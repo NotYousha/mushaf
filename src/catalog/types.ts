@@ -42,6 +42,17 @@ export type Reciter = {
    */
   riwayah?: string
   riwayahEn?: string
+  /**
+   * Which of this sheikh's mushafs this is, in two or three words.
+   *
+   * Several men here now have more than one — As-Sudais's Saudi Center
+   * recording beside his complete murattal, Al-Juhany's Ad-Duri beside his
+   * Hafs — and the grid on "See all" shows a face and a name and nothing
+   * else, so without this they are two identical cards. Absent where the name
+   * already tells you which mushaf you are choosing, which is most of them.
+   */
+  tag?: string
+  tagEn?: string
   note?: string
   /**
    * Whether this mushaf is one of the few shown on the home screen.

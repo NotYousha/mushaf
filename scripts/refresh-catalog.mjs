@@ -156,6 +156,7 @@ const SOURCES = {
    */
   juhany: {
     route: 'j',
+    home: true,
     name: 'عبد الله الجهني',
     nameEn: 'Abdullah Al-Juhany',
     fullName: 'الشيخ عبد الله بن علي الجهني',
@@ -166,8 +167,38 @@ const SOURCES = {
     partialOk: true,
     mushaf: 'مصحف برواية الدوري عن أبي عمرو البصري',
     mushafEn: 'Mushaf in the riwayah of Ad-Duri',
+    // Two of his mushafs are here now, so the grid has to say which is which.
+    tag: 'الدوري',
+    tagEn: 'Ad-Duri',
     photo: 'juhany.webp',
     exclude: [],
+  },
+  /**
+   * Al-Juhany's complete Hafs murattal, which the Ad-Duri entry above is not.
+   *
+   * That one is stuck at eighty-three of a hundred and fourteen and will stay
+   * there while a third of its files sit on top4top subdomains that do not
+   * answer — the recordings exist, the hosting does not. This is a different
+   * mushaf of his: Hafs from Asim, all 114, on a host that serves ranges and
+   * never expires a URL.
+   *
+   * It is a separate entry rather than a filler for the other's holes. The
+   * riwayah alone settles that — Ad-Duri is different wording, so splicing
+   * Hafs into it would put a recitation under the reader that disagrees with
+   * the mushaf they chose.
+   */
+  'juhany-hafs': {
+    route: 'jq',
+    // complete; no need to ask
+    fixedCount: 114,
+    name: 'عبد الله الجهني',
+    nameEn: 'Abdullah Al-Juhany',
+    fullName: 'الشيخ عبد الله بن علي الجهني',
+    mushaf: 'المصحف المرتل الكامل — برواية حفص عن عاصم',
+    mushafEn: 'Complete murattal mushaf — Hafs from Asim',
+    tag: 'حفص',
+    tagEn: 'Hafs',
+    photo: 'juhany.webp',
   },
   /**
    * As-Sudais, still being recorded, and missing al-A'raf.
@@ -187,8 +218,36 @@ const SOURCES = {
     fullName: 'أ. د. عبد الرحمن بن عبد العزيز السديس',
     mushaf: 'المصحف المرتل — إنتاج المركز السعودي للتلاوات القرآنية',
     mushafEn: 'Murattal mushaf — Saudi Center for Quranic Recitations',
+    tag: 'المركز السعودي',
+    tagEn: 'Saudi Center',
     photo: 'imam-sudais.webp',
     note: 'ما زال قيد التسجيل — ولم تُنشر سورة الأعراف بعد.',
+  },
+  /**
+   * As-Sudais's complete murattal — the one he has been known by for years.
+   *
+   * The centre's production above is twenty surahs and has not grown since it
+   * was added; al-A'raf still has not aired. Rather than leave the most
+   * recognisable voice in the app at a sixth of a mushaf, this is the whole
+   * thing, a different and much older recording of his, at 192 kbps on a host
+   * that serves ranges.
+   *
+   * Both are kept because they are not the same performance — al-Fatiha runs
+   * 64s in the centre's and 38s here — and a reader who picked one should not
+   * silently be handed the other partway through.
+   */
+  'sudais-murattal': {
+    route: 'sq',
+    // complete; no need to ask
+    fixedCount: 114,
+    name: 'عبد الرحمن السديس',
+    nameEn: 'Abdurrahman As-Sudais',
+    fullName: 'أ. د. عبد الرحمن بن عبد العزيز السديس',
+    mushaf: 'المصحف المرتل الكامل',
+    mushafEn: 'Complete murattal mushaf',
+    tag: 'كامل',
+    tagEn: 'Complete',
+    photo: 'imam-sudais.webp',
   },
   buayjan: {
     route: 'bu',
@@ -197,8 +256,41 @@ const SOURCES = {
     fullName: 'أ. د. عبد الله بن عواد البعيجان',
     mushaf: 'المصحف المرتل — إنتاج المركز السعودي للتلاوات القرآنية',
     mushafEn: 'Murattal mushaf — Saudi Center for Quranic Recitations',
+    tag: 'المركز السعودي',
+    tagEn: 'Saudi Center',
     photo: 'imam-buayjan.webp',
     note: 'ما زال قيد التسجيل — تُضاف السور الجديدة تلقائيًا.',
+  },
+  /**
+   * Al-Buayjan's mushaf from the Prophet's Mosque, all 114 of it.
+   *
+   * The centre's production above stops at 77. This is his complete one, and
+   * a different recording again — five to twenty-three per cent apart from
+   * the centre's across the surahs both hold, which is a different night, not
+   * a different encode.
+   */
+  'buayjan-nabawi': {
+    route: 'bn',
+    name: 'عبد الله البعيجان',
+    nameEn: "Abdullah Al-Bu'ayjan",
+    fullName: 'أ. د. عبد الله بن عواد البعيجان',
+    mushaf: 'المصحف المرتل من المسجد النبوي',
+    mushafEn: "Murattal mushaf from the Prophet's Mosque",
+    tag: 'المسجد النبوي',
+    tagEn: "Prophet's Mosque",
+    photo: 'imam-buayjan.webp',
+    /**
+     * Eight short surahs the length check reads as too long, and they are not.
+     *
+     * He recites the short ones slowly here — the ratio climbs smoothly the
+     * shorter the surah gets, from 1.05x around surah 70 to 1.90x at
+     * al-Aadiyaat, which is a pace, not a shuffle: files holding each other's
+     * recitations scatter, they do not form a gradient. Every one of these
+     * was then confirmed from the file's own ID3 title, which names the surah
+     * it is served as — "سورة العاديات" in the file for 100, and so on for
+     * all eight. Excluding them would drop eight surahs he really did record.
+     */
+    titleConfirmed: [80, 82, 92, 93, 95, 99, 100, 101],
   },
   /**
    * Al-Afasy's Hafs from the Ten Readings mushaf of 1445.
@@ -229,6 +321,7 @@ const SOURCES = {
    */
   'turki-abdulaziz': {
     route: 'az',
+    home: true,
     // complete
     fixedCount: 114,
     name: 'عبد العزيز التركي',
@@ -248,6 +341,130 @@ const SOURCES = {
      */
     remap: { 33: 34, 34: 33, 43: 45, 44: 43, 45: 44, 48: 49, 49: 48 },
     exclude: [],
+  },
+  /**
+   * Al-Budair's murattal, published under that name in 2010.
+   *
+   * The recording is older than the publication — its tags say 2007 and it was
+   * on the aggregators by 2006 — so 2010 is when it was compiled and released,
+   * not when it was read.
+   *
+   * What this is emphatically not is the set the largest aggregator now serves
+   * under his name. That was swapped in at some point after 2011 and is a
+   * compilation of live Taraweeh from both Harams: a different performance
+   * from end to end, at a different pace, in a different place.
+   */
+  budair: {
+    route: 'bd',
+    // complete
+    fixedCount: 114,
+    name: 'صلاح البدير',
+    nameEn: 'Salah Al-Budair',
+    fullName: 'الشيخ صلاح بن محمد البدير',
+    mushaf: 'المصحف المرتل',
+    mushafEn: 'Murattal mushaf',
+    photo: 'imam-budair.webp',
+  },
+  /**
+   * Ash-Shuraim's complete mushaf, assembled from the Grand Mosque itself.
+   *
+   * Thirty-five years of prayers — 1408 to 1443 — gathered into one khatmah,
+   * which is what makes it the comprehensive one and what makes it a different
+   * recording from his studio murattal of 2007. It is a curated compilation
+   * rather than an official label release, and it is the only thing anywhere
+   * that carries this title.
+   */
+  shuraim: {
+    route: 'sr',
+    // complete
+    fixedCount: 114,
+    name: 'سعود الشريم',
+    nameEn: 'Saud Ash-Shuraim',
+    fullName: 'أ. د. سعود بن إبراهيم الشريم',
+    mushaf: 'المصحف الكامل من الحرم المكي',
+    mushafEn: 'The complete mushaf, from the Grand Mosque',
+    photo: 'imam-shuraim.webp',
+  },
+  /**
+   * Al-Muaiqly's mushaf recorded in the King Fahd Complex's own studio.
+   *
+   * His own site lists exactly one album from the complex and calls it the
+   * mujawwad, so "the new one from the King Fahd Complex" and "the mujawwad"
+   * are the same recording. Not his 2008 murattal, which is what most sites
+   * still serve under his name, and not the Hunain set: both run at visibly
+   * different lengths.
+   */
+  muaiqly: {
+    route: 'mq',
+    // complete
+    fixedCount: 114,
+    name: 'ماهر المعيقلي',
+    nameEn: 'Maher Al-Muaiqly',
+    fullName: 'الشيخ ماهر بن حمد المعيقلي',
+    mushaf: 'المصحف المجوَّد — مجمع الملك فهد لطباعة المصحف الشريف',
+    mushafEn: 'Mujawwad mushaf — King Fahd Glorious Qur’an Printing Complex',
+    photo: 'imam-muaiqly.webp',
+  },
+  /**
+   * Baleelah's studio murattal — the one his own site links to.
+   *
+   * Not the copy the largest aggregator serves under his name: that is three
+   * recordings spliced together, sixty files from this studio set, fifty-three
+   * from a Haram compilation, and one lone surah read on a night of Ramadan
+   * 1445. The only host that carries all 114 of the studio set encodes it at
+   * about 64 kbps, which is poorer than anything else here and is the price of
+   * having it whole and consistent.
+   */
+  baleela: {
+    route: 'bl',
+    // complete
+    fixedCount: 114,
+    name: 'بندر بليلة',
+    nameEn: 'Bandar Baleela',
+    fullName: 'الشيخ بندر بن عبد العزيز بليلة',
+    mushaf: 'المصحف المرتل — برواية حفص عن عاصم',
+    mushafEn: 'Murattal mushaf — Hafs from Asim',
+    photo: 'imam-baleela.webp',
+  },
+  /**
+   * Al-Qarafi, in the riwayah of Hafs from Asim — every file of the other
+   * published copy says so in its tags, as does this collection's own page.
+   *
+   * Both copies in circulation are compilations rather than one mastered
+   * album: the encoding changes from surah to surah and the pace changes with
+   * it. This is the more coherent of the two, and the length check below drops
+   * whatever still does not belong.
+   */
+  qarafi: {
+    route: 'qa',
+    name: 'عبد الله القرافي',
+    nameEn: 'Abdullah Al-Qarafi',
+    fullName: 'د. عبد الله القرافي',
+    mushaf: 'المصحف المرتل — برواية حفص عن عاصم',
+    mushafEn: 'Murattal mushaf — Hafs from Asim',
+    photo: 'imam-qarafi.webp',
+  },
+  /**
+   * Ash-Shamsan's mushaf, which is not finished.
+   *
+   * The Saudi Center has announced it and is releasing it a surah at a time,
+   * so this is the seventy-odd that have aired — al-Baqarah, Aal-Imran and
+   * al-Kahf are not yet among them. Published as what it is rather than held
+   * back: a listener can hear what exists, and the rest arrives as it is
+   * recorded.
+   */
+  shamsan: {
+    route: 'ws',
+    name: 'الوليد الشمسان',
+    nameEn: 'Al-Waleed Ash-Shamsan',
+    fullName: 'الشيخ الوليد بن عبد الله الشمسان',
+    mushaf: 'المصحف المرتل',
+    mushafEn: 'Murattal mushaf',
+    photo: 'imam-shamsan.webp',
+    note: 'ما زال قيد التسجيل — تُضاف السور الجديدة تلقائيًا.',
+    // Its files are spread over a range of encodes and some are demonstrably
+    // a different take; the length check keeps only what fits.
+    partialOk: true,
   },
 }
 
@@ -421,6 +638,10 @@ async function refresh(id) {
     for (const [surah, m] of measured) {
       const letters = lettersIn(surah)
       if (letters < MIN_LETTERS) continue
+      // Identity settled some other way outranks a length that merely looks
+      // odd. The check is a proxy for "is this the right surah", so where
+      // that question already has a better answer, the proxy has no vote.
+      if (src.titleConfirmed?.includes(surah)) continue
       const factor = m.seconds / letters / median
       if (factor > 1.45 || factor < 0.69) mismatched.push({ surah, factor })
     }
@@ -458,6 +679,9 @@ async function refresh(id) {
     ...(src.home ? { home: true } : {}),
     // Absent means Hafs, which is what everything else assumes.
     ...(src.riwayah ? { riwayah: src.riwayah, riwayahEn: src.riwayahEn } : {}),
+    // Which of this sheikh's mushafs this is, for the grid that shows only
+    // faces and names. Absent where the name is already unambiguous.
+    ...(src.tag ? { tag: src.tag, tagEn: src.tagEn } : {}),
     ...(src.note ? { note: src.note } : {}),
     source: `${WORKER}/${src.route}/{surah}.mp3`,
     photo: src.photo,

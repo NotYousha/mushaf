@@ -10,6 +10,14 @@ export type HomeFace = {
   src: string | null
   /** Percentages for background-size and background-position. */
   frame: { zoom: number; x: number; y: number } | null
+  /**
+   * Which of this sheikh's mushafs this card is, when another card in the
+   * same grid carries his name and face too.
+   *
+   * Null for everyone the name already identifies, which is most of them —
+   * see the tag comment in catalog/types.ts.
+   */
+  tag?: string | null
 }
 
 /** Where the listener stopped, with everything needed to say it out loud. */
