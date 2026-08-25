@@ -13,9 +13,27 @@
  */
 import { writeFileSync, mkdirSync } from 'node:fs'
 
+/*
+ * Noto Nastaliq Urdu is here for one reason: Urdu is not Arabic.
+ *
+ * Both are written in the Arabic script, so a naskh face renders Urdu without
+ * complaint and the app looked finished. To someone who reads Urdu it is not:
+ * Urdu is set in nastaliq, sloping down from right to left, and naskh reads
+ * the way a serif newspaper face would read if it were used for handwriting.
+ * The letters are right and the language looks wrong.
+ *
+ * It costs more than the others -- nastaliq needs thousands of ligatures to
+ * join at the correct angle, and there is no honest way to make that small.
+ * It is only ever fetched by a reader who has chosen Urdu, because nothing
+ * else on the page asks for it.
+ */
 const FAMILIES =
   'family=Aref+Ruqaa:wght@400;700&family=Amiri:wght@400;700&family=Amiri+Quran' +
-  '&family=IBM+Plex+Sans+Arabic:wght@400;500;600'
+  '&family=IBM+Plex+Sans+Arabic:wght@400;500;600' +
+    // One weight only: Google returns byte-identical files for 400 and 600,
+  // because the family has no true bold. Asking for both shipped the same
+  // 239 KB twice. Urdu typography does not lean on bold anyway.
+  '&family=Noto+Nastaliq+Urdu:wght@400'
 
 // Google serves woff2 only to browsers that advertise support.
 const UA =

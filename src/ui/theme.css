@@ -139,6 +139,78 @@
   --font-name: var(--font-ui);
 }
 
+/*
+ * Urdu is not Arabic, and a naskh face is the wrong answer for it.
+ *
+ * Both are written in the Arabic script, so IBM Plex Sans Arabic rendered
+ * every Urdu string without complaint and the interface looked finished. To a
+ * reader of Urdu it was not: Urdu is set in nastaliq, which slopes down from
+ * right to left, and naskh reads roughly the way a serif newspaper face would
+ * read if it were used to set handwriting. The letters were right and the
+ * language looked wrong.
+ *
+ * Only the interface changes. Surah names, the mushaf and every proper noun
+ * stay in Amiri, because they are Arabic — the same distinction the app
+ * already makes when it decides which script to write a reciter's name in.
+ */
+:root[lang='ur'] {
+  --font-ui: 'Noto Nastaliq Urdu', 'IBM Plex Sans Arabic', system-ui, sans-serif;
+}
+
+/*
+ * A heading is translated; a name is not.
+ *
+ * --font-name was doing both jobs and they part company here. In Urdu a
+ * heading is Urdu and wants nastaliq, but a proper noun is still written in
+ * Arabic -- the app deliberately shows ياسر الدوسري rather than a
+ * transliteration to a reader of this script -- and Arabic set in nastaliq
+ * reads as a language it is not. Al-Lazuward and "سواد الكعبة وذهبها" came
+ * out sloping, which is wrong twice over.
+ */
+:root[lang='ur'] .panel h2,
+:root[lang='ur'] .dialog h3,
+:root[lang='ur'] .hifz-h,
+:root[lang='ur'] .sheet-head h1,
+:root[lang='ur'] .imams-intro,
+:root[lang='ur'] .imam-section {
+  font-family: var(--font-ui);
+}
+
+/*
+ * Nastaliq needs the room its diagonal takes.
+ *
+ * A word descends across most of its own line, so lines set at the leading
+ * that suits a sans collide -- the tail of one word crosses the head of the
+ * next. This is generous on purpose; it is what the script costs.
+ *
+ * Given to running text only. Set on the body it also stretched every chip,
+ * label and year row, each of which sizes itself to one line of a face that
+ * needs far less, and they all overflowed by a few pixels at once.
+ */
+:root[lang='ur'] p,
+:root[lang='ur'] h1,
+:root[lang='ur'] h2,
+:root[lang='ur'] h3 {
+  line-height: 1.85;
+}
+
+/*
+ * No synthetic bold on nastaliq.
+ *
+ * The family has one weight, so a browser asked for 600 or 700 smears the
+ * outline to fake it, and on a script this fine the joins turn to mud.
+ * Hierarchy in Urdu comes from size and colour, which the type scale already
+ * provides.
+ */
+:root[lang='ur'] .panel h2,
+:root[lang='ur'] .dialog h3,
+:root[lang='ur'] .hifz-h,
+:root[lang='ur'] .imam-head h2,
+:root[lang='ur'] .sheet-head h1,
+:root[lang='ur'] .now-who {
+  font-weight: 400;
+}
+
 * {
   box-sizing: border-box;
   -webkit-tap-highlight-color: transparent;
@@ -1606,7 +1678,6 @@ body {
   font-size: var(--text-sm);
   font-weight: 700;
   color: var(--ink-strong);
-  letter-spacing: 0.01em;
 }
 
 /* ============ Talqeen Mode ============ */
@@ -2110,7 +2181,6 @@ body {
 /* The other script, small: the name is new, and each half teaches the other. */
 .wordmark-alt {
   font-size: var(--text-xs);
-  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--gold);
 }
@@ -2329,6 +2399,7 @@ body {
   text-align: start;
   position: relative;
   overflow: hidden;
+  flex-wrap: wrap;
 }
 
 .theme-card.is-on {
@@ -2379,17 +2450,34 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  /* What a theme is named after, written in the same script as the name
+     above it -- so it follows --font-name and not the interface face. In
+     Urdu that keeps "سواد الكعبة وذهبها" in Amiri, which is the language it
+     is actually in. */
+  font-family: var(--font-name);
 }
 
 /* Said once, on the two themes built around a dark screen. */
+/*
+ * The hint sits under the name, not on top of it.
+ *
+ * Absolutely positioned in the card's top corner it overlapped the theme's
+ * name as soon as the translation ran long -- in Urdu "رات کے لیے بنائی گئی"
+ * printed straight through الكسوة. A corner badge only works for a phrase
+ * short in every language, and this one is not.
+ *
+ * The letter-spacing went with it. Arabic and Urdu are cursive: spacing the
+ * letters apart cuts the joins between them and leaves a row of disconnected
+ * shapes, which is why it is never used on this script.
+ */
 .theme-hint {
-  position: absolute;
-  inset-inline-end: 0.5rem;
-  top: 0.4rem;
+  position: static;
+  order: 3;
+  width: 100%;
   font-size: var(--text-xs);
-  letter-spacing: 0.04em;
   color: var(--sw-accent);
   opacity: 0.9;
+  text-align: start;
 }
 
 .theme-card:focus-visible {
@@ -3041,8 +3129,6 @@ body {
 .imam-section {
   font-size: var(--text-xs);
   font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
   color: var(--muted);
   margin: 1.3rem 0 0.5rem;
 }
@@ -3349,4 +3435,47 @@ body {
 
 .diag-verdict.is-no {
   color: var(--warn);
+}
+
+/*
+ * Room for the tails in the tight controls.
+ *
+ * Nastaliq puts a lot of a word below its baseline, and these boxes were
+ * sized around a face that puts almost nothing there — so a chip name and a
+ * dock label had their descenders cut off. The line box is opened up rather
+ * than the font shrunk: shrinking is what makes nastaliq unreadable.
+ *
+ * The dock gives back the gap between icon and label to pay for it, so the
+ * bar itself does not grow.
+ */
+:root[lang='ur'] .dock-tab {
+  gap: 0;
+  line-height: 1.5;
+  /* 9.9px of nastaliq is a smudge. This is the smallest it can honestly be
+     set, and the label still fits because Urdu tab names are short. */
+  font-size: 0.74rem;
+}
+
+/* The pill has to grow for the tail of سسٹم, or the glyph sits outside it. */
+:root[lang='ur'] .seg button {
+  line-height: 1.8;
+}
+
+/*
+ * Tracking and uppercasing belong to Latin.
+ *
+ * Arabic and Urdu are cursive scripts: letter-spacing pulls the letters of a
+ * word apart at exactly the points where they are meant to join, and
+ * text-transform has nothing to uppercase. Both are applied only where the
+ * label is actually Latin.
+ */
+:root[dir='ltr'] .imam-section {
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* The same rule for the wordmark's second line, which is Arabic in two of
+   the five languages and was being spaced apart in both. */
+:root[dir='ltr'] .wordmark-alt {
+  letter-spacing: 0.06em;
 }
