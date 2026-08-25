@@ -25,6 +25,15 @@ export const ar: Strings = {
   favouritesEmpty:
     'لا شيء بعد. اضغط النجمة أثناء الاستماع وستجدها هنا.',
   favouritesCount: (n: number | string) => `${n} محفوظة`,
+  imams: 'حسب القارئ',
+  imamsIntro: 'الأئمة المنسوبة إليهم التلاوات، وكل سورة قرأوها.',
+  imamsBack: 'كل القرّاء',
+  // Arabic number agreement is not a plural switch, and "57 سورة" is how
+  // it is written in practice, so the count never changes the noun.
+  imamSurahs: (n: number | string) => `${n} سورة`,
+  imamYears: (n: number | string) => `${n} سنة`,
+  imamHours: (n: number | string) => `${n} ساعة`,
+  imamFrom: (at: string) => `من ${at}`,
   facesExport: 'حفظ الصور في ملف',
   faceSourceYours: 'صورتك',
   faceSourceApp: 'من التطبيق',

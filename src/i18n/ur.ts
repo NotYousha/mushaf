@@ -26,6 +26,13 @@ export const ur: Strings = {
   favouritesEmpty:
     'ابھی کچھ نہیں۔ سننے کے دوران ستارہ دبائیں، یہاں محفوظ ہو جائے گا۔',
   favouritesCount: (n: number | string) => `${n} محفوظ`,
+  imams: 'قاری کے اعتبار سے',
+  imamsIntro: 'جن ائمہ کے نام ریکارڈنگ میں درج ہیں، اور اُن کی ہر سورت۔',
+  imamsBack: 'تمام قاری',
+  imamSurahs: (n: number | string, one: boolean) => `${n} ${one ? 'سورت' : 'سورتیں'}`,
+  imamYears: (n: number | string) => `${n} سال`,
+  imamHours: (n: number | string, one: boolean) => `${n} ${one ? 'گھنٹہ' : 'گھنٹے'}`,
+  imamFrom: (at: string) => `${at} سے`,
   facesExport: 'تصاویر فائل میں محفوظ کریں',
   faceSourceYours: 'آپ کی تصویر',
   faceSourceApp: 'ایپ کی تصویر',

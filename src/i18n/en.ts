@@ -31,6 +31,17 @@ export const en = {
   favouritesEmpty:
     'Nothing starred yet. Tap the star while something is playing and it will be here.',
   favouritesCount: (n: number | string) => `${n} saved`,
+  /** Browsing the archive by the man reciting rather than by the year. */
+  imams: 'By reciter',
+  // Honest about its reach: only the years whose recordings name their
+  // reciters can appear here, which is not yet all of them.
+  imamsIntro: 'The imams the archive names, and every surah they lead.',
+  imamsBack: 'All reciters',
+  imamSurahs: (n: number | string, one: boolean) => `${n} ${one ? 'surah' : 'surahs'}`,
+  imamYears: (n: number | string, one: boolean) => `${n} ${one ? 'year' : 'years'}`,
+  imamHours: (n: number | string, one: boolean) => `${n} ${one ? 'hour' : 'hours'}`,
+  /** Precedes a time, where an imam takes over partway into a surah. */
+  imamFrom: (at: string) => `from ${at}`,
   facesExport: 'Save photos to a file',
   faceSourceYours: 'your photo',
   faceSourceApp: 'comes with the app',

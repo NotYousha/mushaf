@@ -26,6 +26,13 @@ export const fr: Strings = {
   favouritesEmpty:
     'Rien pour l’instant. Touchez l’étoile pendant l’écoute et cela apparaîtra ici.',
   favouritesCount: (n: number | string) => `${n} enregistrées`,
+  imams: 'Par récitateur',
+  imamsIntro: 'Les imams que l’archive nomme, et chaque sourate qu’ils récitent.',
+  imamsBack: 'Tous les récitateurs',
+  imamSurahs: (n: number | string, one: boolean) => `${n} ${one ? 'sourate' : 'sourates'}`,
+  imamYears: (n: number | string, one: boolean) => `${n} ${one ? 'an' : 'ans'}`,
+  imamHours: (n: number | string, one: boolean) => `${n} ${one ? 'heure' : 'heures'}`,
+  imamFrom: (at: string) => `à partir de ${at}`,
   facesExport: 'Enregistrer les photos',
   faceSourceYours: 'votre photo',
   faceSourceApp: 'fournie par l’app',

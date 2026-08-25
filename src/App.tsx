@@ -41,6 +41,7 @@ import { getQuota, requestPersistence, canDownloadAll } from './storage/quota'
 import { SurahList, plainName } from './ui/SurahList'
 import { VerifyPanel } from './ui/VerifyPanel'
 import { FavouritesPanel } from './ui/FavouritesPanel'
+import { ImamPanel } from './ui/ImamPanel'
 import { FacePanel } from './ui/FacePanel'
 import { MushafView, ayahStartsFor } from './ui/MushafView'
 import { HifzBoard } from './ui/HifzBoard'
@@ -743,6 +744,42 @@ export default function App() {
   }
 
   /**
+   * Play a surah belonging to some other reciter, optionally partway in.
+   *
+   * Switching reciter is a state change, so the catalogue the player reads
+   * does not exist yet at the moment the switch is asked for. Calling
+   * playSurah straight afterwards therefore looks the surah up in the
+   * outgoing reciter's list and plays the wrong recording — silently, because
+   * the surah number is valid in both. The request is instead parked until
+   * the new catalogue has arrived and then honoured.
+   */
+  const [pendingPlay, setPendingPlay] = useState<{
+    id: string
+    surah: number
+    at: number
+  } | null>(null)
+
+  const requestPlay = useCallback(
+    (id: string, surah: number, at = 0) => {
+      if (id === reciterId) {
+        void playSurah(surah, at)
+        return
+      }
+      setPendingPlay({ id, surah, at })
+      void switchReciter(id)
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [reciterId, playSurah],
+  )
+
+  useEffect(() => {
+    if (!pendingPlay || pendingPlay.id !== reciterId || !surahs.length) return
+    const { surah, at } = pendingPlay
+    setPendingPlay(null)
+    void playSurah(surah, at)
+  }, [pendingPlay, reciterId, surahs, playSurah])
+
+  /**
    * Jump by a fixed number of seconds, clamped to the recording.
    *
    * Clamping at both ends matters here: these are two-hour Taraweeh files, and
@@ -1283,14 +1320,24 @@ export default function App() {
                 reciters={reciters}
                 surahMeta={surahMeta}
                 onPlay={(id, surah) => {
-                  if (id !== reciterId) void switchReciter(id)
-                  void playSurah(surah)
+                  requestPlay(id, surah)
                   setTab('quran')
                 }}
                 onRemove={(key) => {
                   const next = favourites.filter((k) => k !== key)
                   setFavourites(next)
                   void setPref('favourites', next)
+                }}
+              />
+
+              <ImamPanel
+                t={t}
+                lang={lang}
+                surahMeta={surahMeta}
+                faces={faces}
+                onPlay={(id, surah, at) => {
+                  requestPlay(id, surah, at)
+                  setTab('quran')
                 }}
               />
 

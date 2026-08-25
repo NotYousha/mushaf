@@ -93,6 +93,19 @@ export function imamsOf(place: Place, year: number): { name: string; nameEn: str
 }
 
 /** Why a year is missing, for anyone who goes looking for it. */
+/**
+ * How long a surah runs in a given year, in seconds, or null where the build
+ * could not read a duration.
+ *
+ * Published by the build alongside the byte counts and otherwise unused. It is
+ * what lets a reciter's page say how much of him there is to hear, and what
+ * gives an unbounded stretch of a shared surah an end.
+ */
+export function surahSeconds(place: Place, year: number, surah: number): number | null {
+  const secs = rowsOf(place).find((r) => r.year === year)?.secs?.[surah - 1]
+  return typeof secs === 'number' && secs > 0 ? secs : null
+}
+
 export const excludedYears = (place: Place) => doc.excluded?.[place] ?? {}
 
 export type Imam = {
