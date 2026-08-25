@@ -212,6 +212,28 @@ export class PlayerEngine {
   async play() {
     try {
       await this.el.play()
+      /**
+       * Register the handlers again, now that there is certainly a session.
+       *
+       * setActionHandler does two things: it stores the handler, and it tells
+       * the system that this control exists. The second only happens if a
+       * media session manager exists at that moment — WebKit logs "NULL
+       * session manager" and skips it otherwise — and at page load, before a
+       * note has been played, there is none.
+       *
+       * So the handlers registered in the constructor were stored but never
+       * announced. Storing them is enough to make the browser hand us every
+       * remote command instead of acting on them itself, and announcing them
+       * is what makes the system draw the control at all. The lock screen
+       * therefore had a scrubber it would not let anyone drag, and a seek
+       * handler waiting for a command that was never going to come.
+       *
+       * The transport buttons escaped this only by accident: they are
+       * re-registered after every surah starts, which is to say after a
+       * session exists. This does the same for the rest of them, and play()
+       * resolving is the moment that is guaranteed to be true.
+       */
+      registerMediaHandlers(this.handlers)
       return true
     } catch (e) {
       // Autoplay policy, or the source failed. Surface it rather than

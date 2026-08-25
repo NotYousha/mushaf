@@ -1,6 +1,11 @@
 import { useEffect, useState } from 'react'
 import type { Strings } from '../i18n'
-import { remoteLog, registeredActions, type RemoteEvent } from '../player/mediaSession'
+import {
+  remoteLog,
+  registeredActions,
+  clearRemoteLog,
+  type RemoteEvent,
+} from '../player/mediaSession'
 
 type Props = {
   t: Strings
@@ -57,6 +62,8 @@ export function LockScreenPanel({ t, el }: Props) {
     return () => clearInterval(id)
   }, [el])
 
+  const seeks = events.filter((e) => e.action === 'seekto').length
+
   const report = [
     ...Object.entries(state).map(([k, v]) => `${k}: ${v}`),
     '',
@@ -82,6 +89,19 @@ export function LockScreenPanel({ t, el }: Props) {
         ))}
       </dl>
 
+      {/*
+          The one line that decides which of two opposite fixes is needed.
+
+          A scrubber that will not move either never sent us the command or
+          sent one we mishandled, and nothing else on this screen separates
+          those two. Everything below is detail; this is the answer.
+      */}
+      <p className={`diag-verdict${seeks ? ' is-yes' : ' is-no'}`}>
+        {seeks
+          ? `The phone has asked this app to seek ${seeks} time${seeks === 1 ? '' : 's'}.`
+          : 'The phone has never asked this app to seek.'}
+      </p>
+
       <h3 className="diag-h">Commands received</h3>
       {events.length === 0 ? (
         <p className="diag-empty">{t.lockScreenNone}</p>
@@ -102,6 +122,20 @@ export function LockScreenPanel({ t, el }: Props) {
             ))}
         </ol>
       )}
+
+      <button
+        type="button"
+        className="diag-copy"
+        onClick={() => {
+          setCopied(false)
+          clearRemoteLog()
+          setEvents([])
+        }}
+      >
+        {/* Unlocalised like the rest of this panel: it is the one screen
+            written for the person fixing the app, not for a reader. */}
+        Start a fresh recording
+      </button>
 
       <button
         type="button"

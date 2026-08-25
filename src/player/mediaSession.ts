@@ -28,19 +28,63 @@ export type RemoteEvent = {
   at: number
   seekTime?: number
   fastSeek?: boolean
+  /** For anything the app noticed itself rather than was told. */
+  detail?: string
 }
 
-const LOG_MAX = 24
-const log: RemoteEvent[] = []
+const LOG_MAX = 40
+/**
+ * Where the log lives between one look and the next.
+ *
+ * An in-memory array was useless for the thing it was built for. The whole
+ * point is to find out what the system sends while the phone is locked — and
+ * a locked phone is exactly when iOS is free to suspend or discard the page,
+ * so by the time anyone unlocks and goes looking, the array is empty and the
+ * answer is gone. Written through to storage on arrival instead, where it
+ * survives suspension, a reload, and the app being closed.
+ */
+const LOG_KEY = 'mushaf.remotelog'
+
+function load(): RemoteEvent[] {
+  try {
+    const raw = localStorage.getItem(LOG_KEY)
+    const parsed = raw ? JSON.parse(raw) : null
+    return Array.isArray(parsed) ? (parsed as RemoteEvent[]) : []
+  } catch {
+    // Private mode, blocked site data, or something else wrote nonsense here.
+    return []
+  }
+}
+
+const log: RemoteEvent[] = load()
 const registered = new Set<string>()
 
 function note(e: RemoteEvent) {
   log.push(e)
   if (log.length > LOG_MAX) log.shift()
+  try {
+    localStorage.setItem(LOG_KEY, JSON.stringify(log))
+  } catch {
+    // Storage is a convenience here; losing it must not break playback.
+  }
+}
+
+/** Record something the app noticed, alongside what the system asked for. */
+export function noteFact(what: string, detail?: string) {
+  note({ action: what, at: Math.round(performance.now()), detail })
 }
 
 export const remoteLog = (): RemoteEvent[] => [...log]
 export const registeredActions = (): string[] => [...registered].sort()
+
+export function clearRemoteLog() {
+  log.length = 0
+  try {
+    localStorage.removeItem(LOG_KEY)
+  } catch {
+    /* nothing to clear */
+  }
+}
 
 /**
  * Whether this system's Now Playing screen would hide the surah buttons.
@@ -277,8 +321,10 @@ export function setPosition(el: HTMLAudioElement, force = false) {
       position: Math.min(Math.max(el.currentTime, 0), duration),
       playbackRate: ratePhase ? real * 1.0001 : real,
     })
-  } catch {
-    // Position state is best-effort; never let it break playback.
+  } catch (e) {
+    // A refusal here is otherwise completely silent, and it matters: without
+    // a position state the system has no playhead to move.
+    noteFact('setPositionState refused', e instanceof Error ? e.message : String(e))
   }
 }
 

@@ -3322,3 +3322,18 @@ body {
   white-space: nowrap;
   border: 0;
 }
+
+/* The one line on the diagnostic that decides which fix is needed. */
+.diag-verdict {
+  margin: 1.2rem 0 0;
+  padding: 0.6rem 0.8rem;
+  border-radius: 0.7rem;
+  font-size: var(--text-xs);
+  border: 1px solid var(--accent-line);
+  background: var(--card-2);
+  color: var(--ink);
+}
+
+.diag-verdict.is-no {
+  color: var(--warn);
+}
