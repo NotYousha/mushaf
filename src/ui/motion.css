@@ -99,8 +99,6 @@
 
 .splash-alt {
   font-size: 0.72rem;
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
   color: var(--accent-deep);
   /* Tracking pushes the text off-centre, so the last letter's space is
      given back on the other side. */
@@ -759,4 +757,10 @@
   .controls {
     animation: none;
   }
+}
+
+/* The splash's second line is tracked hard, and only if it is Latin. */
+.splash-alt.trk {
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
 }

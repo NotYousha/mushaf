@@ -114,7 +114,7 @@ import {
   nextChangeAfter,
   segmentsFor,
 } from './catalog/segments'
-import { digits, inScript, isArabicScript } from './i18n/script'
+import { digits, inScript, isArabicScript, isLatinText } from './i18n/script'
 import { Splash } from './ui/Splash'
 import { BUILD } from './pwa'
 import './ui/theme.css'
@@ -525,7 +525,7 @@ export default function App() {
       )
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [surahs, playable, speedIdx, reciter, downloadedHere, rejected],
+    [surahs, playable, speedIdx, reciter, downloadedHere, rejected, repeat],
   )
 
   const advance = useCallback(async () => {
@@ -1366,10 +1366,15 @@ export default function App() {
         return
       }
       if (current === null) return
-      // Left and right are mirrored in an RTL interface: back is the side
-      // the text runs from.
-      const back = t.dir === 'rtl' ? 'ArrowRight' : 'ArrowLeft'
-      const forward = t.dir === 'rtl' ? 'ArrowLeft' : 'ArrowRight'
+      /*
+       * Not mirrored. The scrubber is `direction: ltr` in every language —
+       * pinned, so a clock reads the way a clock reads — which means the
+       * playhead always moves right as it advances. Mirroring these keys made
+       * ArrowRight run the recitation backwards in Arabic, and disagreed with
+       * the track's own key handler, which never mirrored.
+       */
+      const back = 'ArrowLeft'
+      const forward = 'ArrowRight'
       if (e.key === back) {
         e.preventDefault()
         engine.current!.seek(Math.max(0, time - 10))
@@ -1434,7 +1439,15 @@ export default function App() {
           <h1 className="wordmark">
             <span className="wordmark-main">{brandName(lang)}</span>
             <span className="wordmark-alt">
-              {brandSecondary(lang)} · {t.appTitle}
+              <span className={isLatinText(brandSecondary(lang)) ? 'trk' : undefined}>
+                {brandSecondary(lang)}
+              </span>
+              <span className="trk-sep" aria-hidden="true">
+                ·
+              </span>
+              <span className={isLatinText(t.appTitle) ? 'trk' : undefined}>
+                {t.appTitle}
+              </span>
             </span>
           </h1>
           <div className="head-actions">

@@ -37,12 +37,15 @@ describe('interface direction', () => {
    */
   it('keeps pinned directions to the deliberate islands', () => {
     const pinned = css.match(/^\s*direction:\s*(rtl|ltr);/gm) ?? []
-    // 16: the fourteen scripture and numeral islands; .controls-aux, pinned
+    // 17: the fourteen scripture and numeral islands; .controls-aux, pinned
     // for the same reason .controls is, since a transport reads left to right
     // in every language like a video scrubber; and the lock-screen diagnostic,
     // whose values are raw browser state rather than anything written in the
     // reader's language.
-    expect(pinned.length).toBeLessThanOrEqual(16)
+    expect(pinned.length).toBeLessThanOrEqual(17)
+    // The seventeenth is .meter, pinned so the storage bar fills the same
+    // way as the transport bar. Its own `margin-inline-end: auto` did nothing:
+    // a sized block with a zero start margin already sits at the inline start.
   })
 
   // These broke the main layout: a row that hugged the wrong edge, a search

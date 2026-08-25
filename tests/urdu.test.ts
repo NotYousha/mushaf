@@ -53,8 +53,17 @@ describe('Urdu typography', () => {
     const offenders: string[] = []
     for (const m of css.matchAll(/(?<sel>[^{}]+)\{(?<body>[^{}]*letter-spacing[^{}]*)\}/g)) {
       const sel = m.groups!.sel.trim().split('\n').pop()!.trim()
-      // Already behind a Latin-only guard, which is the point of the rule.
-      if (sel.includes("[dir='ltr']")) continue
+      /*
+       * Already behind a Latin-only guard, which is the point of the rule.
+       *
+       * `.trk` is the stronger form of that guard. `[dir='ltr']` guesses the
+       * script from the reader's direction, which is wrong for a line that
+       * deliberately carries the *other* script — the wordmark's second line
+       * was tracked in exactly the three languages the guard was written to
+       * protect. A `.trk` class is put on a run only where isLatinText says
+       * that run is Latin, so it cannot be on Arabic whatever the direction.
+       */
+      if (sel.includes("[dir='ltr']") || sel.endsWith('.trk')) continue
       // These hold Latin in every language: a percentage, an English-only
       // diagnostic heading.
       if (['.mini-pct', '.diag-h'].includes(sel)) continue

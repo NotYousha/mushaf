@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { brandSecondary } from '../brand'
+import { isLatinText } from '../i18n/script'
 import type { Lang } from '../i18n'
 
 /**
@@ -63,7 +64,13 @@ export function Splash({ lang }: { lang: Lang }) {
         <img src={`${BASE}logo-mark.webp`} alt="" width={168} height={168} />
         <span className="splash-sheen" />
       </div>
-      <span className="splash-alt">{brandSecondary(lang)}</span>
+      {/* Tracked at 0.3em, which is severe — and this is the other script,
+          so for an English reader it is Arabic. Only Latin takes it. */}
+      <span
+        className={`splash-alt${isLatinText(brandSecondary(lang)) ? ' trk' : ''}`}
+      >
+        {brandSecondary(lang)}
+      </span>
     </div>
   )
 }

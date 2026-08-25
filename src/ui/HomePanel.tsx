@@ -1,5 +1,5 @@
 import type { Strings, Lang } from '../i18n'
-import { digits } from '../i18n/script'
+import { digits, isLatinText } from '../i18n/script'
 import { brandName, brandSecondary } from '../brand'
 import { Search, Chevron } from './Icons'
 
@@ -82,8 +82,25 @@ export function HomePanel({
 
         <h1 className="home-brand">
           <span className="home-brand-main">{brandName(lang)}</span>
+          {/*
+              Each half tracked only if it is Latin.
+
+              This line is deliberately the other script from the one above it,
+              so in Arabic it reads "Al-Mau'iza · القرآن" and in English
+              "الموعظة · Al Quran" — one half is Arabic in every language the
+              app speaks. Tracking the whole line detached the letters of
+              whichever half was Arabic, on the most-looked-at element here.
+          */}
           <span className="home-brand-alt">
-            {brandSecondary(lang)} · {t.appTitle}
+            <span className={isLatinText(brandSecondary(lang)) ? 'trk' : undefined}>
+              {brandSecondary(lang)}
+            </span>
+            <span className="trk-sep" aria-hidden="true">
+              ·
+            </span>
+            <span className={isLatinText(t.appTitle) ? 'trk' : undefined}>
+              {t.appTitle}
+            </span>
           </span>
         </h1>
 

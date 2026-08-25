@@ -101,9 +101,17 @@
 .home-brand-alt {
   font-size: var(--text-xs);
   font-weight: 600;
+  color: var(--gold);
+}
+
+/* Only a Latin run is tracked and uppercased — see HomePanel. */
+.home-brand-alt .trk {
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--gold);
+}
+
+.trk-sep {
+  margin-inline: 0.4em;
 }
 
 .home-round {

@@ -158,6 +158,23 @@
 }
 
 /*
+ * Urdu needs its line box stated, not inherited.
+ *
+ * `line-height: normal` is computed from the first available font's own
+ * vertical metrics, and Nastaliq's are enormous — 2.5em against Plex's 1.5em.
+ * Nothing here sets a line-height on `body`, so picking اردو made a surah row
+ * grow from 46px to 62px and added nearly two thousand pixels of scroll to the
+ * list, on text that had not changed size at all. It was being patched one
+ * component at a time (.dock-tab, .seg button); this is the cause.
+ *
+ * 1.7 rather than 1.5: nastaliq genuinely needs the descender room. The point
+ * is to stop the font's metrics driving every element's height.
+ */
+:root[lang='ur'] body {
+  line-height: 1.7;
+}
+
+/*
  * A heading is translated; a name is not.
  *
  * --font-name was doing both jobs and they part company here. In Urdu a
@@ -256,7 +273,13 @@ body {
    * so this only pays out where it is actually needed.
    */
   padding-top: env(safe-area-inset-top);
-  padding-inline: max(0px, env(safe-area-inset-left)) max(0px, env(safe-area-inset-right));
+  /*
+   * Physical, because the values are. padding-inline's first value is the
+   * inline start, which is the physical right in Arabic — so the left inset
+   * was being spent on the right edge and the rows ran under the notch.
+   */
+  padding-left: max(0px, env(safe-area-inset-left));
+  padding-right: max(0px, env(safe-area-inset-right));
   display: flex;
   flex-direction: column;
   max-width: 30rem;
@@ -658,9 +681,14 @@ body {
 
 .frontier .fade {
   height: 1px;
-  /* `to inline-start` rather than a fixed angle, so the soft end stays on
-     the side the text runs from in either direction. */
-  background: linear-gradient(to inline-start, var(--accent-soft), transparent);
+  /*
+   * Physical, with the mirror stated.
+   *
+   * This was `to inline-start`, which no browser implements — the whole
+   * declaration was dropped at parse time and the hairline was one pixel of
+   * nothing, in every language, for as long as it has existed.
+   */
+  background: linear-gradient(to left, var(--accent-soft), transparent);
   margin-bottom: 0.8rem;
 }
 
@@ -980,6 +1008,13 @@ body {
   background: var(--accent-line);
   overflow: hidden;
   margin: 0.6rem 0;
+  /*
+   * Pinned like .progress. `margin-inline-end: auto` on the fill does nothing
+   * — a sized block with a zero start margin already sits at the inline start
+   * — so in Arabic this bar grew from the right while the transport bar above
+   * it grew from the left. Two bars on one screen filling toward each other.
+   */
+  direction: ltr;
 }
 
 .meter span {
@@ -1496,6 +1531,13 @@ body {
   padding: 0.1rem 0.35rem;
   border-radius: 4px;
   direction: ltr;
+  /*
+   * Isolated, not merely pinned. `direction` alone left the span inside the
+   * surrounding Arabic paragraph's bidi run, so "018.mp3" came out "mp3.018" —
+   * the filename read back to front in the one place the panel is telling
+   * someone what to name a file.
+   */
+  unicode-bidi: isolate;
   display: inline-block;
 }
 
@@ -3493,8 +3535,21 @@ body {
   text-transform: uppercase;
 }
 
-/* The same rule for the wordmark's second line, which is Arabic in two of
-   the five languages and was being spaced apart in both. */
-:root[dir='ltr'] .wordmark-alt {
+/*
+ * The wordmark's second line, tracked only where it is Latin.
+ *
+ * This was `:root[dir='ltr'] .wordmark-alt`, which is backwards: the line
+ * carries the script the reader is *not* reading, so in an LTR interface it is
+ * the Arabic one. The guard fired in exactly the three languages it was meant
+ * to protect. The decision is per string now, in the markup.
+ */
+.wordmark-alt .trk {
   letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* The frontier's hairline fades toward the side the text runs from. Gradients
+   take no logical keyword, so the mirror is stated. */
+[dir='rtl'] .frontier .fade {
+  background: linear-gradient(to right, var(--accent-soft), transparent);
 }

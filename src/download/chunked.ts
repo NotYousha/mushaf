@@ -22,7 +22,11 @@ const sleep = (ms: number, signal?: AbortSignal) =>
     const id = setTimeout(resolve, ms)
     signal?.addEventListener('abort', () => {
       clearTimeout(id)
-      reject(new Error('aborted'))
+      // A DOMException named AbortError, which is what the platform's own
+      // abort contract is and what the queue recognises. A plain Error was
+      // filed as a failure, so "Could not save: aborted" appeared after Stop
+      // downloading and then re-appeared on every later queue event.
+      reject(new DOMException('aborted', 'AbortError'))
     })
   })
 
@@ -97,7 +101,7 @@ export async function downloadChunked(
   let total = m?.totalBytes ?? Infinity
 
   while (from < total) {
-    if (opts.signal?.aborted) throw new Error('aborted')
+    if (opts.signal?.aborted) throw new DOMException('aborted', 'AbortError')
 
     let res: Response | null = null
     let lastError: unknown = null
@@ -143,7 +147,12 @@ export async function downloadChunked(
         surah,
         url,
         type: res.headers.get('content-type') || 'audio/mpeg',
-        totalBytes: total,
+        // Never Infinity. It was used as a local "length unknown" sentinel and
+        // then written straight to disk, where both readers derive a loop bound
+        // by dividing it by the chunk size — so `Math.ceil(Infinity / n)` gave
+        // an endless delete loop that held the queue's only slot for the rest
+        // of the session, and survived a reload.
+        totalBytes: Number.isFinite(total) ? total : buf.byteLength,
         bytesWritten: 0,
         chunkSize,
         etag: res.headers.get('etag'),

@@ -205,8 +205,18 @@ export function MushafView({
   const schedule = useMemo(() => wordSchedule(timings, surah), [timings, surah])
 
   /** First page on which this surah appears. */
+  /**
+   * Null for "not found", because zero is a real answer.
+   *
+   * Al-Fatiha is on page index 0, which was indistinguishable from the two
+   * failure sentinels — and the consumer tested truthiness. So the page never
+   * turned to Al-Fatiha: not on a repeat-all wrap from An-Nas, not on the
+   * previous-surah button, not from the lock screen. Seven of the eight
+   * reciters ship no word timings, so this effect is the only thing that moves
+   * the page for them.
+   */
   const surahFirstPage = useMemo(() => {
-    if (!layout || !surah) return 0
+    if (!layout || !surah) return null
     const prefix = `${surah}:`
     for (let p = 0; p < layout.pages.length; p++) {
       for (const line of layout.pages[p]) {
@@ -215,7 +225,7 @@ export function MushafView({
         }
       }
     }
-    return 0
+    return null
   }, [layout, surah])
 
   /** Which page holds a given word. */
@@ -316,7 +326,7 @@ export function MushafView({
   }, [activeKey, pageOfKey, manual, page])
 
   useEffect(() => {
-    if (!manual && surahFirstPage && !activeKey) setPage(surahFirstPage)
+    if (!manual && surahFirstPage !== null && !activeKey) setPage(surahFirstPage)
   }, [surahFirstPage, manual, activeKey])
 
   // Arriving from the hifz board. This counts as turning the page by hand, so

@@ -75,8 +75,23 @@ export const skeleton = (s: string) => foldLatin(s).replace(/[aeiou]/g, '')
  * An empty query returns everything rather than nothing, so clearing the box
  * restores the list.
  */
+/**
+ * Arabic-Indic and Extended Arabic-Indic digits, as ASCII.
+ *
+ * The list writes its numbers with `digits(lang, n)`, so in Arabic and Urdu it
+ * shows ٠-٩ — and an Arabic keyboard sends those back. `\d` is ASCII-only, so
+ * the numeric branch was skipped, the name fold matched nothing, and the Latin
+ * fold reduced the query to empty and short-circuited every remaining test.
+ * Typing the number written on the row emptied the list.
+ */
+const asciiDigits = (s: string) =>
+  s.replace(/[\u0660-\u0669]/g, (d) => String(d.charCodeAt(0) - 0x0660)).replace(
+    /[\u06f0-\u06f9]/g,
+    (d) => String(d.charCodeAt(0) - 0x06f0),
+  )
+
 export function searchSurahs(surahs: SurahView[], query: string): SurahView[] {
-  const q = query.trim()
+  const q = asciiDigits(query.trim())
   if (!q) return surahs
 
   if (/^\d+$/.test(q)) {
