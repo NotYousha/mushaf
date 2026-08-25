@@ -86,7 +86,9 @@ export function FavouritesPanel({
                   >
                     <span className="fav-num">{digits(lang, surah)}</span>
                     <span className="fav-names">
-                      <span className="fav-ar">{meta?.name}</span>
+                      <span className="fav-ar" lang="ar">
+                      {meta?.name}
+                    </span>
                       {lang !== 'ar' && meta && (
                         <span className="fav-en">
                           {meta.nameEn} · {meta.translation}

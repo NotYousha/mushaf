@@ -1780,7 +1780,9 @@ export default function App() {
                 belongs on it rather than behind an unlabelled icon.
             */}
             <div className="now">
-              <div className="surah-name">سُورَةُ {currentView.name}</div>
+              <div className="surah-name" lang="ar">
+                سُورَةُ {currentView.name}
+              </div>
 
               <button
                 type="button"

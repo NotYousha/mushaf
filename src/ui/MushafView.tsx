@@ -246,6 +246,38 @@ export function MushafView({
     return null
   }, [layout])
 
+  /**
+   * The page's ayahs as whole ayahs, for a screen reader.
+   *
+   * On screen the page is fifteen paragraphs of separate words, because that
+   * is what a mushaf page is and the word is what gets followed and tapped.
+   * Read aloud it is fifteen paragraph breaks landing wherever the line
+   * happens to end, which cuts most ayahs in half — an ayah is not a line and
+   * on this page it almost never is one.
+   *
+   * So the visual page is hidden from assistive technology and this is
+   * offered instead: each ayah once, whole, in order. No mainstream Quran app
+   * claims screen-reader support, and the reason the substrate exists here is
+   * that the text is Unicode rather than a glyph font — a glyph font cannot
+   * be read aloud at all.
+   */
+  const spoken = useMemo(() => {
+    if (!layout) return []
+    const out: { key: string; text: string }[] = []
+    for (const line of layout.pages[page] ?? []) {
+      for (const w of line.w) {
+        const k = w[1]
+        if (!k) continue
+        const [sn, ayah] = k.split(':')
+        const id = `${sn}:${ayah}`
+        const last = out[out.length - 1]
+        if (last?.key === id) last.text += ' ' + w[0]
+        else out.push({ key: id, text: w[0] })
+      }
+    }
+    return out
+  }, [layout, page])
+
   const pageOfKey = useMemo(() => {
     if (!layout) return new Map<string, number>()
     const m = new Map<string, number>()
@@ -430,6 +462,11 @@ export function MushafView({
   return (
     <div className={`mushaf${yourTurn ? ' your-turn' : ''}`}>
       <div
+        lang="ar"
+        // Hidden from assistive technology in favour of the ayah-by-ayah
+        // reading below: the words here are laid out for the eye and the
+        // finger, and none of them is a control.
+        aria-hidden="true"
         className={`mushaf-page${zoomIdx > 0 ? ' is-zoomed' : ''}${
           veil === 'off' ? '' : ` veil-${veil}`
         }${peeking ? ' is-peeking' : ''}`}
@@ -455,7 +492,9 @@ export function MushafView({
         <div className="mushaf-row" key={line.n}>
           {opens !== null && (
             <span className="surah-band">
-              <span className="surah-band-name">سُورَةُ {NAMES.get(opens)}</span>
+              <span className="surah-band-name" lang="ar">
+                سُورَةُ {NAMES.get(opens)}
+              </span>
             </span>
           )}
           {/*
@@ -468,7 +507,9 @@ export function MushafView({
               heading. It is on the page because it is on the page.
           */}
           {opens !== null && showsBasmala(opens) && basmala && (
-            <p className="mushaf-basmala">{basmala}</p>
+            <p className="mushaf-basmala" lang="ar">
+              {basmala}
+            </p>
           )}
           <p
             className={`mushaf-line${line.n === drillLine ? ' is-drill' : ''}${
@@ -492,6 +533,21 @@ export function MushafView({
           )
         })}
       </div>
+
+      {/*
+          Read aloud, not looked at.
+
+          Withheld while the Veil is on: the Veil exists so a hafiz cannot see
+          the words they are trying to recall, and a copy underneath that
+          reads them out defeats it exactly.
+      */}
+      {veil === 'off' && (
+        <div className="sr-only" lang="ar" dir="rtl">
+          {spoken.map((a) => (
+            <p key={a.key}>{a.text}</p>
+          ))}
+        </div>
+      )}
 
       <div className="mushaf-bar">
         <button

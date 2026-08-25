@@ -3301,3 +3301,24 @@ body {
   color: var(--ink);
   unicode-bidi: plaintext;
 }
+
+/*
+ * Present to a screen reader, absent to the eye.
+ *
+ * Not display:none and not visibility:hidden — both remove it from the
+ * accessibility tree as well, which is the opposite of the point. The clip
+ * rectangle is the one technique that leaves the text readable by assistive
+ * technology while taking it out of the layout entirely.
+ */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}

@@ -91,7 +91,10 @@ export const SurahList = memo(function SurahList({
                   )}
                 </span>
                 <span className="names">
-                  <span className="name-ar">
+                  {/* Always Arabic, inside a document whose language is
+                      the reader's. Unmarked, a screen reader gives it an
+                      English voice and the surah name comes out as noise. */}
+                  <span className="name-ar" lang="ar">
                     {t.surahWord} {s.name}
                   </span>
                   {lang === 'en' && (

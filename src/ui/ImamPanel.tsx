@@ -116,7 +116,9 @@ export function ImamPanel({ t, lang, surahMeta, faces, onPlay, onOpenYear }: Pro
                         >
                           <span className="imam-r-num">{digits(lang, r.surah)}</span>
                           <span className="imam-r-name">
-                            <span className="imam-r-ar">{meta?.name}</span>
+                            <span className="imam-r-ar" lang="ar">
+                              {meta?.name}
+                            </span>
                             {lang !== 'ar' && meta && (
                               <span className="imam-r-en">{meta.nameEn}</span>
                             )}
