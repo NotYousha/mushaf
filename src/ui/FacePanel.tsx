@@ -205,12 +205,15 @@ export function FacePanel({
                       src
                         ? {
                             backgroundImage: `url('${src}')`,
+                            // A bundled portrait is already square, so it is
+                            // shown whole rather than inheriting the crop meant
+                            // for an uncropped original.
                             ...(mine
                               ? {
                                   backgroundSize: `${frame.zoom}% auto`,
                                   backgroundPosition: `${frame.x}% ${frame.y}%`,
                                 }
-                              : {}),
+                              : { backgroundSize: 'cover', backgroundPosition: 'center' }),
                           }
                         : undefined
                     }

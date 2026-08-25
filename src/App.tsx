@@ -805,9 +805,26 @@ export default function App() {
       ? face
       : `${import.meta.env.BASE_URL}${face}`
     : null
-  /** The listener's framing first, then whatever the bundled photo shipped with. */
-  const faceFrame = mine?.player ?? (mine ? null : (liveWho?.frames?.player ?? null))
-  const cardFrame = mine?.card ?? (mine ? null : (liveWho?.frames?.card ?? null))
+  /**
+   * How the portrait is framed.
+   *
+   * The listener's own picture carries their framing. A bundled portrait is
+   * cropped square before it ships, so it wants none — but "none" cannot mean
+   * "leave it to the stylesheet", because the stylesheet's default is Al
+   * Dosari's old uncropped photograph at 160% and well off centre, and every
+   * portrait that is not named in one short CSS rule inherits it. That blew up
+   * sixteen faces until each looked like somebody else.
+   *
+   * So a square portrait states its framing outright.
+   */
+  const SQUARE = { zoom: 100, x: 50, y: 50 }
+  const bundledIsSquare = !!face && face.startsWith('imam-')
+  const faceFrame =
+    mine?.player ??
+    liveWho?.frames?.player ??
+    (bundledIsSquare ? SQUARE : null)
+  const cardFrame =
+    mine?.card ?? liveWho?.frames?.card ?? (bundledIsSquare ? SQUARE : null)
   const facePerson = voiceIdNow ?? reciter?.id ?? ''
 
   /**
