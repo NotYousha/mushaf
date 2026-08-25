@@ -60,14 +60,24 @@ describe('the imam roster the settings list is built from', () => {
     }
   })
 
+  /**
+   * Asserted as a rule rather than a list: portraits get added, and a test
+   * that names four of them fails every time a fifth arrives without anything
+   * actually being wrong.
+   */
   it('carries the shipped portrait where there is one', () => {
     const withPhoto = roster.filter((i) => i.photo)
-    expect(withPhoto.map((i) => i.id).sort()).toEqual([
-      'burhaji',
-      'dosari',
-      'juhany',
-      'turki',
-    ])
+    expect(withPhoto.length).toBeGreaterThan(8)
+    for (const i of withPhoto) {
+      expect(i.photo, i.id).toMatch(/\.(webp|jpg|png)$/)
+    }
+    // The men who recite the most should be the ones we have a face for.
+    for (const id of ['sudais', 'baleela', 'muaiqly', 'shamsan', 'turki', 'dosari']) {
+      expect(
+        roster.find((i) => i.id === id)?.photo,
+        `${id} recites a great deal and should have a portrait`,
+      ).toBeTruthy()
+    }
   })
 
   it('separates the two mosques', () => {
@@ -159,5 +169,20 @@ describe('moving portraits between devices', () => {
     await expect(importFaces(JSON.stringify({ kind: 'something-else' }))).rejects.toThrow(
       /portraits file/i,
     )
+  })
+})
+
+/**
+ * A portrait named in the roster but missing from public/ is a broken image on
+ * someone's player, and nothing else would notice.
+ */
+describe('bundled portraits are really there', () => {
+  it('has a file for every portrait the roster names', async () => {
+    const { existsSync } = await import('node:fs')
+    const { allImams } = await import('../src/catalog/mosques')
+    for (const imam of allImams()) {
+      if (!imam.photo) continue
+      expect(existsSync(`public/${imam.photo}`), `public/${imam.photo} is missing`).toBe(true)
+    }
   })
 })
