@@ -123,10 +123,37 @@ export function Dock({
     }
   }, [scroller])
 
+  /**
+   * Publish the dock's real height, so the list above it can clear it.
+   *
+   * The scroll area used to reserve a fixed 6.5rem. That is right for the
+   * tab bar alone and wrong the moment something is playing: the capsule
+   * wraps onto a line of its own and the dock grows by another three and a
+   * half rem, which is exactly enough to sit over the last row of a list.
+   * On the home screen it covered the names under the bottom row of faces.
+   *
+   * Measured rather than assumed, because the dock also folds when scrolling
+   * and grows with the safe area, and a second hardcoded number would only
+   * be wrong in a different place.
+   */
+  const dockRef = useRef<HTMLDivElement | null>(null)
+  useEffect(() => {
+    const el = dockRef.current
+    if (!el) return
+    const publish = () =>
+      document.documentElement.style.setProperty('--dock-h', `${el.offsetHeight}px`)
+    publish()
+    if (typeof ResizeObserver === 'undefined') return
+    const ro = new ResizeObserver(publish)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+
   if (isNativeShell()) return null
 
   return (
     <div
+      ref={dockRef}
       className={`dock${tight && now ? ' is-tight' : ''}${
         scrolling ? ' is-scrolling' : ''
       }`}

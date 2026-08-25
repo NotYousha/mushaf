@@ -390,15 +390,26 @@
  * instead of leaving a hole. Seven reciters give three and four; eight give
  * four and four. Both look deliberate, which a left-aligned grid would not.
  */
+/*
+ * Two faces on the first row and three on the second.
+ *
+ * Six columns, with the first two cells spanning three each and the rest two
+ * each, so the arrangement is stated rather than left to how many happen to
+ * fit. Wrapping a flex row put four on the first line and one stranded on the
+ * second, which reads as an accident.
+ */
 .face-grid {
   --face-gap: 0.8rem;
   list-style: none;
   margin: 0;
-  padding: 0;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  /* The ring around a portrait is a box-shadow, which sits outside the box —
+     at the edge of the grid it was being clipped by the home column's own
+     overflow, and the outer circles came out with a flat side. */
+  padding: 0 0.4rem;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
   gap: 1.2rem var(--face-gap);
+  justify-items: center;
 }
 
 /*
@@ -409,9 +420,15 @@
  * that is a share of the row cannot do that.
  */
 .face-grid li {
-  flex: 0 0 auto;
-  inline-size: calc((100% - 3 * var(--face-gap)) / 4);
+  grid-column: span 2;
+  inline-size: 100%;
   max-inline-size: 6rem;
+}
+
+/* The first two take half the row each; everything after them takes a third. */
+.face-grid li:nth-child(1),
+.face-grid li:nth-child(2) {
+  grid-column: span 3;
 }
 
 .face-cell {

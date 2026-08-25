@@ -431,9 +431,20 @@ body {
   overflow-y: auto;
   flex: 1;
   min-height: 0;
-  /* Room for the floating dock, or for a native tab bar when one owns the
-     bottom of the screen. The list runs underneath either. */
-  padding-bottom: calc(6.5rem + var(--native-bottom, 0px));
+  /*
+   * Room for the floating dock, or for a native tab bar when one owns the
+   * bottom of the screen. The list runs underneath either.
+   *
+   * --dock-h is the dock's measured height, published by the dock itself. The
+   * fixed 6.5rem it replaces was right for the tab bar alone and wrong the
+   * moment something plays: the now-playing capsule wraps onto its own line
+   * and the dock grows by another three and a half rem, which is just enough
+   * to sit over the last row of a list. It covered the names under the bottom
+   * row of faces on the home screen.
+   *
+   * The fallback matters for the first paint, before the dock has measured.
+   */
+  padding-bottom: calc(var(--dock-h, 6.5rem) + var(--space-4) + var(--native-bottom, 0px));
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
 }

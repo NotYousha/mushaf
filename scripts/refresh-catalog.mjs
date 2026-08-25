@@ -155,7 +155,6 @@ const SOURCES = {
    * is, and the mushaf page refuses to display Hafs text under it.
    */
   juhany: {
-    home: true,
     route: 'j',
     name: 'عبد الله الجهني',
     nameEn: 'Abdullah Al-Juhany',
@@ -192,7 +191,6 @@ const SOURCES = {
     note: 'ما زال قيد التسجيل — ولم تُنشر سورة الأعراف بعد.',
   },
   buayjan: {
-    home: true,
     route: 'bu',
     name: 'عبد الله البعيجان',
     nameEn: "Abdullah Al-Bu'ayjan",
@@ -230,7 +228,6 @@ const SOURCES = {
    * surahs are fetched from the file that actually holds them. See the remap.
    */
   'turki-abdulaziz': {
-    home: true,
     route: 'az',
     // complete
     fixedCount: 114,
