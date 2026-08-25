@@ -45,8 +45,15 @@ const TIMED: Record<string, () => Promise<Timings>> = {
     import('../../data/timings-burhaji-nabawi.json').then(
       (m) => m.default as unknown as Timings,
     ),
-  dosari: () =>
-    import('../../data/timings-dosari.json').then((m) => m.default as unknown as Timings),
+  /**
+   * Al-Dosari is deliberately absent.
+   *
+   * data/timings-dosari.json exists but its `surahs` object is empty — the
+   * alignment was started and never finished. Listing him here made the app
+   * claim word timings for the reciter it opens with, so a first-time
+   * listener met three features that each failed on contact. Put him back the
+   * day the file has something in it, and not before.
+   */
 }
 
 export const loadTimings = (reciterId: string) => {
@@ -60,7 +67,32 @@ export const loadTimings = (reciterId: string) => {
   return timingCache.get(reciterId)!
 }
 
-export const hasTimings = (reciterId: string) => reciterId in TIMED
+/**
+ * Whether this reciter has any word timings at all.
+ *
+ * Registration is not coverage. Al-Dosari was listed in TIMED with an empty
+ * set, so this returned true and three features — the mushaf's word
+ * following, Talqeen, and the Fork Drill — each went as far as trying before
+ * failing, on the reciter the app opens with. The Fork Drill even offered a
+ * retry gated on this same check, which could therefore never succeed.
+ *
+ * A reciter counts as timed only once something has actually loaded for them,
+ * so the answer is honest before the file arrives as well as after.
+ */
+export const hasTimings = (reciterId: string) => {
+  if (!(reciterId in TIMED)) return false
+  const t = loadedTimings.get(reciterId)
+  // Not loaded yet: trust the registry, and surahTimed will refuse per surah.
+  if (!t) return true
+  return Object.keys(t.surahs).length > 0
+}
+
+/** Everyone the app can actually follow word by word, for offering a switch. */
+export const timedReciters = (): string[] =>
+  Object.keys(TIMED).filter((id) => {
+    const t = loadedTimings.get(id)
+    return !t || Object.keys(t.surahs).length > 0
+  })
 
 /**
  * Whether a particular surah is timed.

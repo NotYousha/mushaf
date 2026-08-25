@@ -22,6 +22,10 @@ export const fr: Strings = {
   faceRemove: 'Retirer',
   faceAdjust: 'Ajuster',
   buildLabel: 'Version',
+  favourites: 'Favoris',
+  favouritesEmpty:
+    'Rien pour l’instant. Touchez l’étoile pendant l’écoute et cela apparaîtra ici.',
+  favouritesCount: (n: number | string) => `${n} enregistrées`,
   facesExport: 'Enregistrer les photos',
   faceSourceYours: 'votre photo',
   faceSourceApp: 'fournie par l’app',

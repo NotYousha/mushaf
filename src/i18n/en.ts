@@ -27,6 +27,10 @@ export const en = {
   faceRemove: 'Remove',
   faceAdjust: 'Adjust',
   buildLabel: 'Version',
+  favourites: 'Starred',
+  favouritesEmpty:
+    'Nothing starred yet. Tap the star while something is playing and it will be here.',
+  favouritesCount: (n: number | string) => `${n} saved`,
   facesExport: 'Save photos to a file',
   faceSourceYours: 'your photo',
   faceSourceApp: 'comes with the app',

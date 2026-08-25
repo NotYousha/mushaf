@@ -2617,3 +2617,92 @@ body {
   font-size: 0.68rem;
   color: var(--muted);
 }
+
+/* ============ starred recitations ============
+   Grouped by reciter, because the same surah under two voices is two
+   different things to want back. */
+.favs-empty,
+.favs-count {
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin: 0 0 0.9rem;
+}
+
+.favs-group h3 {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+  margin: 1rem 0 0.4rem;
+  unicode-bidi: plaintext;
+}
+
+.favs-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--accent-line);
+  border-radius: 0.9rem;
+  overflow: hidden;
+}
+
+.fav-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  border-bottom: 1px solid var(--accent-line);
+  background: var(--card-2);
+}
+
+.fav-row:last-child {
+  border-bottom: 0;
+}
+
+.fav-main {
+  display: grid;
+  grid-template-columns: 2.2rem 1fr auto;
+  align-items: center;
+  gap: 0.7rem;
+  padding: 0.6rem 0.5rem 0.6rem 0.85rem;
+  border: 0;
+  background: none;
+  color: var(--ink-soft);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+  min-width: 0;
+}
+
+.fav-num {
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.fav-names {
+  display: grid;
+  gap: 0.05rem;
+  min-width: 0;
+}
+
+.fav-ar {
+  font-family: var(--font-ar);
+  font-size: 1.02rem;
+  color: var(--ink);
+  unicode-bidi: plaintext;
+}
+
+.fav-en {
+  font-size: 0.74rem;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fav-unstar {
+  border: 0;
+  background: none;
+  color: var(--accent-deep);
+  cursor: pointer;
+  padding: 0.6rem 0.85rem;
+}

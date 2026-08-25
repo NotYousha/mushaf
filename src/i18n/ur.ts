@@ -22,6 +22,10 @@ export const ur: Strings = {
   faceRemove: 'ہٹائیں',
   faceAdjust: 'ترتیب',
   buildLabel: 'ورژن',
+  favourites: 'پسندیدہ',
+  favouritesEmpty:
+    'ابھی کچھ نہیں۔ سننے کے دوران ستارہ دبائیں، یہاں محفوظ ہو جائے گا۔',
+  favouritesCount: (n: number | string) => `${n} محفوظ`,
   facesExport: 'تصاویر فائل میں محفوظ کریں',
   faceSourceYours: 'آپ کی تصویر',
   faceSourceApp: 'ایپ کی تصویر',

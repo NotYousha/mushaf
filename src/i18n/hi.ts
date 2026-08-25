@@ -22,6 +22,10 @@ export const hi: Strings = {
   faceRemove: 'हटाएँ',
   faceAdjust: 'समायोजित करें',
   buildLabel: 'संस्करण',
+  favourites: 'पसंदीदा',
+  favouritesEmpty:
+    'अभी कुछ नहीं। सुनते समय तारा दबाएँ, यहाँ सहेजा जाएगा।',
+  favouritesCount: (n: number | string) => `${n} सहेजे गए`,
   facesExport: 'तस्वीरें फ़ाइल में सहेजें',
   faceSourceYours: 'आपकी तस्वीर',
   faceSourceApp: 'ऐप की तस्वीर',

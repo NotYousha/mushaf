@@ -103,7 +103,10 @@ export function ForkDrill({ t, reciterId, playRange, stop }: Props) {
     return (
       <div className="fork">
         <p className="empty small">{error}</p>
-        {hasTimings(reciterId) && (
+        {/* Only where trying again could work. This used to be gated on the
+            same check that had just failed, so "try again" repeated the
+            identical failure for ever. */}
+        {hasTimings(reciterId) && !/needs|timings/i.test(error ?? '') && (
           <button className="btn" onClick={() => void nextDrill()}>
             {t.forkAgain}
           </button>

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { loadCatalog, buildView, surahMeta } from './catalog/load'
+import { searchSurahs } from './catalog/search'
 import type { Reciter, SurahView } from './catalog/types'
 import {
   effectiveVerified,
@@ -39,6 +40,7 @@ import { nextSurah, nextVoiceChange, prevSurah, type RepeatMode } from './player
 import { getQuota, requestPersistence, canDownloadAll } from './storage/quota'
 import { SurahList, plainName } from './ui/SurahList'
 import { VerifyPanel } from './ui/VerifyPanel'
+import { FavouritesPanel } from './ui/FavouritesPanel'
 import { FacePanel } from './ui/FacePanel'
 import { MushafView, ayahStartsFor } from './ui/MushafView'
 import { HifzBoard } from './ui/HifzBoard'
@@ -889,13 +891,7 @@ export default function App() {
   const filtered = useMemo(() => {
     const q = query.trim()
     if (!q) return surahs
-    const bare = plainName(q).toLowerCase()
-    return surahs.filter(
-      (s) =>
-        plainName(s.name).includes(bare) ||
-        s.nameEn.toLowerCase().includes(bare) ||
-        String(s.surah) === bare,
-    )
+    return searchSurahs(surahs, q)
   }, [surahs, query])
 
   const openText = () => setTab('text')
@@ -1281,7 +1277,25 @@ export default function App() {
 
           {tab === 'library' && (
             <div className="panel">
-              <h2>{t.storage}</h2>
+              <FavouritesPanel
+                t={t}
+                lang={lang}
+                favourites={favourites}
+                reciters={reciters}
+                surahMeta={surahMeta}
+                onPlay={(id, surah) => {
+                  if (id !== reciterId) void switchReciter(id)
+                  void playSurah(surah)
+                  setTab('quran')
+                }}
+                onRemove={(key) => {
+                  const next = favourites.filter((k) => k !== key)
+                  setFavourites(next)
+                  void setPref('favourites', next)
+                }}
+              />
+
+              <h2 style={{ marginTop: '1.6rem' }}>{t.storage}</h2>
               <p>{t.storageIntro}</p>
 
               <div className="meter">

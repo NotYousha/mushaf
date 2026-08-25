@@ -21,6 +21,10 @@ export const ar: Strings = {
   faceRemove: 'إزالة',
   faceAdjust: 'ضبط',
   buildLabel: 'الإصدار',
+  favourites: 'المفضّلة',
+  favouritesEmpty:
+    'لا شيء بعد. اضغط النجمة أثناء الاستماع وستجدها هنا.',
+  favouritesCount: (n: number | string) => `${n} محفوظة`,
   facesExport: 'حفظ الصور في ملف',
   faceSourceYours: 'صورتك',
   faceSourceApp: 'من التطبيق',
