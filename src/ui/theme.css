@@ -3251,10 +3251,23 @@ body {
   to   { transform: scaleY(1); }
 }
 
+/*
+ * Stopped, not frozen.
+ *
+ * The bars kept bouncing over a paused recitation, which says the opposite of
+ * what is true. Freezing them mid-bounce would only look stuck, so they
+ * settle level and low: a shape that reads as stopped rather than as an
+ * animation that has jammed.
+ */
+.eq.is-still i {
+  animation: none;
+  transform: scaleY(0.34);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .eq i {
     animation: none;
-    transform: none;
+    transform: scaleY(0.34);
   }
 }
 

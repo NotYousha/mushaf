@@ -1383,6 +1383,7 @@ export default function App() {
               partials={partialsHere}
               progress={progress}
               current={current}
+              playing={playing}
               verified={isVerified}
               rejected={rejected}
               onPlay={startSurah}

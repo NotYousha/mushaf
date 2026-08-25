@@ -20,6 +20,14 @@ type Props = {
   partials?: Map<number, number>
   progress: Record<string, number>
   current: number | null
+  /**
+   * Whether sound is actually coming out.
+   *
+   * `current` only says which surah is loaded, which stays true across a
+   * pause — so the equaliser went on bouncing over a stopped recitation and
+   * told the reader the opposite of the truth.
+   */
+  playing?: boolean
   verified: (s: SurahView) => boolean
   onPlay: (surah: number) => void
   onDownload: (surah: number) => void
@@ -42,6 +50,7 @@ export const SurahList = memo(function SurahList({
   partials,
   progress,
   current,
+  playing = false,
   verified,
   onPlay,
   onDownload,
@@ -81,7 +90,7 @@ export const SurahList = memo(function SurahList({
                 {/* The number, or the playing mark in its place. */}
                 <span className="numeral">
                   {active ? (
-                    <span className="eq" aria-hidden="true">
+                    <span className={`eq${playing ? '' : ' is-still'}`} aria-hidden="true">
                       <i />
                       <i />
                       <i />
