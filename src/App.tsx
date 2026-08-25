@@ -1339,6 +1339,10 @@ export default function App() {
                   requestPlay(id, surah, at)
                   setTab('quran')
                 }}
+                onOpenYear={(id) => {
+                  void switchReciter(id)
+                  setTab('quran')
+                }}
               />
 
               <h2 style={{ marginTop: '1.6rem' }}>{t.storage}</h2>

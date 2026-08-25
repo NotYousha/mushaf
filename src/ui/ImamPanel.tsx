@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import type { Strings, Lang } from '../i18n'
 import { inScript, digits } from '../i18n/script'
-import { readingsOf, imamsWithReadings, type Reading } from '../catalog/byImam'
+import { readingsOf, imamDirectory, type Reading } from '../catalog/byImam'
 import { surahSeconds, PLACES } from '../catalog/mosques'
 import type { SurahMeta } from '../catalog/types'
 import type { Face } from '../db/faces'
@@ -15,6 +15,9 @@ type Props = {
   /** Portraits the listener added, keyed by imam id, which win over bundled. */
   faces: Map<string, Face>
   onPlay: (reciterId: string, surah: number, at: number) => void
+  /** Open a year's collection without playing anything, for the Ramadans
+   *  whose surahs are not attributed and so have nothing to play *to*. */
+  onOpenYear: (reciterId: string) => void
 }
 
 /**
@@ -31,12 +34,12 @@ type Props = {
  * Ramadan, and rendering every surah of every one of them to show a list of
  * names would cost seconds on the phone this is mostly used on.
  */
-export function ImamPanel({ t, lang, surahMeta, faces, onPlay }: Props) {
+export function ImamPanel({ t, lang, surahMeta, faces, onPlay, onOpenYear }: Props) {
   const [open, setOpen] = useState<string | null>(null)
   const [openYear, setOpenYear] = useState<number | null>(null)
 
   const imams = useMemo(
-    () => imamsWithReadings((place, year, surah) => surahSeconds(place, year, surah)),
+    () => imamDirectory((place, year, surah) => surahSeconds(place, year, surah)),
     [],
   )
 
@@ -77,6 +80,8 @@ export function ImamPanel({ t, lang, surahMeta, faces, onPlay }: Props) {
             <p className="imam-meta">{summary(t, lang, chosen)}</p>
           </div>
         </header>
+
+        {byYear.length > 0 && <h3 className="imam-section">{t.imamNamed}</h3>}
 
         {byYear.map(([year, readings]) => {
           const isOpen = openYear === year
@@ -128,6 +133,34 @@ export function ImamPanel({ t, lang, surahMeta, faces, onPlay }: Props) {
             </div>
           )
         })}
+
+        {chosen.seasons.length > 0 && (
+          <>
+            <h3 className="imam-section">{t.imamLed}</h3>
+            <ul className="imam-seasons">
+              {chosen.seasons.map((se) => (
+                <li key={se.reciterId}>
+                  <button
+                    type="button"
+                    className="imam-season"
+                    onClick={() => onOpenYear(se.reciterId)}
+                  >
+                    <span className="imam-s-place">
+                      {inScript(
+                        lang,
+                        PLACES.find((p) => p.place === se.place)?.shortAr ?? '',
+                        PLACES.find((p) => p.place === se.place)?.shortEn ?? '',
+                      )}
+                    </span>
+                    <span className="imam-s-year">{digits(lang, se.year)}</span>
+                    {se.ce && <span className="imam-s-ce">{digits(lang, se.ce)}</span>}
+                    <span className="imam-s-go">{t.imamOpen}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
       </section>
     )
   }
@@ -172,13 +205,13 @@ function placeOf(r: Reading, lang: Lang): string {
 function summary(
   t: Strings,
   lang: Lang,
-  i: { surahs: number; years: number[]; seconds: number },
+  i: { surahs: number; years: number[]; seasons: unknown[]; seconds: number },
 ): string {
-  const years = i.years.length
-  const parts = [
-    t.imamSurahs(digits(lang, i.surahs), i.surahs === 1),
-    t.imamYears(digits(lang, years), years === 1),
-  ]
+  // Every Ramadan he led, however deeply that year is attributed. Reporting
+  // only the named ones would say Sudais has two years behind him.
+  const ramadans = i.years.length + i.seasons.length
+  const parts = [t.imamYears(digits(lang, ramadans), ramadans === 1)]
+  if (i.surahs) parts.unshift(t.imamSurahs(digits(lang, i.surahs), i.surahs === 1))
   // Hours only where the build could read durations; a rounded zero would
   // claim there is nothing to hear.
   const hours = Math.round(i.seconds / 3600)

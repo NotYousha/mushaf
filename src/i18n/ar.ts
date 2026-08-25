@@ -28,6 +28,9 @@ export const ar: Strings = {
   imams: 'حسب القارئ',
   imamsIntro: 'الأئمة المنسوبة إليهم التلاوات، وكل سورة قرأوها.',
   imamsBack: 'كل القرّاء',
+  imamNamed: 'سور منسوبة إليه',
+  imamLed: 'رمضانات أمّ فيها',
+  imamOpen: 'فتح',
   // Arabic number agreement is not a plural switch, and "57 سورة" is how
   // it is written in practice, so the count never changes the noun.
   imamSurahs: (n: number | string) => `${n} سورة`,

@@ -2923,3 +2923,67 @@ body {
     background: var(--tile);
   }
 }
+
+/* The two depths the archive knows a man at, kept visibly apart: attributed
+   surahs above, Ramadans he merely led below. */
+.imam-section {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 1.3rem 0 0.5rem;
+}
+
+.imam-seasons {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border: 1px solid var(--accent-line);
+  border-radius: 0.9rem;
+  overflow: hidden;
+}
+
+.imam-season {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  align-items: baseline;
+  gap: 0.7rem;
+  padding: 0.6rem 0.9rem;
+  border: 0;
+  border-bottom: 1px solid var(--accent-line);
+  background: var(--card-2);
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 0.88rem;
+  text-align: start;
+  cursor: pointer;
+}
+
+.imam-seasons li:last-child .imam-season {
+  border-bottom: 0;
+}
+
+.imam-s-year {
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.imam-s-ce {
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+
+.imam-s-go {
+  color: var(--accent);
+  font-size: 0.78rem;
+}
+
+@media (hover: hover) {
+  .imam-season:hover {
+    background: var(--tile);
+  }
+}

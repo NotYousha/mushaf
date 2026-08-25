@@ -37,6 +37,11 @@ export const en = {
   // reciters can appear here, which is not yet all of them.
   imamsIntro: 'The imams the archive names, and every surah they lead.',
   imamsBack: 'All reciters',
+  /** Heading over the years whose surahs are attributed one by one. */
+  imamNamed: 'Surahs named',
+  /** Heading over the years known only as "he led that Ramadan". */
+  imamLed: 'Ramadans he led',
+  imamOpen: 'Open',
   imamSurahs: (n: number | string, one: boolean) => `${n} ${one ? 'surah' : 'surahs'}`,
   imamYears: (n: number | string, one: boolean) => `${n} ${one ? 'year' : 'years'}`,
   imamHours: (n: number | string, one: boolean) => `${n} ${one ? 'hour' : 'hours'}`,
