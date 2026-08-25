@@ -40,6 +40,25 @@ export class PlayerEngine {
   /** Read by the media session handlers, which are registered once. */
   readonly handlers: { current: MediaHandlers | null } = { current: null }
   private rate = 1
+  /**
+   * The next surah's source, resolved before the current one ends.
+   *
+   * Following on has to be synchronous. `load` asks IndexedDB whether a
+   * saved copy exists, and an await is a return to the event loop -- which on
+   * a locked phone is the one moment iOS is free to suspend the page, because
+   * no audio is playing any more. The surah ended, the app went to sleep
+   * reaching for the next one, and playback simply stopped.
+   *
+   * So the work is done while sound is still coming out, and what is left at
+   * the end is assigning a src and calling play with nothing awaited between.
+   */
+  private pending: {
+    reciterId: string
+    surah: number
+    src: string
+    mode: PlaybackMode
+    objectUrl: string | null
+  } | null = null
 
   constructor() {
     this.el = new Audio()
@@ -99,7 +118,13 @@ export class PlayerEngine {
       setPlaybackState('paused')
       sync()
     })
-    this.el.addEventListener('ended', () => clearPosition())
+    this.el.addEventListener('ended', () => {
+      // Only when this really is the end. Clearing the position state tells
+      // the system the session is over, and saying that between two surahs
+      // takes the lock screen down for the gap and can end the audio session
+      // outright — which is exactly when it must not.
+      if (!this.pending) clearPosition()
+    })
 
     registerMediaHandlers(this.handlers)
   }
@@ -161,6 +186,7 @@ export class PlayerEngine {
     startAt = 0,
   ): Promise<LoadResult> {
     const saved = await getAudio(reciterId, surah)
+    this.discardPending()
     this.releaseObjectUrl()
     this.currentSurah = surah
     this.currentReciter = reciterId
@@ -200,6 +226,70 @@ export class PlayerEngine {
 
     this.onError?.(last)
     return { ok: false, reason: last }
+  }
+
+  /**
+   * Resolve the surah that comes next, without disturbing what is playing.
+   *
+   * Safe to call repeatedly; the last answer wins. The object URL it may
+   * create is owned by the pending entry and released with it, so an
+   * abandoned preparation cannot leak one.
+   */
+  async prepareNext(
+    reciterId: string,
+    surah: number,
+    streamUrl: string | null,
+    fallbackUrl: string | null = null,
+  ): Promise<boolean> {
+    if (this.pending?.reciterId === reciterId && this.pending.surah === surah) return true
+    const saved = await getAudio(reciterId, surah)
+    const src = saved ? URL.createObjectURL(saved) : (streamUrl ?? fallbackUrl)
+    if (!src) return false
+    this.discardPending()
+    this.pending = {
+      reciterId,
+      surah,
+      src,
+      mode: saved ? 'offline' : 'streaming',
+      objectUrl: saved ? src : null,
+    }
+    return true
+  }
+
+  private discardPending() {
+    if (this.pending?.objectUrl) URL.revokeObjectURL(this.pending.objectUrl)
+    this.pending = null
+  }
+
+  /** What is queued up, so the caller can check its own bookkeeping agrees. */
+  get preparedSurah(): number | null {
+    return this.pending?.surah ?? null
+  }
+
+  /**
+   * Start the prepared surah with nothing awaited first.
+   *
+   * Everything here is synchronous on purpose. This runs from the `ended`
+   * handler, and any await before `play()` hands control back to the browser
+   * at the one moment a backgrounded page is most likely to be suspended.
+   */
+  startPrepared(): number | null {
+    const p = this.pending
+    if (!p) return null
+    this.pending = null
+    this.releaseObjectUrl()
+    this.objectUrl = p.objectUrl
+    this.currentSurah = p.surah
+    this.currentReciter = p.reciterId
+    this.lastSaved = 0
+    this.mode = p.mode
+    this.el.src = p.src
+    this.el.playbackRate = this.rate
+    void this.el.play().catch(() => {
+      // Refused, which on a locked phone means the session was already gone.
+      // The caller's own path can try again when the app is looked at.
+    })
+    return p.surah
   }
 
   private releaseObjectUrl() {

@@ -533,6 +533,70 @@ export default function App() {
     advanceRef.current = advance
   }, [advance])
 
+  /**
+   * The surah queued to follow this one, chosen before it is needed.
+   *
+   * Held in a ref rather than state because it must not cause a render and
+   * must be readable from the `ended` handler without waiting.
+   */
+  const upNext = useRef<number | null>(null)
+  useEffect(() => {
+    upNext.current = null
+  }, [current, reciterId])
+
+  /**
+   * Resolve the next surah's source while sound is still coming out.
+   *
+   * Following on has to happen with nothing awaited. Asking IndexedDB whether
+   * a saved copy exists is an await, and an await is a return to the event
+   * loop -- which on a locked phone is precisely the moment iOS is free to
+   * suspend the page, because playback has just stopped. The surah ended, the
+   * app went to sleep reaching for the next one, and the recitation stopped
+   * for the night.
+   *
+   * A minute out is early enough to cover a slow lookup and late enough that
+   * a listener who skips around is not preparing surahs nobody will hear.
+   */
+  useEffect(() => {
+    if (current === null || !reciter || duration <= 0) return
+    const left = duration - time
+    if (left < 0 || left > 60) return
+
+    let n: number | null
+    if (shuffle && playable.length) {
+      // Picked once and kept: choosing again at the end would prepare one
+      // surah and play another.
+      const held = upNext.current
+      if (held !== null && held !== current && playable.includes(held)) n = held
+      else {
+        const pool = playable.filter((x) => x !== current)
+        n = pool.length ? pool[Math.floor(Math.random() * pool.length)] : null
+      }
+    } else {
+      n = nextSurah(current, repeat, playable)
+    }
+    if (n === null) return
+
+    const view = surahs.find((x) => x.surah === n)
+    if (!view) return
+    if (!view.released && !downloadedHere.has(n)) return
+    if (rejected.has(n)) return
+
+    upNext.current = n
+    void engine.current!.prepareNext(reciter.id, n, view.url, view.fallbackUrl)
+  }, [
+    current,
+    time,
+    duration,
+    shuffle,
+    repeat,
+    playable,
+    surahs,
+    reciter,
+    downloadedHere,
+    rejected,
+  ])
+
   // The handlers are registered once at construction and read through this
   // reference, so the lock-screen buttons can never act on a stale surah.
   useEffect(() => {
@@ -749,11 +813,40 @@ export default function App() {
       // Talqeen takes the ending over to give that line its turn before
       // anything moves on.
       if (talqeenRef.current?.handleEnded()) return
+
+      /*
+       * The prepared surah first, and without awaiting anything.
+       *
+       * This is the whole point of preparing one: the audio is started here,
+       * synchronously, while the browser still counts this as a continuing
+       * session. Every piece of bookkeeping below it happens after sound is
+       * already coming out, so none of it can cost us the handover.
+       */
+      const started = engine.current!.startPrepared()
+      if (started !== null) {
+        upNext.current = null
+        setCurrent(started)
+        setTime(0)
+        setError(null)
+        setMode(engine.current!.mode)
+        const view = surahs.find((x) => x.surah === started)
+        if (view && reciter) {
+          updateMetadata(view, artistFor(view, reciter), import.meta.env.BASE_URL)
+          setNavAvailability(
+            nextSurah(started, repeat, playable) !== null,
+            engine.current!.handlers,
+          )
+        }
+        return
+      }
+
+      // Nothing was ready — the listener skipped to the end, or the next
+      // surah could not be resolved. Take the ordinary path.
       void advance()
     }
     el.addEventListener('ended', onEnded)
     return () => el.removeEventListener('ended', onEnded)
-  }, [advance])
+  }, [advance, surahs, reciter, repeat, playable])
 
   useEffect(() => {
     if (sleepAt === null) return
