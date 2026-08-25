@@ -290,7 +290,7 @@ const SOURCES = {
      * it is served as — "سورة العاديات" in the file for 100, and so on for
      * all eight. Excluding them would drop eight surahs he really did record.
      */
-    titleConfirmed: [80, 82, 92, 93, 95, 99, 100, 101],
+    identityConfirmed: [80, 82, 92, 93, 95, 99, 100, 101],
   },
   /**
    * Al-Afasy's Hafs from the Ten Readings mushaf of 1445.
@@ -404,6 +404,25 @@ const SOURCES = {
     mushaf: 'المصحف المجوَّد — مجمع الملك فهد لطباعة المصحف الشريف',
     mushafEn: 'Mujawwad mushaf — King Fahd Glorious Qur’an Printing Complex',
     photo: 'imam-muaiqly.webp',
+    /**
+     * Al-Waqi'ah and Abasa, which the length check reads at 1.46x and 1.54x.
+     *
+     * The item carries no ID3 at all, so identity was settled the way
+     * Abdulaziz Al-Turki's was — against another recording of the same man.
+     * Measured against his studio murattal, which is a different performance
+     * at 1.7x the pace, those two surahs come out the longest of a
+     * thirty-eight surah sample there as well, at 1.11x and 1.18x of that
+     * recording's own median. The same two, long in both, by a man reading
+     * mujawwad here: that is what he does with them.
+     *
+     * Their neighbours rule out the other reading. A file holding the wrong
+     * surah has to have displaced something, and 57, 58, 79 and 81 all
+     * measure normally. Nor are these two isolated: this recording's ratios
+     * run 0.87 to 1.52 in a continuous spread — 81 at 1.41 and 83 at 1.34 sit
+     * just under the threshold — so 1.46 is the top of a distribution, not a
+     * spike out of one.
+     */
+    identityConfirmed: [56, 80],
   },
   /**
    * Baleelah's studio murattal — the one his own site links to.
@@ -641,7 +660,12 @@ async function refresh(id) {
       // Identity settled some other way outranks a length that merely looks
       // odd. The check is a proxy for "is this the right surah", so where
       // that question already has a better answer, the proxy has no vote.
-      if (src.titleConfirmed?.includes(surah)) continue
+      // What the better answer was belongs in a comment on each source: an
+      // ID3 title that names the surah, or a second recording of the same man
+      // that reads it long too. A bare list is a way to wave a real defect
+      // through, so no entry here is legitimate without its evidence written
+      // down beside it.
+      if (src.identityConfirmed?.includes(surah)) continue
       const factor = m.seconds / letters / median
       if (factor > 1.45 || factor < 0.69) mismatched.push({ surah, factor })
     }

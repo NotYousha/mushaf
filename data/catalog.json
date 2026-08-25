@@ -9455,7 +9455,7 @@
    "mushafEn": "Mujawwad mushaf — King Fahd Glorious Qur’an Printing Complex",
    "source": "https://mushaf-audio.mushaftarteel.workers.dev/mq/{surah}.mp3",
    "photo": "imam-muaiqly.webp",
-   "released": 112,
+   "released": 114,
    "total": 114,
    "surahs": [
     {
@@ -9844,6 +9844,13 @@
      "verified": true
     },
     {
+     "surah": 56,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/mq/56.mp3",
+     "fallbackUrl": null,
+     "bytes": 25562800,
+     "verified": true
+    },
+    {
      "surah": 57,
      "url": "https://mushaf-audio.mushaftarteel.workers.dev/mq/57.mp3",
      "fallbackUrl": null,
@@ -10002,6 +10009,13 @@
      "url": "https://mushaf-audio.mushaftarteel.workers.dev/mq/79.mp3",
      "fallbackUrl": null,
      "bytes": 10079293,
+     "verified": true
+    },
+    {
+     "surah": 80,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/mq/80.mp3",
+     "fallbackUrl": null,
+     "bytes": 8808488,
      "verified": true
     },
     {
