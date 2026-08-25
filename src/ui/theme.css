@@ -3289,3 +3289,15 @@ body {
   font-variant-numeric: tabular-nums;
   margin-inline-start: 0.15rem;
 }
+
+/* The basmala above a surah: centred on its own line, as the mushaf prints
+   it, and never justified — it is one short line, not a measure to fill. */
+.mushaf-basmala {
+  margin: 0.15rem 0 0.35rem;
+  font-family: var(--font-quran);
+  font-size: 1.5rem;
+  line-height: 1.9;
+  text-align: center;
+  color: var(--ink);
+  unicode-bidi: plaintext;
+}

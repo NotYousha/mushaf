@@ -71,6 +71,16 @@ const arabicNumber = (n: number) =>
     .map((d) => AR_DIGITS[Number(d)] ?? d)
     .join('')
 
+/**
+ * Whether a surah is printed with the basmala above it.
+ *
+ * Two exceptions, and they are exceptions for opposite reasons. At-Tawbah is
+ * the one surah of the Quran that opens without it. Al-Fatiha opens with it
+ * as ayah 1 — it is already in the text on the line below, and printing it
+ * here would set it twice.
+ */
+export const showsBasmala = (surah: number) => surah !== 1 && surah !== 9
+
 const NAMES = new Map((surahMeta as { surah: number; name: string }[]).map((m) => [m.surah, m.name]))
 
 /**
@@ -209,6 +219,33 @@ export function MushafView({
   }, [layout, surah])
 
   /** Which page holds a given word. */
+  /**
+   * The basmala as this mushaf prints it, taken from the mushaf itself.
+   *
+   * Every surah but At-Tawbah opens with it, on its own line above the first
+   * ayah — and the layout does not carry that line. It holds only words that
+   * belong to a numbered ayah, and above every surah except Al-Fatiha the
+   * basmala belongs to none: it is printed, recited, and not counted. Page 2
+   * of this data starts at line 3 for exactly that reason, with the heading
+   * and the basmala both missing.
+   *
+   * It is read out of Al-Fatiha, where the same words *are* ayah 1, rather
+   * than typed here. Quranic orthography is not something to retype from
+   * memory into a source file, and taking it from the page guarantees the
+   * same alifs, the same superscript alif in ٱلرَّحْمَـٰنِ, and the same font
+   * behaviour as every other line.
+   */
+  const basmala = useMemo(() => {
+    if (!layout) return null
+    for (const page of layout.pages) {
+      for (const line of page) {
+        const words = line.w.filter((w) => w[1]?.startsWith('1:1:'))
+        if (words.length >= 4) return words.map((w) => w[0]).join(' ')
+      }
+    }
+    return null
+  }, [layout])
+
   const pageOfKey = useMemo(() => {
     if (!layout) return new Map<string, number>()
     const m = new Map<string, number>()
@@ -420,6 +457,18 @@ export function MushafView({
             <span className="surah-band">
               <span className="surah-band-name">سُورَةُ {NAMES.get(opens)}</span>
             </span>
+          )}
+          {/*
+              At-Tawbah is the one surah that opens without it, and Al-Fatiha
+              is the one where it is ayah 1 and already on the line below —
+              printing it here would set it twice.
+
+              It carries no word keys, so word-following, the Veil and the
+              fork drill all pass over it exactly as they pass over the
+              heading. It is on the page because it is on the page.
+          */}
+          {opens !== null && showsBasmala(opens) && basmala && (
+            <p className="mushaf-basmala">{basmala}</p>
           )}
           <p
             className={`mushaf-line${line.n === drillLine ? ' is-drill' : ''}${
