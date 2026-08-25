@@ -11,7 +11,10 @@
 :root {
   --t-fast: 140ms;
   --t-base: 220ms;
-  --t-slow: 380ms;
+  /* 320ms, down from 380. A surface that arrives on a tap has about that
+     long before the tap stops feeling connected to it, and the player sheet —
+     the largest thing here — is the one thing that earns the ceiling. */
+  --t-slow: 320ms;
   --ease-out: cubic-bezier(0.22, 0.72, 0.24, 1);
   --ease-in: cubic-bezier(0.55, 0, 0.85, 0.35);
   /* A touch of overshoot, for the few things that should feel picked up. */
@@ -226,6 +229,7 @@
  * a list that ripples every time you come back to it is the thing that reads
  * as cheap.
  */
+.home,
 .panel,
 .surah-list,
 .mushaf,
@@ -242,16 +246,7 @@
 }
 
 /* The player is pinned, so it rises into place the first time it exists. */
-.player {
-  animation: player-in var(--t-slow) var(--ease-out);
-}
 
-@keyframes player-in {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-}
 
 /* ============ tab bar ============ */
 
@@ -289,11 +284,17 @@
   .splash-mark,
   .splash-alt,
   .splash-sheen,
+  .home,
   .panel,
   .surah-list,
   .mushaf,
   .hifz,
   .fork,
+  .eq,
+  .ring,
+  .dialog,
+  .scrim,
+  .toast,
   .player,
   .row.active::before,
   .row.active .numeral,
@@ -557,5 +558,205 @@
   .controls .ctrl,
   .ctrl.big {
     transition: none;
+  }
+}
+
+/* ============ marks, dialogs and presses ============ */
+
+/*
+ * A mark that answers a tap.
+ *
+ * The equaliser replacing a surah's number, and the percentage replacing its
+ * download button, are both DOM swaps — the old node leaves and the new one
+ * is simply there. This is the shortest motion in the app on purpose: it is
+ * not a surface arriving, it is confirmation that your tap landed on this row.
+ *
+ * On the container, never on the three bars. Staggering them would be a
+ * cascade on a hundred-and-fourteen-row list.
+ */
+@keyframes mark-appear {
+  from {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+}
+
+.eq,
+.ring {
+  animation: mark-appear var(--t-fast) var(--ease-out);
+}
+
+/* The number it replaces goes quiet rather than blinking out. */
+.numeral {
+  transition: color var(--t-base) var(--ease-out);
+}
+
+/*
+ * A centred surface arrives toward the reader, not from a direction. The
+ * confirm dialog is `place-items: center`, so it has no edge to come from.
+ */
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+
+.dialog {
+  animation: dialog-in var(--t-base) var(--ease-out);
+}
+
+.scrim {
+  animation: scrim-in var(--t-base) var(--ease-out);
+}
+
+/* An error that blinks into existence reads as a bug. Same eight pixels of
+   travel a panel uses, so the two feel like one system. */
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+.toast {
+  animation: toast-in var(--t-base) var(--ease-out);
+}
+
+/*
+ * Presses that had no give.
+ *
+ * These all set a scale on :active with no transition declared, so they
+ * snapped both ways — a jump, not a press. The scale follows the rule the
+ * file already keeps: the smaller the target, the deeper the press.
+ *
+ * A glass element is transformed only where it is smaller than a thumb;
+ * moving a backdrop-filter region re-blurs it every frame, so the capsule
+ * keeps its press on its children.
+ */
+.cap-btn,
+.cap-open,
+.dock-circle,
+.dock-tab,
+.home-round,
+.face-cell,
+.seg button,
+.year,
+.theme-card,
+.toast-x,
+.see-all,
+.place {
+  transition:
+    transform var(--t-fast) var(--ease-out),
+    opacity var(--t-fast) var(--ease-out),
+    background-color var(--t-base) var(--ease-out),
+    border-color var(--t-base) var(--ease-out);
+}
+
+.home-round:active,
+.toast-x:active {
+  transform: scale(0.94);
+}
+
+.face-cell:active,
+.seg button:active {
+  transform: scale(0.96);
+}
+
+.year:active,
+.theme-card:active,
+.place:active {
+  transform: scale(0.985);
+}
+
+/* A text link must not scale — its glyphs would resample mid-press. */
+.see-all:active {
+  opacity: 0.6;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-round:active,
+  .toast-x:active,
+  .face-cell:active,
+  .seg button:active,
+  .year:active,
+  .theme-card:active,
+  .place:active {
+    transform: none;
+  }
+
+  .see-all:active {
+    opacity: 1;
+  }
+}
+
+/* ============ the sheet ============ */
+
+/*
+ * The player's exit.
+ *
+ * Its entrance is glass.css's `sheet-up`: eighteen per cent of the sheet's own
+ * height, so it always enters from just past the screen edge however tall it
+ * is. A flat pixel travel does not — on a short sheet it starts halfway up the
+ * screen.
+ *
+ * The exit is shorter than the entrance and travels less. A dismissal should
+ * get out of the way, not re-narrate the journey — and it is whole: the
+ * contents get no say in leaving.
+ */
+@keyframes sheet-down {
+  to {
+    opacity: 0;
+    transform: translateY(14%);
+  }
+}
+
+.player.is-leaving {
+  animation: sheet-down var(--t-base) var(--ease-in) forwards;
+  pointer-events: none;
+}
+
+/*
+ * The scrim goes first, and faster. It is not a surface, it is an absence —
+ * lifting it before the sheet has cleared the edge makes the exit read as
+ * revealing the app rather than retreating from it.
+ */
+@keyframes scrim-out {
+  to {
+    opacity: 0;
+  }
+}
+
+.sheet-scrim.is-leaving {
+  animation: scrim-out var(--t-fast) var(--ease-in) forwards;
+  pointer-events: none;
+}
+
+/*
+ * Two blocks settling just behind the surface.
+ *
+ * A sheet that arrives as one flat rectangle reads as a screenshot sliding up.
+ * Sixty milliseconds is deliberately under the threshold where a viewer starts
+ * counting a stagger, and it is capped at two elements — a third would make it
+ * a cascade.
+ */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+.player-top,
+.controls {
+  animation: rise-in var(--t-base) var(--ease-out) 60ms both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .player.is-leaving,
+  .sheet-scrim.is-leaving,
+  .player-top,
+  .controls {
+    animation: none;
   }
 }

@@ -853,11 +853,26 @@ body {
   margin: 0.55rem 0.3rem;
 }
 
+/*
+ * Scaled, not resized.
+ *
+ * This was `width: N%` set from React, and the playhead updates about four
+ * times a second for as long as the sheet is open — so it re-laid out and
+ * repainted the bar four times a second. A transform of the full width costs
+ * the compositor alone. The track is `direction: ltr`, so the origin is the
+ * same edge in both writing modes.
+ *
+ * No transition: a bar eased over 220ms against a value that changes every
+ * 250ms is a smooth lie about where the recitation actually is.
+ */
 .track .fill {
   position: absolute;
   left: 0;
   top: 0;
   bottom: 0;
+  inline-size: 100%;
+  transform: scaleX(var(--pct, 0));
+  transform-origin: left center;
   background: var(--accent);
   border-radius: 2px;
 }
@@ -869,7 +884,11 @@ body {
   height: 13px;
   border-radius: 50%;
   background: var(--accent);
-  transform: translate(-50%, -50%);
+  /* The hover scale composes with the centring rather than replacing it.
+     As a bare `transform: scale(1.25)` it dropped the translate and the knob
+     jumped down and right by half its own size every time a pointer crossed
+     the track. */
+  transform: translate(-50%, -50%) scale(var(--knob-scale, 1));
   box-shadow: 0 1px 4px rgb(var(--shadow-rgb) / 0.35);
 }
 

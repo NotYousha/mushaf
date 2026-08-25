@@ -173,6 +173,9 @@ export const en = {
   arabic: 'العربية',
   english: 'English',
   reciters: 'Reciters',
+  /** Heading over the two mosques' Ramadan archives, which are not
+   *  reciters: a Ramadan is thirty nights and a dozen imams. */
+  taraweeh: 'Taraweeh',
   /** The first tab: what the app opens on. */
   tabHome: 'Home',
   /** Label over the card that takes you back to where you stopped. */

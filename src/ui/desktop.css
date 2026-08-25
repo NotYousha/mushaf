@@ -140,7 +140,7 @@
 
   /* The track is a slider; say so before it is dragged. */
   .track:hover .knob {
-    transform: scale(1.25);
+    --knob-scale: 1.25;
   }
 }
 

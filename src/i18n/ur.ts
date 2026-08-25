@@ -159,6 +159,9 @@ export const ur: Strings = {
   arabic: 'العربية',
   english: 'English',
   reciters: 'قراء',
+  /** Heading over the two mosques' Ramadan archives, which are not
+   *  reciters: a Ramadan is thirty nights and a dozen imams. */
+  taraweeh: 'تراویح',
   /** The first tab: what the app opens on. */
   tabHome: 'ہوم',
   /** Label over the card that takes you back to where you stopped. */

@@ -82,15 +82,33 @@ export function Dock({
          * dropped for a flat fill while scrolling and restored once the list
          * comes to rest, where it is what anyone actually looks at.
          */
-        setScrolling(true)
-        window.clearTimeout(settle.current)
-        settle.current = window.setTimeout(() => setScrolling(false), 140)
-
         const y = el.scrollTop
         const delta = y - lastY.current
-        // A dead zone, so a thumb resting on the list does not flap the dock
-        // open and shut.
+        /*
+         * The dead zone comes first.
+         *
+         * Dropping the blur used to happen before this check, so a one-pixel
+         * thumb flick — a scroll event with a delta of nothing — still swapped
+         * the glass for a flat fill and swapped it back 140ms later. The dock
+         * strobed at rest. A movement too small to fold the dock is too small
+         * to be worth dropping the blur for either.
+         */
         if (Math.abs(delta) < 6) return
+
+        /*
+         * Blurring the backdrop means re-sampling whatever the list painted
+         * under the dock, every frame, for as long as it moves — so the blur
+         * is dropped for a flat fill while scrolling and restored once the
+         * list comes to rest, where it is what anyone actually looks at.
+         *
+         * The settle has to outlast the fold. The capsule and the tabs resize
+         * for --t-base, and if the blur came back while they were still moving
+         * we would be re-blurring a changing geometry every frame, which is
+         * the exact cost this is here to avoid.
+         */
+        setScrolling(true)
+        window.clearTimeout(settle.current)
+        settle.current = window.setTimeout(() => setScrolling(false), 240)
         lastY.current = y
         // Near the top there is nothing to gain by hiding, and a dock that
         // stays folded at rest looks broken.

@@ -127,9 +127,13 @@
   color: var(--ink-strong);
   cursor: pointer;
   overflow: hidden;
+  /* --t-base, not --t-slow: this is a backdrop-filter region changing size,
+     so every frame of it re-samples and re-blurs. It has to be over before
+     the blur comes back, and 220ms is right on its own terms — the dock is
+     small and it is answering a gesture still in progress. */
   transition:
-    flex-basis var(--t-slow) var(--ease-out),
-    height var(--t-slow) var(--ease-out);
+    flex-basis var(--t-base) var(--ease-out),
+    height var(--t-base) var(--ease-out);
 }
 
 .dock.is-tight .now-capsule {
@@ -206,7 +210,7 @@
   padding: 0 var(--space-1);
   border-radius: var(--radius-pill);
   overflow: hidden;
-  transition: flex-grow var(--t-slow) var(--ease-out);
+  transition: flex-grow var(--t-base) var(--ease-out);
 }
 
 /*
@@ -237,7 +241,7 @@
   overflow: hidden;
   touch-action: manipulation;
   transition:
-    max-width var(--t-slow) var(--ease-out),
+    max-width var(--t-base) var(--ease-out),
     padding var(--t-slow) var(--ease-out),
     opacity var(--t-base) var(--ease-out),
     background-color var(--t-base) var(--ease-out),
@@ -257,8 +261,19 @@
 
 /* The label goes before the tab does, so the pill narrows in two stages
    rather than snapping. */
+/*
+ * The label collapses rather than disappearing.
+ *
+ * `display: none` is discrete, and the tab is a grid of icon over label inside
+ * a fixed-height row — so removing the label re-centred the icon vertically
+ * and the selected tab's glyph jumped in the middle of a transition that is
+ * supposed to be a smooth narrowing. A zero-width span still contributes its
+ * line box, so the row keeps its height and only the column collapses. The
+ * same trick the player's own fold uses.
+ */
 .dock.is-tight .dock-tab span {
-  display: none;
+  max-width: 0;
+  overflow: hidden;
 }
 
 .dock-circle {
@@ -406,12 +421,20 @@
 .dock.is-scrolling .glass {
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
-  background: rgb(var(--glass-tint) / 0.93);
+  /* 0.88 rather than 0.93: the step from the resting 0.62 is what the eye
+     catches, and a fill this close to opaque hides just as much. */
+  background: rgb(var(--glass-tint) / 0.88);
+  /* Instant on the way out. There is no showing sharp content through a 0.62
+     fill for even one frame, so the flat fill has to be there before the blur
+     goes. */
+  transition: none;
 }
 
 /* Its own layer, so scrolling underneath never repaints it. */
 .dock .glass {
   will-change: transform;
+  /* Only the return is eased — see .is-scrolling above. */
+  transition: background-color var(--t-base) var(--ease-out);
 }
 
 /*

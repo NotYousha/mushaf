@@ -527,3 +527,143 @@
 .credit a {
   color: var(--gold);
 }
+
+/* =====================================================================
+   Everyone
+   ---------------------------------------------------------------------
+   The full list, which "See all" opens: every individual mushaf as a face,
+   then the two mosques' Ramadan archives.
+
+   This replaced a scrolling strip of chips. The strip printed "114/114"
+   against a complete mushaf — a number that never varies — spent most of its
+   width on it, and could show three names at a time. It also put a mosque's
+   thirty-year archive on the same footing as one man's mushaf, which they are
+   not: a Ramadan is a dozen imams across thirty nights.
+   ===================================================================== */
+
+.everyone {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.everyone-head {
+  margin: 0.4rem 0 0;
+  font-family: var(--font-ar);
+  font-size: var(--text-md);
+  font-weight: 700;
+  color: var(--ink-strong);
+}
+
+/* The selected face, marked on the ring rather than with a tick: the ring is
+   already the shape the eye is following along the row. */
+.face-cell.is-on .face-round {
+  box-shadow:
+    0 0 0 2px var(--accent-deep),
+    var(--shadow-sm);
+}
+
+.face-cell.is-on .face-cell-name {
+  color: var(--ink-strong);
+  font-weight: 650;
+}
+
+/* Only ever drawn for a mushaf still being recorded. */
+.face-cell-part {
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--gold);
+}
+
+/* ============ the two mosques ============ */
+
+.places {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.place {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid var(--accent-line);
+  border-radius: var(--radius-lg);
+  background: linear-gradient(150deg, var(--card), var(--card-2));
+  box-shadow: var(--shadow-sm);
+  font-family: inherit;
+  color: inherit;
+  text-align: start;
+  inline-size: 100%;
+}
+
+.place.is-on {
+  border-color: var(--accent-soft);
+}
+
+/* Overlapped portraits, so five men take the room of about three. */
+.place-faces {
+  display: flex;
+  flex: 0 0 auto;
+}
+
+.place-face {
+  inline-size: 2.1rem;
+  block-size: 2.1rem;
+  border-radius: var(--radius-pill);
+  border: 2px solid var(--card);
+  background-color: var(--tile);
+  background-size: cover;
+  background-position: center;
+}
+
+/* Each sits back over the one before it. The first keeps its own edge. */
+.place-face + .place-face {
+  margin-inline-start: -0.75rem;
+}
+
+.place-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-inline-size: 0;
+  flex: 1 1 auto;
+}
+
+.place-name {
+  font-family: var(--font-name);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--ink-strong);
+}
+
+.place-meta {
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+}
+
+.place-go {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  color: var(--gold);
+  /* Points the way the reader is going, and turns to point down at the list
+     it has opened. */
+  transform: rotate(-90deg);
+}
+
+[dir='rtl'] .place-go {
+  transform: rotate(90deg);
+}
+
+.place.is-open .place-go,
+[dir='rtl'] .place.is-open .place-go {
+  transform: rotate(0deg);
+}
+
+.place:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}

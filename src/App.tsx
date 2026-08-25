@@ -45,6 +45,7 @@ import { ImamPanel } from './ui/ImamPanel'
 import { LockScreenPanel } from './ui/LockScreenPanel'
 import { FacePanel } from './ui/FacePanel'
 import { HomePanel, type HomeFace, type HomeResume } from './ui/HomePanel'
+import { ReciterPanel, type PlaceCard } from './ui/ReciterPanel'
 import { MushafView, ayahStartsFor } from './ui/MushafView'
 import { HifzBoard } from './ui/HifzBoard'
 import { ForkDrill } from './ui/ForkDrill'
@@ -106,7 +107,7 @@ import {
 } from './ui/theming'
 import { isHafs, riwayahLabel } from './catalog/riwayah'
 import { artistFor, artistForEn, voiceLabel } from './catalog/voice'
-import { arabicDigits, imamsOf, PLACES, type Place } from './catalog/mosques'
+import { allImams, arabicDigits, imamsOf, PLACES, type Place } from './catalog/mosques'
 import {
   imamAt,
   imamName,
@@ -192,6 +193,16 @@ export default function App() {
   /** The full player is a sheet over the app; the dock capsule is its
    *  collapsed form, so it starts closed. */
   const [playerMin, setPlayerMin] = useState(true)
+  /**
+   * The sheet on its way out.
+   *
+   * It used to unmount the frame the reader dismissed it — the largest surface
+   * in the app disappearing between two frames, which is the most abrupt thing
+   * here. It now stays mounted for the length of its exit and commits when the
+   * animation ends. The preference is written immediately either way: what is
+   * stored is the reader's choice, not the animation's progress.
+   */
+  const [leaving, setLeaving] = useState(false)
   /**
    * Seeded from the same copy the boot script read, never from the default.
    *
@@ -750,6 +761,42 @@ export default function App() {
     return watchSystemMode(() => applyTheme(theme, appearance))
   }, [theme, appearance])
 
+  /**
+   * Dismiss the sheet.
+   *
+   * Reduced motion closes it outright: someone who asked for less movement
+   * gets the state change and none of the travel. Otherwise the exit runs and
+   * onAnimationEnd commits, with a timer only as a backstop for the case where
+   * the animation never runs at all and the event therefore never fires.
+   */
+  const closeSheet = useCallback(() => {
+    void setPref('playerMin', true)
+    const still =
+      typeof window !== 'undefined' &&
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    if (still) {
+      setPlayerMin(true)
+      setLeaving(false)
+      return
+    }
+    /* The sheet is about to go and focus is almost certainly inside it. Hand
+       it back to the capsule the sheet came from, rather than letting it fall
+       to <body> and strand a keyboard reader above the whole list. */
+    if (document.activeElement instanceof HTMLElement &&
+        document.activeElement.closest('.player')) {
+      const back = document.querySelector<HTMLElement>('.cap-open')
+      if (back) back.focus()
+      else document.activeElement.blur()
+    }
+    setLeaving(true)
+    window.setTimeout(() => {
+      setLeaving((on) => {
+        if (on) setPlayerMin(true)
+        return false
+      })
+    }, 400)
+  }, [])
+
   const scrollRef = useRef<HTMLDivElement | null>(null)
   const searchRef = useRef<HTMLInputElement | null>(null)
   const selectedChip = useRef<HTMLButtonElement | null>(null)
@@ -1115,6 +1162,49 @@ export default function App() {
     [individual, faces, lang],
   )
 
+  /** How many surahs each mushaf holds, to mark the ones still growing. */
+  const surahCounts = useMemo(
+    () => Object.fromEntries(individual.map((r) => [r.id, r.surahs.length])),
+    [individual],
+  )
+
+  /**
+   * The two mosques, as cards rather than as chips in a row.
+   *
+   * Each carries a few of the imams who led there. Two archives of the same
+   * shape and a similar count are otherwise told apart by the word alone, and
+   * the faces say which mosque this is at a glance.
+   */
+  const placeCards = useMemo<PlaceCard[]>(() => {
+    const roster = allImams()
+    const cards: PlaceCard[] = []
+    for (const m of PLACES) {
+      const years = mosqueYears.get(m.place) ?? []
+      if (!years.length) continue
+      const led = roster
+        .filter((i) => i.serves.includes(m.place))
+        .map((i) => ({
+          id: i.id,
+          label: inScript(lang, i.name, i.nameEn),
+          src:
+            faces.get(i.id)?.url ??
+            (i.photo ? `${import.meta.env.BASE_URL}${i.photo}` : null),
+        }))
+        .filter((i) => i.src)
+        .slice(0, 5)
+      cards.push({
+        place: m.place,
+        label: inScript(lang, m.ar, m.en),
+        years: years.length,
+        open: yearsOpen === m.place,
+        here: openPlace === m.place,
+        year: openPlace === m.place ? openYear : null,
+        faces: led,
+      })
+    }
+    return cards
+  }, [mosqueYears, yearsOpen, openPlace, openYear, faces, lang])
+
   /**
    * Where the listener stopped.
    *
@@ -1264,6 +1354,12 @@ export default function App() {
       }
       // The transport keys act on the player even when a button has focus;
       // Enter and Space on a focused button are the browser's to handle.
+      // A sheet with a scrim is modal, and Escape is how a modal closes.
+      if (e.key === 'Escape' && !playerMin) {
+        e.preventDefault()
+        closeSheet()
+        return
+      }
       if (e.code === 'Space' && tag !== 'BUTTON') {
         e.preventDefault()
         void toggle()
@@ -1284,7 +1380,7 @@ export default function App() {
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [toggle, current, time, t.dir])
+  }, [toggle, current, time, t.dir, playerMin, closeSheet])
 
   /*
    * The list's props have to keep their identity between renders or
@@ -1364,170 +1460,7 @@ export default function App() {
         </div>
         )}
 
-        {tab !== 'home' && (individual.length > 1 || mosqueYears.size > 0) && (
-          <div className="reciters" role="tablist" aria-label="القارئ">
-            {individual.map((r) => (
-              <button
-                key={r.id}
-                role="tab"
-                aria-selected={r.id === reciterId}
-                className="chip"
-                // The strip scrolls, and the reciter you are listening to is
-                // the one that has to be on screen — otherwise it sits off
-                // the edge and the row looks arbitrary.
-                ref={r.id === reciterId ? selectedChip : undefined}
-                onClick={() => {
-                  setYearsOpen(null)
-                  void switchReciter(r.id)
-                }}
-              >
-                {/* A name, not a translation: the same name written so the
-                    reader can say it. Hardcoding the Arabic here is what put
-                    an English section label next to ياسر الدوسري in one row. */}
-                <span className="chip-name">{inScript(lang, r.name, r.nameEn)}</span>
-                {riwayahLabel(r, lang) && (
-                  <span className="chip-riwayah">({riwayahLabel(r, lang)})</span>
-                )}
-                <span className="chip-meta">
-                  {digits(lang, r.surahs.length)}/{digits(lang, 114)}
-                </span>
-              </button>
-            ))}
 
-            {/* One chip per mosque, standing for all its years. Each opens a
-                picker rather than selecting anything, because there is no
-                sensible default year to jump to — and it reads as selected
-                whenever one of its own years is the thing playing. */}
-            {PLACES.map((m) => {
-              const years = mosqueYears.get(m.place) ?? []
-              if (!years.length) return null
-              const here = openPlace === m.place
-              const open = yearsOpen === m.place
-              return (
-                <button
-                  key={m.place}
-                  role="tab"
-                  aria-selected={here}
-                  aria-expanded={open}
-                  aria-controls={`years-${m.place}`}
-                  className={`chip chip-group${open ? ' is-open' : ''}`}
-                  ref={here && !open ? selectedChip : undefined}
-                  onClick={() => setYearsOpen(open ? null : m.place)}
-                >
-                  <span className="chip-name">{inScript(lang, m.shortAr, m.shortEn)}</span>
-                  <span className="chip-meta">
-                    {here && openYear !== null
-                      ? isArabicScript(lang)
-                        ? arabicDigits(openYear)
-                        : openYear
-                      : t.haramCount(digits(lang, years.length))}
-                    <Chevron size={12} />
-                  </span>
-                </button>
-              )
-            })}
-          </div>
-        )}
-
-        {PLACES.map((m) => {
-          const years = mosqueYears.get(m.place) ?? []
-          if (!years.length) return null
-          const open = yearsOpen === m.place
-          return (
-            /* Kept mounted and collapsed rather than unmounted, so it folds
-               away on the way out as well as on the way in. Closed, it is
-               visibility:hidden, which takes it out of the tab order and off
-               a screen reader without costing the animation. */
-            <section
-              key={m.place}
-              className={`years${open ? ' is-open' : ''}`}
-              id={`years-${m.place}`}
-            >
-              <div className="years-inner">
-                <div className="years-head">
-                  <h3>
-                    {t.haramPick} · {inScript(lang, m.ar, m.en)}
-                  </h3>
-                  <span className="years-count">{t.haramCount(digits(lang, years.length))}</span>
-                </div>
-                {/* Newest first: the year someone wants is nearly always the
-                    last one, and the oldest is a long scroll from the top. */}
-                <div
-                  className="years-scroll"
-                  role="tablist"
-                  aria-label={inScript(lang, m.ar, m.en)}
-                >
-                  {years.map((r) => {
-                    const selected = r.id === reciterId
-                    const led = imamsOf(m.place, r.year!)
-                    return (
-                      <button
-                        key={r.id}
-                        role="tab"
-                        aria-selected={selected}
-                        className={`year${selected ? ' is-on' : ''}`}
-                        ref={selected ? selectedChip : undefined}
-                        // Chosen, so the picker gets out of the way and gives
-                        // the surahs back the screen it was holding.
-                        onClick={() => {
-                          setYearsOpen(null)
-                          void switchReciter(r.id)
-                        }}
-                      >
-                        <span className="year-num">
-                          {isArabicScript(lang) ? arabicDigits(r.year!) : r.year}
-                        </span>
-                        <span className="year-body">
-                          {r.ce ? <span className="year-ce">{r.ce}</span> : null}
-                          {/*
-                              Faces, not a truncated list of names.
-
-                              Every row printed the same line — six consecutive
-                              years all read "Abdullah Al-Juhany · Maher…"
-                              because the roster changes at the end, which is
-                              exactly where the ellipsis fell. The line meant
-                              to tell the years apart told them apart least.
-                              A row of portraits is scannable in one glance and
-                              differs between years where the roster differs.
-                          */}
-                          {led.length > 0 && (
-                            <span className="year-faces">
-                              {led.slice(0, 7).map((i) => (
-                                <span
-                                  key={i.id}
-                                  className="year-face"
-                                  title={inScript(lang, i.name, i.nameEn)}
-                                  style={
-                                    faces.get(i.id)?.url || i.photo
-                                      ? {
-                                          ['--face-src' as string]: `url('${
-                                            faces.get(i.id)?.url ??
-                                            `${import.meta.env.BASE_URL}${i.photo}`
-                                          }')`,
-                                        }
-                                      : undefined
-                                  }
-                                />
-                              ))}
-                              {led.length > 7 && (
-                                <span className="year-more">
-                                  +{digits(lang, led.length - 7)}
-                                </span>
-                              )}
-                            </span>
-                          )}
-                        </span>
-                        <span className="year-size">
-                          {formatBytes(r.surahs.reduce((a, s) => a + s.bytes, 0), lang)}
-                        </span>
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-            </section>
-          )
-        })}
 
         {tab === 'quran' && (
           <div className="search">
@@ -1589,6 +1522,131 @@ export default function App() {
 
           {tab === 'library' && (
             <div className="panel">
+              {/*
+                  Everyone the app can play, which is where "See all" lands.
+
+                  A mosque's year picker opens directly under its own card. It
+                  used to sit at the top of the sheet, beside the chip that
+                  opened it; from here that would have been off screen behind
+                  whatever the reader had already scrolled past.
+              */}
+              <ReciterPanel
+                t={t}
+                lang={lang}
+                faces={homeFaces}
+                activeId={reciterId}
+                counts={surahCounts}
+                places={placeCards}
+                onPick={(id) => {
+                  setYearsOpen(null)
+                  void switchReciter(id)
+                  setTab('quran')
+                }}
+                onTogglePlace={(place) =>
+                  setYearsOpen(yearsOpen === place ? null : (place as Place))
+                }
+              />
+
+            {PLACES.map((m) => {
+              const years = mosqueYears.get(m.place) ?? []
+              if (!years.length) return null
+              const open = yearsOpen === m.place
+              return (
+                /* Kept mounted and collapsed rather than unmounted, so it folds
+                   away on the way out as well as on the way in. Closed, it is
+                   visibility:hidden, which takes it out of the tab order and off
+                   a screen reader without costing the animation. */
+                <section
+                  key={m.place}
+                  className={`years${open ? ' is-open' : ''}`}
+                  id={`years-${m.place}`}
+                >
+                  <div className="years-inner">
+                    <div className="years-head">
+                      <h3>
+                        {t.haramPick} · {inScript(lang, m.ar, m.en)}
+                      </h3>
+                      <span className="years-count">{t.haramCount(digits(lang, years.length))}</span>
+                    </div>
+                    {/* Newest first: the year someone wants is nearly always the
+                        last one, and the oldest is a long scroll from the top. */}
+                    <div
+                      className="years-scroll"
+                      role="tablist"
+                      aria-label={inScript(lang, m.ar, m.en)}
+                    >
+                      {years.map((r) => {
+                        const selected = r.id === reciterId
+                        const led = imamsOf(m.place, r.year!)
+                        return (
+                          <button
+                            key={r.id}
+                            role="tab"
+                            aria-selected={selected}
+                            className={`year${selected ? ' is-on' : ''}`}
+                            ref={selected ? selectedChip : undefined}
+                            // Chosen, so the picker gets out of the way and gives
+                            // the surahs back the screen it was holding.
+                            onClick={() => {
+                              setYearsOpen(null)
+                              void switchReciter(r.id)
+                            }}
+                          >
+                            <span className="year-num">
+                              {isArabicScript(lang) ? arabicDigits(r.year!) : r.year}
+                            </span>
+                            <span className="year-body">
+                              {r.ce ? <span className="year-ce">{r.ce}</span> : null}
+                              {/*
+                                  Faces, not a truncated list of names.
+
+                                  Every row printed the same line — six consecutive
+                                  years all read "Abdullah Al-Juhany · Maher…"
+                                  because the roster changes at the end, which is
+                                  exactly where the ellipsis fell. The line meant
+                                  to tell the years apart told them apart least.
+                                  A row of portraits is scannable in one glance and
+                                  differs between years where the roster differs.
+                              */}
+                              {led.length > 0 && (
+                                <span className="year-faces">
+                                  {led.slice(0, 7).map((i) => (
+                                    <span
+                                      key={i.id}
+                                      className="year-face"
+                                      title={inScript(lang, i.name, i.nameEn)}
+                                      style={
+                                        faces.get(i.id)?.url || i.photo
+                                          ? {
+                                              ['--face-src' as string]: `url('${
+                                                faces.get(i.id)?.url ??
+                                                `${import.meta.env.BASE_URL}${i.photo}`
+                                              }')`,
+                                            }
+                                          : undefined
+                                      }
+                                    />
+                                  ))}
+                                  {led.length > 7 && (
+                                    <span className="year-more">
+                                      +{digits(lang, led.length - 7)}
+                                    </span>
+                                  )}
+                                </span>
+                              )}
+                            </span>
+                            <span className="year-size">
+                              {formatBytes(r.surahs.reduce((a, s) => a + s.bytes, 0), lang)}
+                            </span>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                </section>
+              )
+            })}
+
               <FavouritesPanel
                 t={t}
                 lang={lang}
@@ -1922,18 +1980,32 @@ export default function App() {
         </div>
       </div>
 
-      {currentView && reciter && !playerMin && (
+      {currentView && reciter && (!playerMin || leaving) && (
         <div
-          className="sheet-scrim"
-          onClick={() => {
-            setPlayerMin(true)
-            void setPref('playerMin', true)
-          }}
+          className={`sheet-scrim${leaving ? ' is-leaving' : ''}`}
+          onClick={closeSheet}
         />
       )}
 
-      {currentView && reciter && !playerMin && (
-        <div className={`player${playerMin ? ' is-min' : ''}`}>
+      {currentView && reciter && (!playerMin || leaving) && (
+        <div
+          className={`player${leaving ? ' is-leaving' : ''}`}
+          role="dialog"
+          aria-modal="true"
+          aria-label={t.openPlayer}
+          /*
+           * Committing on the animation rather than on a timer, so the two
+           * cannot drift apart. Guarded by name because a child's own entrance
+           * bubbles up here too, and an unguarded handler would let the
+           * contents landing close the sheet they just landed on.
+           */
+          onAnimationEnd={(e) => {
+            if (e.animationName === 'sheet-down') {
+              setPlayerMin(true)
+              setLeaving(false)
+            }
+          }}
+        >
           {/* The grabber. Folding the player away is the difference between
               seeing four surahs and seeing ten, so it is a full-width target
               rather than a small chevron in a corner. */}
@@ -1941,11 +2013,7 @@ export default function App() {
             className="player-handle"
             aria-expanded={!playerMin}
             aria-label={playerMin ? t.expandPlayer : t.collapsePlayer}
-            onClick={() => {
-              const next = !playerMin
-              setPlayerMin(next)
-              void setPref('playerMin', next)
-            }}
+            onClick={closeSheet}
           >
             <span className="handle-bar" aria-hidden="true" />
             <Chevron size={18} />
@@ -2170,7 +2238,10 @@ export default function App() {
                 if (e.key === 'ArrowLeft') engine.current!.seek(time - 10)
               }}
             >
-              <div className="fill" style={{ width: `${pct}%` }} />
+              <div
+                className="fill"
+                style={{ ['--pct' as string]: pct / 100 }}
+              />
               <div className="knob" style={{ left: `${pct}%` }} />
             </div>
             {canCast && mode === 'offline' && (
@@ -2322,6 +2393,7 @@ export default function App() {
             : null
         }
         onOpenPlayer={() => {
+          setLeaving(false)
           setPlayerMin(false)
           void setPref('playerMin', false)
         }}
