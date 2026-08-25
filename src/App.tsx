@@ -41,6 +41,7 @@ import { SurahList, plainName } from './ui/SurahList'
 import { FavouritesPanel } from './ui/FavouritesPanel'
 import { ImamPanel } from './ui/ImamPanel'
 import { HomePanel, type HomeFace, type HomeResume } from './ui/HomePanel'
+import { HOME_RECITERS } from './catalog/home'
 import { ReciterPanel, type PlaceCard } from './ui/ReciterPanel'
 import { MushafView, ayahStartsFor } from './ui/MushafView'
 import { HifzBoard } from './ui/HifzBoard'
@@ -1189,12 +1190,18 @@ export default function App() {
    * The few on the home screen.
    *
    * A landing screen is not a directory. The grid stops being glanceable at
-   * about a dozen faces, and the roster only grows — so the home screen shows
-   * the mushafs marked for it and "See all" shows every one.
+   * about a dozen faces and the roster only grows, so the home screen shows
+   * the few named in HOME_RECITERS and "See all" shows every one.
    */
   const homeFaces = useMemo(
-    () => allFaces.filter((f) => individual.find((r) => r.id === f.id)?.home),
-    [allFaces, individual],
+    () =>
+      // Mapped over the named list rather than filtered by a flag, so the
+      // order is the one chosen and a newly added mushaf cannot appear here
+      // by simply existing.
+      HOME_RECITERS.map((id) => allFaces.find((f) => f.id === id)).filter(
+        (f): f is HomeFace => !!f,
+      ),
+    [allFaces],
   )
 
   /** How many surahs each mushaf holds, to mark the ones still growing. */
