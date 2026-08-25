@@ -3564,3 +3564,36 @@ body {
 [dir='rtl'] .frontier .fade {
   background: linear-gradient(to right, var(--accent-soft), transparent);
 }
+
+/*
+ * The logo in the shared header.
+ *
+ * The home screen carried the mark and every other tab carried only the
+ * wordmark set in Amiri — the app's name in a typeface, which is not the same
+ * thing as its logo. Sized a little smaller than the home screen's, because
+ * this header sits above a scrolling list rather than opening a page.
+ */
+.sheet-mark {
+  flex: none;
+  display: grid;
+  place-items: center;
+  inline-size: 2.5rem;
+  block-size: 2.5rem;
+  border-radius: var(--radius-xs);
+  background: var(--card);
+  border: 1px solid var(--accent-line);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.sheet-mark img {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+
+/* The wordmark takes the room the mark leaves, and gives way before it. */
+.sheet-head .wordmark {
+  min-inline-size: 0;
+  margin-inline-end: auto;
+}

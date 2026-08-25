@@ -42,6 +42,7 @@ import { FavouritesPanel } from './ui/FavouritesPanel'
 import { ImamPanel } from './ui/ImamPanel'
 import { HomePanel, type HomeFace, type HomeResume } from './ui/HomePanel'
 import { HOME_RECITERS } from './catalog/home'
+import { withTransition } from './ui/transition'
 import { ReciterPanel, type PlaceCard } from './ui/ReciterPanel'
 import { MushafView, ayahStartsFor } from './ui/MushafView'
 import { HifzBoard } from './ui/HifzBoard'
@@ -162,7 +163,15 @@ export default function App() {
   const [sleepAt, setSleepAt] = useState<number | null>(null)
   // Opens on the home screen: the recitation you were in the middle of is
   // more useful than the top of a list of a hundred and fourteen surahs.
-  const [tab, setTab] = useState<Tab>('home')
+  const [tab, setTabState] = useState<Tab>('home')
+  /**
+   * Changing tab is a screen change, so it cross-fades.
+   *
+   * Wrapped once here rather than at each of the fifteen call sites: a
+   * transition that some of them remember and others do not is worse than
+   * none, because the app then animates unpredictably.
+   */
+  const setTab = useCallback((next: Tab) => withTransition(() => setTabState(next)), [])
   const [query, setQuery] = useState('')
   const [quota, setQuota] = useState({ usage: 0, quota: 0, free: 0 })
   const [error, setError] = useState<string | null>(null)
@@ -1477,6 +1486,12 @@ export default function App() {
             so the shared one, which is a player header, stands down there. */}
         {tab !== 'home' && (
         <div className="sheet-head">
+          {/* The same mark the home screen carries. Without it the header on
+              every other tab was the wordmark set in Amiri and nothing else,
+              which is the app's name in a typeface rather than its logo. */}
+          <span className="sheet-mark" aria-hidden="true">
+            <img src={`${import.meta.env.BASE_URL}logo-mark.webp`} alt="" width={40} height={40} />
+          </span>
           <h1 className="wordmark">
             <span className="wordmark-main">{brandName(lang)}</span>
             <span className="wordmark-alt">

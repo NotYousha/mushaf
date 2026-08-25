@@ -425,9 +425,15 @@
   max-inline-size: 6rem;
 }
 
-/* The first two take half the row each; everything after them takes a third. */
-.face-grid li:nth-child(1),
-.face-grid li:nth-child(2) {
+/*
+ * The first two take half the row each; everything after them takes a third.
+ *
+ * Scoped to the home screen. "See all" uses the same grid for the whole
+ * roster, and there a wider first pair is not a curated row — it is just the
+ * first two of sixteen looking arbitrarily more important.
+ */
+.home .face-grid li:nth-child(1),
+.home .face-grid li:nth-child(2) {
   grid-column: span 3;
 }
 

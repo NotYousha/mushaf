@@ -764,3 +764,73 @@
   letter-spacing: 0.3em;
   text-transform: uppercase;
 }
+
+/* ---- Screen changes ----------------------------------------------------
+ *
+ * The browser snapshots the outgoing screen and the incoming one and animates
+ * between them. What is tuned here is only the shape of that: a cross-fade
+ * with a little vertical travel on the arriving screen, so a tab change reads
+ * as one screen giving way to another rather than as a cut.
+ *
+ * The travel is small on purpose. A full slide implies a spatial relationship
+ * between tabs that this app does not have — Quran is not to the left of
+ * Library — and pretending otherwise is the kind of animation that is
+ * enjoyable twice and tiresome afterwards.
+ */
+::view-transition-old(root) {
+  animation: screen-out 180ms var(--ease-out) both;
+}
+
+::view-transition-new(root) {
+  animation: screen-in var(--t-base) var(--ease-out) both;
+}
+
+@keyframes screen-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes screen-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+/*
+ * The faces arrive in sequence rather than all at once.
+ *
+ * Five portraits appearing together is a flash; a short stagger reads as the
+ * screen settling. Only the home grid does this, and only on the first paint
+ * of it, because it is the one place with a small fixed set of things.
+ */
+.face-grid li {
+  animation: face-in var(--t-slow) var(--ease-out) both;
+}
+
+.face-grid li:nth-child(2) { animation-delay: 40ms; }
+.face-grid li:nth-child(3) { animation-delay: 80ms; }
+.face-grid li:nth-child(4) { animation-delay: 120ms; }
+.face-grid li:nth-child(5) { animation-delay: 160ms; }
+
+@keyframes face-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+}
+
+/* The resume card is the thing the screen exists for, so it leads. */
+.resume {
+  animation: face-in var(--t-slow) var(--ease-out) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root),
+  .face-grid li,
+  .resume {
+    animation: none;
+  }
+}
