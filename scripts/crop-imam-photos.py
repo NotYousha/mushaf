@@ -64,35 +64,56 @@ NAMES = {
 SIDE = 400          # comfortably sharp on a 3x screen at 5.4rem
 TOP_BIAS = 0.33     # how far down the square starts, as a fraction of the slack
 
-# Reciters the catalog names directly, with the crop stated rather than guessed.
+# Pictures whose crop is stated rather than guessed, keyed by filename stem.
 #
-#   out   filename written into public/, and the `photo` a catalog entry asks
-#         for in scripts/refresh-catalog.mjs
-#   zoom  how tight the crop is. 100 takes the whole of the shorter side; 165
-#         takes about three fifths of it, so the face fills more of the circle.
+#   zoom  how tight the crop is. 100 takes the whole of the shorter side; 155
+#         takes about two thirds of it, so the face fills more of the circle.
 #   cx cy where the crop is centred, as a percentage across and down the
 #         picture. 50/50 is dead centre.
 #
-# To re-frame one of these, change the numbers and run the script again. The
-# crop is taken from the original every time, so nothing degrades and there is
-# nothing to undo.
-RECITERS = {
+# The centre-and-high rule above is right for a head-and-shoulders portrait and
+# wrong for anything else — a photograph taken at a lectern puts the face off to
+# one side and small, and a centre square gives back a podium. Naming one here
+# overrides the rule for that picture only.
+#
+# To re-frame, change the numbers and run the script again with just that name.
+# The crop is taken from the original every time, so nothing degrades and there
+# is nothing to undo.
+FRAMING = {
     # Already square and close to centred; a little zoom past the shoulders.
-    "mishary": dict(out="afasy.webp", zoom=112, cx=48, cy=40),
+    "mishary": dict(zoom=112, cx=48, cy=40),
     # Square, but he is looking down and sits high and left in the frame — a
     # centre crop would take the top of his head off and give back a shoulder.
-    "abdulaziz-turki": dict(out="turki-abdulaziz.webp", zoom=148, cx=46, cy=36),
+    "abdulaziz-turki": dict(zoom=148, cx=46, cy=36),
+    # A wide shot at a lectern: he is right of centre and high, and the middle
+    # square is mostly podium and backdrop.
+    "buayjan": dict(zoom=145, cx=61, cy=36),
+}
+
+# Reciters the catalog names directly, and the file it asks for. These are the
+# men who are not Taraweeh imams, so nothing about them belongs in the roster.
+RECITERS = {
+    "mishary": "afasy.webp",
+    "abdulaziz-turki": "turki-abdulaziz.webp",
 }
 
 
-def framed(im, spec):
-    """A square crop of `im` at the stated zoom and centre, kept in bounds."""
+def square(im, spec=None):
+    """
+    A square crop of `im`: at the stated zoom and centre where one is given,
+    otherwise centred horizontally and high in the frame.
+    """
     w, h = im.size
-    side = max(16, int(round(min(w, h) * 100.0 / spec["zoom"])))
-    cx = w * spec["cx"] / 100.0
-    cy = h * spec["cy"] / 100.0
-    left = int(round(cx - side / 2.0))
-    top = int(round(cy - side / 2.0))
+    if spec:
+        side = max(16, int(round(min(w, h) * 100.0 / spec["zoom"])))
+        left = int(round(w * spec["cx"] / 100.0 - side / 2.0))
+        top = int(round(h * spec["cy"] / 100.0 - side / 2.0))
+    else:
+        side = min(w, h)
+        left = (w - side) // 2
+        # Portraits are taller than wide far more often than not; take the
+        # square from high in the frame so the face is not cropped through.
+        top = int((h - side) * TOP_BIAS) if h > w else (h - side) // 2
     # A centre near an edge would otherwise ask for pixels that are not there.
     left = max(0, min(left, w - side))
     top = max(0, min(top, h - side))
@@ -114,20 +135,23 @@ for path in sorted(src.iterdir()):
         continue
     if only and path.stem.lower() not in only:
         continue
-    spec = RECITERS.get(path.stem.lower())
-    if spec:
+    stem = path.stem.lower()
+    spec = FRAMING.get(stem)
+    how = ("zoom %d, centre %d/%d" % (spec["zoom"], spec["cx"], spec["cy"])
+           if spec else "centred, high")
+
+    out_name = RECITERS.get(stem)
+    if out_name:
         with Image.open(path) as im:
             im = im.convert("RGB")
             size = "%dx%d" % im.size
-            out = framed(im, spec).resize((SIDE, SIDE), Image.LANCZOS)
-            out.save(out_dir / spec["out"], "WEBP", quality=86, method=6)
-        kb = (out_dir / spec["out"]).stat().st_size / 1024
-        reciters.append((path.stem, spec["out"], kb, size,
-                         "zoom %d, centre %d/%d"
-                         % (spec["zoom"], spec["cx"], spec["cy"])))
+            square(im, spec).resize((SIDE, SIDE), Image.LANCZOS).save(
+                out_dir / out_name, "WEBP", quality=86, method=6)
+        kb = (out_dir / out_name).stat().st_size / 1024
+        reciters.append((path.stem, out_name, kb, size, how))
         continue
 
-    imam = NAMES.get(path.stem.lower())
+    imam = NAMES.get(stem)
     if not imam:
         unknown.append(path.name)
         continue
@@ -138,21 +162,15 @@ for path in sorted(src.iterdir()):
     with Image.open(path) as im:
         im = im.convert("RGB")
         w, h = im.size
-        side = min(w, h)
-        left = (w - side) // 2
-        # Portraits are taller than wide far more often than not; take the
-        # square from high in the frame so the face is not cropped through.
-        top = int((h - side) * TOP_BIAS) if h > w else (h - side) // 2
-        im = im.crop((left, top, left + side, top + side))
-        im = im.resize((SIDE, SIDE), Image.LANCZOS)
         name = f"imam-{imam}.webp"
-        im.save(out_dir / name, "WEBP", quality=86, method=6)
+        square(im, spec).resize((SIDE, SIDE), Image.LANCZOS).save(
+            out_dir / name, "WEBP", quality=86, method=6)
 
     kb = (out_dir / name).stat().st_size / 1024
     roster[imam]["photo"] = name
     # A square crop needs none of the nudging an uncropped original does.
     roster[imam].pop("frames", None)
-    written.append((imam, roster[imam]["nameEn"], name, kb, f"{w}x{h}"))
+    written.append((imam, roster[imam]["nameEn"], name, kb, f"{w}x{h}", how))
 
 # One imam per line keeps a roster diff readable. Written only when a roster
 # row actually changed, so a run that touched none leaves the file alone rather
@@ -166,8 +184,8 @@ body = "\n".join(
 if written:
     roster_path.write_text("{\n" + body + "\n}\n", encoding="utf-8", newline="\n")
 
-for imam, name_en, f, kb, size in written:
-    print(f"  {name_en:<28} {f:<26} {kb:5.0f} KB   from {size}")
+for imam, name_en, f, kb, size, how in written:
+    print(f"  {name_en:<28} {f:<26} {kb:5.0f} KB   from {size}  ({how})")
 for stem, f, kb, size, how in reciters:
     print(f"  {stem:<28} {f:<26} {kb:5.0f} KB   from {size}  ({how})")
 if unknown:
@@ -180,7 +198,7 @@ if skipped:
     print("\nskipped: " + "; ".join(skipped))
 print(f"\n{len(written)} roster portraits and {len(reciters)} reciter "
       f"portraits bundled, total "
-      f"{(sum(k for _, _, _, k, _ in written) + sum(k for _, _, k, _, _ in reciters)) / 1024:.2f} MB")
+      f"{(sum(k for _, _, _, k, _, _ in written) + sum(k for _, _, k, _, _ in reciters)) / 1024:.2f} MB")
 if reciters:
     print("Set `photo` in scripts/refresh-catalog.mjs to match, for: "
           + ", ".join(f for _, f, _, _, _ in reciters))
