@@ -5,7 +5,6 @@ import type { Reciter, SurahView } from './catalog/types'
 import {
   effectiveVerified,
   getVerdicts,
-  setVerdict,
   type Verdict,
 } from './catalog/verification'
 import {
@@ -39,11 +38,8 @@ import {
 import { nextSurah, nextVoiceChange, prevSurah, type RepeatMode } from './player/playQueue'
 import { getQuota, requestPersistence, canDownloadAll } from './storage/quota'
 import { SurahList, plainName } from './ui/SurahList'
-import { VerifyPanel } from './ui/VerifyPanel'
 import { FavouritesPanel } from './ui/FavouritesPanel'
 import { ImamPanel } from './ui/ImamPanel'
-import { LockScreenPanel } from './ui/LockScreenPanel'
-import { FacePanel } from './ui/FacePanel'
 import { HomePanel, type HomeFace, type HomeResume } from './ui/HomePanel'
 import { ReciterPanel, type PlaceCard } from './ui/ReciterPanel'
 import { MushafView, ayahStartsFor } from './ui/MushafView'
@@ -1251,19 +1247,12 @@ export default function App() {
     engine.current!.seek(Math.max(0, Math.min(1, f)) * duration)
   }
 
-  const recordVerdict = async (surah: number, verdict: Verdict) => {
-    await setVerdict(reciterId, surah, verdict)
-    setVerdicts(await getVerdicts())
-  }
-
   const saveImported = async (items: Array<{ surah: number; file: File }>) => {
     for (const { surah, file } of items) {
       await putAudio(reciterId, surah, file, 'import')
     }
     await refreshDownloaded()
   }
-
-  const checkable = useMemo(() => surahs.filter((s) => s.released), [surahs])
 
   const changeLang = async (next: Lang) => {
     setLang(next)
@@ -1851,40 +1840,6 @@ export default function App() {
                 }}
               />
 
-              <h2 style={{ marginTop: '1.6rem' }}>{t.reciters}</h2>
-              {/* One paragraph per year would be fifty-six of them saying
-                  nearly the same thing. Each mosque is described once, and
-                  its years chosen from the picker instead. */}
-              {PLACES.map((m) => {
-                const years = mosqueYears.get(m.place) ?? []
-                if (!years.length) return null
-                return (
-                  <p key={m.place}>
-                    <strong>{inScript(lang, m.ar, m.en)}</strong>
-                    <br />
-                    {years[years.length - 1].year}–{years[0].year} ·{' '}
-                    {t.haramCount(digits(lang, years.length))}
-                    <br />
-                    <span style={{ color: 'var(--muted)' }}>{years[0].note}</span>
-                  </p>
-                )
-              })}
-              {individual.map((r) => (
-                <p key={r.id}>
-                  <strong>{inScript(lang, r.fullName, r.nameEn)}</strong>
-                  <br />
-                  {inScript(lang, r.mushaf, r.mushafEn)}
-                  <br />
-                  {t.recorded(r.surahs.length)}
-                  {r.note ? (
-                    <>
-                      <br />
-                      <span style={{ color: 'var(--muted)' }}>{r.note}</span>
-                    </>
-                  ) : null}
-                </p>
-              ))}
-
               {/*
                   The photograph on the home screen's continue card.
                   CC BY 2.5 obliges attribution, and this is where the app
@@ -1939,65 +1894,6 @@ export default function App() {
                 </button>
               </p>
 
-              <FacePanel
-                t={t}
-                lang={lang}
-                base={import.meta.env.BASE_URL}
-                faces={faces}
-                /* The individual mushafs, so their portraits can be framed
-                   too. The Taraweeh years are left out: their medallion shows
-                   whoever is reciting at that moment, and he is already in the
-                   roster the panel lists. */
-                reciters={individual.map((r) => ({
-                  id: r.id,
-                  name: r.name,
-                  nameEn: r.nameEn,
-                  photo: r.photo ?? null,
-                }))}
-                onPick={async (imamId, file) => {
-                  await putFace(imamId, file)
-                  await refreshFaces()
-                }}
-                onFrame={async (imamId, surface, framing) => {
-                  await setFraming(imamId, surface, framing)
-                  await refreshFaces()
-                }}
-                onRemove={async (imamId) => {
-                  await deleteFace(imamId)
-                  await refreshFaces()
-                }}
-                onExport={async () => {
-                  const doc = await exportFaces()
-                  const blob = new Blob([JSON.stringify(doc)], { type: 'application/json' })
-                  const url = URL.createObjectURL(blob)
-                  const a = document.createElement('a')
-                  a.href = url
-                  a.download = `mushaf-photos-${doc.saved.replace(/[: ]/g, '-')}.json`
-                  a.click()
-                  // Give the download a moment to start before the URL goes.
-                  setTimeout(() => URL.revokeObjectURL(url), 10_000)
-                }}
-                onClearAll={async () => {
-                  const n = await clearFaces()
-                  await refreshFaces()
-                  return n
-                }}
-                onImport={async (file) => {
-                  const n = await importFaces(await file.text())
-                  await refreshFaces()
-                  return n
-                }}
-              />
-
-              <VerifyPanel
-                reciterId={reciterId}
-                surahs={checkable}
-                verdicts={verdicts}
-                t={t}
-                onVerdict={(surah, v) => void recordVerdict(surah, v)}
-              />
-
-              <LockScreenPanel t={t} el={engine.current?.el ?? null} />
             </div>
           )}
         </div>

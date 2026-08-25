@@ -59,6 +59,15 @@ NAMES = {
     "qurafi": "qarafi",
     "barhaji": "burhaji",
     "ahmed-talib": "humaid",
+    # The Prophet's Mosque, added later. `saad-alghamdi` is the same trap as
+    # the two Talibs: Saad Al-Ghamdi of Madinah is not Khalid Al-Ghamdi of
+    # Makkah, whose picture is plain `ghamdi`.
+    "saad-alghamdi": "ghamdi-saad",
+    "muhanna": "muhanna",
+    "maghamsi": "maghamsi",
+    "khalil": "khalil",
+    "husain-alsheikh": "alsheikh",
+    "thubaiti": "thubaiti",
 }
 
 SIDE = 400          # comfortably sharp on a 3x screen at 5.4rem
@@ -90,6 +99,19 @@ FRAMING = {
     # than on the picture is what brings his face to the middle of the ring —
     # a lower cx moves the window left, which moves him right in frame.
     "buayjan": dict(zoom=145, cx=57, cy=36),
+    # Seated in an armchair, shot wide: the middle square is mostly chair and
+    # gilt frame, and his face sits in the top quarter.
+    "husain-alsheikh": dict(zoom=200, cx=47, cy=30),
+    # Landscape and close-up already: his head fills two thirds of the height,
+    # so this barely crops at all and only shifts left to centre him.
+    "maghamsi": dict(zoom=105, cx=44, cy=45),
+    # Almost square and nearly centred, but the microphone at his chest eats
+    # the bottom third of a plain centre crop.
+    "muhanna": dict(zoom=167, cx=47, cy=32),
+    # Standing at a lectern in a tall frame behind a rank of microphones, so a
+    # centre square is mostly microphone. Read off the picture rather than
+    # guessed: the first attempt put him at 62/22 and cropped a fold of cloth.
+    "thubaiti": dict(zoom=200, cx=47, cy=32),
 }
 
 # Reciters the catalog names directly, and the file it asks for. These are the
