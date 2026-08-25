@@ -766,13 +766,34 @@ export default function App() {
   const voiceIdNow = liveImam ?? currentView?.voiceId ?? null
 
   const mine = voiceIdNow ? faces.get(voiceIdNow) : undefined
+  /**
+   * The portrait's filename — never a path.
+   *
+   * Every branch here yields a bare name and the prefix is added once, where
+   * it is drawn. Having one branch pre-prefix it produced
+   * `/mushaf//mushaf/imam-baleela.webp`, which quietly 404s: the portrait
+   * appeared on a surah with a single reciter and vanished on every surah that
+   * changed hands, which is exactly the wrong way round.
+   */
   const face =
     mine?.url ??
-    (liveWho?.photo ? `${import.meta.env.BASE_URL}${liveWho.photo}` : null) ??
+    liveWho?.photo ??
     currentView?.voicePhoto ??
     reciter?.photo ??
     null
   const faceIsMine = !!mine
+  /**
+   * The portrait as something drawable.
+   *
+   * A picture the listener added is already an object URL; a bundled one is a
+   * filename that needs the deployment prefix. Resolved here, once, so the
+   * player and the dock cannot disagree about it.
+   */
+  const faceSrc = face
+    ? faceIsMine
+      ? face
+      : `${import.meta.env.BASE_URL}${face}`
+    : null
   /** The listener's framing first, then whatever the bundled photo shipped with. */
   const faceFrame = mine?.player ?? (mine ? null : (liveWho?.frames?.player ?? null))
   const cardFrame = mine?.card ?? (mine ? null : (liveWho?.frames?.card ?? null))
@@ -909,9 +930,8 @@ export default function App() {
             surah: currentView.surah,
             title: `${t.surahWord} ${currentView.name}`,
             reciter: artistFor(currentView, reciter),
-            artwork: reciter.photo
-              ? `${import.meta.env.BASE_URL}${reciter.photo}`
-              : null,
+            // The native shell's accessory shows the same face as the app.
+            artwork: faceSrc,
             playing,
             progress: duration ? time / duration : 0,
           }
@@ -1509,7 +1529,7 @@ export default function App() {
                 aria-hidden="true"
                 data-reciter={facePerson}
                 style={{
-                  ['--face-src' as string]: `url('${faceIsMine ? face : `${import.meta.env.BASE_URL}${face}`}')`,
+                  ['--face-src' as string]: `url('${faceSrc}')`,
                   // An imported photo is cropped square on the way in, so it
                   // wants none of the nudging the uncropped originals need.
                   /* Framing follows the picture. A photo the listener added
@@ -1843,13 +1863,8 @@ export default function App() {
                 // The dock shows this surah's reciter as well, framed for a
                 // small square rather than the player's circle.
                 reciterId: currentView.voiceId ?? reciter.id,
-                artwork: mine
-                  ? mine.url
-                  : currentView.voicePhoto
-                    ? `${import.meta.env.BASE_URL}${currentView.voicePhoto}`
-                    : reciter.photo
-                      ? `${import.meta.env.BASE_URL}${reciter.photo}`
-                      : null,
+                // The same portrait the player is showing, resolved once.
+                artwork: faceSrc,
                 artFrame: cardFrame,
                 playing,
               }
