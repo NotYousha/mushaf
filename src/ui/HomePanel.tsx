@@ -68,8 +68,16 @@ export function HomePanel({
       <header className="home-head">
         {/* The wordmark is centred on the page, not on the gap between the
             two controls, so it stays put when one of them changes width. */}
+        {/*
+            The calligraphy-only crop, not the full lockup.
+
+            The wordmark is a lockup: rules, the name, and AL-QURAN beneath.
+            At forty-eight pixels the rules and the sub-line are noise and the
+            name comes out smaller than the mark it replaced. The splash still
+            shows the whole lockup, where there is room for it.
+        */}
         <span className="home-mark" aria-hidden="true">
-          <img src={`${base}logo.webp`} alt="" width={40} height={40} />
+          <img src={`${base}logo-mark.webp`} alt="" width={48} height={48} />
         </span>
 
         <h1 className="home-brand">

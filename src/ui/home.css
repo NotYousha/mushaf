@@ -58,10 +58,17 @@
   overflow: hidden;
 }
 
+/*
+ * The mark fills its box rather than floating inside it.
+ *
+ * The wordmark is a full-bleed square with its own ground, so insetting it
+ * leaves a ring of card colour around a dark tile and reads as a sticker. The
+ * hairline and the radius stay, and the artwork is what sits inside them.
+ */
 .home-mark img {
-  inline-size: 2.1rem;
-  block-size: 2.1rem;
-  object-fit: contain;
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
 }
 
 .home-brand {
@@ -137,15 +144,23 @@
  */
 :root {
   --hero-photo-blend: multiply;
-  --hero-photo-opacity: 0.16;
+  --hero-photo-opacity: 0.3;
   --hero-photo-filter: contrast(1.05) saturate(0.92);
-  /* How far in from the trailing edge the image survives. */
-  --hero-photo-reach: 58%;
+  /*
+   * How far in from the trailing edge the image survives.
+   *
+   * The strength above is the most the photograph can take before it stops
+   * being a background, and it is only safe because this ends the image
+   * before the text column starts. The two numbers move together: raise the
+   * opacity and this has to stay ahead of .resume-body's width, or a line of
+   * text ends up over the picture.
+   */
+  --hero-photo-reach: 56%;
 }
 
 [data-mode='dark'] {
   --hero-photo-blend: screen;
-  --hero-photo-opacity: 0.1;
+  --hero-photo-opacity: 0.19;
   --hero-photo-filter: brightness(0.9) contrast(1.15) saturate(0.85);
 }
 
@@ -153,14 +168,14 @@
    for the same reason: there is nothing beneath them to lose contrast to. */
 [data-theme='kiswah'][data-mode='dark'],
 [data-theme='tahajjud'][data-mode='dark'] {
-  --hero-photo-opacity: 0.07;
+  --hero-photo-opacity: 0.13;
   --hero-photo-filter: brightness(0.74) contrast(1.2) saturate(0.8);
   --hero-photo-reach: 52%;
 }
 
 /* The darkest light card: multiply has less range to work in. */
 [data-theme='vellum'] {
-  --hero-photo-opacity: 0.13;
+  --hero-photo-opacity: 0.25;
 }
 
 /* Cards that are literally #ffffff, over cool shadows. A cream photograph

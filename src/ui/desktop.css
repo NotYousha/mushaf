@@ -144,10 +144,12 @@
   }
 }
 
-/* A scrollbar that appears on hover must not shove the layout sideways. */
-.scroll {
-  scrollbar-gutter: stable;
-}
+/*
+ * No gutter, because there is no scrollbar to reserve one for — see
+ * motion.css. This used to hold a stable strip so a scrollbar appearing on
+ * hover could not shove the layout sideways; now it only narrowed the page by
+ * ten pixels for nothing.
+ */
 
 /* ---------------------------------------------------------------------
    Tablet and up: the column can afford to breathe

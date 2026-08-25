@@ -67,10 +67,16 @@ describe('the home screen', () => {
     expect(bigAr).toBe(BRAND.ar)
   })
 
-  it('resolves the logo against the deployment base', () => {
-    // A bare "logo.webp" would 404 from a subpath, and an absolute "/logo.webp"
-    // would 404 from all of them.
-    expect(render()).toContain('src="/mushaf/logo.webp"')
+  /**
+   * The header takes the calligraphy-only crop, not the full lockup: at
+   * forty-eight pixels the lockup's rules and its AL-QURAN line are noise, and
+   * the name ends up smaller than the mark it replaced. The splash still shows
+   * the whole lockup, where there is room for it.
+   */
+  it('resolves the header mark against the deployment base', () => {
+    // A bare "logo-mark.webp" would 404 from a subpath, and an absolute
+    // "/logo-mark.webp" would 404 from all of them.
+    expect(render()).toContain('src="/mushaf/logo-mark.webp"')
   })
 
   describe('the continue-reading card', () => {

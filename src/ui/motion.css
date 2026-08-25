@@ -189,23 +189,33 @@
   content-visibility: auto;
 }
 
-.scroll {
+/*
+ * Nothing draws a scrollbar.
+ *
+ * This used to paint a 6px gold thumb, which on a page whose only other gold
+ * is the play control read as a bright rail down the edge of the Quran —
+ * loud, and competing with the one thing the accent is meant to mark. The
+ * list is a phone list: you scroll it, you do not aim at it.
+ *
+ * Both properties are needed. `scrollbar-width` covers Firefox and current
+ * Chrome; the `::-webkit-` pseudo-element covers Safari and older WebKit,
+ * which ignore it. Overflow is untouched, so scrolling itself is unchanged —
+ * only the furniture is gone.
+ */
+.scroll,
+.years-scroll,
+.player {
   scroll-behavior: smooth;
-  scrollbar-width: thin;
-  scrollbar-color: var(--accent-soft) transparent;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
-.scroll::-webkit-scrollbar {
-  width: 6px;
-}
-
-.scroll::-webkit-scrollbar-thumb {
-  background: var(--accent-soft);
-  border-radius: 3px;
-}
-
-.scroll::-webkit-scrollbar-track {
-  background: transparent;
+.scroll::-webkit-scrollbar,
+.years-scroll::-webkit-scrollbar,
+.player::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
 }
 
 /* ============ entrances ============ */
