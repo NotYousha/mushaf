@@ -41,6 +41,11 @@
   --pill: #241c13;
   --page: #1a140d;
 
+  /* Gold that can carry a word: the same metal, moved in value
+     until it reads on this theme's surface. */
+  --gold: #d8b871;
+  /* Gold as material -- fills, rules, rosettes; never a word. */
+  --leaf: var(--accent);
   --accent: #d8b871;
   --accent-deep: #ecd299;
   --accent-soft: #6b5730;
@@ -84,6 +89,11 @@
   --pill: #eeece3;
   --page: #fdfcf8;
 
+  /* Gold that can carry a word: the same metal, moved in value
+     until it reads on this theme's surface. */
+  --gold: #8a6c18;
+  /* Gold as material -- fills, rules, rosettes; never a word. */
+  --leaf: var(--accent);
   --accent: #8a6c18;
   --accent-deep: #5c4710;
   --accent-soft: #cbb87e;
@@ -119,6 +129,11 @@
   --pill: #121210;
   --page: #080807;
 
+  /* Gold that can carry a word: the same metal, moved in value
+     until it reads on this theme's surface. */
+  --gold: #c9a227;
+  /* Gold as material -- fills, rules, rosettes; never a word. */
+  --leaf: var(--accent);
   --accent: #c9a227;
   --accent-deep: #eac75a;
   --accent-soft: #6a5619;
@@ -162,6 +177,11 @@
   --pill: #eaf0fa;
   --page: #ffffff;
 
+  /* Gold that can carry a word: the same metal, moved in value
+     until it reads on this theme's surface. */
+  --gold: #24568f;
+  /* Gold as material -- fills, rules, rosettes; never a word. */
+  --leaf: var(--accent);
   --accent: #24568f;
   --accent-deep: #163a68;
   --accent-soft: #a9c3e8;
@@ -197,6 +217,11 @@
   --pill: #14243d;
   --page: #0c1729;
 
+  /* Gold that can carry a word: the same metal, moved in value
+     until it reads on this theme's surface. */
+  --gold: #86b0e6;
+  /* Gold as material -- fills, rules, rosettes; never a word. */
+  --leaf: var(--accent);
   --accent: #86b0e6;
   --accent-deep: #b4d0f5;
   --accent-soft: #3c5b8b;
@@ -240,6 +265,11 @@
   --pill: #eaf4f2;
   --page: #fdfefd;
 
+  /* Gold that can carry a word: the same metal, moved in value
+     until it reads on this theme's surface. */
+  --gold: #0d7d79;
+  /* Gold as material -- fills, rules, rosettes; never a word. */
+  --leaf: var(--accent);
   --accent: #0d7d79;
   --accent-deep: #075350;
   --accent-soft: #9fd4cf;
@@ -275,6 +305,11 @@
   --pill: #0f2926;
   --page: #081917;
 
+  /* Gold that can carry a word: the same metal, moved in value
+     until it reads on this theme's surface. */
+  --gold: #3ec0b8;
+  /* Gold as material -- fills, rules, rosettes; never a word. */
+  --leaf: var(--accent);
   --accent: #3ec0b8;
   --accent-deep: #75dbd4;
   --accent-soft: #1c5551;
@@ -318,6 +353,11 @@
   --pill: #eef6f1;
   --page: #fefffd;
 
+  /* Gold that can carry a word: the same metal, moved in value
+     until it reads on this theme's surface. */
+  --gold: #1f5c3b;
+  /* Gold as material -- fills, rules, rosettes; never a word. */
+  --leaf: var(--accent);
   --accent: #1f5c3b;
   --accent-deep: #123c26;
   --accent-soft: #bfe4cf;
@@ -353,6 +393,11 @@
   --pill: #11291b;
   --page: #0a1a11;
 
+  /* Gold that can carry a word: the same metal, moved in value
+     until it reads on this theme's surface. */
+  --gold: #63b183;
+  /* Gold as material -- fills, rules, rosettes; never a word. */
+  --leaf: var(--accent);
   --accent: #63b183;
   --accent-deep: #93d2ab;
   --accent-soft: #2c5a3e;
@@ -397,6 +442,11 @@
   --pill: #eee5cd;
   --page: #f9f3e3;
 
+  /* Gold that can carry a word: the same metal, moved in value
+     until it reads on this theme's surface. */
+  --gold: #9c3826;
+  /* Gold as material -- fills, rules, rosettes; never a word. */
+  --leaf: var(--accent);
   --accent: #9c3826;
   --accent-deep: #74271a;
   --accent-soft: #d3a396;
@@ -432,6 +482,11 @@
   --pill: #231d13;
   --page: #171209;
 
+  /* Gold that can carry a word: the same metal, moved in value
+     until it reads on this theme's surface. */
+  --gold: #d97a5e;
+  /* Gold as material -- fills, rules, rosettes; never a word. */
+  --leaf: var(--accent);
   --accent: #d97a5e;
   --accent-deep: #f0a48b;
   --accent-soft: #6d3325;
@@ -477,6 +532,11 @@
   --pill: #f5ede6;
   --page: #fffdfa;
 
+  /* Gold that can carry a word: the same metal, moved in value
+     until it reads on this theme's surface. */
+  --gold: #a8552a;
+  /* Gold as material -- fills, rules, rosettes; never a word. */
+  --leaf: var(--accent);
   --accent: #a8552a;
   --accent-deep: #7c3d1a;
   --accent-soft: #e3bfa0;
@@ -512,6 +572,11 @@
   --pill: #15110b;
   --page: #0c0906;
 
+  /* Gold that can carry a word: the same metal, moved in value
+     until it reads on this theme's surface. */
+  --gold: #d99a4e;
+  /* Gold as material -- fills, rules, rosettes; never a word. */
+  --leaf: var(--accent);
   --accent: #d99a4e;
   --accent-deep: #f0b878;
   --accent-soft: #6a4a25;

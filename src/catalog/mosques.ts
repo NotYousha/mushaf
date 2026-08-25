@@ -86,10 +86,13 @@ export const arabicDigits = (n: number | string) =>
 const rowsOf = (place: Place): YearRow[] => doc.mosques[place] ?? []
 
 /** The imams who led that year, in the roster's own spelling. */
-export function imamsOf(place: Place, year: number): { name: string; nameEn: string }[] {
+export function imamsOf(
+  place: Place,
+  year: number,
+): { id: string; name: string; nameEn: string; photo?: string }[] {
   return (rowsOf(place).find((r) => r.year === year)?.imams ?? [])
-    .map((id) => roster[id])
-    .filter(Boolean)
+    .map((id) => (roster[id] ? { ...roster[id], id } : null))
+    .filter((x): x is { id: string; name: string; nameEn: string; photo?: string } => !!x)
 }
 
 /** Why a year is missing, for anyone who goes looking for it. */

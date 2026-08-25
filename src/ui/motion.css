@@ -156,43 +156,21 @@
   transform: scale(0.8);
 }
 
-/* The row that is playing earns a rail, not only a tint, so a glance is
-   enough to find it again. */
+/*
+ * The playing row is marked on the row, not around it.
+ *
+ * There was a rail, a tint, a border and a shadow, four treatments for one
+ * piece of state. The equaliser stands where the number was and the name goes
+ * bold; both are changes to something already in the row, so nothing new is
+ * drawn and nothing has to be drawn 113 times for the rows that are not
+ * playing. The transition stays, so the change is not abrupt.
+ */
 .row {
   transition:
     background-color var(--t-base) var(--ease-out),
     border-color var(--t-base) var(--ease-out);
 }
 
-.row.active::before {
-  content: '';
-  position: absolute;
-  inset-inline-start: 0;
-  top: 14%;
-  bottom: 14%;
-  width: 3px;
-  border-radius: 3px;
-  background: linear-gradient(var(--accent), var(--accent-deep));
-  transform-origin: center;
-  animation: rail-in var(--t-base) var(--ease-out);
-}
-
-@keyframes rail-in {
-  from {
-    opacity: 0;
-    transform: scaleY(0.25);
-  }
-}
-
-.row.active .numeral {
-  animation: numeral-pop var(--t-slow) var(--ease-spring);
-}
-
-@keyframes numeral-pop {
-  from {
-    transform: scale(0.9);
-  }
-}
 
 /* ============ scrolling ============ */
 

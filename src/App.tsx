@@ -899,6 +899,22 @@ export default function App() {
   const facePerson = voiceIdNow ?? reciter?.id ?? ''
 
   /**
+   * The collection, when it is not just the reciter's name again.
+   *
+   * A Taraweeh year is titled by mosque and year and says nothing about whose
+   * voice this is; an individual mushaf is titled after the man reciting it,
+   * so printing both would print him twice.
+   */
+  const collectionLabel = (() => {
+    if (!reciter || !currentView) return null
+    const title = inScript(lang, reciter.name, reciter.nameEn)
+    const shown = liveWho
+      ? inScript(lang, liveWho.name, liveWho.nameEn)
+      : (voiceLabel(currentView, lang) ?? title)
+    return shown === title ? null : title
+  })()
+
+  /**
    * Where the voice next changes hands, on a year that names its reciters.
    *
    * Null on every other entry, which is what keeps the control off the screen
@@ -1265,10 +1281,41 @@ export default function App() {
                         </span>
                         <span className="year-body">
                           {r.ce ? <span className="year-ce">{r.ce}</span> : null}
+                          {/*
+                              Faces, not a truncated list of names.
+
+                              Every row printed the same line — six consecutive
+                              years all read "Abdullah Al-Juhany · Maher…"
+                              because the roster changes at the end, which is
+                              exactly where the ellipsis fell. The line meant
+                              to tell the years apart told them apart least.
+                              A row of portraits is scannable in one glance and
+                              differs between years where the roster differs.
+                          */}
                           {led.length > 0 && (
-                            <span className="year-imams">
-                              <span className="year-led">{t.haramLed}</span>{' '}
-                              {led.map((i) => inScript(lang, i.name, i.nameEn)).join(' · ')}
+                            <span className="year-faces">
+                              {led.slice(0, 7).map((i) => (
+                                <span
+                                  key={i.id}
+                                  className="year-face"
+                                  title={inScript(lang, i.name, i.nameEn)}
+                                  style={
+                                    faces.get(i.id)?.url || i.photo
+                                      ? {
+                                          ['--face-src' as string]: `url('${
+                                            faces.get(i.id)?.url ??
+                                            `${import.meta.env.BASE_URL}${i.photo}`
+                                          }')`,
+                                        }
+                                      : undefined
+                                  }
+                                />
+                              ))}
+                              {led.length > 7 && (
+                                <span className="year-more">
+                                  +{digits(lang, led.length - 7)}
+                                </span>
+                              )}
                             </span>
                           )}
                         </span>
@@ -1679,48 +1726,60 @@ export default function App() {
               />
             )}
 
+            {/*
+                Two lines, not six.
+
+                This used to be the surah name, the literal word "Reciter", an
+                Arabic collection title, an English one, a riwayah, and a
+                bordered pill that wrapped inside itself — six centred lines of
+                differing length, ragged on both edges. At night, one-handed,
+                with a mushaf open, the sheet answers two questions: what is
+                playing, and who is reciting it. Everything else on it is a
+                setting, and settings have their own screen.
+
+                The second line is still the control: the name is what a
+                listener is already looking at, so stepping to the next reciter
+                belongs on it rather than behind an unlabelled icon.
+            */}
             <div className="now">
               <div className="surah-name">سُورَةُ {currentView.name}</div>
-              <div className="label">{t.reciter}</div>
-              <div className="reciter-ar">{reciter.fullName}</div>
-              <div className="reciter-en">{reciter.nameEn}</div>
-              {riwayahLabel(reciter, lang) && (
-                <div className="reciter-riwayah">({riwayahLabel(reciter, lang)})</div>
-              )}
-              {/* The entry name above is the collection — "Taraweeh 1447" —
-                  which does not say whose voice this is. Both belong here:
-                  the collection identifies the recording, the imam
-                  identifies the recitation. */}
-              {(liveWho || voiceLabel(currentView, lang)) && (
-                /* The name is the control. Whoever is reciting is what a
-                   listener is already looking at, so stepping to the next one
-                   belongs here rather than behind an unlabelled icon in a row
-                   that only appears once the player is opened. */
-                <button
-                  type="button"
-                  className="reciter-voice"
-                  disabled={nextVoice === null}
-                  aria-label={t.nextReciter}
-                  onClick={() => {
-                    if (!nextVoice) return
-                    if (nextVoice.kind === 'within') engine.current!.seek(nextVoice.at)
-                    else void playSurah(nextVoice.surah)
-                  }}
-                >
-                  <span className="rv-label">{t.recitedBy}</span>{' '}
-                  <span className="rv-name">
-                    {liveWho
-                      ? inScript(lang, liveWho.name, liveWho.nameEn)
-                      : voiceLabel(currentView, lang)}
-                  </span>
-                  {nextVoice !== null && (
-                    <span className="rv-next" aria-hidden="true">
-                      <NextVoice size={15} />
-                      {t.nextReciter}
+
+              <button
+                type="button"
+                className="now-line"
+                disabled={nextVoice === null}
+                aria-label={nextVoice === null ? undefined : t.nextReciter}
+                onClick={() => {
+                  if (!nextVoice) return
+                  if (nextVoice.kind === 'within') engine.current!.seek(nextVoice.at)
+                  else void playSurah(nextVoice.surah)
+                }}
+              >
+                <span className="now-who">
+                  {liveWho
+                    ? inScript(lang, liveWho.name, liveWho.nameEn)
+                    : (voiceLabel(currentView, lang) ??
+                      inScript(lang, reciter.name, reciter.nameEn))}
+                </span>
+                {/* The collection only when it is not simply the name again:
+                    an individual mushaf is titled after the man reciting it. */}
+                {collectionLabel && (
+                  <>
+                    <span className="now-dot" aria-hidden="true">
+                      ·
                     </span>
-                  )}
-                </button>
-              )}
+                    <span className="now-coll">{collectionLabel}</span>
+                  </>
+                )}
+                {riwayahLabel(reciter, lang) && (
+                  <span className="now-riwayah">({riwayahLabel(reciter, lang)})</span>
+                )}
+                {nextVoice !== null && (
+                  <span className="now-next" aria-hidden="true">
+                    <NextVoice size={15} />
+                  </span>
+                )}
+              </button>
             </div>
 
             <div className="player-actions">

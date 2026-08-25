@@ -3,7 +3,7 @@ import type { SurahView } from '../catalog/types'
 import { voiceLabel } from '../catalog/voice'
 import { digits } from '../i18n/script'
 import type { Strings, Lang } from '../i18n'
-import { Play, Handle, Download, Saved } from './Icons'
+import { Download } from './Icons'
 
 /** Bare surah name, diacritics removed. */
 export const plainName = (s: string) => s.replace(/[ؐ-ًؚ-ٰٟۖ-ۭ]/g, '').trim()
@@ -78,7 +78,18 @@ export const SurahList = memo(function SurahList({
                 onClick={() => onPlay(s.surah)}
                 aria-current={active ? 'true' : undefined}
               >
-                <span className="numeral">{digits(lang, s.surah)}</span>
+                {/* The number, or the playing mark in its place. */}
+                <span className="numeral">
+                  {active ? (
+                    <span className="eq" aria-hidden="true">
+                      <i />
+                      <i />
+                      <i />
+                    </span>
+                  ) : (
+                    digits(lang, s.surah)
+                  )}
+                </span>
                 <span className="names">
                   <span className="name-ar">
                     {t.surahWord} {s.name}
@@ -98,36 +109,33 @@ export const SurahList = memo(function SurahList({
                 </span>
               </button>
 
+              {/*
+                  Nothing is drawn here for a surah already saved.
+
+                  It used to keep a disabled button carrying a tick, which is
+                  an object per row saying there is nothing to do — and on a
+                  list of 114, the rows with nothing to do should be the quiet
+                  ones. The trailing drag handle went with it: this list has
+                  never been reorderable, so it was an affordance for a
+                  gesture that does not exist.
+              */}
               <span className="row-end">
                 {pct !== undefined ? (
                   <span className="ring">{digits(lang, Math.round(pct * 100))}%</span>
-                ) : (
+                ) : have ? null : (
                   <button
                     type="button"
-                    className={`mini${have ? ' is-saved' : ''}${held !== undefined ? ' is-partial' : ''}${!verified(s) ? ' needs-check' : ''}`}
+                    className={`mini${held !== undefined ? ' is-partial' : ''}${!verified(s) ? ' needs-check' : ''}`}
                     aria-label={
-                      have
-                        ? t.saved
-                        : held !== undefined
-                          ? t.resumeAt(Math.round(held * 100))
-                          : t.save
+                      held !== undefined ? t.resumeAt(Math.round(held * 100)) : t.save
                     }
-                    disabled={have}
                     onClick={() => onDownload(s.surah)}
                   >
-                    {have ? <Saved size={20} /> : <Download size={20} />}
+                    <Download size={20} />
                     {held !== undefined && (
                       <span className="mini-pct">{digits(lang, Math.round(held * 100))}%</span>
                     )}
                   </button>
-                )}
-
-                {active ? (
-                  <span className="play-dot" aria-hidden="true">
-                    <Play size={20} />
-                  </span>
-                ) : (
-                  <Handle size={20} />
                 )}
               </span>
             </li>
