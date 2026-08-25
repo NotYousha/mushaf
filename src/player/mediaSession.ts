@@ -233,6 +233,30 @@ export function setSeeking(active: boolean) {
   lastPositionAt = 0
 }
 
+/**
+ * The rate we last told the system, and the imperceptible nudge that gets a
+ * position update accepted at all.
+ *
+ * WebKit decides whether to forward a Now Playing update to the system by
+ * comparing it against the last one — and the fields it compares are the
+ * identifier, the metadata, the duration, the rate, seekability, whether it
+ * is playing, and whether it is visible. The position is not among them.
+ *
+ * So an update that changes only the position is dropped and never reaches
+ * the lock screen. That is exactly what a seek is. Drop the scrubber
+ * anywhere and the app obeys, the audio moves, and the system — never told —
+ * carries on extrapolating from where it last thought we were and springs
+ * the thumb back. The seek worked; only the report of it was thrown away.
+ *
+ * The rate is compared, and the system uses it only to run the playhead
+ * forward between updates. Alternating it by a ten-thousandth is therefore
+ * enough to make the update land, and drifts the bar by a third of a second
+ * per hour — against a fresh position every second, which is to say never.
+ * Nothing audible changes: this is the number we report, not the number we
+ * play at.
+ */
+let ratePhase = 0
+
 export function setPosition(el: HTMLAudioElement, force = false) {
   const s = ms()
   if (!s?.setPositionState) return
@@ -242,12 +266,16 @@ export function setPosition(el: HTMLAudioElement, force = false) {
   const duration = el.duration
   if (!Number.isFinite(duration) || duration <= 0) return
   lastPositionAt = now
+  // A rate of zero throws; a paused player is expressed by playbackState.
+  const real = el.playbackRate || 1
+  // Only a forced update needs to be certain of landing — the periodic ones
+  // are only correcting drift the system is already handling.
+  if (force) ratePhase = ratePhase ? 0 : 1
   try {
     s.setPositionState({
       duration,
       position: Math.min(Math.max(el.currentTime, 0), duration),
-      // A rate of zero throws; a paused player is expressed by playbackState.
-      playbackRate: el.playbackRate || 1,
+      playbackRate: ratePhase ? real * 1.0001 : real,
     })
   } catch {
     // Position state is best-effort; never let it break playback.
