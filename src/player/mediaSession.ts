@@ -338,7 +338,22 @@ export function clearPosition() {
   }
 }
 
-const ARTWORK_SIZES = [96, 128, 192, 256, 384, 512]
+/**
+ * The artwork the lock screen, CarPlay and AirPlay show.
+ *
+ * Every entry has to be the size it says it is. The Media Session API picks
+ * by the stated `sizes`, and this used to declare one 512px file six times
+ * over — as 96, 128, 192, 256, 384 and 512 — which tells the system there is
+ * nothing larger, so AirPlay took that 512 to a television and stretched it.
+ * It also pointed at a filename that no longer exists, so latterly there was
+ * nothing to stretch either.
+ *
+ * Two real files now. The master is 1254px square, so 1024 is the largest
+ * honest size; the smaller one is there so a phone does not decode a
+ * megapixel to draw a thumbnail. Both are precached, because artwork that
+ * only appears when the network is up is worse than no artwork.
+ */
+const ARTWORK = [1024, 512]
 
 /**
  * Update what the lock screen shows.
@@ -359,8 +374,8 @@ export function updateMetadata(s: SurahView, reciter: string, base: string) {
       title: s.name,
       artist: reciter,
       album: s.nameEn,
-      artwork: ARTWORK_SIZES.map((size) => ({
-        src: `${base}icon-512.png`,
+      artwork: ARTWORK.map((size) => ({
+        src: `${base}nowplaying-${size}.png`,
         sizes: `${size}x${size}`,
         type: 'image/png',
       })),
