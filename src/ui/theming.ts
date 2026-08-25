@@ -12,6 +12,7 @@
  */
 
 export type ThemeId =
+  | 'isha'
   | 'mushaf'
   | 'kiswah'
   | 'lapis'
@@ -41,6 +42,24 @@ export type Theme = {
 }
 
 export const THEMES: Theme[] = [
+  {
+    /*
+     * The mark's own palette: white script on black, and the night it is read
+     * in. Kiswah is already black — but black and *gold*, the Kaaba's cloth.
+     * This one has no metal in it at all. Its light mode is the same material
+     * the other way up: the Haram's white marble, with the night as the ink.
+     */
+    id: 'isha',
+    ar: 'العِشاء',
+    latin: 'Isha',
+    ofAr: 'رُخامٌ وليل',
+    ofEn: 'Marble and night',
+    swatch: {
+      light: ['#eceef2', '#4a5b76', '#11161f', '#dde2ea'],
+      dark: ['#07080b', '#c3cddd', '#f6f8fc', '#1b2029'],
+    },
+    prefers: 'dark',
+  },
   {
     id: 'mushaf',
     ar: 'مصحف',
@@ -101,7 +120,15 @@ export const THEMES: Theme[] = [
   },
 ]
 
-export const DEFAULT_THEME: ThemeId = 'mushaf'
+/*
+ * Isha, so the app opens in the palette its own mark is drawn in.
+ *
+ * The *mode* is still the device's — see DEFAULT_MODE. On a phone set to dark
+ * this opens as the mark itself, white on black; on one set to light it opens
+ * as the same material inverted, ink on marble. Forcing dark here would
+ * override a system preference someone set deliberately.
+ */
+export const DEFAULT_THEME: ThemeId = 'isha'
 export const DEFAULT_MODE: Mode = 'system'
 
 /**

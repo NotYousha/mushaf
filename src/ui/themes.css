@@ -69,6 +69,103 @@
   --pattern-opacity: 0.07;
 }
 
+/* ============ العِشاء · Isha — marble and night ============ */
+/* The palette the app's own mark is drawn in: white script on black, and the
+   night it is read in. Kiswah is also black, but black and gold — the Kaaba's
+   cloth, with metal in it. There is no metal here. What plays the part gold
+   plays elsewhere is moonlight on stone, so the accent is a cool pearl and the
+   theme reads as silver rather than as a gilded page.
+
+   Light mode is the same material the other way up: the Haram's marble, with
+   the night as the ink. It is not the dark palette lightened — the grounds are
+   near-neutral with only a breath of blue, and the controls take a dark
+   saturated fill, which is the house rule for a day palette. */
+
+[data-theme='isha'] {
+  /* the courses of the Haram's marble paving, joints in running bond */
+  --pattern-size: 64px 64px;
+  --pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Cg fill='none' stroke='%23000' stroke-width='0.7'%3E%3Cpath d='M0 32H64'/%3E%3Cpath d='M0 0V32M32 0V32'/%3E%3Cpath d='M16 32V64M48 32V64'/%3E%3C/g%3E%3C/svg%3E");
+
+  color-scheme: light;
+  --bg: #eceef2;
+  --card: #ffffff;
+  --card-2: #f5f7fa;
+  --tile: #e0e4ea;
+  --tile-active-a: #2b3444;
+  --tile-active-b: #1b2230;
+  --tile-active-ink: #eef1f6;
+  --pill: #f1f3f7;
+  --page: #ffffff;
+
+  /* Gold that can carry a word: the same metal, moved in value
+     until it reads on this theme's surface. Here the metal is silver, and on
+     marble it has to go most of the way to slate before a word made of it can
+     be read at all. */
+  --gold: #3d4b63;
+  /* Gold as material -- fills, rules, rosettes; never a word. */
+  --leaf: var(--accent);
+  --accent: #4a5b76;
+  --accent-deep: #2b3648;
+  --accent-soft: #b9c2d1;
+  --accent-line: #dde2ea;
+  --on-accent: #f7f9fc;
+
+  --ink: #232b39;
+  --ink-strong: #11161f;
+  --ink-soft: #3f4a5c;
+  --muted: #5c6879;
+  --divider: #e4e8ee;
+
+  --play-a: #4a5b76;
+  --play-b: #2b3648;
+  --on-play: #f4f7fb;
+
+  --ready: #2f7d5b;
+  --warn: #9a5a22;
+
+  --shadow-rgb: 30 44 70;
+  --pattern-opacity: 0.035;
+}
+
+[data-theme='isha'][data-mode='dark'] {
+  color-scheme: dark;
+  --bg: #07080b;
+  --card: #0d0f14;
+  --card-2: #12151b;
+  --tile: #191d25;
+  --tile-active-a: #c9d2e0;
+  --tile-active-b: #97a3b6;
+  --tile-active-ink: #05070a;
+  --pill: #12151b;
+  --page: #090b0f;
+
+  --gold: #c3cddd;
+  --leaf: var(--accent);
+  --accent: #c3cddd;
+  /* Lighter than --accent, not darker: on a dark ground emphasis is more
+     light. */
+  --accent-deep: #e6ecf6;
+  --accent-soft: #4a5568;
+  --accent-line: #1b2029;
+  --on-accent: #07080b;
+
+  --ink: #dfe5ef;
+  --ink-strong: #f6f8fc;
+  --ink-soft: #b3bccb;
+  --muted: #8a93a4;
+  --divider: #191d25;
+
+  --play-a: #c3cddd;
+  --play-b: #8e9aae;
+  --on-play: #06080b;
+
+  --ready: #7fc7a4;
+  --warn: #e0a35c;
+
+  --shadow-rgb: 0 2 8;
+  --pattern-opacity: 0.075;
+}
+
 /* ============ الكسوة · Kiswah — black and gold ============ */
 /* The covering of the Kaaba: black silk, gold thread. True black, so it
    costs nothing on an OLED screen and the gold is the only thing lit. */
