@@ -26,9 +26,23 @@ type YearRow = { year: number; ce: number | null; imams: string[]; bytes: number
 type Doc = { mosques: Record<Place, YearRow[]>; excluded: Record<Place, Record<string, string>> }
 
 const doc = data as unknown as Doc
+type Frame = { zoom: number; x: number; y: number }
 const roster = imamRoster as Record<
   string,
-  { name: string; nameEn: string; photo?: string; serves?: string[] }
+  {
+    name: string
+    nameEn: string
+    photo?: string
+    serves?: string[]
+    /**
+     * How a bundled portrait is framed, per surface.
+     *
+     * Carried here rather than baked into the pixels so one file serves both
+     * the player's circle and the dock's small square, and so a crop can be
+     * adjusted later without the original having been thrown away.
+     */
+    frames?: { player?: Frame; card?: Frame }
+  }
 >
 /** surah -> the imams who recited it, for the years that publish it. */
 const voices = voiceMap as Record<string, Record<string, string[]>>
@@ -87,6 +101,8 @@ export type Imam = {
   nameEn: string
   /** A portrait shipped with the app, for the few we have one for. */
   photo?: string
+  /** How that portrait is framed, where it needs more than the default. */
+  frames?: { player?: Frame; card?: Frame }
   /** Which mosque or mosques he led at. */
   serves: Place[]
 }
@@ -118,6 +134,7 @@ export function allImams(): Imam[] {
       name: who.name,
       nameEn: who.nameEn,
       photo: who.photo,
+      frames: who.frames,
       serves: (who.serves ?? []) as Place[],
     }))
     .sort((a, b) => (weight.get(b.id) ?? 0) - (weight.get(a.id) ?? 0))

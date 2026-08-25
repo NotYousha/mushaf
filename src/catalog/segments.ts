@@ -21,7 +21,16 @@ import type { Place } from './mosques'
 export type Segment = [number, string]
 
 const segments = segmentData as unknown as Record<string, Record<string, Segment[]>>
-const roster = imamRoster as Record<string, { name: string; nameEn: string; photo?: string }>
+type Frame = { zoom: number; x: number; y: number }
+const roster = imamRoster as Record<
+  string,
+  {
+    name: string
+    nameEn: string
+    photo?: string
+    frames?: { player?: Frame; card?: Frame }
+  }
+>
 
 const keyOf = (place: Place, year: number) => `${place}-${year}`
 

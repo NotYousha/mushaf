@@ -773,6 +773,9 @@ export default function App() {
     reciter?.photo ??
     null
   const faceIsMine = !!mine
+  /** The listener's framing first, then whatever the bundled photo shipped with. */
+  const faceFrame = mine?.player ?? (mine ? null : (liveWho?.frames?.player ?? null))
+  const cardFrame = mine?.card ?? (mine ? null : (liveWho?.frames?.card ?? null))
   const facePerson = voiceIdNow ?? reciter?.id ?? ''
 
   /**
@@ -1509,12 +1512,15 @@ export default function App() {
                   ['--face-src' as string]: `url('${faceIsMine ? face : `${import.meta.env.BASE_URL}${face}`}')`,
                   // An imported photo is cropped square on the way in, so it
                   // wants none of the nudging the uncropped originals need.
-                  // An imported photo carries the listener's own framing.
-                  ...(mine
+                  /* Framing follows the picture. A photo the listener added
+                     carries their own; a bundled one carries whatever it was
+                     cropped to before it shipped. Only a portrait with neither
+                     falls back to the per-reciter CSS. */
+                  ...(faceFrame
                     ? {
-                        ['--face-zoom' as string]: `${mine.player.zoom}%`,
-                        ['--face-x' as string]: `${mine.player.x}%`,
-                        ['--face-y' as string]: `${mine.player.y}%`,
+                        ['--face-zoom' as string]: `${faceFrame.zoom}%`,
+                        ['--face-x' as string]: `${faceFrame.x}%`,
+                        ['--face-y' as string]: `${faceFrame.y}%`,
                       }
                     : {}),
                 }}
@@ -1844,7 +1850,7 @@ export default function App() {
                     : reciter.photo
                       ? `${import.meta.env.BASE_URL}${reciter.photo}`
                       : null,
-                artFrame: mine ? mine.card : null,
+                artFrame: cardFrame,
                 playing,
               }
             : null
