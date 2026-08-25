@@ -57,7 +57,10 @@ export function Splash({ lang }: { lang: Lang }) {
       aria-hidden="true"
     >
       <div className="splash-mark">
-        <img src={`${BASE}logo.webp`} alt="" width={168} height={168} />
+        {/* The same mark as the app icon and the header badge — one brand
+            object, cut from the wordmark at 4K. `.splash-mark` rounds it to
+            26%, so the file itself is a plain square. */}
+        <img src={`${BASE}logo-mark.webp`} alt="" width={168} height={168} />
         <span className="splash-sheen" />
       </div>
       <span className="splash-alt">{brandSecondary(lang)}</span>

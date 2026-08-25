@@ -6,6 +6,10 @@ Builds the app icons and the header mark from the Al-Mau'iza wordmark.
 Writes public/icon-192.png, public/icon-512.png,
 public/icon-maskable-512.png and public/logo-mark.webp.
 
+logo-mark.webp is the brand object itself, with no white frame: the splash
+draws it at 168px and the home header at 48px, both rounding it themselves. The
+three PNGs are the same mark prepared for the platforms that crop it.
+
 The source is the type export: black glyphs on transparency, at a size where
 the name alone is 853px wide. Working from that rather than from a rendered
 square is what keeps the icon sharp -- every output here is a *reduction* of
