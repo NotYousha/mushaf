@@ -23,6 +23,8 @@ export const ur: Strings = {
   faceAdjust: 'ترتیب',
   buildLabel: 'ورژن',
   facesExport: 'تصاویر فائل میں محفوظ کریں',
+  faceSourceYours: 'آپ کی تصویر',
+  faceSourceApp: 'ایپ کی تصویر',
   facesUseBundled: 'ایپ کی تصاویر استعمال کریں',
   facesCleared: (n: number) => `آپ کی ${n} تصاویر ہٹا دی گئیں۔`,
   facesImport: 'فائل سے تصاویر لوڈ کریں',

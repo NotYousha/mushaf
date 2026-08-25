@@ -2595,3 +2595,10 @@ body {
   color: var(--ready);
   unicode-bidi: plaintext;
 }
+
+/* Whose picture a row is showing: the app's, or one added on this device. */
+.face-source {
+  display: block;
+  font-size: 0.68rem;
+  color: var(--muted);
+}

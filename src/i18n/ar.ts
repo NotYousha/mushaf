@@ -22,6 +22,8 @@ export const ar: Strings = {
   faceAdjust: 'ضبط',
   buildLabel: 'الإصدار',
   facesExport: 'حفظ الصور في ملف',
+  faceSourceYours: 'صورتك',
+  faceSourceApp: 'من التطبيق',
   facesUseBundled: 'استخدام صور التطبيق',
   facesCleared: (n: number) => `أُزيلت ${n} من صورك.`,
   facesImport: 'تحميل الصور من ملف',

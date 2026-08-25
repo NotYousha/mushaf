@@ -28,6 +28,8 @@ export const en = {
   faceAdjust: 'Adjust',
   buildLabel: 'Version',
   facesExport: 'Save photos to a file',
+  faceSourceYours: 'your photo',
+  faceSourceApp: 'comes with the app',
   facesUseBundled: 'Use the photos that come with the app',
   facesCleared: (n: number) => `Removed ${n} of your own photos.`,
   facesImport: 'Load photos from a file',

@@ -217,6 +217,14 @@ export function FacePanel({
                   />
                   <span className="face-name">
                     {inScript(lang, imam.name, imam.nameEn)}
+                    {/* Whose picture this is. When one of these looks like the
+                        wrong man, this says in one glance whether to correct
+                        the app or the copy on this device. */}
+                    {src && (
+                      <span className="face-source">
+                        {mine ? t.faceSourceYours : t.faceSourceApp}
+                      </span>
+                    )}
                     {failed?.id === imam.id && (
                       <span className="face-err">{failed.message}</span>
                     )}

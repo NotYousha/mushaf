@@ -423,6 +423,16 @@ export default function App() {
       setBusy(true)
       setError(null)
       setCurrent(surah)
+      /**
+       * Move the clock with the surah, not after it.
+       *
+       * The element keeps the previous position until the new audio loads and
+       * reports one, so for those seconds the app was asking who recites forty
+       * minutes into a surah it had only just opened — and drawing that imam's
+       * face and name. On a slow connection the wrong reciter sat there for
+       * the whole of the load.
+       */
+      setTime(startAt)
 
       const res = await engine.current!.load(
         reciter.id,

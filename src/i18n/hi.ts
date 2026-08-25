@@ -23,6 +23,8 @@ export const hi: Strings = {
   faceAdjust: 'समायोजित करें',
   buildLabel: 'संस्करण',
   facesExport: 'तस्वीरें फ़ाइल में सहेजें',
+  faceSourceYours: 'आपकी तस्वीर',
+  faceSourceApp: 'ऐप की तस्वीर',
   facesUseBundled: 'ऐप की तस्वीरें इस्तेमाल करें',
   facesCleared: (n: number) => `आपकी ${n} तस्वीरें हटाई गईं।`,
   facesImport: 'फ़ाइल से तस्वीरें लोड करें',
