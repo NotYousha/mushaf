@@ -22,6 +22,9 @@ export type CatalogEntry = {
   voiceId?: string
 }
 
+/** How a portrait is cropped on one surface, as the percentages CSS wants. */
+export type Frame = { zoom: number; x: number; y: number }
+
 export type Reciter = {
   id: string
   name: string
@@ -42,6 +45,21 @@ export type Reciter = {
   note?: string
   /** File in public/, shown in the player medallion. */
   photo?: string | null
+  /**
+   * How that portrait is framed, where showing it whole is wrong.
+   *
+   * Every bundled portrait is a square crop, which is not the same as being
+   * well composed: the player draws a circle and cuts the corners off, and a
+   * face that sat comfortably in the square can sit low in the ring. This is
+   * where an adjustment made in the settings is kept once it is meant to
+   * reach everyone rather than the one device it was made on.
+   *
+   * Absent means centred and whole, which is right for most of them. Merged
+   * in from data/reciter-frames.json rather than stored in the catalog itself,
+   * because the catalog is regenerated from the audio sources every week and
+   * would throw a hand-made framing away.
+   */
+  frames?: { player?: Frame; card?: Frame }
   source?: string
   /**
    * A family this entry belongs to, when it is one of many of a kind.

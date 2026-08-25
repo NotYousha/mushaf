@@ -907,12 +907,23 @@ export default function App() {
    */
   const UNCROPPED = new Set(['sheikh.jpg'])
   const bundledIsSquare = !!face && !faceIsMine && !UNCROPPED.has(face)
+  /**
+   * The framing that ships with whichever portrait is actually on screen.
+   *
+   * An imam reciting a surah of a Taraweeh year brings his own, from the
+   * roster. Otherwise it is the entry's — but only when the face shown is
+   * genuinely the entry's own: a surah attributed to someone else shows that
+   * man, and a crop chosen for this one would cut a different face.
+   */
+  const bundledFrames =
+    liveWho?.frames ??
+    (face && !currentView?.voicePhoto && face === reciter?.photo
+      ? reciter?.frames
+      : undefined)
   const faceFrame =
-    mine?.player ??
-    liveWho?.frames?.player ??
-    (bundledIsSquare ? SQUARE : null)
+    mine?.player ?? bundledFrames?.player ?? (bundledIsSquare ? SQUARE : null)
   const cardFrame =
-    mine?.card ?? liveWho?.frames?.card ?? (bundledIsSquare ? SQUARE : null)
+    mine?.card ?? bundledFrames?.card ?? (bundledIsSquare ? SQUARE : null)
   const facePerson = voiceIdNow ?? reciter?.id ?? ''
 
   /**

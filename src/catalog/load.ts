@@ -1,6 +1,7 @@
 import bundled from '../../data/catalog.json'
 import meta from '../../data/surahs.json'
-import type { Catalog, Reciter, SurahMeta, SurahView } from './types'
+import frameData from '../../data/reciter-frames.json'
+import type { Catalog, Frame, Reciter, SurahMeta, SurahView } from './types'
 import { mosqueReciters } from './mosques'
 
 /** Deployment base, so audio shipped with the app resolves from a subpath. */
@@ -9,13 +10,27 @@ const BASE = import.meta.env?.BASE_URL ?? '/'
 const catalog = bundled as unknown as Catalog
 
 /**
+ * Hand-chosen portrait framings, kept out of the catalog on purpose.
+ *
+ * data/catalog.json is rewritten from the audio sources by the weekly refresh,
+ * so anything hand-made in it is lost the first time a new surah airs. These
+ * live in their own file and are put back on afterwards.
+ */
+const frames = frameData as Record<string, { player?: Frame; card?: Frame }>
+const framed = (r: Reciter): Reciter =>
+  frames[r.id] ? { ...r, frames: frames[r.id] } : r
+
+/**
  * The four individual mushafs, then every published year of both mosques.
  *
  * The years are expanded from a folded-up file rather than stored here — see
  * src/catalog/mosques.ts for why — but from this point on they are ordinary
  * reciters and nothing downstream treats them differently.
  */
-const allReciters = (): Reciter[] => [...catalog.reciters, ...mosqueReciters()]
+const allReciters = (): Reciter[] => [
+  ...catalog.reciters.map(framed),
+  ...mosqueReciters(),
+]
 
 export function getReciters(): Reciter[] {
   return allReciters()
@@ -76,7 +91,9 @@ export async function loadCatalog(remoteUrl?: string): Promise<Reciter[]> {
       const r = remote.reciters.find((x) => x.id === local.id)
       return r && Array.isArray(r.surahs) && r.surahs.length >= local.surahs.length
     })
-    return ok ? [...remote.reciters, ...mosqueReciters()] : allReciters()
+    // The framings are applied to a remote catalog too: it carries the surah
+    // lists, which grow, and never the framing, which is ours.
+    return ok ? [...remote.reciters.map(framed), ...mosqueReciters()] : allReciters()
   } catch {
     // Offline or unreachable. The bundled catalog stands.
     return allReciters()

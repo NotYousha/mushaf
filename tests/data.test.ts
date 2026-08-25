@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import catalog from '../data/catalog.json'
 import surahs from '../data/surahs.json'
 import imams from '../data/imams.json'
+import reciterFrames from '../data/reciter-frames.json'
 
 const reciters = catalog.reciters
 
@@ -55,6 +56,56 @@ describe('bundled data', () => {
       expect(s.url).toMatch(/(workers\.dev\/b\/\d+\.mp3$|^audio\/)/)
       expect(s.url).not.toMatch(/digitaloceanspaces|X-Amz-Signature/)
     }
+  })
+
+  /**
+   * Hand-chosen portrait framings, kept in their own file because the catalog
+   * is rewritten from the audio sources every week and would throw them away.
+   *
+   * The risk with a file keyed by id on the side is that an id stops matching
+   * — a reciter renamed, a framing kept for one that was removed — and the
+   * framing then does nothing at all, silently, which looks exactly like the
+   * adjustment never having been made.
+   */
+  describe('the portrait framings', () => {
+    const frames = reciterFrames as Record<
+      string,
+      { player?: { zoom: number; x: number; y: number }; card?: unknown }
+    >
+
+    it('names only reciters that exist', () => {
+      for (const id of Object.keys(frames)) {
+        expect(
+          reciters.find((r) => r.id === id),
+          `${id} has a framing but is not in the catalog`,
+        ).toBeDefined()
+      }
+    })
+
+    it('frames only reciters who have a portrait to frame', () => {
+      for (const id of Object.keys(frames)) {
+        expect(reciters.find((r) => r.id === id)!.photo, id).toBeTruthy()
+      }
+    })
+
+    // A stored default does nothing but sit there looking like a decision.
+    it('stores nothing that is merely the default', () => {
+      for (const [id, f] of Object.entries(frames)) {
+        expect(Object.keys(f).length, `${id} is empty`).toBeGreaterThan(0)
+        for (const [surface, v] of Object.entries(f)) {
+          const g = v as { zoom: number; x: number; y: number }
+          expect(
+            g.zoom === 100 && g.x === 50 && g.y === 50,
+            `${id}.${surface} is the default and should be absent`,
+          ).toBe(false)
+          expect(g.zoom, `${id}.${surface}`).toBeGreaterThanOrEqual(100)
+          expect(g.x, `${id}.${surface}`).toBeGreaterThanOrEqual(0)
+          expect(g.x, `${id}.${surface}`).toBeLessThanOrEqual(100)
+          expect(g.y, `${id}.${surface}`).toBeGreaterThanOrEqual(0)
+          expect(g.y, `${id}.${surface}`).toBeLessThanOrEqual(100)
+        }
+      }
+    })
   })
 
   it('gives every reciter a distinct id and a full name', () => {
