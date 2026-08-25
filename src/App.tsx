@@ -44,6 +44,7 @@ import { FavouritesPanel } from './ui/FavouritesPanel'
 import { ImamPanel } from './ui/ImamPanel'
 import { LockScreenPanel } from './ui/LockScreenPanel'
 import { FacePanel } from './ui/FacePanel'
+import { HomePanel, type HomeFace, type HomeResume } from './ui/HomePanel'
 import { MushafView, ayahStartsFor } from './ui/MushafView'
 import { HifzBoard } from './ui/HifzBoard'
 import { ForkDrill } from './ui/ForkDrill'
@@ -81,6 +82,7 @@ import {
   SkipBack,
   SkipForward,
   NextVoice,
+  Home as HomeIcon,
 } from './ui/Icons'
 import { stringsFor, type Lang } from './i18n'
 import { brandName, brandSecondary } from './brand'
@@ -95,7 +97,9 @@ import {
 } from './native/shell'
 import {
   applyTheme,
-  DEFAULT_THEME,
+  asMode,
+  asTheme,
+  bootPreference,
   watchSystemMode,
   type Mode,
   type ThemeId,
@@ -117,8 +121,20 @@ import './ui/themes.css'
 import './ui/glass.css'
 import './ui/motion.css'
 import './ui/desktop.css'
+import './ui/home.css'
 
-type Tab = 'quran' | 'library' | 'text' | 'hifz' | 'more'
+type Tab = 'home' | 'quran' | 'library' | 'text' | 'hifz' | 'more'
+
+/**
+ * A square portrait needs no framing, and stating that beats leaving it out.
+ *
+ * The stylesheet's default is Al-Dosari's uncropped photograph at 160% and
+ * well off centre, so anything that does not state its own framing inherits a
+ * crop meant for one particular face. Every portrait the crop script produces
+ * is square; his is the one that is not.
+ */
+const SQUARE_FRAME = { zoom: 100, x: 50, y: 50 }
+const UNCROPPED_PHOTOS = new Set(['sheikh.jpg'])
 const SPEEDS = [1, 1.25, 1.5, 0.75]
 /** The transport's fixed jump. Ten seconds is the convention, and it is short
  *  enough to land back on the start of an ayah you half-caught. */
@@ -146,7 +162,9 @@ export default function App() {
   const [shuffle, setShuffle] = useState(false)
   const [speedIdx, setSpeedIdx] = useState(0)
   const [sleepAt, setSleepAt] = useState<number | null>(null)
-  const [tab, setTab] = useState<Tab>('quran')
+  // Opens on the home screen: the recitation you were in the middle of is
+  // more useful than the top of a list of a hundred and fourteen surahs.
+  const [tab, setTab] = useState<Tab>('home')
   const [query, setQuery] = useState('')
   const [quota, setQuota] = useState({ usage: 0, quota: 0, free: 0 })
   const [error, setError] = useState<string | null>(null)
@@ -174,8 +192,16 @@ export default function App() {
   /** The full player is a sheet over the app; the dock capsule is its
    *  collapsed form, so it starts closed. */
   const [playerMin, setPlayerMin] = useState(true)
-  const [theme, setTheme] = useState<ThemeId>(DEFAULT_THEME)
-  const [appearance, setAppearance] = useState<Mode>('system')
+  /**
+   * Seeded from the same copy the boot script read, never from the default.
+   *
+   * Starting these at the default meant the effect below stamped cream over
+   * the palette the boot script had already put on <html>, and only the
+   * IndexedDB read a second later put the real one back — the whole flash
+   * happened after mount, not before it.
+   */
+  const [theme, setTheme] = useState<ThemeId>(() => bootPreference().theme)
+  const [appearance, setAppearance] = useState<Mode>(() => bootPreference().mode)
 
   /**
    * Where the last session stopped, until it is used once.
@@ -313,8 +339,13 @@ export default function App() {
       setFavourites(await getPref<string[]>('favourites', []))
       setLang(await getPref<Lang>('lang', 'ar'))
       setPlayerMin(await getPref<boolean>('playerMin', true))
-      setTheme(await getPref<ThemeId>('theme', DEFAULT_THEME))
-      setAppearance(await getPref<Mode>('appearance', 'system'))
+      // Falling back to the synchronous copy rather than to the default: iOS
+      // evicts IndexedDB from apps it considers unused while leaving
+      // localStorage alone, and a reader who comes back after a fortnight
+      // should find their theme, not cream.
+      const boot = bootPreference()
+      setTheme(asTheme(await getPref<string>('theme', boot.theme), boot.theme))
+      setAppearance(asMode(await getPref<string>('appearance', boot.mode), boot.mode))
 
       // Runs once: clears audio a since-fixed queue bug may have filed under
       // the wrong reciter, which made the wrong surah play from a saved copy.
@@ -891,22 +922,7 @@ export default function App() {
    *
    * So a square portrait states its framing outright.
    */
-  const SQUARE = { zoom: 100, x: 50, y: 50 }
-  /**
-   * Bundled portraits that are not square crops.
-   *
-   * Every portrait scripts/crop-imam-photos.py produces is square, so square
-   * is the rule and this is the whole of the exception: Al-Dosari's is still
-   * the uncropped original the CSS default was written around.
-   *
-   * This used to be a test for an `imam-` filename prefix, which quietly made
-   * the rule "square if it was named for the roster". Portraits for reciters
-   * who are not Taraweeh imams are not named that way, so the two added for
-   * al-Afasy and Abdulaziz Al-Turki fell through to the stylesheet and
-   * inherited a 160% crop centred on somebody else's face.
-   */
-  const UNCROPPED = new Set(['sheikh.jpg'])
-  const bundledIsSquare = !!face && !faceIsMine && !UNCROPPED.has(face)
+  const bundledIsSquare = !!face && !faceIsMine && !UNCROPPED_PHOTOS.has(face)
   /**
    * The framing that ships with whichever portrait is actually on screen.
    *
@@ -921,9 +937,9 @@ export default function App() {
       ? reciter?.frames
       : undefined)
   const faceFrame =
-    mine?.player ?? bundledFrames?.player ?? (bundledIsSquare ? SQUARE : null)
+    mine?.player ?? bundledFrames?.player ?? (bundledIsSquare ? SQUARE_FRAME : null)
   const cardFrame =
-    mine?.card ?? bundledFrames?.card ?? (bundledIsSquare ? SQUARE : null)
+    mine?.card ?? bundledFrames?.card ?? (bundledIsSquare ? SQUARE_FRAME : null)
   const facePerson = voiceIdNow ?? reciter?.id ?? ''
 
   /**
@@ -979,6 +995,58 @@ export default function App() {
   }, [surahs, query])
 
   const openText = () => setTab('text')
+
+  /**
+   * The portraits for the home screen, resolved once here.
+   *
+   * The rules for which picture wins and how it is cropped live in exactly
+   * one place — duplicating them into the panel is what put a framing meant
+   * for one man onto another's face the last time.
+   */
+  const homeFaces = useMemo<HomeFace[]>(
+    () =>
+      individual.map((r) => {
+        const own = faces.get(r.id)
+        const mine = own?.url ?? null
+        const photo = mine ?? r.photo ?? null
+        return {
+          id: r.id,
+          label: inScript(lang, r.name, r.nameEn),
+          src: photo ? (mine ? photo : `${import.meta.env.BASE_URL}${photo}`) : null,
+          frame:
+            own?.player ??
+            r.frames?.player ??
+            (photo && !mine && !UNCROPPED_PHOTOS.has(photo) ? SQUARE_FRAME : null),
+        }
+      }),
+    [individual, faces, lang],
+  )
+
+  /**
+   * Where the listener stopped.
+   *
+   * The engine writes the playhead every few seconds, so this is live rather
+   * than a snapshot taken at boot. The verse is only named where this
+   * recitation is actually timed: deriving one from elapsed seconds would be
+   * a confident guess about which ayah of the Quran someone had reached, and
+   * the card says how far in instead.
+   */
+  const homeResume = useMemo<HomeResume | null>(() => {
+    if (current === null) return null
+    const md = surahMeta.find((m) => m.surah === current)
+    if (!md) return null
+    // Timings are in milliseconds; the playhead is in seconds.
+    const starts = ayahStartsFor(reciterId, current)
+    const verse = starts?.length
+      ? Math.max(1, starts.filter((ms) => ms <= time * 1000 + 250).length)
+      : null
+    return {
+      surahName: md.name,
+      surahNameEn: md.nameEn,
+      verse,
+      at: formatTime(time, lang),
+    }
+  }, [current, reciterId, time, lang])
 
   const favKey = current !== null ? dlKey(reciterId, current) : ''
   const toggleFavourite = async () => {
@@ -1150,7 +1218,12 @@ export default function App() {
 
   const dockTabs: DockTab[] = useMemo(
     () => [
-      { id: 'library', label: t.tabLibrary, icon: <Library size={21} />, onSelect: () => setTab('library') },
+      /*
+       * Home takes the slot the library had. The library is not gone — the
+       * home screen's reciter section opens it with "See all", which is where
+       * someone looking for the whole collection would reach for it anyway.
+       */
+      { id: 'home', label: t.tabHome, icon: <HomeIcon size={21} />, onSelect: () => setTab('home') },
       { id: 'quran', label: t.tabQuran, icon: <QuranMark size={21} />, onSelect: () => setTab('quran') },
       { id: 'text', label: t.tabText, icon: <Broadcast size={21} />, onSelect: openText },
       { id: 'hifz', label: t.tabHifz, icon: <Heart size={21} />, onSelect: () => setTab('hifz') },
@@ -1165,6 +1238,9 @@ export default function App() {
     <div className="app" dir={t.dir}>
       <Splash lang={lang} />
       <div className="sheet">
+        {/* The home screen carries its own header — logo, wordmark, search —
+            so the shared one, which is a player header, stands down there. */}
+        {tab !== 'home' && (
         <div className="sheet-head">
           <h1 className="wordmark">
             <span className="wordmark-main">{brandName(lang)}</span>
@@ -1193,8 +1269,9 @@ export default function App() {
             </button>
           </div>
         </div>
+        )}
 
-        {(individual.length > 1 || mosqueYears.size > 0) && (
+        {tab !== 'home' && (individual.length > 1 || mosqueYears.size > 0) && (
           <div className="reciters" role="tablist" aria-label="القارئ">
             {individual.map((r) => (
               <button
@@ -1373,6 +1450,32 @@ export default function App() {
         )}
 
         <div className="scroll" ref={scrollRef}>
+          {tab === 'home' && (
+            <HomePanel
+              t={t}
+              lang={lang}
+              base={import.meta.env.BASE_URL}
+              resume={homeResume}
+              faces={homeFaces}
+              onResume={() => {
+                if (current === null) return
+                // Back to exactly where the playhead was left, not to zero.
+                requestPlay(reciterId, current, time)
+                setTab('quran')
+              }}
+              onPickReciter={(id) => {
+                void switchReciter(id)
+                setTab('quran')
+              }}
+              onSeeAll={() => setTab('library')}
+              onSearch={() => {
+                setTab('quran')
+                // The field only exists once the Quran tab has rendered.
+                window.setTimeout(() => searchRef.current?.focus(), 0)
+              }}
+            />
+          )}
+
           {tab === 'quran' && (
             <SurahList
               surahs={filtered}
@@ -1607,6 +1710,29 @@ export default function App() {
                   ) : null}
                 </p>
               ))}
+
+              {/*
+                  The photograph on the home screen's continue card.
+                  CC BY 2.5 obliges attribution, and this is where the app
+                  already credits where its material came from.
+              */}
+              <p className="credit">
+                <a
+                  href="https://commons.wikimedia.org/wiki/File:Quran-Mus%27haf_Al_Tajweed.jpg"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Quran-Mus’haf Al Tajweed
+                </a>{' '}
+                — Amr Fayez (TheEgyptian), Wikimedia Commons,{' '}
+                <a
+                  href="https://creativecommons.org/licenses/by/2.5"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  CC BY 2.5
+                </a>
+              </p>
 
               {/* Which build is actually running. An installed app can serve
                   a cached copy for days, and without this there is no way to

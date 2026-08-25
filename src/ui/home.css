@@ -1,0 +1,514 @@
+/* =====================================================================
+   Home
+   ---------------------------------------------------------------------
+   The screen the app opens on. Two things earn the space: the recitation
+   you were already in the middle of, and the voice you want to hear.
+
+   Everything here is drawn from the theme's own tokens, so the same layout
+   reads as cream-and-gold in Mushaf, black-and-gold in Kiswah and blue-and-
+   silver in Lapis without a second stylesheet. The two places that needed
+   real care are marked: the photograph inside the card, which has to sit on
+   fourteen different grounds, and the pill, whose gold is the one fill on
+   the screen.
+   ===================================================================== */
+
+.home {
+  display: flex;
+  flex-direction: column;
+  gap: 1.65rem;
+  padding: 0.25rem 0 1rem;
+  /* A belt to the braces above: whatever a long name in an unexpected script
+     does to a row, it must not be able to shift the whole page sideways. */
+  min-inline-size: 0;
+  overflow-x: clip;
+}
+
+.home-head,
+.home-section,
+.resume {
+  min-inline-size: 0;
+}
+
+/* ============ header: logo, wordmark, search ============ */
+
+/*
+ * Equal side columns, so the wordmark is centred on the page rather than on
+ * the gap between the two controls. Centring it in the leftover space moves
+ * the name whenever a control changes size, which it does the moment a
+ * language with a wider glyph loads.
+ */
+.home-head {
+  display: grid;
+  grid-template-columns: 1fr minmax(0, auto) 1fr;
+  align-items: center;
+  gap: 0.5rem;
+  padding-inline: 0.15rem;
+}
+
+.home-mark {
+  justify-self: start;
+  display: grid;
+  place-items: center;
+  inline-size: 3rem;
+  block-size: 3rem;
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  border: 1px solid var(--accent-line);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.home-mark img {
+  inline-size: 2.1rem;
+  block-size: 2.1rem;
+  object-fit: contain;
+}
+
+.home-brand {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  line-height: 1.15;
+  text-align: center;
+}
+
+/*
+ * The brand keeps its serif in both scripts.
+ *
+ * --font-name deliberately hands Latin readers the interface sans, because a
+ * text serif carries none of the app's identity on a name like "Yasser
+ * Al-Dosari". The wordmark is the exception the rule is measured against: it
+ * is the identity, and Amiri sets its Latin as well as its Arabic.
+ */
+.home-brand-main {
+  font-family: var(--font-ar);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ink-strong);
+}
+
+/* The other script plus what the app is, small and tracked out. */
+.home-brand-alt {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.home-round {
+  justify-self: end;
+  display: grid;
+  place-items: center;
+  inline-size: 3rem;
+  block-size: 3rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--accent-line);
+  background: var(--card);
+  color: var(--ink-soft);
+  box-shadow: var(--shadow-sm);
+}
+
+.home-round:active {
+  background: var(--card-2);
+}
+
+/* ============ the continue-reading card ============ */
+
+/*
+ * The photograph's treatment, as tokens, because one image has to sit on
+ * fourteen grounds.
+ *
+ * A light card is lighter than any pixel of a cream photograph, and a dark
+ * card is darker than the photograph's deepest shadow — so on a dark theme no
+ * part of the image is darker than what it sits on and the whole rectangle
+ * lifts off the page. Opacity cannot fix that: turn it down far enough to
+ * stop glowing and the picture loses all its internal contrast and becomes a
+ * smear. The blend mode is what fixes it.
+ *
+ *   multiply, in light themes — can never return a result lighter than the
+ *   card, so the highlights dissolve into the paper and only the shadows draw.
+ *   screen, in dark themes  — can never return a result darker than the card,
+ *   so the photograph's own shadows sink into the ground instead of punching
+ *   a lit hole in it.
+ */
+:root {
+  --hero-photo-blend: multiply;
+  --hero-photo-opacity: 0.16;
+  --hero-photo-filter: contrast(1.05) saturate(0.92);
+  /* How far in from the trailing edge the image survives. */
+  --hero-photo-reach: 58%;
+}
+
+[data-mode='dark'] {
+  --hero-photo-blend: screen;
+  --hero-photo-opacity: 0.1;
+  --hero-photo-filter: brightness(0.9) contrast(1.15) saturate(0.85);
+}
+
+/* The two cards that sit on true black. The same pair glass.css singles out,
+   for the same reason: there is nothing beneath them to lose contrast to. */
+[data-theme='kiswah'][data-mode='dark'],
+[data-theme='tahajjud'][data-mode='dark'] {
+  --hero-photo-opacity: 0.07;
+  --hero-photo-filter: brightness(0.74) contrast(1.2) saturate(0.8);
+  --hero-photo-reach: 52%;
+}
+
+/* The darkest light card: multiply has less range to work in. */
+[data-theme='vellum'] {
+  --hero-photo-opacity: 0.13;
+}
+
+/* Cards that are literally #ffffff, over cool shadows. A cream photograph
+   multiplied into pure white against a blue-shadowed theme reads as a stain
+   rather than as a shadow, so most of the warmth comes out. */
+[data-theme='lapis'],
+[data-theme='zellij'],
+[data-theme='rawdah'] {
+  --hero-photo-filter: contrast(1.06) saturate(0.62);
+}
+
+.resume {
+  position: relative;
+  /*
+   * Not optional. A blend mode with nothing to be isolated within reaches
+   * past the card to the page and to the app-wide ornament layer beneath it —
+   * the same bug the pattern layer already carries a comment about, one level
+   * up.
+   */
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: var(--radius-card);
+  background: linear-gradient(155deg, var(--card), var(--card-2));
+  border: 1px solid var(--accent-line);
+  box-shadow: var(--shadow-md);
+}
+
+.resume-art {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: 0;
+  inline-size: 62%;
+  z-index: 0;
+  pointer-events: none;
+  /* The URL is set from the component: a relative url() in a stylesheet
+     resolves against the stylesheet, and an absolute one ignores the
+     deployment base — this app is served from a subpath. */
+  background-size: cover;
+  background-position: center;
+  mix-blend-mode: var(--hero-photo-blend);
+  opacity: var(--hero-photo-opacity);
+  filter: var(--hero-photo-filter);
+  /*
+   * The image is fully gone before the text column begins, so every string on
+   * this card is measured against the card alone and never against a
+   * composite. That is the guarantee, not the styling: at any strength strong
+   * enough for the photograph to read, text over it fails contrast in all
+   * fourteen themes.
+   *
+   * mask-image takes no logical keyword, so the mirrored direction is stated.
+   */
+  -webkit-mask-image: linear-gradient(to left, #000 0%, #000 22%, transparent var(--hero-photo-reach));
+  mask-image: linear-gradient(to left, #000 0%, #000 22%, transparent var(--hero-photo-reach));
+}
+
+[dir='rtl'] .resume-art {
+  -webkit-mask-image: linear-gradient(to right, #000 0%, #000 22%, transparent var(--hero-photo-reach));
+  mask-image: linear-gradient(to right, #000 0%, #000 22%, transparent var(--hero-photo-reach));
+}
+
+/* Without a blend mode, or in forced colours, drop the picture rather than
+   ship the smear it would otherwise be. */
+@supports not (mix-blend-mode: multiply) {
+  .resume-art {
+    display: none;
+  }
+}
+
+@media (forced-colors: active) {
+  .resume-art {
+    display: none;
+  }
+}
+
+.resume-body {
+  position: relative;
+  z-index: 1;
+  padding: 1.4rem 1.35rem 1.5rem;
+  /* The text column stops well short of the image. */
+  max-inline-size: 62%;
+}
+
+/* Nothing to continue means no photograph to leave room for. */
+.resume:has(.resume-empty) .resume-body {
+  max-inline-size: 100%;
+}
+
+.resume:has(.resume-empty) .resume-art {
+  opacity: calc(var(--hero-photo-opacity) * 0.5);
+}
+
+.resume-label {
+  margin: 0 0 0.5rem;
+  font-size: var(--text-sm);
+  /* --muted does not clear 4.5:1 on the default theme's card. --ink-soft does,
+     in all fourteen. */
+  color: var(--ink-soft);
+}
+
+.resume-surah {
+  margin: 0;
+  font-family: var(--font-quran);
+  font-size: var(--text-lg);
+  line-height: 1.35;
+  color: var(--ink-strong);
+}
+
+.resume-where {
+  margin: 0.35rem 0 0;
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+}
+
+.resume-empty {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+/*
+ * The one filled control on the screen.
+ *
+ * Gold as a fill wants the ink the themes provide for exactly this pairing.
+ * --on-accent is white-ish, which reads at 2.2:1 on the default theme's gold;
+ * --on-play is the token that exists because a gold gradient needs a dark
+ * word on it, and it clears 4.5:1 everywhere.
+ */
+.resume-go {
+  margin-block-start: 1.15rem;
+  padding: 0.72rem 1.9rem;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(180deg, var(--play-a), var(--play-b));
+  color: var(--on-play);
+  font-family: inherit;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  box-shadow: 0 2px 10px rgb(var(--shadow-rgb) / 0.18);
+  transition: transform 120ms ease;
+}
+
+.resume-go:active {
+  transform: scale(0.97);
+}
+
+/* ============ a section, and its "see all" ============ */
+
+.home-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.home-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.home-section-head h2 {
+  margin: 0;
+  font-family: var(--font-ar);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--ink-strong);
+}
+
+/*
+ * Gold, and large enough to be allowed to be.
+ *
+ * This link sits on --bg, where --gold reaches only 4.1:1 in the default
+ * theme — short of the 4.5 that normal-size text needs. At this size and
+ * weight it is large text, where the bar is 3:1, and every theme clears it.
+ * Shrinking it would quietly break the default theme.
+ */
+.see-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.2rem 0.1rem;
+  border: 0;
+  background: none;
+  font-family: inherit;
+  font-size: var(--text-sm);
+  font-weight: 650;
+  color: var(--gold);
+}
+
+/* The chevron points the way the reader is going. */
+.see-all svg {
+  transform: rotate(-90deg);
+}
+
+[dir='rtl'] .see-all svg {
+  transform: rotate(90deg);
+}
+
+/* ============ the reciter faces ============ */
+
+/*
+ * A centred wrap rather than a fixed grid, so the last row centres itself
+ * instead of leaving a hole. Seven reciters give three and four; eight give
+ * four and four. Both look deliberate, which a left-aligned grid would not.
+ */
+.face-grid {
+  --face-gap: 0.8rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.2rem var(--face-gap);
+}
+
+/*
+ * Sized as a fraction of the row rather than in rem, so four always fit
+ * whatever the screen. Four fixed 5.4rem cells and their gaps came to 394px
+ * on a 390px phone: the row overflowed, which widened the scroller and pushed
+ * the logo, the section heading and the first dock tab off the edge. A cell
+ * that is a share of the row cannot do that.
+ */
+.face-grid li {
+  flex: 0 0 auto;
+  inline-size: calc((100% - 3 * var(--face-gap)) / 4);
+  max-inline-size: 6rem;
+}
+
+.face-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.55rem;
+  inline-size: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: inherit;
+  color: inherit;
+  text-align: center;
+}
+
+/*
+ * A card-coloured gap, then the ring — the medallion's recipe.
+ *
+ * A gold ring drawn straight onto the photograph muddies its edge, and gold
+ * on a cream card is too close in value to read as an edge at all. The gap is
+ * what makes the ring visible without needing the gold to carry contrast it
+ * has not got.
+ */
+.face-round {
+  inline-size: 100%;
+  aspect-ratio: 1;
+  border-radius: var(--radius-pill);
+  border: 2.5px solid var(--card);
+  box-shadow: 0 0 0 1.5px var(--accent), var(--shadow-sm);
+  background-color: var(--tile);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.face-round.is-empty {
+  display: grid;
+  place-items: center;
+  background-image: none;
+}
+
+.face-cell-name {
+  font-family: var(--font-name);
+  font-size: var(--text-xs);
+  line-height: 1.35;
+  /* --muted does not clear 4.5:1 on the default theme's card. */
+  color: var(--ink-soft);
+  /*
+   * Three lines. Two clipped "Mishary Rashid Al-Afasy" to "Mishary Rashid
+   * Al-…", and abbreviating a reciter's name to save nine pixels is not a
+   * trade worth making. The portraits sit at the top of their cells, so an
+   * extra line moves the next row down and nothing else.
+   */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ============ quality floor ============ */
+
+.home-round:focus-visible,
+.resume-go:focus-visible,
+.see-all:focus-visible,
+.face-cell:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+  border-radius: var(--radius-xs);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .resume-go {
+    transition: none;
+  }
+  .resume-go:active {
+    transform: none;
+  }
+}
+
+/* Narrow phones: the card's text column needs the room more than the
+   photograph does. */
+@media (max-width: 360px) {
+  .resume-body {
+    max-inline-size: 70%;
+    padding: 1.2rem 1.1rem 1.3rem;
+  }
+  .resume-art {
+    inline-size: 54%;
+  }
+  .face-grid li {
+    inline-size: 4.9rem;
+  }
+  .face-round {
+    inline-size: 4.1rem;
+    block-size: 4.1rem;
+  }
+}
+
+/* Roomier screens: the card grows, and the picture is allowed more of it. */
+@media (min-width: 560px) {
+  .resume-body {
+    padding: 1.7rem 1.6rem 1.8rem;
+  }
+  .face-grid {
+    gap: 1.5rem 1.4rem;
+  }
+}
+
+/* ============ attribution ============ */
+
+/* The home card's photograph is CC BY, which obliges a credit. Quiet, but
+   present: a licence is not satisfied by a line nobody can find. */
+.credit {
+  margin: 0.9rem 0 0;
+  font-size: var(--text-xs);
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+.credit a {
+  color: var(--gold);
+}

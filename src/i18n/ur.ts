@@ -159,6 +159,20 @@ export const ur: Strings = {
   arabic: 'العربية',
   english: 'English',
   reciters: 'قراء',
+  /** The first tab: what the app opens on. */
+  tabHome: 'ہوم',
+  /** Label over the card that takes you back to where you stopped. */
+  continueReading: 'پڑھنا جاری رکھیں',
+  /** The button on that card. Says what happens, not "Submit". */
+  resumeHere: 'جاری رکھیں',
+  /** Opens the full list a section is showing the first few of. */
+  seeAll: 'سب دیکھیں',
+  /** Which verse the recitation had reached, where that is known. */
+  verseAt: (n: number | string) => `آیت ${n}`,
+  /** The continue card with nothing to continue: an invitation. */
+  homeEmpty: 'ابھی کچھ نہیں۔ کوئی سورت چلائیں، وہ یہاں مل جائے گی۔',
+  /** The search control in the home header. */
+  homeOpenSearch: 'تلاش',
   recorded: (n: number) => `ریکارڈ شدہ: 114 میں سے ${n}`,
 
   verify: 'سن کر تصدیق',

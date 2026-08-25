@@ -162,6 +162,20 @@ export const ar: Strings = {
   arabic: 'العربية',
   english: 'English',
   reciters: 'القُرّاء',
+  /** The first tab: what the app opens on. */
+  tabHome: 'الرئيسية',
+  /** Label over the card that takes you back to where you stopped. */
+  continueReading: 'متابعة القراءة',
+  /** The button on that card. Says what happens, not "Submit". */
+  resumeHere: 'متابعة',
+  /** Opens the full list a section is showing the first few of. */
+  seeAll: 'عرض الكل',
+  /** Which verse the recitation had reached, where that is known. */
+  verseAt: (n: number | string) => `الآية ${n}`,
+  /** The continue card with nothing to continue: an invitation. */
+  homeEmpty: 'لم تبدأ بعد. اختر سورة وستجدها هنا.',
+  /** The search control in the home header. */
+  homeOpenSearch: 'بحث',
   recorded: (n: number) => `مُسجَّل: ${n} من 114`,
 
   verify: 'التحقق بالسماع',

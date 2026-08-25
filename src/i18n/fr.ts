@@ -159,6 +159,20 @@ export const fr: Strings = {
   arabic: 'العربية',
   english: 'English',
   reciters: 'Récitateurs',
+  /** The first tab: what the app opens on. */
+  tabHome: 'Accueil',
+  /** Label over the card that takes you back to where you stopped. */
+  continueReading: 'Reprendre la lecture',
+  /** The button on that card. Says what happens, not "Submit". */
+  resumeHere: 'Reprendre',
+  /** Opens the full list a section is showing the first few of. */
+  seeAll: 'Tout voir',
+  /** Which verse the recitation had reached, where that is known. */
+  verseAt: (n: number | string) => `Verset ${n}`,
+  /** The continue card with nothing to continue: an invitation. */
+  homeEmpty: 'Rien pour l’instant. Lancez une sourate et elle vous attendra ici.',
+  /** The search control in the home header. */
+  homeOpenSearch: 'Rechercher',
   recorded: (n: number) => `Enregistré : ${n} sur 114`,
 
   verify: "Vérifier à l'écoute",

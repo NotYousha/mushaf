@@ -150,6 +150,14 @@ export const Saved = ({ size }: P) => (
 )
 
 /* --- tab bar --- */
+/* A house, for the tab the app opens on. Stroked like the rest of the set;
+   the dock fills it with the accent when it is the active tab. */
+export const Home = ({ size }: P) => (
+  <svg {...s(size)} stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3.7 10.9 12 4.3l8.3 6.6V19a1.3 1.3 0 0 1-1.3 1.3h-3.4v-5a1 1 0 0 0-1-1h-3.2a1 1 0 0 0-1 1v5H5A1.3 1.3 0 0 1 3.7 19Z" />
+  </svg>
+)
+
 export const Library = ({ size }: P) => (
   <svg {...s(size)} stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
     <path d="M12 6.5S10 4.8 6.6 4.8c-1.3 0-2 .2-2.3.3a.6.6 0 0 0-.3.5v12c0 .4.4.7.8.6.5-.1 1.1-.2 2-.2 3 0 5.2 1.7 5.2 1.7s2.2-1.7 5.2-1.7c.9 0 1.5.1 2 .2.4.1.8-.2.8-.6v-12a.6.6 0 0 0-.3-.5c-.3-.1-1-.3-2.3-.3C14 4.8 12 6.5 12 6.5Zm0 0V19" />
