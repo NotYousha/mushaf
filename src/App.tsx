@@ -476,7 +476,6 @@ export default function App() {
       // head unit says nothing about the voice being heard.
       updateMetadata(s, artistFor(s, reciter), import.meta.env.BASE_URL)
       setNavAvailability(
-        prevSurah(surah, playable) !== null,
         nextSurah(surah, repeat, playable) !== null,
         engine.current!.handlers,
       )

@@ -15,6 +15,31 @@ const ms = () =>
   (navigator as unknown as { mediaSession?: MediaSession })?.mediaSession ?? null
 
 /**
+ * Whether this system's Now Playing screen would hide the surah buttons.
+ *
+ * Apple's lock screen and Dynamic Island give the transport exactly two slots
+ * either side of play/pause, and MediaRemote fills them by precedence: if a
+ * page registers `seekforward`/`seekbackward`, WebKit enables the system's
+ * skip commands, and skip outranks track. The ±15s arrows appear and the
+ * next-surah button is not drawn at all — no matter that `nexttrack` is
+ * registered and working. That is the whole reason the surah could not be
+ * changed from a locked phone.
+ *
+ * So on Apple the seek handlers are left off, and the two slots go to the
+ * surah. Nothing is lost that the screen does not already offer: the scrubber
+ * is right there for moving within a recitation, and a Taraweeh surah runs
+ * long enough that fifteen seconds is not the jump anyone wants from it.
+ *
+ * Everywhere else both fit, so both stay.
+ */
+function skipCommandsHideTrackButtons(): boolean {
+  const ua = navigator.userAgent ?? ''
+  // An iPad reports itself as a Mac and is distinguished by having a
+  // touchscreen, which no Mac has.
+  return /iPhone|iPad|iPod|Macintosh/.test(ua) || (/Mac/.test(ua) && navigator.maxTouchPoints > 1)
+}
+
+/**
  * Register the action handlers once, for the life of the page.
  *
  * They previously went up inside playSurah, so each call captured that
@@ -46,8 +71,12 @@ export function registerMediaHandlers(ref: { current: MediaHandlers | null }) {
   // Headphone long-press and a car's FF/REW arrive here. The supplied
   // seekOffset is deliberately ignored: stepping by ayah is far more useful
   // in a recitation than jumping a fixed number of seconds.
-  on('seekforward', () => ref.current?.step(1))
-  on('seekbackward', () => ref.current?.step(-1))
+  //
+  // Registered only where they do not cost the surah buttons their place.
+  if (!skipCommandsHideTrackButtons()) {
+    on('seekforward', () => ref.current?.step(1))
+    on('seekbackward', () => ref.current?.step(-1))
+  }
   on('seekto', (d) => {
     if (typeof d.seekTime !== 'number') return
     // fastSeek is what a drag sends while the finger is still moving: the OS
@@ -71,7 +100,6 @@ export function registerMediaHandlers(ref: { current: MediaHandlers | null }) {
  * ref is passed back in here rather than captured.
  */
 export function setNavAvailability(
-  hasPrev: boolean,
   hasNext: boolean,
   ref?: { current: MediaHandlers | null },
 ) {
@@ -85,7 +113,13 @@ export function setNavAvailability(
     }
   }
   set('nexttrack', hasNext && ref ? () => ref.current?.next() : null)
-  set('previoustrack', hasPrev && ref ? () => ref.current?.prev() : null)
+  /**
+   * Previous takes no availability argument, because it always has work: its
+   * first job is to restart the surah in hand, which is the only way to begin
+   * a Taraweeh recitation again from a locked phone. Whether a second press
+   * can leave the surah is the handler's business, not the button's.
+   */
+  set('previoustrack', ref ? () => ref.current?.prev() : null)
 }
 
 export function setPlaybackState(state: MediaSessionPlaybackState) {
