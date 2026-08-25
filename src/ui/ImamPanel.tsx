@@ -77,7 +77,7 @@ export function ImamPanel({ t, lang, surahMeta, faces, onPlay, onOpenYear }: Pro
           />
           <div>
             <h2>{inScript(lang, chosen.name, chosen.nameEn)}</h2>
-            <p className="imam-meta">{summary(t, lang, chosen)}</p>
+            <Meta t={t} lang={lang} i={chosen} />
           </div>
         </header>
 
@@ -95,7 +95,12 @@ export function ImamPanel({ t, lang, surahMeta, faces, onPlay, onOpenYear }: Pro
               >
                 <span>{placeOf(readings[0], lang)}</span>
                 <span className="imam-year-n">{digits(lang, year)}</span>
-                <span className="imam-year-c">{digits(lang, readings.length)}</span>
+                <span className="imam-year-c">
+                  {t.imamSurahs(digits(lang, readings.length), readings.length === 1)}
+                </span>
+                <span className="imam-caret" aria-hidden="true">
+                  {isOpen ? '−' : '+'}
+                </span>
               </button>
 
               {isOpen && (
@@ -185,7 +190,7 @@ export function ImamPanel({ t, lang, surahMeta, faces, onPlay, onOpenYear }: Pro
                 />
                 <span className="imam-names">
                   <span className="imam-ar">{inScript(lang, i.name, i.nameEn)}</span>
-                  <span className="imam-meta">{summary(t, lang, i)}</span>
+                  <Meta t={t} lang={lang} i={i} />
                 </span>
               </button>
             </li>
@@ -202,11 +207,40 @@ function placeOf(r: Reading, lang: Lang): string {
   return m ? inScript(lang, m.shortAr, m.shortEn) : ''
 }
 
+/**
+ * The one-line count under a name, as isolated runs rather than one string.
+ *
+ * Joining these with a separator put a neutral "·" between an Arabic word and
+ * the digits of the next part, and bidi reordering then glued it to the
+ * number: "٢٩ سورة · ٢٩ سنة · ٢ ساعة" came out reading ٢٩٠ and ٢٠. Each part
+ * is its own isolated element instead, so no part can be reordered into its
+ * neighbour.
+ */
+function Meta({
+  t,
+  lang,
+  i,
+}: {
+  t: Strings
+  lang: Lang
+  i: { surahs: number; years: number[]; seasons: unknown[]; seconds: number }
+}) {
+  return (
+    <p className="imam-meta">
+      {summary(t, lang, i).map((part, n) => (
+        <span key={n} className="imam-bit">
+          {part}
+        </span>
+      ))}
+    </p>
+  )
+}
+
 function summary(
   t: Strings,
   lang: Lang,
   i: { surahs: number; years: number[]; seasons: unknown[]; seconds: number },
-): string {
+): string[] {
   // Every Ramadan he led, however deeply that year is attributed. Reporting
   // only the named ones would say Sudais has two years behind him.
   const ramadans = i.years.length + i.seasons.length
@@ -216,5 +250,5 @@ function summary(
   // claim there is nothing to hear.
   const hours = Math.round(i.seconds / 3600)
   if (hours >= 1) parts.push(t.imamHours(digits(lang, hours), hours === 1))
-  return parts.join(' · ')
+  return parts
 }

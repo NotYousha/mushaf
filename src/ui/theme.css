@@ -2825,7 +2825,7 @@ body {
 .imam-year-head {
   width: 100%;
   display: grid;
-  grid-template-columns: 1fr auto auto;
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
   align-items: baseline;
   gap: 0.7rem;
   padding: 0.65rem 0.9rem;
@@ -2986,4 +2986,30 @@ body {
   .imam-season:hover {
     background: var(--tile);
   }
+}
+
+/* Each count is its own isolated run. A neutral separator between an Arabic
+   word and the next part's digits reorders into the number otherwise. */
+.imam-bit {
+  unicode-bidi: isolate;
+}
+
+.imam-bit + .imam-bit::before {
+  content: '·';
+  margin: 0 0.4em;
+  color: var(--accent-line);
+}
+
+.imam-caret {
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1;
+  width: 0.8rem;
+  text-align: center;
+}
+
+.imam-year-head > span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
