@@ -78,6 +78,25 @@ export default defineConfig({
             },
           },
           {
+            /**
+             * The reciters' portraits.
+             *
+             * They cannot go in globPatterns: adding webp there would sweep in
+             * the 604 printed mushaf pages below, which are 79 MB. Matched here
+             * instead — root-level images only, never the /duri/ pages — so a
+             * face that has been seen once survives going offline, which for an
+             * app built around offline listening it ought to.
+             */
+            urlPattern: ({ url }) =>
+              /\/[^/]+\.(webp|jpg|jpeg)$/.test(url.pathname) && !url.pathname.includes('/duri/'),
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'reciter-photos',
+              expiration: { maxEntries: 60, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
             // Printed pages of the Ad-Duri mushaf. All 604 weigh 79 MB, far
             // too much to precache, but a page the reader has actually opened
             // should still be there on a train with no signal. Kept to a few
