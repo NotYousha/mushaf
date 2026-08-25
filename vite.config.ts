@@ -37,11 +37,12 @@ export default defineConfig({
         background_color: '#f6f0e6',
         theme_color: '#f6f0e6',
         icons: [
-          { src: `${base}icon-192.png`, sizes: '192x192', type: 'image/png' },
-          { src: `${base}icon-512.png`, sizes: '512x512', type: 'image/png' },
+          { src: `${base}mark-192.png`, sizes: '192x192', type: 'image/png' },
+          { src: `${base}mark-512.png`, sizes: '512x512', type: 'image/png' },
           {
-            // Padded so the calligraphy survives Android's circle crop.
-            src: `${base}icon-maskable-512.png`,
+            // The name set narrower here, so it survives Android's circle crop.
+            // See scripts/make-app-icons.py for the arithmetic.
+            src: `${base}mark-maskable-512.png`,
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable',

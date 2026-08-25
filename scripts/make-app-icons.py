@@ -3,8 +3,16 @@ Builds the app icons and the header mark from the Al-Mau'iza wordmark.
 
     python scripts/make-app-icons.py [glyph-export.png]
 
-Writes public/icon-192.png, public/icon-512.png,
-public/icon-maskable-512.png and public/logo-mark.webp.
+Writes public/mark-180.png, public/mark-192.png, public/mark-512.png,
+public/mark-maskable-512.png and public/logo-mark.webp.
+
+The files are named mark-* rather than icon-*, and that rename is deliberate.
+iOS bakes the icon into a Home Screen shortcut when the shortcut is created, so
+an existing one keeps whatever icon it was made with -- and a re-add can still
+be served a stale file out of Safari's HTTP cache. A new filename cannot be
+stale, which is the only way to be sure the frameless mark is what arrives.
+180px is iOS's own size for apple-touch-icon, so it is drawn rather than
+scaled.
 
 logo-mark.webp is the brand object itself, with no white frame: the splash
 draws it at 168px and the home header at 48px, both rounding it themselves. The
@@ -219,9 +227,11 @@ glyphs = load_glyphs(src_path)
 print(f"source {Image.open(src_path).size} -> name {glyphs.size}")
 
 outputs = [
-    ("icon-512.png", build(512, GLYPH_WIDE, glyphs), "PNG"),
-    ("icon-192.png", build(192, GLYPH_WIDE, glyphs), "PNG"),
-    ("icon-maskable-512.png", build(512, GLYPH_SAFE, glyphs), "PNG"),
+    ("mark-512.png", build(512, GLYPH_WIDE, glyphs), "PNG"),
+    ("mark-192.png", build(192, GLYPH_WIDE, glyphs), "PNG"),
+    # iOS's own apple-touch-icon size, so nothing has to scale it.
+    ("mark-180.png", build(180, GLYPH_WIDE, glyphs), "PNG"),
+    ("mark-maskable-512.png", build(512, GLYPH_SAFE, glyphs), "PNG"),
     ("logo-mark.webp", build(512, GLYPH_WIDE, glyphs), "WEBP"),
 ]
 for name, im, fmt in outputs:

@@ -48,8 +48,17 @@
                form-action 'none'"
     />
     <link rel="stylesheet" href="./fonts/fonts.css" />
-    <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png" />
-    <link rel="apple-touch-icon" href="./icon-192.png" />
+    <!--
+      Absolute, so the base is prepended at build time. A document-relative
+      "./" resolves against whatever URL the page was opened at, and on the one
+      that lacks a trailing slash it would point a level too high — iOS finding
+      no apple-touch-icon falls back to a screenshot of the page, which is how
+      an "icon" ends up being a picture of cream paper.
+
+      180 is iOS's own size for this, so the mark is drawn rather than scaled.
+    -->
+    <link rel="icon" type="image/png" sizes="192x192" href="/mark-192.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/mark-180.png" />
     <!--
       The theme, stamped before anything is drawn.
 
