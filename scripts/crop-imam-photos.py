@@ -86,8 +86,10 @@ FRAMING = {
     # centre crop would take the top of his head off and give back a shoulder.
     "abdulaziz-turki": dict(zoom=148, cx=46, cy=36),
     # A wide shot at a lectern: he is right of centre and high, and the middle
-    # square is mostly podium and backdrop.
-    "buayjan": dict(zoom=145, cx=61, cy=36),
+    # square is mostly podium and backdrop. Centring the crop on him rather
+    # than on the picture is what brings his face to the middle of the ring —
+    # a lower cx moves the window left, which moves him right in frame.
+    "buayjan": dict(zoom=145, cx=57, cy=36),
 }
 
 # Reciters the catalog names directly, and the file it asks for. These are the
