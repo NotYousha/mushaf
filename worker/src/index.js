@@ -7,14 +7,26 @@
  *                   after seven days.
  *
  *   /d/{1-114}.mp3  Al-Dosari, produced by the Saudi Center
- *   /t/{1-114}.mp3  Al-Turki, same producer (tilawatalharamain.com). The audio
- *                   host sends no CORS header either, and these mushafs are
- *                   still being recorded, so the lists grow as episodes air.
+ *                   (tilawatalharamain.com). The audio host sends no CORS
+ *                   header either, and the mushaf is still being recorded, so
+ *                   the list grows as episodes air.
+ *
+ *   /t/{1-114}.mp3  Badr Al-Turki, from the Saudi Center's own site. Signed
+ *                   R2 URLs that expire after an hour, so nothing about this
+ *                   route may be cached for long.
  *
  *   /j/{1-114}.mp3  Al-Juhany, in the riwayah of Ad-Duri from Abu Amr
  *                   (abdullahjuhany.com). Its files sit on top4top.io, which
  *                   sends no CORS header and is unreachable from some
  *                   networks entirely — the proxy fixes both.
+ *
+ *   /sd/{1-114}.mp3 As-Sudais, /bu/{1-114}.mp3 Al-Buayjan, both produced by
+ *                   the Saudi Center and both still being recorded
+ *                   (tilawatalharamain.com, same shape as /d).
+ *
+ *   /af/{1-114}.mp3 Al-Afasy's Hafs from the Ten Readings mushaf of 1445,
+ *                   and /az/{1-114}.mp3 Abdulaziz Al-Turki, each a single
+ *                   archive.org item.
  *
  *   /haram/{year}/{1-114}.mp3    the Grand Mosque, item Mecca{year}
  *   /nabawi/{year}/{1-114}.mp3   the Prophet's Mosque, item Nabawi{year}
@@ -286,6 +298,22 @@ const ARCHIVE_MUSHAFS = {
   af: {
     item: 'alafasy-1445-2024',
     name: "Al-Afasy — Mushaf al-Qira'at al-Ashr 1445, Hafs from Asim",
+  },
+  /*
+   * Abdulaziz Al-Turki. Seven of this item's files are numbered as each
+   * other — two straight swaps and a three-cycle — so the file named for a
+   * surah is not always the one holding it. Which is which was settled twice
+   * over, and independently: the durations match the Saudi Center's own
+   * publication of this mushaf to within a fifth of a second across a hundred
+   * and five surahs, and separately, scoring every file's length against the
+   * letters of the text it claims puts six surahs far outside the band the
+   * rest of the mushaf sits in and the remap puts all of them back inside it.
+   * The correction itself lives with the catalog, next to Burhaji's, because
+   * that is where a surah is pointed at the file that actually holds it.
+   */
+  az: {
+    item: 'x02507ccccc',
+    name: 'Abdulaziz Al-Turki — Saudi Center',
   },
 }
 
@@ -606,6 +634,11 @@ const ROUTES = {
     ttl: HARAMAIN_PAGE_TTL,
     resolve: (surah, ctx) => resolveArchiveItem(ARCHIVE_MUSHAFS.af.item, surah, ctx),
     name: ARCHIVE_MUSHAFS.af.name,
+  },
+  az: {
+    ttl: HARAMAIN_PAGE_TTL,
+    resolve: (surah, ctx) => resolveArchiveItem(ARCHIVE_MUSHAFS.az.item, surah, ctx),
+    name: ARCHIVE_MUSHAFS.az.name,
   },
 }
 

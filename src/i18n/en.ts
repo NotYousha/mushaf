@@ -222,6 +222,9 @@ export const en = {
     bestAtNight: 'Made for the dark',
     openPlayer: 'Open the player',
     photoFraming: 'Reciter photos',
+    /** Group heading over the individual mushafs, below the two
+     *  mosque rosters. */
+    facesMushafs: 'Mushafs',
     surfaceName: { player: 'Player', card: 'Dock card' },
     dragToPosition: 'Drag the photo to move it.',
     zoom: 'Zoom',

@@ -208,6 +208,9 @@ export const hi: Strings = {
     bestAtNight: 'रात के लिए बनी',
     openPlayer: 'प्लेयर खोलें',
     photoFraming: 'क़ारियों की तस्वीरें',
+    /** Group heading over the individual mushafs, below the two
+     *  mosque rosters. */
+    facesMushafs: 'मसाहिफ़',
     surfaceName: { player: 'प्लेयर', card: 'डॉक कार्ड' },
     dragToPosition: 'तस्वीर को खींचकर हिलाएँ।',
     zoom: 'ज़ूम',

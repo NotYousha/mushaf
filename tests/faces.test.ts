@@ -1,6 +1,13 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { getDB } from '../src/db/index'
 import { allImams } from '../src/catalog/mosques'
+import {
+  setFraming,
+  loadFaces,
+  exportFaces,
+  importFaces,
+  DEFAULT_FRAMING,
+} from '../src/db/faces'
 
 beforeEach(async () => {
   const db = await getDB()
@@ -29,6 +36,62 @@ describe('the faces store', () => {
     expect(new Uint8Array(rec.buffer)).toEqual(new Uint8Array([1, 2, 3, 4]))
     await db.delete('faces', 'sudais')
     expect(await db.get('faces', 'sudais')).toBeUndefined()
+  })
+})
+
+/**
+ * A framing without a picture.
+ *
+ * The portraits that ship with the app are square crops, and square is not the
+ * same as well composed — the player draws a circle, which cuts the corners
+ * off. So a framing has to be storable on its own, against a picture the
+ * listener never supplied, or a bundled portrait could only be adjusted by
+ * going and finding the photograph again.
+ */
+describe('framing a portrait that ships with the app', () => {
+  it('stores a framing for someone who has no picture of their own', async () => {
+    const framing = { zoom: 145, x: 44, y: 28 }
+    await setFraming('afasy', 'player', framing)
+
+    const faces = await loadFaces()
+    const face = faces.get('afasy')
+    expect(face, 'a framing-only row should be readable').toBeDefined()
+    // Null is the whole point: it tells the player to keep using the bundled
+    // picture rather than looking for an object URL that does not exist.
+    expect(face!.url).toBeNull()
+    expect(face!.player).toEqual(framing)
+    // The surface that was not touched keeps the default.
+    expect(face!.card).toEqual(DEFAULT_FRAMING)
+  })
+
+  it('frames the two surfaces independently', async () => {
+    await setFraming('turki-abdulaziz', 'player', { zoom: 150, x: 40, y: 30 })
+    await setFraming('turki-abdulaziz', 'card', { zoom: 110, x: 50, y: 45 })
+
+    const face = (await loadFaces()).get('turki-abdulaziz')!
+    expect(face.player.zoom).toBe(150)
+    expect(face.card.zoom).toBe(110)
+    expect(face.url).toBeNull()
+  })
+
+  // Browser storage is per device, so a framing has to survive the trip too —
+  // otherwise moving to a phone silently resets every portrait to centre.
+  it('carries a framing-only row across devices', async () => {
+    await setFraming('afasy', 'player', { zoom: 133, x: 47, y: 31 })
+
+    const doc = await exportFaces()
+    expect(doc.faces.afasy).toBeDefined()
+    // No picture travels: the other device already has the bundled one.
+    expect(doc.faces.afasy.data ?? null).toBeNull()
+    expect(doc.faces.afasy.frames.player.zoom).toBe(133)
+
+    const db = await getDB()
+    await db.clear('faces')
+    expect(await importFaces(JSON.stringify(doc))).toBe(1)
+
+    const back = (await loadFaces()).get('afasy')!
+    expect(back.url).toBeNull()
+    expect(back.player).toEqual({ zoom: 133, x: 47, y: 31 })
   })
 })
 

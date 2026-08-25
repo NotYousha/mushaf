@@ -76,7 +76,6 @@ const catalog = JSON.parse(readFileSync('data/catalog.json', 'utf8'))
 const SOURCES = {
   dosari: {
     route: 'd',
-    countPath: '/count/d?fresh=1',
     name: 'ياسر الدوسري',
     nameEn: 'Yasser Al-Dosari',
     fullName: 'أ. د. ياسر بن راشد الدوسري',
@@ -84,18 +83,32 @@ const SOURCES = {
     photo: 'sheikh.jpg',
     note: 'ما زال قيد التسجيل — تُضاف السور الجديدة تلقائيًا.',
   },
+  /**
+   * Re-pointed at the Saudi Center's own publication of this mushaf.
+   *
+   * What this entry used to carry was his 1441 recording, reaching us as a
+   * ~160 kbps transcode of the YouTube uploads on his own channel. This is a
+   * different performance — ten to twenty per cent slower — encoded at
+   * 256 kbps from the centre's masters, and it is the one the centre
+   * publishes as his murattal.
+   *
+   * The reciter id is unchanged on purpose, so a saved position and a
+   * favourite still point at the man they were meant to. Anyone who had
+   * already downloaded surahs still holds the old recording for those; it
+   * plays, and it is his, so this is not worth wiping a library over.
+   */
   turki: {
     route: 't',
-    countPath: '/count/t?fresh=1',
     name: 'بدر التركي',
     nameEn: 'Badr Al-Turki',
     fullName: 'الشيخ بدر التركي',
-    mushaf: 'إنتاج المركز السعودي للتلاوات القرآنية',
+    mushaf: 'المصحف المرتل — إنتاج المركز السعودي للتلاوات القرآنية',
+    mushafEn: 'Murattal mushaf — Saudi Center for Quranic Recitations',
     photo: 'turki.webp',
   },
   'burhaji-nabawi': {
     route: 'b',
-    countPath: null, // complete; no need to ask
+    // complete; no need to ask
     fixedCount: 114,
     name: 'محمد برهجي',
     nameEn: 'Muhammad Burhaji',
@@ -140,7 +153,6 @@ const SOURCES = {
    */
   juhany: {
     route: 'j',
-    countPath: '/count/j?fresh=1',
     name: 'عبد الله الجهني',
     nameEn: 'Abdullah Al-Juhany',
     fullName: 'الشيخ عبد الله بن علي الجهني',
@@ -154,19 +166,110 @@ const SOURCES = {
     photo: 'juhany.webp',
     exclude: [],
   },
+  /**
+   * As-Sudais, still being recorded, and missing al-A'raf.
+   *
+   * The gap is the source's, not ours: the centre has published surahs 1-6
+   * and 8-21 and nothing yet for al-A'raf. Because the surah list is read by
+   * name rather than by position, the hole stays a hole instead of shifting
+   * everything after it by one.
+   */
+  sudais: {
+    route: 'sd',
+    // Spelled as data/imams.json spells him. He is also an imam in the
+    // Taraweeh archive, and the same man must not read two ways.
+    name: 'عبد الرحمن السديس',
+    nameEn: 'Abdurrahman As-Sudais',
+    fullName: 'أ. د. عبد الرحمن بن عبد العزيز السديس',
+    mushaf: 'المصحف المرتل — إنتاج المركز السعودي للتلاوات القرآنية',
+    mushafEn: 'Murattal mushaf — Saudi Center for Quranic Recitations',
+    photo: 'imam-sudais.webp',
+    note: 'ما زال قيد التسجيل — ولم تُنشر سورة الأعراف بعد.',
+  },
+  buayjan: {
+    route: 'bu',
+    name: 'عبد الله البعيجان',
+    nameEn: "Abdullah Al-Bu'ayjan",
+    fullName: 'أ. د. عبد الله بن عواد البعيجان',
+    mushaf: 'المصحف المرتل — إنتاج المركز السعودي للتلاوات القرآنية',
+    mushafEn: 'Murattal mushaf — Saudi Center for Quranic Recitations',
+    photo: 'imam-buayjan.webp',
+    note: 'ما زال قيد التسجيل — تُضاف السور الجديدة تلقائيًا.',
+  },
+  /**
+   * Al-Afasy's Hafs from the Ten Readings mushaf of 1445.
+   *
+   * That project records all ten readings; this is its Hafs from Asim, which
+   * is the reading everything else in the app is built on — so it carries no
+   * riwayah field and the mushaf page may show text against it. Picking up
+   * one of its other readings by mistake would have put wording on screen
+   * that disagrees with what is being recited.
+   */
+  afasy: {
+    route: 'af',
+    // complete
+    fixedCount: 114,
+    name: 'مشاري راشد العفاسي',
+    nameEn: 'Mishary Rashid Al-Afasy',
+    fullName: 'الشيخ مشاري بن راشد العفاسي',
+    mushaf: 'مصحف القراءات العشر ١٤٤٥هـ - ٢٠٢٤م — برواية حفص عن عاصم',
+    mushafEn: "Mushaf al-Qira'at al-Ashr, 1445 AH / 2024 — Hafs from Asim",
+    photo: 'afasy.webp',
+  },
+  /**
+   * Abdulaziz Al-Turki — a different man from Badr, above.
+   *
+   * Seven of the source item's files are numbered as each other, so seven
+   * surahs are fetched from the file that actually holds them. See the remap.
+   */
+  'turki-abdulaziz': {
+    route: 'az',
+    // complete
+    fixedCount: 114,
+    name: 'عبد العزيز التركي',
+    nameEn: 'Abdulaziz Al-Turki',
+    fullName: 'الشيخ عبد العزيز التركي',
+    mushaf: 'المصحف المرتل — إنتاج المركز السعودي للتلاوات القرآنية',
+    mushafEn: 'Murattal mushaf — Saudi Center for Quranic Recitations',
+    photo: 'turki-abdulaziz.webp',
+    /**
+     * `surah: file`. Two straight swaps and a three-cycle, settled twice
+     * independently: against the centre's own publication of this mushaf,
+     * where the corrected durations agree to within a fifth of a second, and
+     * against the letters of the bundled text, where scoring each file
+     * against the surah it claims puts six of these far outside the band the
+     * other ninety-two sit in and the remap puts every one of them back
+     * inside it.
+     */
+    remap: { 33: 34, 34: 33, 43: 45, 44: 43, 45: 44, 48: 49, 49: 48 },
+    exclude: [],
+  },
 }
 
-async function publishedCount(src) {
-  if (src.fixedCount) return src.fixedCount
-  // Always ask past the Worker's index cache. A stale count would make the
-  // job conclude "nothing new" and skip surahs that have already aired.
-  const res = await fetch(`${WORKER}${src.countPath}`, {
+/**
+ * Which surahs a source actually holds, in order.
+ *
+ * A count is not the same question. It is only the same answer while a mushaf
+ * runs 1..N with nothing missing, and As-Sudais's does not — the Saudi Center
+ * has not aired al-A'raf, so his mushaf is surahs 1-6 and 8-21. Asked for a
+ * count of twenty, this job would have sized surahs 1 to 20 and written a
+ * catalog that stops one short and is wrong about everything after the hole.
+ */
+async function publishedSurahs(src) {
+  if (src.fixedCount) {
+    return Array.from({ length: src.fixedCount }, (_, i) => i + 1)
+  }
+  // Always ask past the Worker's index cache. A stale list would make the job
+  // conclude "nothing new" and skip surahs that have already aired.
+  const res = await fetch(`${WORKER}/list/${src.route}?fresh=1`, {
     signal: AbortSignal.timeout(60_000),
   })
-  if (!res.ok) throw new Error(`count endpoint returned ${res.status}`)
-  const { published } = await res.json()
-  if (!published) throw new Error('count endpoint reported nothing published')
-  return published
+  if (!res.ok) throw new Error(`list endpoint returned ${res.status}`)
+  const { surahs } = await res.json()
+  if (!Array.isArray(surahs) || !surahs.length) {
+    throw new Error('list endpoint reported nothing published')
+  }
+  return surahs
 }
 
 /**
@@ -221,13 +324,24 @@ async function refresh(id) {
   const src = SOURCES[id]
   if (!src) throw new Error(`unknown reciter: ${id}`)
 
-  const count = await publishedCount(src)
+  const published = await publishedSurahs(src)
+  const count = published.length
   const had = catalog.reciters.find((r) => r.id === id)?.surahs.length ?? 0
   console.log(`${id}: ${count} published (catalog has ${had})`)
 
+  // A hole is worth saying out loud. It is the difference between a mushaf
+  // that is partway recorded and one this job has misread.
+  const holes = []
+  for (let n = 1; n <= published[published.length - 1]; n++) {
+    if (!published.includes(n)) holes.push(n)
+  }
+  if (holes.length) {
+    console.log(`  not published within 1-${published[published.length - 1]}: ${holes.join(', ')}`)
+  }
+
   const results = new Map()
   const failures = []
-  const queue = Array.from({ length: count }, (_, i) => i + 1)
+  const queue = [...published]
 
   async function run() {
     for (;;) {
@@ -342,7 +456,7 @@ async function refresh(id) {
     photo: src.photo,
     released: count,
     total: 114,
-    surahs: Array.from({ length: count }, (_, i) => i + 1)
+    surahs: published
       .filter((surah) => results.has(surah))
       .map((surah) => {
         return {

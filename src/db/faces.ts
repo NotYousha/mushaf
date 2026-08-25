@@ -36,10 +36,21 @@ export type Surface = 'player' | 'card'
 export const SURFACES: Surface[] = ['player', 'card']
 
 export type Framings = Record<Surface, Framing>
-export type Face = { url: string } & Framings
+/**
+ * A stored portrait, or a stored framing for one that ships with the app.
+ *
+ * `url` is null in the second case. Framing and picture are separable because
+ * a bundled portrait is worth re-framing too: it is cropped square on the way
+ * in, and square is not the same as well composed — a circle cuts the corners
+ * off, and a face that sat right in the square can sit low in the ring.
+ * Storing a framing alone lets that be fixed without making someone go and
+ * find the photograph again.
+ */
+export type Face = { url: string | null } & Framings
 
 type FaceRecord = {
-  buffer: ArrayBuffer
+  /** Absent where this row carries only a framing for a bundled portrait. */
+  buffer?: ArrayBuffer
   type: string
   storedAt: number
   frames?: Partial<Framings>
@@ -201,8 +212,12 @@ export async function setFraming(
   framing: Framing,
 ): Promise<void> {
   const db = await getDB()
-  const rec = (await db.get('faces', imamId)) as FaceRecord | undefined
-  if (!rec) return
+  // No row yet means this is a framing for the portrait the app ships, not for
+  // one the listener added. It is written to the same store rather than a
+  // separate one, so it exports, imports and clears with everything else.
+  const rec =
+    ((await db.get('faces', imamId)) as FaceRecord | undefined) ??
+    ({ type: '', storedAt: Date.now() } as FaceRecord)
   await db.put(
     'faces',
     { ...rec, frames: { ...framingsOf(rec), [surface]: framing } },
@@ -250,10 +265,14 @@ export async function loadFaces(): Promise<Map<string, Face>> {
     const vals = (await db.getAll('faces')) as FaceRecord[]
     keys.forEach((k, i) => {
       const rec = vals[i]
-      if (!rec?.buffer) return
+      if (!rec) return
       try {
         out.set(String(k), {
-          url: URL.createObjectURL(new Blob([rec.buffer], { type: rec.type })),
+          // A row with no picture is a framing for the bundled portrait, and
+          // the caller reads null as "use the one that ships with the app".
+          url: rec.buffer
+            ? URL.createObjectURL(new Blob([rec.buffer], { type: rec.type }))
+            : null,
           ...framingsOf(rec),
         })
       } catch (e) {
@@ -272,7 +291,8 @@ export async function loadFaces(): Promise<Map<string, Face>> {
 
 export function revokeFaces(faces: Map<string, Face> | null | undefined) {
   if (!faces) return
-  for (const f of faces.values()) URL.revokeObjectURL(f.url)
+  // A framing-only entry has no object URL to give back.
+  for (const f of faces.values()) if (f.url) URL.revokeObjectURL(f.url)
 }
 
 /* ---------------- moving portraits between devices ---------------- */
@@ -292,7 +312,8 @@ export type FaceExport = {
   kind: 'mushaf-faces'
   version: 1
   saved: string
-  faces: Record<string, { type: string; data: string; frames: Framings }>
+  /** `data` is absent where the row is a framing for a bundled portrait. */
+  faces: Record<string, { type: string; data?: string | null; frames: Framings }>
 }
 
 const toBase64 = (buf: ArrayBuffer) => {
@@ -319,10 +340,12 @@ export async function exportFaces(): Promise<FaceExport> {
   const faces: FaceExport['faces'] = {}
   keys.forEach((k, i) => {
     const rec = vals[i]
-    if (!rec?.buffer) return
+    if (!rec) return
     faces[String(k)] = {
       type: rec.type,
-      data: toBase64(rec.buffer),
+      // A framing for a bundled portrait travels as framing alone; there is
+      // no picture to carry and the other device already has the same one.
+      data: rec.buffer ? toBase64(rec.buffer) : null,
       frames: framingsOf(rec),
     }
   })
@@ -348,10 +371,14 @@ export async function importFaces(text: string): Promise<number> {
   const db = await getDB()
   let n = 0
   for (const [id, f] of Object.entries(doc.faces)) {
-    if (!f?.data) continue
+    if (!f) continue
+    // A row with no picture is a framing for a bundled portrait; one with
+    // neither picture nor framing says nothing and is skipped.
+    if (!f.data && !f.frames) continue
     const rec: FaceRecord = {
-      buffer: fromBase64(f.data),
-      type: f.type || 'image/webp',
+      ...(f.data
+        ? { buffer: fromBase64(f.data), type: f.type || 'image/webp' }
+        : { type: '' }),
       storedAt: Date.now(),
       frames: f.frames ?? DEFAULT_FRAMINGS,
     }

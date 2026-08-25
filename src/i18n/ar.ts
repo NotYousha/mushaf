@@ -210,6 +210,9 @@ export const ar: Strings = {
     bestAtNight: 'صُمِّمت لليل',
     openPlayer: 'فتح المشغّل',
     photoFraming: 'صور القرّاء',
+    /** Group heading over the individual mushafs, below the two
+     *  mosque rosters. */
+    facesMushafs: 'المصاحف',
     surfaceName: { player: 'المشغّل', card: 'بطاقة الشريط' },
     dragToPosition: 'اسحب الصورة لتحريكها.',
     zoom: 'تكبير',

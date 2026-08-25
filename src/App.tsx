@@ -863,7 +863,10 @@ export default function App() {
     currentView?.voicePhoto ??
     reciter?.photo ??
     null
-  const faceIsMine = !!mine
+  // A row that carries only a framing has no picture of its own, so this asks
+  // about the url rather than the row. Getting it from the row would treat a
+  // bundled filename as an object URL and drop the deployment prefix.
+  const faceIsMine = !!mine?.url
   /**
    * The portrait as something drawable.
    *
@@ -889,7 +892,21 @@ export default function App() {
    * So a square portrait states its framing outright.
    */
   const SQUARE = { zoom: 100, x: 50, y: 50 }
-  const bundledIsSquare = !!face && face.startsWith('imam-')
+  /**
+   * Bundled portraits that are not square crops.
+   *
+   * Every portrait scripts/crop-imam-photos.py produces is square, so square
+   * is the rule and this is the whole of the exception: Al-Dosari's is still
+   * the uncropped original the CSS default was written around.
+   *
+   * This used to be a test for an `imam-` filename prefix, which quietly made
+   * the rule "square if it was named for the roster". Portraits for reciters
+   * who are not Taraweeh imams are not named that way, so the two added for
+   * al-Afasy and Abdulaziz Al-Turki fell through to the stylesheet and
+   * inherited a 160% crop centred on somebody else's face.
+   */
+  const UNCROPPED = new Set(['sheikh.jpg'])
+  const bundledIsSquare = !!face && !faceIsMine && !UNCROPPED.has(face)
   const faceFrame =
     mine?.player ??
     liveWho?.frames?.player ??
@@ -1615,6 +1632,16 @@ export default function App() {
                 lang={lang}
                 base={import.meta.env.BASE_URL}
                 faces={faces}
+                /* The individual mushafs, so their portraits can be framed
+                   too. The Taraweeh years are left out: their medallion shows
+                   whoever is reciting at that moment, and he is already in the
+                   roster the panel lists. */
+                reciters={individual.map((r) => ({
+                  id: r.id,
+                  name: r.name,
+                  nameEn: r.nameEn,
+                  photo: r.photo ?? null,
+                }))}
                 onPick={async (imamId, file) => {
                   await putFace(imamId, file)
                   await refreshFaces()

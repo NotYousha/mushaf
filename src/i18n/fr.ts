@@ -208,6 +208,9 @@ export const fr: Strings = {
     bestAtNight: 'Pensé pour la nuit',
     openPlayer: 'Ouvrir le lecteur',
     photoFraming: 'Photos des récitateurs',
+    /** Group heading over the individual mushafs, below the two
+     *  mosque rosters. */
+    facesMushafs: 'Mushafs',
     surfaceName: { player: 'Lecteur', card: 'Carte du dock' },
     dragToPosition: 'Faites glisser la photo pour la déplacer.',
     zoom: 'Zoom',
