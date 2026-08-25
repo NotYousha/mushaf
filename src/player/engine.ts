@@ -229,6 +229,22 @@ export class PlayerEngine {
     this.el.pause()
   }
 
+  /**
+   * Move the playhead, and tell the system straight away that we did.
+   *
+   * The acknowledgement is the point. Dropping a scrubber on a lock screen
+   * sends one command and then waits to see the elapsed time move; if it does
+   * not, the system decides the app ignored it and puts the thumb back where
+   * it was. Assigning currentTime fires `seeking`, which is exactly when this
+   * code used to go quiet and wait for `seeked` — and on a ninety-megabyte
+   * surah streamed over a phone connection, `seeked` is a whole range request
+   * away, sometimes seconds. The command had been obeyed and the drag still
+   * looked like it had failed.
+   *
+   * Setting currentTime updates the official playback position immediately,
+   * before any data arrives, so there is a true answer to report at once and
+   * no reason to make the system wait for the network to confirm it.
+   */
   seek(seconds: number, fast = false) {
     try {
       // fastSeek lets the browser land on the nearest keyframe rather than
@@ -238,7 +254,9 @@ export class PlayerEngine {
       else this.el.currentTime = seconds
     } catch {
       /* not seekable yet */
+      return
     }
+    setPosition(this.el, true)
   }
 
   setRate(rate: number) {

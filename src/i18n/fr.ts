@@ -32,6 +32,12 @@ export const fr: Strings = {
   imamNamed: 'Sourates attribuées',
   imamLed: 'Ramadans qu’il a dirigés',
   imamOpen: 'Ouvrir',
+  lockScreen: 'Écran verrouillé',
+  lockScreenIntro:
+    'Ce que l’écran verrouillé demande à l’application. Lancez une récitation, verrouillez le téléphone, essayez les commandes, puis revenez ici.',
+  lockScreenNone: 'Rien pour l’instant. Verrouillez le téléphone et appuyez sur une commande.',
+  copyReport: 'Copier le rapport',
+  copied: 'Copié',
   imamSurahs: (n: number | string, one: boolean) => `${n} ${one ? 'sourate' : 'sourates'}`,
   imamYears: (n: number | string, one: boolean) => `${n} ${one ? 'an' : 'ans'}`,
   imamHours: (n: number | string, one: boolean) => `${n} ${one ? 'heure' : 'heures'}`,

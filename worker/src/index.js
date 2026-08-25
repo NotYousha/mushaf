@@ -42,6 +42,114 @@ const BROWSER_UA =
 
 const SURAH_COUNT = 114
 
+/* ---------------- naming a surah from its page title ----------------
+ * These collections are indexed by the surah name printed on each link, not
+ * by the link's position in the list.
+ *
+ * Position is the obvious reading and it is wrong. As-Sudais's mushaf is
+ * missing al-A'raf — the Saudi Center simply has not aired it — so from that
+ * point on the Nth link is surah N+1, and an index built on position would
+ * serve al-Anfal to anyone who asked for al-A'raf and go on being one surah
+ * out for the rest of the mushaf. Silently: the audio plays, it is the right
+ * reciter, and it is the wrong surah. Reading the name off the link cannot
+ * make that mistake, and it lets a gap stay a gap.
+ *
+ * Verified equivalent to the old position-based index on all four collections
+ * that were already being served — same page id for every surah — so this is
+ * not a change in what plays, only in what can go wrong later.
+ */
+const SURAH_NAMES = [
+  'الفاتحة', 'البقرة', 'آل عمران', 'النساء', 'المائدة', 'الأنعام',
+  'الأعراف', 'الأنفال', 'التوبة', 'يونس', 'هود', 'يوسف',
+  'الرعد', 'إبراهيم', 'الحجر', 'النحل', 'الإسراء', 'الكهف',
+  'مريم', 'طه', 'الأنبياء', 'الحج', 'المؤمنون', 'النور',
+  'الفرقان', 'الشعراء', 'النمل', 'القصص', 'العنكبوت', 'الروم',
+  'لقمان', 'السجدة', 'الأحزاب', 'سبإ', 'فاطر', 'يس',
+  'الصافات', 'ص', 'الزمر', 'غافر', 'فصلت', 'الشورى',
+  'الزخرف', 'الدخان', 'الجاثية', 'الأحقاف', 'محمد', 'الفتح',
+  'الحجرات', 'ق', 'الذاريات', 'الطور', 'النجم', 'القمر',
+  'الرحمن', 'الواقعة', 'الحديد', 'المجادلة', 'الحشر', 'الممتحنة',
+  'الصف', 'الجمعة', 'المنافقون', 'التغابن', 'الطلاق', 'التحريم',
+  'الملك', 'القلم', 'الحاقة', 'المعارج', 'نوح', 'الجن',
+  'المزمل', 'المدثر', 'القيامة', 'الإنسان', 'المرسلات', 'النبإ',
+  'النازعات', 'عبس', 'التكوير', 'الانفطار', 'المطففين', 'الانشقاق',
+  'البروج', 'الطارق', 'الأعلى', 'الغاشية', 'الفجر', 'البلد',
+  'الشمس', 'الليل', 'الضحى', 'الشرح', 'التين', 'العلق',
+  'القدر', 'البينة', 'الزلزلة', 'العاديات', 'القارعة', 'التكاثر',
+  'العصر', 'الهمزة', 'الفيل', 'قريش', 'الماعون', 'الكوثر',
+  'الكافرون', 'النصر', 'المسد', 'الإخلاص', 'الفلق', 'الناس',
+]
+
+/** Names these sites actually use that are not the one above. */
+const SURAH_ALIASES = {
+  'المؤمن': 40,
+  'حم السجدة': 41,
+  'بني إسرائيل': 17,
+  'الدهر': 76,
+  'براءة': 9,
+  'الانشراح': 94,
+  'الشرح والانفتاح': 94,
+  'تبت': 111,
+  'أبي لهب': 111,
+  'اللهب': 111,
+}
+
+/**
+ * Strips everything that varies between two spellings of the same name:
+ * vowel marks, the several shapes of alef and hamza, ta marbuta against ha,
+ * alef maqsura against ya, and any punctuation or Latin text around it.
+ *
+ * Applied to both sides, so it only has to be consistent, not correct Arabic.
+ */
+function normalizeArabic(str) {
+  return str
+    .normalize('NFC')
+    .replace(/[ؐ-ًؚ-ٰٟۖ-ۭـ‌-‏]/g, '')
+    .replace(/[آأإٱ]/g, 'ا')
+    .replace(/ى/g, 'ي')
+    .replace(/ة/g, 'ه')
+    .replace(/ؤ/g, 'و')
+    .replace(/ئ/g, 'ي')
+    .replace(/[^ء-ي ]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+/** Normalized name -> surah number, longest name first so "قريش" is not read
+ *  as "ق", and "الحجر" is not read as "الحج". */
+const SURAH_BY_NAME = (() => {
+  const map = new Map()
+  SURAH_NAMES.forEach((n, i) => map.set(normalizeArabic(n), i + 1))
+  for (const [n, i] of Object.entries(SURAH_ALIASES)) {
+    const k = normalizeArabic(n)
+    if (!map.has(k)) map.set(k, i)
+  }
+  return [...map.entries()].sort((a, b) => b[0].length - a[0].length)
+})()
+
+const SURAH_WORD = normalizeArabic('سورة')
+
+/**
+ * The surah a link's own text names, or null when it names none.
+ *
+ * Null is a refusal, not a default: a title this cannot read must not be
+ * guessed at, because the guess would be a wrong surah served confidently.
+ */
+function surahFromTitle(title) {
+  const t = normalizeArabic(title)
+  const at = t.indexOf(`${SURAH_WORD} `)
+  if (at < 0) return null
+  const tail = t.slice(at + SURAH_WORD.length + 1)
+  for (const [name, num] of SURAH_BY_NAME) {
+    if (tail === name || tail.startsWith(`${name} `)) return num
+  }
+  // No word boundary after the name — "الفاتحةعبدالرحمن" and the like.
+  for (const [name, num] of SURAH_BY_NAME) {
+    if (tail.startsWith(name)) return num
+  }
+  return null
+}
+
 /* ---------------- Burhaji: midad ---------------- */
 const MIDAD_COLLECTION = '465944'
 // Recitation pages for this collection are contiguous and ordered by surah.
@@ -50,9 +158,9 @@ const MIDAD_FIRST_ID = 287659
 const MIDAD_TTL = 4 * 24 * 60 * 60
 
 /* ---------------- indexed collections ----------------
- * Three collections on two sites that happen to share a shape: a collection
- * page listing one /quran/{id} page per surah in order, each holding a single
- * <source> tag. One resolver serves all of them.
+ * Collections on two sites that happen to share a shape: a collection page
+ * listing one /quran/{id} page per surah, each page holding a single <source>
+ * tag, and each link naming its own surah. One resolver serves all of them.
  *
  * A mushaf still being recorded grows over time, so an index is cached for
  * hours, not days.
@@ -73,9 +181,113 @@ const HARAMAIN = {
     collection: 5,
     name: 'Al-Juhany — Ad-Duri from Abu Amr',
   },
+  sd: {
+    host: 'https://tilawatalharamain.com',
+    collection: 65,
+    name: 'As-Sudais — Saudi Center',
+  },
+  bu: {
+    host: 'https://tilawatalharamain.com',
+    collection: 66,
+    name: 'Al-Buayjan — Saudi Center',
+  },
 }
 const HARAMAIN_INDEX_TTL = 6 * 60 * 60
 const HARAMAIN_PAGE_TTL = 7 * 24 * 60 * 60
+
+/* ---------------- the Saudi Center's own CMS ----------------
+ * The centre publishes its mushafs itself, on an itqan-hosted site, and that
+ * copy is the master: 256 kbps encoded from WAV, against the 160 kbps
+ * YouTube transcodes the same recitations reach the aggregator sites as.
+ *
+ * One page render carries all 114 URLs, so the index is the page. They are
+ * AWS4-presigned against Cloudflare R2 and expire after an hour, which is why
+ * nothing here may be cached for long and why an unsigned request gets a 400
+ * rather than the file.
+ *
+ * Two hosts serve the same deployment. Either answers; the second is there
+ * for when the first does not.
+ */
+const ITQAN_HOSTS = [
+  'https://qhc.itqan.dev',
+  'https://saudi-recitation-center.netlify.app',
+]
+// Signed for 3600s. Re-resolve well inside that, so a URL handed to a player
+// still has most of its life left to stream with.
+const ITQAN_TTL = 20 * 60
+
+const ITQAN = {
+  t: { mushaf: 11, name: 'Badr Al-Turki — Saudi Center' },
+}
+
+/**
+ * Every surah URL on a mushaf's page, as surah -> signed URL.
+ *
+ * The page is a Next.js flight payload: JSON escaped twice over, so the URLs
+ * arrive with their ampersands written \u0026 and their quotes backslashed.
+ * Both have to be undone before the URL is a URL.
+ *
+ * The surah number is read from the filename, which is zero-padded and
+ * complete — 114 of 114, checked against the numbered track titles beside it.
+ */
+async function resolveItqanIndex(mushaf) {
+  let last = null
+  for (const host of ITQAN_HOSTS) {
+    try {
+      const res = await pageFetch(`${host}/recitations/${mushaf}`)
+      if (!res.ok) throw new Error(`page returned ${res.status}`)
+      const html = (await res.text()).replace(/\\u0026/g, '&').replace(/\\"/g, '"')
+
+      const map = {}
+      const re = new RegExp(
+        `https://[^"\\s\\\\]+/assets/${mushaf}/recitations/(\\d{3})\\.mp3\\?[^"\\s\\\\]+`,
+        'g',
+      )
+      let m
+      while ((m = re.exec(html))) {
+        const surah = Number(m[1])
+        if (surah >= 1 && surah <= SURAH_COUNT && !map[surah]) map[surah] = m[0]
+      }
+      // A render that yielded nothing is a changed page shape, not an empty
+      // mushaf, and must not be cached as though the recording vanished.
+      if (!Object.keys(map).length) throw new Error('no signed audio URLs on the page')
+      return JSON.stringify(map)
+    } catch (err) {
+      last = err
+    }
+  }
+  throw last ?? new Error('no itqan host answered')
+}
+
+async function resolveItqan(site, surah, ctx) {
+  const index = JSON.parse(
+    await memo(`itqan-index-${site.mushaf}`, ITQAN_TTL, ctx, () =>
+      resolveItqanIndex(site.mushaf),
+    ),
+  )
+  const url = index[surah]
+  if (!url) {
+    const err = new Error(
+      `surah ${surah} is not in this mushaf (${Object.keys(index).length} published)`,
+    )
+    err.notFound = true
+    throw err
+  }
+  return url
+}
+
+/* ---------------- whole mushafs held in one archive.org item ----------------
+ * Files are named 001.mp3 .. 114.mp3, so the item needs no index of its own —
+ * but the names are read from the item's metadata rather than assumed, which
+ * is what catches an item that is missing a surah before it can be served as
+ * one that is not.
+ */
+const ARCHIVE_MUSHAFS = {
+  af: {
+    item: 'alafasy-1445-2024',
+    name: "Al-Afasy — Mushaf al-Qira'at al-Ashr 1445, Hafs from Asim",
+  },
+}
 
 /* ---------------- the two mosques, by year ----------------
  * Unlike the mushafs above, these are not one sheikh's. Taraweeh and Tahajjud
@@ -265,45 +477,59 @@ async function resolveMidad(surah) {
 }
 
 /**
- * The index lists one page per surah in order, so position N is surah N.
- * Verified across every published surah for both collections by comparing
- * page titles against surah names. Returns a JSON array of page ids.
+ * Reads the collection page into a surah -> page id map.
+ *
+ * Each link's own text says which surah it is ("… سورة الكهف …"), so the map
+ * is keyed by what the site claims rather than by where the link happens to
+ * sit. A link whose surah cannot be read is dropped rather than guessed at,
+ * and a collection that yields none at all is an error, not an empty mushaf.
+ *
+ * First link wins per surah: these pages list each recitation twice, once as
+ * a bare thumbnail anchor with no text and once with the title.
  */
 async function resolveHaramainIndex(host, collection) {
   const res = await pageFetch(`${host}/quran/c/${collection}`)
   if (!res.ok) throw new Error(`index returned ${res.status}`)
   const html = await res.text()
 
-  const ids = []
-  const seen = new Set()
-  const re = /<a[^>]+href="[^"]*\/quran\/(\d+)"/gi
+  const map = {}
+  const re = /<a[^>]+href="[^"]*\/quran\/(\d+)"[^>]*>([\s\S]*?)<\/a>/gi
   let m
   while ((m = re.exec(html))) {
-    if (!seen.has(m[1])) {
-      seen.add(m[1])
-      ids.push(m[1])
-    }
+    const text = decodeEntities(m[2].replace(/<[^>]+>/g, ' '))
+    const surah = surahFromTitle(text)
+    if (surah && !map[surah]) map[surah] = m[1]
   }
-  if (!ids.length) throw new Error('no surah pages found in index')
-  return JSON.stringify(ids)
+  if (!Object.keys(map).length) throw new Error('no named surah pages in index')
+  return JSON.stringify(map)
+}
+
+/** The surah -> page id map for a collection, cached. */
+async function haramainIndex(site, ctx, opts) {
+  const { host, collection } = site
+  return JSON.parse(
+    await memo(
+      `haramain-index-${host}-${collection}`,
+      HARAMAIN_INDEX_TTL,
+      ctx,
+      () => resolveHaramainIndex(host, collection),
+      opts,
+    ),
+  )
 }
 
 async function resolveHaramain(site, surah, ctx) {
-  const { host, collection } = site
-  const ids = JSON.parse(
-    await memo(`haramain-index-${host}-${collection}`, HARAMAIN_INDEX_TTL, ctx, () =>
-      resolveHaramainIndex(host, collection),
-    ),
-  )
-  if (surah > ids.length) {
+  const { host } = site
+  const index = await haramainIndex(site, ctx)
+  const pageId = index[surah]
+  if (!pageId) {
     const err = new Error(
-      `surah ${surah} has not been recorded yet (${ids.length} published)`,
+      `surah ${surah} is not in this collection (${Object.keys(index).length} published)`,
     )
     err.notFound = true
     throw err
   }
 
-  const pageId = ids[surah - 1]
   const res = await pageFetch(`${host}/quran/${pageId}`)
   if (!res.ok) throw new Error(`surah page ${pageId} returned ${res.status}`)
 
@@ -311,6 +537,36 @@ async function resolveHaramain(site, surah, ctx) {
   const m = /<source[^>]+src="([^"]+)"/i.exec(html)
   if (!m) throw new Error(`no audio URL for surah ${surah}`)
   return decodeEntities(m[1])
+}
+
+/**
+ * Which surahs a route can actually serve, in order.
+ *
+ * Scraped where the source is a growing collection, and stated where the
+ * source is a finished item — midad's Burhaji is complete but its files are
+ * shuffled, so the run 1..114 is the truth about it and the remapping lives
+ * in the refresh job.
+ */
+async function publishedSurahs(key, ctx, opts) {
+  if (HARAMAIN[key]) {
+    return Object.keys(await haramainIndex(HARAMAIN[key], ctx, opts))
+      .map(Number)
+      .sort((a, b) => a - b)
+  }
+  if (ITQAN[key]) {
+    const index = JSON.parse(
+      await memo(`itqan-index-${ITQAN[key].mushaf}`, ITQAN_TTL, ctx, () =>
+        resolveItqanIndex(ITQAN[key].mushaf), opts,
+      ),
+    )
+    return Object.keys(index).map(Number).sort((a, b) => a - b)
+  }
+  if (ARCHIVE_MUSHAFS[key] || key === 'b') {
+    return Array.from({ length: SURAH_COUNT }, (_, i) => i + 1)
+  }
+  const err = new Error(`unknown route ${key}`)
+  err.notFound = true
+  throw err
 }
 
 /* ---------------- request handling ---------------- */
@@ -336,6 +592,48 @@ const ROUTES = {
     resolve: (surah, ctx) => resolveHaramain(HARAMAIN.j, surah, ctx),
     name: HARAMAIN.j.name,
   },
+  sd: {
+    ttl: HARAMAIN_PAGE_TTL,
+    resolve: (surah, ctx) => resolveHaramain(HARAMAIN.sd, surah, ctx),
+    name: HARAMAIN.sd.name,
+  },
+  bu: {
+    ttl: HARAMAIN_PAGE_TTL,
+    resolve: (surah, ctx) => resolveHaramain(HARAMAIN.bu, surah, ctx),
+    name: HARAMAIN.bu.name,
+  },
+  af: {
+    ttl: HARAMAIN_PAGE_TTL,
+    resolve: (surah, ctx) => resolveArchiveItem(ARCHIVE_MUSHAFS.af.item, surah, ctx),
+    name: ARCHIVE_MUSHAFS.af.name,
+  },
+}
+
+/**
+ * Badr Al-Turki, replacing what /t used to serve.
+ *
+ * It pointed at an aggregator's copy of his 1441 recording, transcoded from
+ * YouTube at about 160 kbps. This is a different performance — ten to twenty
+ * per cent slower, 256 kbps from the centre's own masters — and the one the
+ * centre publishes as his murattal. The route keeps its letter so that
+ * catalogs already on people's devices pick the new recording up without a
+ * migration.
+ */
+ROUTES.t = {
+  ttl: ITQAN_TTL,
+  resolve: (surah, ctx) => resolveItqan(ITQAN.t, surah, ctx),
+  name: ITQAN.t.name,
+  /*
+   * Repointing a route does not invalidate what it already cached.
+   * Resolutions from the old collection were stored under `t-{surah}` with a
+   * seven-day life, so without a new namespace the proxy goes on handing out
+   * the old recording until they age out — one surah at a time, whichever
+   * happened to be warm. Al-Baqarah was still coming back as the old 60 MB
+   * m4a while its neighbours had already switched.
+   *
+   * Bump this string whenever this route's source changes again.
+   */
+  ns: 't-itqan11',
 }
 
 export default {
@@ -353,44 +651,53 @@ export default {
     const url = new URL(request.url)
 
     if (url.pathname === '/' || url.pathname === '/health') {
+      const routes = {}
+      for (const [key, r] of Object.entries(ROUTES)) {
+        routes[`/${key}/{1-${SURAH_COUNT}}.mp3`] = r.name
+      }
+      routes[`/haram/{year}/{1-${SURAH_COUNT}}.mp3`] =
+        `Grand Mosque, ${MOSQUES.haram.first}-${MOSQUES.haram.last}`
+      routes[`/nabawi/{year}/{1-${SURAH_COUNT}}.mp3`] =
+        `Prophet's Mosque, ${MOSQUES.nabawi.first}-${MOSQUES.nabawi.last}`
+      routes[`/h/{1-${SURAH_COUNT}}.mp3`] =
+        'Grand Mosque 1447 (alias, kept for shipped catalogs)'
       return new Response(
         JSON.stringify({
           ok: true,
-          routes: {
-            '/b/{1-114}.mp3': ROUTES.b.name,
-            '/d/{1-114}.mp3': ROUTES.d.name,
-            '/t/{1-114}.mp3': ROUTES.t.name,
-            '/haram/{year}/{1-114}.mp3': `Grand Mosque, ${MOSQUES.haram.first}-${MOSQUES.haram.last}`,
-            '/nabawi/{year}/{1-114}.mp3': `Prophet's Mosque, ${MOSQUES.nabawi.first}-${MOSQUES.nabawi.last}`,
-            '/h/{1-114}.mp3': 'Grand Mosque 1447 (alias, kept for shipped catalogs)',
-          },
-          '/count/{d,t}': 'how many surahs are published',
+          routes,
+          '/list/{route}': 'which surahs are published, in order',
+          '/count/{route}': 'how many are published',
         }),
         { headers: { ...cors, 'Content-Type': 'application/json' } },
       )
     }
 
-    // Lets the refresh job ask how far a recording has got without scraping
-    // the index itself.
-    const countMatch = /^\/count\/([dtj])$/.exec(url.pathname)
-    if (countMatch) {
-      const { host, collection } = HARAMAIN[countMatch[1]]
+    /*
+     * Lets the refresh job ask what a recording actually holds without
+     * scraping the index itself.
+     *
+     * /list is the honest question and /count the old one. A count is only
+     * the same thing as a surah list while a mushaf runs 1..N with no gaps,
+     * and As-Sudais's does not — it is missing al-A'raf. The refresh job asks
+     * for the list and sizes exactly those surahs; /count stays because it is
+     * what already-deployed jobs call.
+     */
+    const listMatch = /^\/(list|count)\/([a-z]{1,3})$/.exec(url.pathname)
+    if (listMatch) {
+      const [, kind, key] = listMatch
+      const fresh = url.searchParams.get('fresh') === '1'
       try {
-        const ids = JSON.parse(
-          await memo(
-            `haramain-index-${host}-${collection}`,
-            HARAMAIN_INDEX_TTL,
-            ctx,
-            () => resolveHaramainIndex(host, collection),
-            { fresh: url.searchParams.get('fresh') === '1' },
-          ),
-        )
-        return new Response(JSON.stringify({ published: ids.length, total: SURAH_COUNT }), {
+        const surahs = await publishedSurahs(key, ctx, { fresh })
+        const body =
+          kind === 'list'
+            ? { surahs, published: surahs.length, total: SURAH_COUNT }
+            : { published: surahs.length, total: SURAH_COUNT }
+        return new Response(JSON.stringify(body), {
           headers: { ...cors, 'Content-Type': 'application/json' },
         })
       } catch (err) {
         return new Response(JSON.stringify({ error: err.message }), {
-          status: 502,
+          status: err.notFound ? 404 : 502,
           headers: { ...cors, 'Content-Type': 'application/json' },
         })
       }
@@ -411,7 +718,7 @@ export default {
 
     const mosque = /^\/(haram|nabawi)\/(\d{4})\/(\d{1,3})\.mp3$/.exec(url.pathname)
     const legacy = /^\/h\/(\d{1,3})\.mp3$/.exec(url.pathname)
-    const single = /^\/([bdtj])\/(\d{1,3})\.mp3$/.exec(url.pathname)
+    const single = /^\/([a-z]{1,3})\/(\d{1,3})\.mp3$/.exec(url.pathname)
 
     if (mosque || legacy) {
       const key = mosque ? mosque[1] : 'haram'
@@ -435,13 +742,14 @@ export default {
         name: `${key} ${year} — Taraweeh and Tahajjud`,
       }
       cacheKey = `${key}-${year}-${surah}`
-    } else if (single) {
+    } else if (single && ROUTES[single[1]]) {
       route = ROUTES[single[1]]
       surah = Number(single[2])
-      cacheKey = `${single[1]}-${surah}`
+      cacheKey = `${route.ns ?? single[1]}-${surah}`
     } else {
       return new Response(
-        'Not found. Use /b, /d, /t or /j + /{1-114}.mp3, or /{haram,nabawi}/{year}/{1-114}.mp3',
+        `Not found. Use /{${Object.keys(ROUTES).join(',')}}/{1-${SURAH_COUNT}}.mp3, ` +
+          `or /{haram,nabawi}/{year}/{1-${SURAH_COUNT}}.mp3`,
         { status: 404, headers: cors },
       )
     }
@@ -467,7 +775,9 @@ export default {
       // A 200 here is not a failure — it is the server telling a conditional
       // range request that the content changed — so it must not trigger a
       // re-resolve loop.
-      if (upstream.status === 403 || upstream.status === 404) {
+      // 400 belongs here too: an R2 object asked for without a valid
+      // signature answers 400, which is what an expired presigned URL is.
+      if (upstream.status === 400 || upstream.status === 403 || upstream.status === 404) {
         target = await route.resolve(surah, ctx)
         await invalidate(cacheKey, target, route.ttl, ctx)
         upstream = await fetch(target, { method: request.method, headers: upstreamHeaders })

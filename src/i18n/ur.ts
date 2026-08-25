@@ -32,6 +32,12 @@ export const ur: Strings = {
   imamNamed: 'اُن سے منسوب سورتیں',
   imamLed: 'جن رمضانوں میں امامت کی',
   imamOpen: 'کھولیں',
+  lockScreen: 'لاک اسکرین',
+  lockScreenIntro:
+    'لاک اسکرین ایپ سے کیا کہہ رہی ہے۔ کچھ چلائیں، فون لاک کریں، کنٹرول آزمائیں، پھر یہاں واپس آئیں۔',
+  lockScreenNone: 'ابھی کچھ نہیں۔ فون لاک کر کے کوئی بٹن دبائیں۔',
+  copyReport: 'رپورٹ کاپی کریں',
+  copied: 'کاپی ہو گئی',
   imamSurahs: (n: number | string, one: boolean) => `${n} ${one ? 'سورت' : 'سورتیں'}`,
   imamYears: (n: number | string) => `${n} سال`,
   imamHours: (n: number | string, one: boolean) => `${n} ${one ? 'گھنٹہ' : 'گھنٹے'}`,

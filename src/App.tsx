@@ -42,6 +42,7 @@ import { SurahList, plainName } from './ui/SurahList'
 import { VerifyPanel } from './ui/VerifyPanel'
 import { FavouritesPanel } from './ui/FavouritesPanel'
 import { ImamPanel } from './ui/ImamPanel'
+import { LockScreenPanel } from './ui/LockScreenPanel'
 import { FacePanel } from './ui/FacePanel'
 import { MushafView, ayahStartsFor } from './ui/MushafView'
 import { HifzBoard } from './ui/HifzBoard'
@@ -523,7 +524,10 @@ export default function App() {
         const p = prevSurah(current, playable)
         if (p) void playSurah(p)
       },
-      seek: (sec) => engine.current!.seek(sec),
+      // The flag matters: it is how the system says the finger is still down,
+      // and it is what lets the browser land on a keyframe instead of
+      // decoding to an exact offset in a two-hour file.
+      seek: (sec, fast) => engine.current!.seek(sec, fast),
       step: (dir) => {
         const el = engine.current!.el
         const starts = current !== null ? ayahStartsFor(reciterId, current) : null
@@ -1606,6 +1610,8 @@ export default function App() {
                 t={t}
                 onVerdict={(surah, v) => void recordVerdict(surah, v)}
               />
+
+              <LockScreenPanel t={t} el={engine.current?.el ?? null} />
             </div>
           )}
         </div>

@@ -42,6 +42,12 @@ export const en = {
   /** Heading over the years known only as "he led that Ramadan". */
   imamLed: 'Ramadans he led',
   imamOpen: 'Open',
+  lockScreen: 'Lock screen',
+  lockScreenIntro:
+    'What the phone’s lock screen and Dynamic Island are asking the app to do. Play something, lock the phone, try the controls, then come back and read this.',
+  lockScreenNone: 'Nothing yet. Lock the phone and press a control.',
+  copyReport: 'Copy report',
+  copied: 'Copied',
   imamSurahs: (n: number | string, one: boolean) => `${n} ${one ? 'surah' : 'surahs'}`,
   imamYears: (n: number | string, one: boolean) => `${n} ${one ? 'year' : 'years'}`,
   imamHours: (n: number | string, one: boolean) => `${n} ${one ? 'hour' : 'hours'}`,

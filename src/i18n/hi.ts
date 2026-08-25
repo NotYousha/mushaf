@@ -32,6 +32,12 @@ export const hi: Strings = {
   imamNamed: 'उनसे मंसूब सूरतें',
   imamLed: 'जिन रमज़ानों में इमामत की',
   imamOpen: 'खोलें',
+  lockScreen: 'लॉक स्क्रीन',
+  lockScreenIntro:
+    'लॉक स्क्रीन ऐप से क्या कह रही है। कुछ चलाएँ, फ़ोन लॉक करें, कंट्रोल आज़माएँ, फिर यहाँ लौटें।',
+  lockScreenNone: 'अभी कुछ नहीं। फ़ोन लॉक करके कोई बटन दबाएँ।',
+  copyReport: 'रिपोर्ट कॉपी करें',
+  copied: 'कॉपी हो गई',
   imamSurahs: (n: number | string, one: boolean) => `${n} ${one ? 'सूरत' : 'सूरतें'}`,
   imamYears: (n: number | string) => `${n} साल`,
   imamHours: (n: number | string, one: boolean) => `${n} ${one ? 'घंटा' : 'घंटे'}`,

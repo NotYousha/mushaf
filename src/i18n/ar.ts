@@ -31,6 +31,12 @@ export const ar: Strings = {
   imamNamed: 'سور منسوبة إليه',
   imamLed: 'رمضانات أمّ فيها',
   imamOpen: 'فتح',
+  lockScreen: 'شاشة القفل',
+  lockScreenIntro:
+    'ما تطلبه شاشة القفل من التطبيق. شغّل تلاوة، ثم اقفل الهاتف وجرّب الأزرار، ثم عد إلى هنا.',
+  lockScreenNone: 'لا شيء بعد. اقفل الهاتف واضغط أحد الأزرار.',
+  copyReport: 'نسخ التقرير',
+  copied: 'تم النسخ',
   // Arabic number agreement is not a plural switch, and "57 سورة" is how
   // it is written in practice, so the count never changes the noun.
   imamSurahs: (n: number | string) => `${n} سورة`,

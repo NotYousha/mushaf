@@ -3013,3 +3013,101 @@ body {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* ---- Lock screen diagnostics ------------------------------------------- */
+
+.diag {
+  margin-top: 2rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--accent-line);
+}
+
+.diag-intro,
+.diag-empty {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin: 0 0 0.9rem;
+}
+
+.diag-h {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 1.2rem 0 0.5rem;
+}
+
+.diag-grid {
+  margin: 0;
+  display: grid;
+  gap: 0.1rem;
+  font-size: 0.78rem;
+}
+
+.diag-grid > div {
+  display: grid;
+  grid-template-columns: 9rem minmax(0, 1fr);
+  gap: 0.6rem;
+  padding: 0.25rem 0;
+  border-bottom: 1px solid var(--accent-line);
+}
+
+.diag-grid dt {
+  color: var(--muted);
+}
+
+/* Raw browser state, so it is set LTR whatever the reading language is. */
+.diag-grid dd,
+.diag-log {
+  margin: 0;
+  direction: ltr;
+  text-align: left;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+  overflow-wrap: anywhere;
+}
+
+.diag-log {
+  list-style: none;
+  padding: 0;
+  font-size: 0.78rem;
+  display: grid;
+  gap: 0.2rem;
+}
+
+.diag-log li {
+  display: flex;
+  gap: 0.5rem;
+  align-items: baseline;
+}
+
+.diag-at {
+  color: var(--muted);
+  min-width: 3.4rem;
+}
+
+.diag-act {
+  color: var(--ink);
+}
+
+.diag-to {
+  color: var(--accent);
+}
+
+.diag-flag {
+  font-size: 0.68rem;
+  color: var(--muted);
+}
+
+.diag-copy {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--accent-line);
+  border-radius: 0.7rem;
+  background: var(--card-2);
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+}

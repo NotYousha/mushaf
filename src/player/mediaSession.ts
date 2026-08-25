@@ -15,6 +15,34 @@ const ms = () =>
   (navigator as unknown as { mediaSession?: MediaSession })?.mediaSession ?? null
 
 /**
+ * What the system has actually asked us to do, kept for the phone to show.
+ *
+ * None of this is visible from a laptop. A lock screen that will not scrub
+ * either never sends the command or sends one we mishandle, and those two
+ * have opposite fixes — so the app records what arrives and the Lock screen
+ * panel reads it back, instead of another round of guessing.
+ */
+export type RemoteEvent = {
+  action: string
+  /** Milliseconds since the page loaded, which is enough to see ordering. */
+  at: number
+  seekTime?: number
+  fastSeek?: boolean
+}
+
+const LOG_MAX = 24
+const log: RemoteEvent[] = []
+const registered = new Set<string>()
+
+function note(e: RemoteEvent) {
+  log.push(e)
+  if (log.length > LOG_MAX) log.shift()
+}
+
+export const remoteLog = (): RemoteEvent[] => [...log]
+export const registeredActions = (): string[] => [...registered].sort()
+
+/**
  * Whether this system's Now Playing screen would hide the surah buttons.
  *
  * Apple's lock screen and Dynamic Island give the transport exactly two slots
@@ -58,26 +86,52 @@ export function registerMediaHandlers(ref: { current: MediaHandlers | null }) {
   ) => {
     try {
       s.setActionHandler(action, fn)
+      registered.add(action)
     } catch {
       // Older engines reject actions they do not know. Not fatal.
     }
   }
 
-  on('play', () => ref.current?.play())
-  on('pause', () => ref.current?.pause())
-  on('stop', () => ref.current?.stop())
-  on('nexttrack', () => ref.current?.next())
-  on('previoustrack', () => ref.current?.prev())
+  const seen = (action: string, extra?: Partial<RemoteEvent>) =>
+    note({ action, at: Math.round(performance.now()), ...extra })
+
+  on('play', () => {
+    seen('play')
+    ref.current?.play()
+  })
+  on('pause', () => {
+    seen('pause')
+    ref.current?.pause()
+  })
+  on('stop', () => {
+    seen('stop')
+    ref.current?.stop()
+  })
+  on('nexttrack', () => {
+    seen('nexttrack')
+    ref.current?.next()
+  })
+  on('previoustrack', () => {
+    seen('previoustrack')
+    ref.current?.prev()
+  })
   // Headphone long-press and a car's FF/REW arrive here. The supplied
   // seekOffset is deliberately ignored: stepping by ayah is far more useful
   // in a recitation than jumping a fixed number of seconds.
   //
   // Registered only where they do not cost the surah buttons their place.
   if (!skipCommandsHideTrackButtons()) {
-    on('seekforward', () => ref.current?.step(1))
-    on('seekbackward', () => ref.current?.step(-1))
+    on('seekforward', () => {
+      seen('seekforward')
+      ref.current?.step(1)
+    })
+    on('seekbackward', () => {
+      seen('seekbackward')
+      ref.current?.step(-1)
+    })
   }
   on('seekto', (d) => {
+    seen('seekto', { seekTime: d.seekTime, fastSeek: d.fastSeek === true })
     if (typeof d.seekTime !== 'number') return
     // fastSeek is what a drag sends while the finger is still moving: the OS
     // is asking for a cheap approximate jump, and answering every one of them
@@ -108,6 +162,8 @@ export function setNavAvailability(
   const set = (action: MediaSessionAction, fn: (() => void) | null) => {
     try {
       s.setActionHandler(action, fn)
+      if (fn) registered.add(action)
+      else registered.delete(action)
     } catch {
       /* older engines reject actions they do not know */
     }

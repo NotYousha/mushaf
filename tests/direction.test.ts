@@ -37,10 +37,12 @@ describe('interface direction', () => {
    */
   it('keeps pinned directions to the deliberate islands', () => {
     const pinned = css.match(/^\s*direction:\s*(rtl|ltr);/gm) ?? []
-    // 15: the fourteen scripture and numeral islands, plus .controls-aux,
-    // which is pinned for the same reason .controls is — a transport reads
-    // left to right in every language, like a video scrubber.
-    expect(pinned.length).toBeLessThanOrEqual(15)
+    // 16: the fourteen scripture and numeral islands; .controls-aux, pinned
+    // for the same reason .controls is, since a transport reads left to right
+    // in every language like a video scrubber; and the lock-screen diagnostic,
+    // whose values are raw browser state rather than anything written in the
+    // reader's language.
+    expect(pinned.length).toBeLessThanOrEqual(16)
   })
 
   // These broke the main layout: a row that hugged the wrong edge, a search
