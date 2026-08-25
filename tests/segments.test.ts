@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import data from '../data/segments.json'
 import imams from '../data/imams.json'
 import voices from '../data/voices.json'
+import mosqueYears from '../data/mosque-years.json'
 import {
   imamAt,
   nextChangeAfter,
@@ -117,5 +118,66 @@ describe('stepping between reciters', () => {
   it('has nothing left to step to at the end', () => {
     const last = list[list.length - 1][0]
     expect(nextChangeAfter('makkah', year, surah, last + 60)).toBeNull()
+  })
+})
+
+/**
+ * Every changeover has to land inside the file it describes.
+ *
+ * This is the fault that shipped: the archive mirror's list for Al-Baqarah
+ * 1447 ran past 1:58:00 against a recording that ends at 1:38:26, because it
+ * described a different edit of that night. The last three reciters sat beyond
+ * the end of the audio, so Bandar Baleela stayed on screen for the final three
+ * quarters of an hour of the surah — a name and a face that were simply wrong.
+ */
+describe('changeovers land inside the recording', () => {
+  const years = mosqueYears as unknown as {
+    mosques: Record<string, { year: number; secs: number[] }[]>
+  }
+
+  it('never places a reciter past the end of the file', () => {
+    for (const [key, surahs] of Object.entries(doc)) {
+      const [place, year] = key.split('-')
+      const row = years.mosques[place]?.find((r) => r.year === Number(year))
+      expect(row, `no durations for ${key}`).toBeDefined()
+      for (const [surah, list] of Object.entries(surahs)) {
+        const length = row!.secs[Number(surah) - 1]
+        expect(length, `${key}:${surah} has no duration`).toBeGreaterThan(0)
+        for (const [at, id] of list) {
+          expect(
+            at,
+            `${key}:${surah} puts ${id} at ${at}s in a ${length}s recording`,
+          ).toBeLessThan(length)
+        }
+      }
+    }
+  })
+
+  // The opening stretch has to start at the start, or the surah begins with
+  // nobody named.
+  it('starts each surah within its first minute', () => {
+    for (const [key, surahs] of Object.entries(doc)) {
+      for (const [surah, list] of Object.entries(surahs)) {
+        expect(list[0][0], `${key}:${surah} starts late`).toBeLessThan(60)
+      }
+    }
+  })
+
+  // Al-Baqarah 1447 is the one that was wrong, pinned by name.
+  it('gets Al-Baqarah 1447 right end to end', () => {
+    const list = doc['makkah-1447']?.['2']
+    expect(list).toBeDefined()
+    expect(list.map(([, id]) => id)).toEqual([
+      'turki',
+      'shamsan',
+      'sudais',
+      'juhany',
+      'baleela',
+      'dosari',
+      'muaiqly',
+      'turki',
+    ])
+    const length = years.mosques.makkah.find((r) => r.year === 1447)!.secs[1]
+    expect(list[list.length - 1][0]).toBeLessThan(length)
   })
 })

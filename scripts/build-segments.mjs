@@ -39,6 +39,30 @@ const UA =
 
 const imams = JSON.parse(readFileSync('data/imams.json', 'utf8'))
 const surahs = JSON.parse(readFileSync('data/surahs.json', 'utf8'))
+const mosques = JSON.parse(readFileSync('data/mosque-years.json', 'utf8'))
+
+/** How long each surah of a year actually runs, from the files themselves. */
+function durations(place, year) {
+  const row = (mosques.mosques[place] ?? []).find((r) => r.year === year)
+  return row?.secs ?? null
+}
+
+/**
+ * A chapter list belongs to the recording we play, or it belongs to nothing.
+ *
+ * Both sources describe a night's audio, but not always the same cut of it.
+ * The mirror's list for Al-Baqarah 1447 runs past 1:58:00 against a file that
+ * ends at 1:38:26 — a different edit altogether. Following it stranded the
+ * last three reciters beyond the end of the file and left Baleela on screen
+ * for the final three quarters of an hour, which is exactly the fault this
+ * check exists to catch.
+ */
+function fitsTheRecording(list, seconds) {
+  if (!seconds) return true
+  // A couple of seconds of slack: the published times and the file agree to
+  // about that, and the last stretch must still begin inside the recording.
+  return list.every(([at]) => at < seconds - 2)
+}
 
 /** Compare on letters alone: the honorifics and spacing vary line to line. */
 const bare = (s) => String(s ?? '').replace(/[^ء-ي]/g, '')
@@ -197,7 +221,34 @@ for (const { place, year, collection } of YEARS) {
   const match = matchers(place)
   const found = new Map()
 
-  console.log(`\n${place} ${year}: reading the archive mirror`)
+  const secs = durations(place, year)
+  let rejected = 0
+
+  /**
+   * The videos first, the mirror second.
+   *
+   * The videos' own durations match the files we play track for track, so
+   * their chapter lists are the ones timed against what a listener actually
+   * hears. The mirror carries the same uploader's text but sometimes describes
+   * a different edit of the night, so it fills gaps rather than leading.
+   */
+  const ids = await videoIds(collection)
+  if (ids.length !== 114) {
+    console.warn(`  collection ${collection} lists ${ids.length} videos, not 114`)
+  }
+  console.log(`\n${place} ${year}: reading ${ids.length} video descriptions`)
+  for (let s = 1; s <= Math.min(114, ids.length); s++) {
+    const ch = chaptersOf(await description(ids[s - 1]), match)
+    if (ch.length < 2) continue
+    if (!fitsTheRecording(ch, secs?.[s - 1])) {
+      rejected++
+      continue
+    }
+    found.set(s, ch)
+    if (s % 20 === 0) console.log(`    videos: ${s}/114`)
+    await sleep(250)
+  }
+  console.log(`  ${found.size} from the videos; filling gaps from the mirror`)
   for (const row of await archiveDescriptions(year)) {
     const t = bare(String(row.title).replace(/^سورة/, ''))
     let surah = nameToSurah.get(t)
@@ -211,29 +262,18 @@ for (const { place, year, collection } of YEARS) {
     }
     if (!surah || found.has(surah)) continue
     const ch = chaptersOf(row.desc, match)
-    if (ch.length > 1) found.set(surah, ch)
-  }
-  console.log(`  ${found.size} surahs with changeovers from the mirror`)
-
-  const ids = await videoIds(collection)
-  if (ids.length !== 114) {
-    console.warn(`  collection ${collection} lists ${ids.length} videos, not 114`)
-  }
-  const missing = []
-  for (let s = 1; s <= Math.min(114, ids.length); s++) if (!found.has(s)) missing.push(s)
-  console.log(`  asking YouTube for ${missing.length} the mirror did not cover`)
-
-  let done = 0
-  for (const s of missing) {
-    const ch = chaptersOf(await description(ids[s - 1]), match)
-    if (ch.length > 1) found.set(s, ch)
-    if (++done % 20 === 0) console.log(`    youtube: ${done}/${missing.length}`)
-    // Gentle: this endpoint slows sharply when pushed, and the cache means
-    // this cost is paid once.
-    await sleep(250)
+    if (ch.length < 2) continue
+    if (!fitsTheRecording(ch, secs?.[surah - 1])) {
+      rejected++
+      continue
+    }
+    found.set(surah, ch)
   }
 
   console.log(`  ${found.size} surahs with changeovers in total`)
+  if (rejected) {
+    console.log(`  ${rejected} list(s) refused: their times run past the end of the file`)
+  }
   out[`${place}-${year}`] = Object.fromEntries([...found.entries()].sort((a, b) => a[0] - b[0]))
 }
 
