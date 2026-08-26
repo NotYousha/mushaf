@@ -31,14 +31,65 @@ export default defineConfig({
       manifest: {
         name: "Al-Mau'iza — الموعظة",
         short_name: "Al-Mau'iza",
+        /*
+         * Pinned, rather than left to default to start_url.
+         *
+         * The identity of an installed app is its id, and letting it fall out
+         * of start_url means that moving the app to a domain root — which is
+         * what a Play listing needs, so that Digital Asset Links can be served
+         * from the origin — would present as a different app to anything that
+         * had already installed this one.
+         */
+        id: base,
         start_url: base,
         scope: base,
         display: 'standalone',
+        // minimal-ui, never 'browser': a fall back to a tab would put an
+        // address bar over an app that is meant to be a mushaf.
+        display_override: ['standalone', 'minimal-ui'],
+        /*
+         * Arabic, stated.
+         *
+         * vite-plugin-pwa fills in lang: 'en' when this is absent, and the
+         * built manifest then disagreed with <html lang="ar" dir="rtl"> and
+         * with DEFAULT_LANG. Bubblewrap reads the manifest, not the document,
+         * so the Android build would have inherited the wrong default.
+         */
+        lang: 'ar',
+        dir: 'rtl',
+        description:
+          'مصحف مرتل: تلاوات كاملة بأصوات قرّاء الحرمين وغيرهم، مع المصحف المطبوع، تعمل دون اتصال. — A murattal mushaf: complete recitations, the printed page, and offline listening.',
+        categories: ['education', 'lifestyle'],
+        // The printed mushaf is 604 portrait pages; landscape has nothing to
+        // offer it. Bubblewrap writes this into the activity.
+        orientation: 'portrait',
         background_color: '#f6f0e6',
+        /*
+         * The cream, and it does not follow the theme picker.
+         *
+         * theming.ts re-stamps <meta name="theme-color"> at runtime, which the
+         * browser honours. An installed Android app reads theme_color from the
+         * manifest once, at install, for its system bars — so a reader who
+         * chooses Kiswah gets black cards under a cream status bar. Fixing that
+         * needs the native side, not this file.
+         */
         theme_color: '#f6f0e6',
         icons: [
-          { src: `${base}mark-192.png`, sizes: '192x192', type: 'image/png' },
-          { src: `${base}mark-512.png`, sizes: '512x512', type: 'image/png' },
+          // 'any' stated rather than implied: an unlabelled icon is treated as
+          // 'any' by browsers, but Bubblewrap reads this list to decide what to
+          // put where and should not have to guess.
+          {
+            src: `${base}mark-192.png`,
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'any',
+          },
+          {
+            src: `${base}mark-512.png`,
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any',
+          },
           {
             // The name set narrower here, so it survives Android's circle crop.
             // See scripts/make-app-icons.py for the arithmetic.
@@ -65,8 +116,10 @@ export default defineConfig({
           // Installer artwork. The OS fetches these when the app is added to
           // a home screen; the running app never asks for them, so precaching
           // costs a quarter of a megabyte for nothing.
-          '**/icon-512.png',
-          '**/icon-maskable-512.png',
+          // These were named icon-*.png until the wordmark replaced the girih
+          // star, so the exclusion had quietly stopped matching anything and
+          // the four mark-* files were being precached after all.
+          '**/mark-*.png',
         ],
         runtimeCaching: [
           {

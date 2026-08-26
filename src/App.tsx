@@ -87,6 +87,7 @@ import {
 import { stringsFor, type Lang, bootLang, LANG_KEY } from './i18n'
 import { brandName, brandSecondary } from './brand'
 import { LangPicker } from './ui/LangPicker'
+import { DownloadsPanel, type SavedRow } from './ui/DownloadsPanel'
 import { ThemePicker } from './ui/ThemePicker'
 import { Dock, type DockTab } from './ui/Dock'
 import {
@@ -115,7 +116,7 @@ import {
 } from './catalog/segments'
 import { digits, inScript, isArabicScript, isLatinText } from './i18n/script'
 import { Splash } from './ui/Splash'
-import { BUILD } from './pwa'
+import { BUILD, holdUpdatesWhile } from './pwa'
 import './ui/theme.css'
 import './ui/themes.css'
 import './ui/glass.css'
@@ -146,6 +147,8 @@ export default function App() {
   const [reciters, setReciters] = useState<Reciter[]>([])
   const [reciterId, setReciterId] = useState('dosari')
   const [downloaded, setDownloaded] = useState<Set<string>>(new Set())
+  /** Every saved surah with its size, for the downloads list. */
+  const [saved, setSaved] = useState<SavedRow[]>([])
   /** Interrupted downloads, keyed the same way, with the bytes still owed. */
   const [partials, setPartials] = useState<Map<string, { done: number; total: number }>>(
     new Map(),
@@ -227,6 +230,15 @@ export default function App() {
   /** Portraits the listener has added, imam id to object URL. */
   const [faces, setFaces] = useState<Map<string, Face>>(new Map())
   const [queued, setQueued] = useState(0)
+  /*
+   * Never reload for an update while something is playing or downloading.
+   * The updater cannot see either of those, so it asks.
+   */
+  const busyRef = useRef(false)
+  busyRef.current = playing || queued > 0
+  useEffect(() => {
+    holdUpdatesWhile(() => busyRef.current)
+  }, [])
   const [canCast, setCanCast] = useState(false)
   const [persisted, setPersisted] = useState<boolean | null>(null)
   const [talqeen, setTalqeen] = useState(false)
@@ -322,6 +334,14 @@ export default function App() {
 
   const refreshDownloaded = useCallback(async () => {
     const list = await listDownloaded()
+    setSaved(
+      list.map((l) => ({
+        reciterId: l.reciterId,
+        surah: l.surah,
+        bytes: l.bytes,
+        partial: l.partial,
+      })),
+    )
     // A partial download has no playable audio behind it, so counting it as
     // saved would hide a surah that cannot play and drop it from
     // "download all" — leaving it stuck part-finished forever.
@@ -1846,6 +1866,36 @@ export default function App() {
                   {persisted ? t.storageSafe : t.storageAtRisk}
                 </p>
               )}
+              {/*
+                  Everything saved, and the way to remove it.
+
+                  The meter above says how much room is gone; until this was
+                  here there was nothing that said what had taken it or any way
+                  to get it back short of clearing the browser's data for the
+                  whole app. A mushaf is up to 2.9 GB, so that mattered.
+              */}
+              <h2 style={{ marginTop: '1.6rem' }}>{t.downloadsHeading}</h2>
+              <DownloadsPanel
+                t={t}
+                lang={lang}
+                rows={saved}
+                reciters={reciters}
+                surahMeta={surahMeta}
+                onDelete={async (keys) => {
+                  for (const k of keys) {
+                    const at = k.lastIndexOf(':')
+                    const who = k.slice(0, at)
+                    const n = Number(k.slice(at + 1))
+                    // Cancel first: deleting the chunks under a running
+                    // download leaves the queue writing into a manifest that
+                    // has just been removed.
+                    queue.current!.cancel(who, n)
+                    await deleteAudio(who, n)
+                  }
+                  await refreshDownloaded()
+                  setQuota(await getQuota())
+                }}
+              />
 
               {queued > 0 ? (
                 <>

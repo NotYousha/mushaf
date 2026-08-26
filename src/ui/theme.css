@@ -1107,7 +1107,11 @@ body {
 .toast {
   position: fixed;
   inset-inline: 0;
-  bottom: calc(5.6rem + env(safe-area-inset-bottom));
+  /* --dock-h is published by the dock's ResizeObserver. Hardcoded at 5.6rem
+     this sat behind the dock whenever the now-playing capsule wrapped it to
+     ~8rem — which is exactly when errors fire, since that is when audio is
+     playing. */
+  bottom: calc(var(--dock-h, 6.5rem) + 0.6rem + env(safe-area-inset-bottom));
   z-index: 60;
   display: flex;
   align-items: center;
@@ -3744,4 +3748,208 @@ body {
   .head-save:not(:disabled):hover {
     background: var(--tile);
   }
+/* ============ the downloads list ============
+   What is saved on the device, grouped by reciter, and the controls that
+   remove it. Built to the same rules the rest of this file follows for touch:
+   nothing is revealed on hover, every control states its own :active because
+   -webkit-tap-highlight-color is transparent globally, and no target is
+   smaller than a finger. */
+
+.dl-empty,
+.dl-note {
+  color: var(--muted);
+  font-size: var(--text-xs);
+  line-height: 1.5;
+}
+
+.dl-note {
+  margin-block-start: 0.9rem;
+}
+
+.dl-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.dl-group {
+  border: 1px solid var(--accent-line);
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  overflow: hidden;
+}
+
+.dl-head {
+  display: flex;
+  align-items: stretch;
+  gap: 0.4rem;
+}
+
+/* The whole row opens the group, so the target is the row and not the caret. */
+.dl-title {
+  flex: 1;
+  min-inline-size: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.7rem 0.8rem;
+  min-block-size: 44px;
+  border: 0;
+  background: none;
+  font-family: inherit;
+  color: inherit;
+  text-align: start;
+  touch-action: manipulation;
+}
+
+.dl-title:active {
+  background: var(--card-2);
+}
+
+.dl-caret {
+  display: inline-flex;
+  color: var(--muted);
+  transition: transform 0.18s ease;
+}
+
+/* Points along the reading direction when shut, down when open. */
+.dl-caret.is-open {
+  transform: rotate(90deg);
+}
+
+.dl-name {
+  font-family: var(--font-name);
+  font-size: var(--text-sm);
+  color: var(--ink-strong);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dl-meta,
+.dl-size {
+  font-size: 0.72rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.dl-meta {
+  margin-inline-start: auto;
+  padding-inline-start: 0.5rem;
+}
+
+/* Destructive, so it is worded rather than an icon, and tinted rather than
+   filled — a red block at the end of every row would make the list look like
+   a list of errors. */
+.dl-del {
+  align-self: center;
+  margin-inline-end: 0.6rem;
+  padding: 0.45rem 0.7rem;
+  min-block-size: 44px;
+  border: 1px solid var(--accent-line);
+  border-radius: var(--radius-xs);
+  background: none;
+  font-family: inherit;
+  font-size: 0.72rem;
+  color: var(--danger, #b3261e);
+  touch-action: manipulation;
+}
+
+.dl-del:active {
+  background: var(--card-2);
+}
+
+.dl-del:disabled {
+  opacity: 0.45;
+}
+
+.dl-tools {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0 0.8rem 0.4rem;
+}
+
+.dl-link {
+  padding: 0.5rem 0;
+  min-block-size: 44px;
+  border: 0;
+  background: none;
+  font-family: inherit;
+  font-size: 0.72rem;
+  color: var(--gold);
+  touch-action: manipulation;
+}
+
+.dl-link:active {
+  opacity: 0.6;
+}
+
+.dl-surahs {
+  list-style: none;
+  margin: 0;
+  padding: 0 0.8rem 0.6rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.dl-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-block-size: 44px;
+  border-block-start: 1px solid var(--accent-line);
+}
+
+.dl-pick {
+  flex: 1;
+  min-inline-size: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-block-size: 44px;
+  touch-action: manipulation;
+}
+
+/* Big enough to hit without aiming. */
+.dl-pick input {
+  inline-size: 1.15rem;
+  block-size: 1.15rem;
+  accent-color: var(--accent-deep);
+  flex: none;
+}
+
+.dl-surah {
+  flex: 1;
+  min-inline-size: 0;
+  font-size: var(--text-xs);
+  color: var(--ink-soft);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dl-x {
+  flex: none;
+  display: grid;
+  place-items: center;
+  inline-size: 44px;
+  block-size: 44px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: none;
+  font-size: 1.2rem;
+  line-height: 1;
+  color: var(--muted);
+  touch-action: manipulation;
+}
+
+.dl-x:active {
+  background: var(--card-2);
+  color: var(--danger, #b3261e);
+}
+
+.dl-x:disabled {
+  opacity: 0.4;
 }

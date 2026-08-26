@@ -233,5 +233,21 @@ export const hi: Strings = {
     surfaceName: { player: 'प्लेयर', card: 'डॉक कार्ड' },
     dragToPosition: 'तस्वीर को खींचकर हिलाएँ।',
     zoom: 'ज़ूम',
-    resetFraming: 'रीसेट'
+    resetFraming: 'रीसेट',
+  /* The downloads screen. */
+  downloadsHeading: 'डाउनलोड',
+  storageEmpty: 'अभी कुछ डाउनलोड नहीं है। कोई सूरह सहेजें और वह यहाँ दिखेगी।',
+  storageUsed: 'इस डिवाइस पर उपयोग में',
+  storageFree: 'खाली',
+  storageOf: 'में से',
+  storageSurahs: 'सूरह',
+  storageDeleteAll: 'सब हटाएँ',
+  storageDeleteSelected: 'चयनित हटाएँ',
+  storageSelect: 'चुनें',
+  storageCancel: 'रद्द',
+  storagePartial: 'आंशिक डाउनलोड',
+  storageConfirmReciter: 'इस क़ारी की सभी डाउनलोड सूरह हटाएँ?',
+  storageConfirmOne: 'यह डाउनलोड हटाएँ?',
+  storageDelete: 'हटाएँ',
+  storageKept: 'डाउनलोड केवल इसी डिवाइस पर रहते हैं। ब्राउज़र का डेटा साफ़ करने पर वे मिट जाते हैं।'
 }

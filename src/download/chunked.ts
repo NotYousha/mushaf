@@ -87,7 +87,7 @@ export async function downloadChunked(
 
   // A manifest for a different URL describes a different file.
   if (m && m.url !== url) {
-    await deleteDownload(key, m)
+    await deleteDownload(key)
     m = undefined
   }
 
@@ -98,7 +98,7 @@ export async function downloadChunked(
       return blob
     }
     // Manifest says complete but a chunk is missing — start again.
-    await deleteDownload(key, m)
+    await deleteDownload(key)
     m = undefined
   }
 
@@ -116,7 +116,7 @@ export async function downloadChunked(
    * that.
    */
   if (m && from > 0 && !m.etag && !m.lastModified) {
-    await deleteDownload(key, m)
+    await deleteDownload(key)
     m = undefined
     from = 0
     total = Infinity
@@ -151,7 +151,7 @@ export async function downloadChunked(
     // stored is from a different recording and must go.
     if (res.status === 200 && from > 0) {
       void res.body?.cancel()
-      await deleteDownload(key, m)
+      await deleteDownload(key)
       m = undefined
       from = 0
       total = Infinity

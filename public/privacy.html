@@ -1,0 +1,176 @@
+<!doctype html>
+<!--
+  The privacy policy, as a standalone static file.
+
+  Not a route in the app: GitHub Pages has no rewrite to index.html here, and
+  the Play Console needs a URL that answers on its own without JavaScript. It
+  lives in public/ so it ships with every deploy.
+
+  Everything below is a claim about this code and has to stay true of it. The
+  short version — nothing leaves the device except a request for audio — is
+  enforced by the Content-Security-Policy in index.html, which permits exactly
+  one external host. If that policy ever widens, this file is wrong.
+-->
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Privacy Policy — Al-Mau'iza</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --ink: #1c1917;
+        --soft: #57534e;
+        --bg: #f6f0e6;
+        --card: #fffdf8;
+        --line: #e0d6c4;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --ink: #f5f0e8;
+          --soft: #b8b0a4;
+          --bg: #14110e;
+          --card: #1d1916;
+          --line: #332c25;
+        }
+      }
+      body {
+        margin: 0;
+        padding: 2rem 1.25rem 4rem;
+        background: var(--bg);
+        color: var(--ink);
+        font: 16px/1.65 system-ui, -apple-system, "Segoe UI", sans-serif;
+      }
+      main {
+        max-width: 42rem;
+        margin: 0 auto;
+      }
+      h1 {
+        font-size: 1.6rem;
+        margin: 0 0 0.35rem;
+      }
+      h2 {
+        font-size: 1.1rem;
+        margin: 2rem 0 0.5rem;
+      }
+      .sub {
+        color: var(--soft);
+        margin: 0 0 2rem;
+        font-size: 0.9rem;
+      }
+      ul {
+        padding-inline-start: 1.2rem;
+      }
+      li {
+        margin: 0.35rem 0;
+      }
+      code {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        padding: 0.05em 0.35em;
+        font-size: 0.9em;
+        word-break: break-all;
+      }
+      .box {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 0.9rem 1.1rem;
+        margin: 1.25rem 0;
+      }
+      a {
+        color: inherit;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Privacy Policy</h1>
+      <p class="sub">Al-Mau'iza (الموعظة) — last updated 26 August 2026</p>
+
+      <div class="box">
+        <strong>The short version.</strong> This app has no accounts, no
+        analytics, no advertising, and no third-party tracking of any kind. It
+        collects nothing about you and sends nothing about you anywhere. What it
+        saves — your place in a recitation, your favourites, your settings, and
+        any audio you download — is stored on your own device and stays there.
+      </div>
+
+      <h2>What is stored, and where</h2>
+      <p>
+        All of the following is held locally by your browser, in IndexedDB and
+        local storage, and never transmitted:
+      </p>
+      <ul>
+        <li>The reciter, surah and position you last listened to.</li>
+        <li>Your favourites, chosen language, theme and display preferences.</li>
+        <li>
+          Recitations you choose to download for offline listening, and audio
+          files you import yourself from your device.
+        </li>
+        <li>
+          Memorisation practice records — which pages you have added, when you
+          last reviewed them, and where you tapped to mark a stumble. The app
+          does not listen to or assess your recitation; it has no way to, and
+          does not try.
+        </li>
+      </ul>
+      <p>
+        Deleting a download in the app removes it. Uninstalling the app, or
+        clearing this site's data in your browser, removes all of it.
+      </p>
+
+      <h2>The one network request the app makes</h2>
+      <p>
+        Playing or downloading a recitation fetches audio from
+        <code>mushaf-audio.mushaftarteel.workers.dev</code>, a proxy operated by
+        the developer of this app on Cloudflare. Like any web request, it
+        necessarily carries your device's IP address to that service. It carries
+        nothing else about you: there is no account, no identifier, and no
+        cookie.
+      </p>
+      <p>
+        That proxy fetches the recitation from the archive that publishes it, on
+        your behalf. It does not pass your IP address on — the upstream archives
+        see Cloudflare, not you.
+      </p>
+      <p>
+        No other host is contacted. This is enforced rather than merely
+        intended: the app ships a Content-Security-Policy that permits
+        connections to that single origin and blocks everything else.
+      </p>
+
+      <h2>What the app does not do</h2>
+      <ul>
+        <li>No analytics, telemetry, crash reporting or fingerprinting.</li>
+        <li>No advertising and no advertising identifiers.</li>
+        <li>No accounts, sign-in, email collection or contact list access.</li>
+        <li>
+          No location, camera, microphone, contacts or notification permissions
+          are requested.
+        </li>
+        <li>Nothing is sold or shared with anybody, because nothing is collected.</li>
+      </ul>
+
+      <h2>Children</h2>
+      <p>
+        The app collects no personal information from anyone, including
+        children. It is not directed at children specifically and contains no
+        social features, user-to-user contact, or user-generated content.
+      </p>
+
+      <h2>Changes</h2>
+      <p>
+        If a future version of the app collects or transmits anything, this
+        policy will be updated before that version is released, and the date
+        above will change.
+      </p>
+
+      <h2>Contact</h2>
+      <p>
+        Questions about this policy: <a href="mailto:yousha.ahmed55@gmail.com">yousha.ahmed55@gmail.com</a>
+      </p>
+    </main>
+  </body>
+</html>

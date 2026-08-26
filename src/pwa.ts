@@ -13,6 +13,52 @@ import { registerSW } from 'virtual:pwa-register'
  * comes back to the foreground, which for a home-screen app is the only moment
  * that reliably happens.
  */
+/**
+ * Whether now is a bad moment to reload, as the app sees it.
+ *
+ * Set by the app to "audio is playing or a download is running". Absent, an
+ * update reloads at once, which is right for a cold tab and wrong for anything
+ * else.
+ */
+let busy: (() => boolean) | null = null
+
+/**
+ * Tell the updater when it must wait.
+ *
+ * `onNeedRefresh` used to call `window.location.reload()` outright. On a desk
+ * that is invisible; on a phone it stops the recitation and empties the
+ * player, and because the app checks for updates every time it comes back to
+ * the foreground, the likeliest moment to be reloaded was the moment someone
+ * picked the phone up to see how far through the surah they were. A download
+ * in flight was cut the same way, though chunked resume made that recoverable.
+ *
+ * Deferring is not free — the new worker has already claimed the page, so a
+ * chunk lazy-loaded after this point could be gone from both the cache and the
+ * server. That is a rare tab-left-open case and it fails loudly. Cutting the
+ * audio is neither rare nor loud, so it loses.
+ */
+export function holdUpdatesWhile(fn: () => boolean) {
+  busy = fn
+}
+
+/** Reload at the first moment nothing is playing or downloading. */
+function reloadWhenIdle() {
+  const go = () => {
+    if (busy?.()) return false
+    window.location.reload()
+    return true
+  }
+  if (go()) return
+  // Cheap, and the only two things that end a busy period are a track ending
+  // and a queue draining — neither of which this module can observe directly.
+  const timer = setInterval(() => {
+    if (go()) clearInterval(timer)
+  }, 5000)
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') void go()
+  })
+}
+
 export function keepFresh() {
   if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return
 
@@ -41,8 +87,9 @@ export function keepFresh() {
     immediate: true,
     onNeedRefresh() {
       // autoUpdate already claims the page; reloading is what makes the new
-      // assets actually be the ones running.
-      window.location.reload()
+      // assets actually be the ones running — but not in the middle of a
+      // recitation. See holdUpdatesWhile.
+      reloadWhenIdle()
     },
     onRegisteredSW(_url, registration) {
       if (!registration) return

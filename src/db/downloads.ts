@@ -92,7 +92,6 @@ export async function commitChunk(m: Manifest, buf: ArrayBuffer): Promise<Manife
   return next
 }
 
-/** Rebuild the audio without ever holding the whole file in the JS heap. */
 /**
  * How many chunks a manifest has, tolerating one written before it counted.
  *
@@ -106,31 +105,59 @@ export const chunkCount = (m: Manifest): number =>
     ? m.chunks
     : Math.ceil(m.bytesWritten / m.chunkSize)
 
+/**
+ * Rebuild the audio, holding one chunk in the JS heap at a time.
+ *
+ * The old version pushed each chunk's ArrayBuffer into an array and built the
+ * Blob at the end. The comment said Blob parts are held by reference, which is
+ * true of the Blob — but an ArrayBuffer read back out of IndexedDB is
+ * deserialised into the JS heap first, so the array held the entire file live
+ * before the Blob copied it again. A 229 MB surah peaked near half a gigabyte,
+ * on every play, and twice over during the minute when the next surah is being
+ * prepared. Android kills the renderer for that, in the middle of a recitation.
+ *
+ * Wrapping each chunk as it arrives moves those bytes into blob storage, which
+ * is outside the heap and may be backed by disk, and lets the ArrayBuffer be
+ * collected before the next one is read. Peak heap is now one chunk — 2 MB —
+ * whatever the length of the surah.
+ *
+ * Deliberately not solved by storing Blobs in the first place: IndexedDB
+ * accepts them, but nothing here can prove the round-trip on a real device,
+ * and a Blob that came back subtly wrong would assemble a short file and play
+ * a truncated recitation with no error. This way the stored format is
+ * unchanged, so it also repairs every download already on a phone rather than
+ * only the ones fetched from here on.
+ */
 export async function assembleBlob(m: Manifest): Promise<Blob | null> {
   const db = await getDB()
   const count = chunkCount(m)
-  // Blob parts are held by reference, so this accumulates without copying
-  // every chunk into one large buffer.
-  const parts: BlobPart[] = []
+  const parts: Blob[] = []
   for (let i = 0; i < count; i++) {
     const rec = (await db.get('chunks', chunkKey(m.key, i))) as
       | { buf: ArrayBuffer }
       | undefined
     if (!rec?.buf) return null
-    parts.push(rec.buf)
+    parts.push(new Blob([rec.buf]))
   }
   return new Blob(parts, { type: m.type || 'audio/mpeg' })
 }
 
-export async function deleteDownload(key: string, m?: Manifest) {
+export async function deleteDownload(key: string) {
   const db = await getDB()
-  const manifest = m ?? ((await db.get('downloads', key)) as Manifest | undefined)
-  if (manifest) {
-    const count = chunkCount(manifest)
-    if (Number.isFinite(count)) {
-      for (let i = 0; i < count; i++) await db.delete('chunks', chunkKey(key, i))
-    }
-  }
+  /*
+   * The chunks go by key range, not one call per chunk.
+   *
+   * Chunk keys are `${key}:${index}`, so every chunk of a surah sits in one
+   * contiguous stretch of the store and a single bound range removes the lot.
+   * Deleting a whole mushaf is 114 surahs of fifty-odd chunks each; issuing
+   * six thousand separate deletes took long enough to look like a hang, and
+   * every one of them was a promise the caller had to await in turn.
+   *
+   * The range is closed at `:` and open at the character after it, so it can
+   * never reach a neighbouring key — `dosari:2` and `dosari:20` are distinct
+   * prefixes and must stay that way.
+   */
+  await db.delete('chunks', IDBKeyRange.bound(`${key}:`, `${key};`, false, true))
   // The manifest goes last. A crash mid-delete then leaves a manifest
   // pointing at missing chunks, which resume repairs, rather than orphaned
   // chunks no manifest knows about.

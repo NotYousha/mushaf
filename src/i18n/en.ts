@@ -250,7 +250,23 @@ export const en = {
     surfaceName: { player: 'Player', card: 'Dock card' },
     dragToPosition: 'Drag the photo to move it.',
     zoom: 'Zoom',
-    resetFraming: 'Reset'
+    resetFraming: 'Reset',
+  /* The downloads screen. */
+  downloadsHeading: 'Downloads',
+  storageEmpty: 'Nothing downloaded yet. Save a surah and it will be listed here.',
+  storageUsed: 'used on this device',
+  storageFree: 'free',
+  storageOf: 'of',
+  storageSurahs: 'surahs',
+  storageDeleteAll: 'Delete all',
+  storageDeleteSelected: 'Delete selected',
+  storageSelect: 'Select',
+  storageCancel: 'Cancel',
+  storagePartial: 'part downloaded',
+  storageConfirmReciter: 'Delete every downloaded surah for this reciter?',
+  storageConfirmOne: 'Delete this download?',
+  storageDelete: 'Delete',
+  storageKept: 'Downloads stay on this device only. Clearing the browser’s data for this app removes them.'
 }
 
 export type Strings = typeof en

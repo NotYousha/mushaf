@@ -233,5 +233,21 @@ export const fr: Strings = {
     surfaceName: { player: 'Lecteur', card: 'Carte du dock' },
     dragToPosition: 'Faites glisser la photo pour la déplacer.',
     zoom: 'Zoom',
-    resetFraming: 'Réinitialiser'
+    resetFraming: 'Réinitialiser',
+  /* The downloads screen. */
+  downloadsHeading: 'Téléchargements',
+  storageEmpty: 'Rien de téléchargé pour l’instant. Enregistrez une sourate et elle apparaîtra ici.',
+  storageUsed: 'utilisés sur cet appareil',
+  storageFree: 'libres',
+  storageOf: 'sur',
+  storageSurahs: 'sourates',
+  storageDeleteAll: 'Tout supprimer',
+  storageDeleteSelected: 'Supprimer la sélection',
+  storageSelect: 'Sélectionner',
+  storageCancel: 'Annuler',
+  storagePartial: 'téléchargement partiel',
+  storageConfirmReciter: 'Supprimer toutes les sourates téléchargées de ce récitant ?',
+  storageConfirmOne: 'Supprimer ce téléchargement ?',
+  storageDelete: 'Supprimer',
+  storageKept: 'Les téléchargements restent sur cet appareil uniquement. Effacer les données du navigateur les supprime.'
 }

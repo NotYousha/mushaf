@@ -233,5 +233,21 @@ export const ur: Strings = {
     surfaceName: { player: 'پلیئر', card: 'ڈاک کارڈ' },
     dragToPosition: 'تصویر کو کھینچ کر منتقل کریں۔',
     zoom: 'زوم',
-    resetFraming: 'ری سیٹ'
+    resetFraming: 'ری سیٹ',
+  /* The downloads screen. */
+  downloadsHeading: 'ڈاؤن لوڈز',
+  storageEmpty: 'ابھی کچھ ڈاؤن لوڈ نہیں ہوا۔ کوئی سورت محفوظ کریں تو یہاں نظر آئے گی۔',
+  storageUsed: 'اس ڈیوائس پر استعمال شدہ',
+  storageFree: 'خالی',
+  storageOf: 'میں سے',
+  storageSurahs: 'سورتیں',
+  storageDeleteAll: 'سب حذف کریں',
+  storageDeleteSelected: 'منتخب حذف کریں',
+  storageSelect: 'منتخب کریں',
+  storageCancel: 'منسوخ',
+  storagePartial: 'جزوی ڈاؤن لوڈ',
+  storageConfirmReciter: 'اس قاری کی تمام ڈاؤن لوڈ سورتیں حذف کریں؟',
+  storageConfirmOne: 'یہ ڈاؤن لوڈ حذف کریں؟',
+  storageDelete: 'حذف',
+  storageKept: 'ڈاؤن لوڈز صرف اسی ڈیوائس پر رہتی ہیں۔ براؤزر کا ڈیٹا صاف کرنے سے یہ ختم ہو جاتی ہیں۔'
 }

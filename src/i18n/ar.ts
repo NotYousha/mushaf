@@ -235,5 +235,21 @@ export const ar: Strings = {
     surfaceName: { player: 'المشغّل', card: 'بطاقة الشريط' },
     dragToPosition: 'اسحب الصورة لتحريكها.',
     zoom: 'تكبير',
-    resetFraming: 'إعادة'
+    resetFraming: 'إعادة',
+  /* The downloads screen. */
+  downloadsHeading: 'التنزيلات',
+  storageEmpty: 'لا توجد تنزيلات بعد. نزّل سورة وستظهر هنا.',
+  storageUsed: 'مستخدَمة على هذا الجهاز',
+  storageFree: 'متاحة',
+  storageOf: 'من',
+  storageSurahs: 'سورة',
+  storageDeleteAll: 'حذف الكل',
+  storageDeleteSelected: 'حذف المحدد',
+  storageSelect: 'تحديد',
+  storageCancel: 'إلغاء',
+  storagePartial: 'تنزيل غير مكتمل',
+  storageConfirmReciter: 'حذف جميع السور المنزَّلة لهذا القارئ؟',
+  storageConfirmOne: 'حذف هذا التنزيل؟',
+  storageDelete: 'حذف',
+  storageKept: 'تُحفظ التنزيلات على هذا الجهاز فقط، وتُحذف عند مسح بيانات التطبيق من المتصفح.'
 }
