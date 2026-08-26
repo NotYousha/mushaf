@@ -68,13 +68,30 @@
 /* =====================================================================
    The dock
    ---------------------------------------------------------------------
-   One row of floating glass at the bottom: the tabs, a capsule for what is
-   playing, and search. Scrolling collapses the tabs away and the capsule
-   takes the space they leave, so reading gets the screen back without ever
-   losing the transport.
+   One row of floating glass at the bottom: the tabs and a capsule for what
+   is playing. Scrolling down draws it in a little — the labels shrink away
+   and the pill loses some height — and scrolling up or reaching the top lets
+   it back out, the way a native bar answers the gesture without ever taking
+   the transport off the screen.
    ===================================================================== */
 
+/*
+ * The sizes the contraction moves between, and the one knob that scales it.
+ *
+ * They live on .dock rather than inside each rule because otherwise the
+ * resting value and the contracted value are written in two places, and the
+ * pair written in two places is the pair that drifts. --tighten is how much
+ * of the contraction actually happens: reduced motion turns it to 0 and
+ * every rule below falls back onto its resting value on its own.
+ */
 .dock {
+  --tabs-h-rest: 3.6rem;
+  --cap-h-rest: 3.4rem;
+  --label-rest: 0.62rem;
+  --tighten: 1;
+  --tabs-h: var(--tabs-h-rest);
+  --cap-h: var(--cap-h-rest);
+  --label: var(--label-rest);
   position: fixed;
   inset-inline: 0;
   bottom: 0;
@@ -100,23 +117,24 @@
 }
 
 /*
- * The capsule's flex-basis is what moves it between the two layouts.
+ * A basis of 100% is wider than the row can hold, so the capsule always wraps
+ * onto a line of its own above the tabs.
  *
- * At 100% it is wider than the row can hold, so it wraps onto a line of its
- * own above the tabs. At 0 it shares the line with them. Because
- * flex-basis is animatable and flex-grow keeps it filling whatever is left,
- * one transition carries it between the two arrangements without the
- * element ever being moved in the DOM — which is what would have made it
- * jump instead of travel.
+ * Contracting used to drop that basis to 0, which folded the capsule up onto
+ * the tab line and took a whole row — three and a half rem — off the dock in
+ * one movement. That is not a bar drawing itself in, it is a bar rebuilding
+ * itself, and since the list below keeps reserving the resting height it left
+ * a row-sized hole above the tabs. The capsule now keeps its place and only
+ * loses a little height, like the pill beside it.
  */
 .now-capsule {
   order: 2;
-  flex: 1 1 var(--cap-basis, 100%);
+  flex: 1 1 100%;
   min-width: 0;
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  height: 3.4rem;
+  height: var(--cap-h);
   /* Logical: the artwork side and the transport side must not swap places
      when the interface flips. */
   padding-block: 0;
@@ -131,13 +149,7 @@
      so every frame of it re-samples and re-blurs. It has to be over before
      the blur comes back, and 220ms is right on its own terms — the dock is
      small and it is answering a gesture still in progress. */
-  transition:
-    flex-basis var(--t-base) var(--ease-out),
-    height var(--t-base) var(--ease-out);
-}
-
-.dock.is-tight .now-capsule {
-  --cap-basis: 0%;
+  transition: height var(--t-base) var(--ease-out);
 }
 
 .cap-art {
@@ -206,20 +218,27 @@
   min-width: 0;
   display: flex;
   align-items: center;
-  height: 3.6rem;
+  height: var(--tabs-h);
   padding: 0 var(--space-1);
   border-radius: var(--radius-pill);
   overflow: hidden;
-  transition: flex-grow var(--t-base) var(--ease-out);
+  transition: height var(--t-base) var(--ease-out);
 }
 
 /*
- * Collapsed, every tab but the one you are on folds to nothing. Keeping the
- * current tab visible means the pill still says where you are, which a bare
- * home button would not.
+ * How far the dock draws in.
+ *
+ * Half a rem off the pill and a little less off the capsule: enough that the
+ * bar visibly settles as you read down, small enough that nothing about it
+ * has to be re-found afterwards. Every tab stays where it is — folding all
+ * but the current one away, which is what this used to do, took the pill from
+ * 219px wide to 45px and read as the navigation leaving rather than as the
+ * bar making room.
  */
-.dock.is-tight .dock-tabs {
-  flex-grow: 0;
+.dock.is-tight {
+  --tabs-h: calc(var(--tabs-h-rest) - 0.55rem * var(--tighten));
+  --cap-h: calc(var(--cap-h-rest) - 0.45rem * var(--tighten));
+  --label: calc(var(--label-rest) * (1 - var(--tighten)));
 }
 
 .dock-tab {
@@ -235,13 +254,12 @@
   border-radius: var(--radius-pill);
   color: var(--control-quiet);
   font: inherit;
-  font-size: 0.62rem;
+  font-size: var(--label-rest);
   cursor: pointer;
   white-space: nowrap;
   overflow: hidden;
   touch-action: manipulation;
   transition:
-    max-width var(--t-base) var(--ease-out),
     padding var(--t-slow) var(--ease-out),
     opacity var(--t-base) var(--ease-out),
     background-color var(--t-base) var(--ease-out),
@@ -253,27 +271,27 @@
   background: rgb(var(--glass-tint) / 0.5);
 }
 
-.dock.is-tight .dock-tab:not([aria-selected='true']) {
-  max-width: 0;
-  padding-inline: 0;
-  opacity: 0;
+/*
+ * The label shrinks away rather than disappearing.
+ *
+ * `display: none` is discrete, and the tab is a grid of icon over label — so
+ * removing the label re-centred the icon in a single frame and the glyph
+ * jumped in the middle of a transition that is supposed to be a smooth
+ * settling. Animating the label's own font-size takes its line box down to
+ * nothing continuously instead, so the icon travels the few pixels to the
+ * centre of the shorter pill over the same 220ms rather than arriving there
+ * first. Fading it out alongside keeps the last frames from being a word too
+ * small to read but still dark enough to look at.
+ */
+.dock-tab span {
+  font-size: var(--label);
+  transition:
+    font-size var(--t-base) var(--ease-out),
+    opacity var(--t-base) var(--ease-out);
 }
 
-/* The label goes before the tab does, so the pill narrows in two stages
-   rather than snapping. */
-/*
- * The label collapses rather than disappearing.
- *
- * `display: none` is discrete, and the tab is a grid of icon over label inside
- * a fixed-height row — so removing the label re-centred the icon vertically
- * and the selected tab's glyph jumped in the middle of a transition that is
- * supposed to be a smooth narrowing. A zero-width span still contributes its
- * line box, so the row keeps its height and only the column collapses. The
- * same trick the player's own fold uses.
- */
 .dock.is-tight .dock-tab span {
-  max-width: 0;
-  overflow: hidden;
+  opacity: calc(1 - var(--tighten));
 }
 
 .dock-circle {
@@ -301,9 +319,20 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  /*
+   * The dock stops contracting at all, rather than contracting without the
+   * transition. Turning only the transition off leaves the bar snapping
+   * between two sizes every time the scroll changes direction, which is more
+   * abrupt movement than the animation it replaced, not less.
+   */
+  .dock {
+    --tighten: 0;
+  }
+
   .now-capsule,
   .dock-tabs,
-  .dock-tab {
+  .dock-tab,
+  .dock-tab span {
     transition: none;
   }
 

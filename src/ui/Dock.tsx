@@ -38,9 +38,10 @@ type Props = {
  * Floating glass rather than a bar welded to the edge, because the list runs
  * underneath it and the blur is what tells you there is more page down there.
  *
- * Scrolling down folds the tabs away and lets the capsule take the room they
- * leave, so reading gets the screen back without ever losing the transport.
- * Scrolling back up brings them out again.
+ * Scrolling down draws it in a little — the labels shrink away, the pill and
+ * the capsule lose some height — and scrolling back up, or reaching the top,
+ * lets it out again. Reading gets a few pixels back and the transport never
+ * leaves the screen.
  *
  * Inside a native shell this renders nothing: the platform's own tab bar owns
  * the bottom of the screen there, with the real Liquid Glass that no web view
@@ -61,6 +62,13 @@ export function Dock({
   const [scrolling, setScrolling] = useState(false)
   const lastY = useRef(0)
   const settle = useRef(0)
+  /*
+   * The same flag the class is drawn from, readable from the ResizeObserver
+   * below without making it re-subscribe on every scroll. It is written in
+   * the scroll frame, before React commits the class, so by the time the
+   * observer sees the contracted dock this already says why it is smaller.
+   */
+  const tightRef = useRef(false)
 
   useEffect(() => {
     const el = scroller.current
@@ -108,9 +116,11 @@ export function Dock({
         window.clearTimeout(settle.current)
         settle.current = window.setTimeout(() => setScrolling(false), 240)
         lastY.current = y
-        // Near the top there is nothing to gain by hiding, and a dock that
-        // stays folded at rest looks broken.
-        setTight(y > 24 && delta > 0)
+        // Near the top there is nothing to gain by drawing in, and a dock
+        // that stays contracted at rest looks broken.
+        const next = y > 24 && delta > 0
+        tightRef.current = next
+        setTight(next)
       })
     }
     el.addEventListener('scroll', onScroll, { passive: true })
@@ -130,16 +140,37 @@ export function Dock({
    * half rem, which is exactly enough to sit over the last row of a list.
    * On the home screen it covered the names under the bottom row of faces.
    *
-   * Measured rather than assumed, because the dock also folds when scrolling
-   * and grows with the safe area, and a second hardcoded number would only
-   * be wrong in a different place.
+   * Measured rather than assumed, because the dock grows with the safe area
+   * and with what is playing, and a second hardcoded number would only be
+   * wrong in a different place.
+   *
+   * What is published is the dock's *resting* height, never its contracted
+   * one. Publishing the contracted height would shrink the list's bottom
+   * padding by those nine pixels, and a reader already at the end of the list
+   * has their scroll position clamped by the browser when the scrollable
+   * height drops under it — so the words move under them at the exact moment
+   * they are reading. The contraction is a few pixels of polish; that is a
+   * lost line. Reserving the resting height costs nothing but a sliver of
+   * empty glass while contracted, and the dock is back at resting size by the
+   * time anyone stops to look at it.
    */
   const dockRef = useRef<HTMLDivElement | null>(null)
+  const restingH = useRef(0)
   useEffect(() => {
     const el = dockRef.current
     if (!el) return
-    const publish = () =>
-      document.documentElement.style.setProperty('--dock-h', `${el.offsetHeight}px`)
+    const publish = () => {
+      const h = el.offsetHeight
+      if (!tightRef.current) restingH.current = h
+      // Growing is always safe — extra padding at the end of a list moves
+      // nothing — so a dock that grows while contracted, which is what
+      // happens when playback starts mid-scroll and the capsule appears,
+      // still gets its room straight away.
+      document.documentElement.style.setProperty(
+        '--dock-h',
+        `${Math.max(h, restingH.current)}px`,
+      )
+    }
     publish()
     if (typeof ResizeObserver === 'undefined') return
     const ro = new ResizeObserver(publish)
@@ -149,13 +180,16 @@ export function Dock({
 
   if (isNativeShell()) return null
 
+  /*
+   * is-tight used to be gated on `now` as well, so the dock only ever drew
+   * itself in while something was playing — which is to say almost never, and
+   * never at all on a fresh list, where scrolling did nothing whatsoever. The
+   * bar answers the gesture whether or not there is a capsule in it.
+   */
+  const cls = `dock${tight ? ' is-tight' : ''}${scrolling ? ' is-scrolling' : ''}`
+
   return (
-    <div
-      ref={dockRef}
-      className={`dock${tight && now ? ' is-tight' : ''}${
-        scrolling ? ' is-scrolling' : ''
-      }`}
-    >
+    <div ref={dockRef} className={cls}>
       {now && (
         <div className="now-capsule glass">
           <button
