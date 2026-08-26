@@ -499,6 +499,31 @@ const MP3QURAN = {
     base: 'https://server8.mp3quran.net/lhdan',
     name: 'Al-Luhaidan — King Fahd Complex',
   },
+  /*
+   * Abdul Rahman Al-Ossi, complete in Hafs from Asim, listed by mp3quran as
+   * reciter 225 with a single moshaf of 114.
+   *
+   * Provenance is unusually good, which for a mushaf that circulates mostly as
+   * "Abdul Rahman Al Ossi Offline" on app stores is worth stating. Every file
+   * carries TPE1="Abdulrahman Aloosi عبدالرحمن العوسي", a TIT2 that names its
+   * own surah ("036 Ya-Sin يس"), and TCOP="Reserved For KFGQPC" — the King
+   * Fahd Glorious Qur'an Printing Complex, the same marker that settles
+   * Al-Luhaidan's above. TDRC is 2016 on every file; the recordings are not
+   * from this year, whatever the store listings say.
+   *
+   * All 114 answered a range request before this was added: 206 with a strong
+   * ETag and a real Content-Range, 1.48 GB in total.
+   *
+   * The proxy is not optional even though the host sends
+   * Access-Control-Allow-Origin: *. It sends no Access-Control-Expose-Headers,
+   * and neither ETag nor Content-Range is CORS-safelisted, so a browser reads
+   * null for both and can neither size a download nor resume one. Same shape
+   * as archive.org, same reason the route exists.
+   */
+  ao: {
+    base: 'https://server6.mp3quran.net/aloosi',
+    name: 'Al-Ossi — King Fahd Complex',
+  },
 }
 
 const resolveMp3Quran = (site, surah) =>
@@ -889,6 +914,11 @@ const ROUTES = {
     ttl: HARAMAIN_PAGE_TTL,
     resolve: (surah) => resolveMp3Quran(MP3QURAN.lh, surah),
     name: MP3QURAN.lh.name,
+  },
+  ao: {
+    ttl: HARAMAIN_PAGE_TTL,
+    resolve: (surah) => resolveMp3Quran(MP3QURAN.ao, surah),
+    name: MP3QURAN.ao.name,
   },
   af: {
     ttl: HARAMAIN_PAGE_TTL,

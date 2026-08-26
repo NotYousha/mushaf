@@ -117,6 +117,10 @@ FRAMING = {
     # whole and his face ends up small in a medallion with a chest under it.
     # Named here to crop at all. He sits a little right of centre and high.
     "luhaidan": dict(zoom=120, cx=49, cy=43),
+    # A studio portrait on white, square already and mostly thobe: his face
+    # sits in the top third and a plain pass-through would put a shoulder in
+    # the medallion. Tight, and high.
+    "ossi": dict(zoom=175, cx=47, cy=33),
 }
 
 # Reciters the catalog names directly, and the file it asks for. These are the
@@ -127,6 +131,7 @@ RECITERS = {
     # Reads the King Fahd Complex's murattal mushaf. Not a Taraweeh imam, so
     # he is named by the catalog and stays out of data/imams.json.
     "luhaidan": "luhaidan.webp",
+    "ossi": "ossi.webp",
 }
 
 

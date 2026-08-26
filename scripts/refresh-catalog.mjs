@@ -274,6 +274,35 @@ const SOURCES = {
     mushafEn: "Murattal mushaf — King Fahd Glorious Qur'an Printing Complex",
     photo: 'luhaidan.webp',
   },
+  /*
+   * Abdul Rahman Al-Ossi, complete in Hafs from Asim.
+   *
+   * It circulates on app stores as "Abdul Rahman Al Ossi Offline" and under
+   * assorted "Complete Holy Quran" titles, none of which say anything about
+   * where the audio came from. This one can be shown to be what it claims:
+   * every file carries TPE1="Abdulrahman Aloosi عبدالرحمن العوسي", a TIT2 that
+   * names its own surah, and TCOP="Reserved For KFGQPC" — the King Fahd
+   * Glorious Qur'an Printing Complex, the same marker that settles
+   * Al-Luhaidan's entry above.
+   *
+   * Dated 2016 by TDRC on every file, so it is named as a 2016 recording
+   * rather than a current one.
+   *
+   * Hafs from Asim, so no `riwayah` — absent means Hafs, and saying it would
+   * put a bracket beside his name that every other Hafs reciter here does
+   * without.
+   */
+  ossi: {
+    route: 'ao',
+    // complete; no need to ask
+    fixedCount: 114,
+    name: 'عبد الرحمن العوسي',
+    nameEn: 'Abdul Rahman Al-Ossi',
+    fullName: 'الشيخ عبد الرحمن بن عبد العزيز العوسي',
+    mushaf: 'المصحف المرتل ١٤٣٧ — إنتاج مجمع الملك فهد لطباعة المصحف الشريف',
+    mushafEn: "Murattal mushaf, 2016 — King Fahd Glorious Qur'an Printing Complex",
+    photo: 'ossi.webp',
+  },
   buayjan: {
     route: 'bu',
     name: 'عبد الله البعيجان',
