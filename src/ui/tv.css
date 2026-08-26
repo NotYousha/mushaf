@@ -1,0 +1,151 @@
+/* =====================================================================
+   Ten feet away
+   ---------------------------------------------------------------------
+   A television is not a large monitor. It is read at ten feet by someone
+   holding a remote, and three things follow from that: type has to be much
+   larger than any interface scale allows, the edges of the panel cannot be
+   trusted, and focus has to be visible from across a room.
+   ===================================================================== */
+
+/*
+ * Overscan.
+ *
+ * Televisions still crop the edges of the picture, and the amount is not
+ * knowable — 5% is the figure broadcast has used for decades and is what
+ * every console and set-top interface reserves. Without it the first and
+ * last item of every list is cut in half on a real set.
+ */
+[data-surface='tv'] .app {
+  max-width: none;
+  padding-block: 5vh;
+  padding-inline: 5vw;
+}
+
+/*
+ * The type scale, lifted bodily.
+ *
+ * Redefining the tokens rather than restyling components is what keeps this
+ * from becoming a second design system: every existing rule that reads
+ * --text-sm gets the television's version of small for free.
+ *
+ * Scripture is exempt and stays exempt. The mushaf's own text is sized
+ * against the page it imitates, and the page is the one thing here that is
+ * already meant to be looked at from a distance.
+ */
+[data-surface='tv'] {
+  --text-xs: 1.25rem;
+  --text-sm: 1.5625rem;
+  --text-md: 1.9531rem;
+  --text-lg: 2.4414rem;
+  --text-xl: 3.0518rem;
+
+  --space-4: 1.5rem;
+  --space-5: 2.25rem;
+  --space-6: 3rem;
+}
+
+/*
+ * Focus, at ten feet.
+ *
+ * A 2px outline is invisible from a sofa, and it is the only thing telling
+ * anyone where the remote is pointing. Scale as well as outline, because a
+ * ring alone disappears against a photograph.
+ */
+[data-surface='tv'] :focus-visible {
+  outline: 4px solid var(--accent);
+  outline-offset: 4px;
+  border-radius: var(--radius-sm);
+}
+
+/*
+ * The two things a remote spends its whole time on.
+ *
+ * Named as the button rather than as the row it sits in: `.row` is the list
+ * item and never takes focus itself, so a ring hung on it would be drawn
+ * exactly never.
+ */
+[data-surface='tv'] .row-main:focus-visible,
+[data-surface='tv'] .face-cell:focus-visible {
+  transform: scale(1.04);
+  box-shadow: var(--shadow-lg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-surface='tv'] .row-main:focus-visible,
+  [data-surface='tv'] .face-cell:focus-visible {
+    transform: none;
+  }
+}
+
+/*
+ * Hover states are meaningless here and actively harmful: a television
+ * browser reports the last touched element as hovered forever, so two things
+ * look focused at once and neither is. It reports `hover: hover` and
+ * `pointer: fine` while doing it, so the gate desktop.css puts around its own
+ * pointer affordances does not keep them off a set.
+ */
+[data-surface='tv'] .row:hover,
+[data-surface='tv'] .chip:hover,
+[data-surface='tv'] .face-cell:hover {
+  background: none;
+  box-shadow: none;
+  transform: none;
+}
+
+/* ---------------------------------------------------------------------
+   The reciter wall
+   A list of names is a phone idea. With a whole television to spend, the
+   photographs are the content and the names are the caption.
+   --------------------------------------------------------------------- */
+[data-surface='tv'] .face-grid {
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: var(--space-5);
+}
+
+/*
+ * The phone grid states its arrangement in spans — six columns, the first two
+ * cells taking three each — and caps a cell at 6rem so four always fit a
+ * 390px row. Both have to be let go of here, or the auto-filled columns are
+ * consumed two at a time by portraits still the size of a thumbnail, which is
+ * the phone row again with more space around it.
+ */
+[data-surface='tv'] .face-grid li,
+[data-surface='tv'] .home .face-grid li:nth-child(1),
+[data-surface='tv'] .home .face-grid li:nth-child(2) {
+  grid-column: auto;
+  max-inline-size: none;
+}
+
+/*
+ * A medallion is a phone idea too: a circle throws away the corners of a
+ * photograph that is now the largest thing on the screen. The ring around it
+ * stays — it is what keeps a portrait from bleeding into the cream.
+ */
+[data-surface='tv'] .face-grid .face-round {
+  border-radius: var(--radius-lg);
+}
+
+/* ---------------------------------------------------------------------
+   The page is the centrepiece
+   --------------------------------------------------------------------- */
+[data-surface='tv'] .mushaf-page,
+[data-surface='tv'] .paged-mushaf {
+  /* Not the 34rem measure the desktop caps at: that measure is for an arm's
+     length, and this is read from a sofa. */
+  max-width: min(60rem, 80vw);
+  margin-inline: auto;
+}
+
+/* The word being recited, at a distance. The desktop's highlight is a tint;
+   from ten feet a tint is nothing. */
+[data-surface='tv'] .mw.is-now {
+  background: var(--tile-active-a);
+  color: var(--tile-active-ink);
+  border-radius: var(--radius-xs);
+}
+
+/* The dock has no place here: a remote cannot reach a bottom bar, and the
+   focus manager moves between screens instead. */
+[data-surface='tv'] .dock {
+  display: none;
+}

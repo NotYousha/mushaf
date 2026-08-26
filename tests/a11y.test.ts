@@ -60,3 +60,31 @@ describe('screen readers', () => {
     expect(block).not.toMatch(/visibility:\s*hidden/)
   })
 })
+
+/*
+ * On a phone the focus ring is a courtesy. On a television it is the only
+ * thing telling anyone which of forty tiles the remote will act on, and a 2px
+ * outline is invisible from a sofa. So the television's ring is asserted
+ * rather than trusted to survive a later tidy-up of the stylesheet.
+ */
+describe('the television focus ring', () => {
+  const tv = read('src/ui/tv.css')
+
+  it('is thick enough to see from across a room', () => {
+    const rule = /\[data-surface='tv'\] :focus-visible \{([^}]*)\}/.exec(tv)?.[1] ?? ''
+    const width = Number(/outline:\s*(\d+)px/.exec(rule)?.[1] ?? 0)
+    expect(width).toBeGreaterThanOrEqual(4)
+  })
+
+  it('does not rely on transform alone, which reduced motion removes', () => {
+    // The scale is switched off under prefers-reduced-motion, so if the ring
+    // were only a transform, that setting would leave focus invisible.
+    expect(tv).toMatch(/\[data-surface='tv'\] :focus-visible \{[^}]*outline:/)
+  })
+
+  it('switches hover off rather than merely restyling it', () => {
+    // A television browser reports the last touched element as hovered
+    // indefinitely, so two things look focused and neither is the live one.
+    expect(tv).toMatch(/\[data-surface='tv'\][^{]*:hover/)
+  })
+})
