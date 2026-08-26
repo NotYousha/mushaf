@@ -82,3 +82,115 @@ export const publishTab = (tab: string) => send('tab', tab)
 
 /** What is playing, for the tab bar's bottom accessory. */
 export const publishNowPlaying = (now: NowPlaying | null) => send('nowPlaying', now)
+
+/**
+ * Bridge v2 — the native side asking, rather than only being told.
+ *
+ * v1 pushes two things, which is all a native tab bar needs. CarPlay and a
+ * watch need the other direction: list the reciters, list one reciter's
+ * surahs, then say "play surah 36 by Barhaji". A template-based interface
+ * cannot render a web view, so it cannot reach the app's own screens at all —
+ * the data has to come across.
+ *
+ * The one property that must not be lost is that the web side never awaits the
+ * native side. A shell that is missing, older than this, or has stopped
+ * listening costs the app nothing; every message it sends is validated, and a
+ * handler that throws is contained here rather than becoming an unhandled
+ * rejection in the app.
+ */
+
+export const BRIDGE_VERSION = 2
+
+export type NativeCommand = {
+  verb: 'play' | 'pause' | 'next' | 'prev' | 'seek'
+  surah?: number
+  reciterId?: string
+  seconds?: number
+}
+
+export type NativeHandlers = {
+  catalog(): Promise<unknown>
+  surahs(reciterId: string): Promise<unknown>
+  command(c: NativeCommand): void
+}
+
+type Incoming = { id?: unknown; kind?: unknown; v?: unknown; payload?: unknown }
+
+const VERBS = ['play', 'pause', 'next', 'prev', 'seek']
+
+const asCommand = (v: unknown): NativeCommand | null => {
+  if (typeof v !== 'object' || v === null) return null
+  const c = v as Record<string, unknown>
+  if (typeof c.verb !== 'string' || !VERBS.includes(c.verb)) return null
+  return {
+    verb: c.verb as NativeCommand['verb'],
+    surah: typeof c.surah === 'number' ? c.surah : undefined,
+    reciterId: typeof c.reciterId === 'string' ? c.reciterId : undefined,
+    seconds: typeof c.seconds === 'number' ? c.seconds : undefined,
+  }
+}
+
+/**
+ * Listen for requests from the shell.
+ *
+ * Returns a function that stops listening. In a browser it registers nothing
+ * at all and the returned function is a no-op, so the web build pays nothing
+ * for a bridge it will never use.
+ */
+export function answerNative(handlers: NativeHandlers): () => void {
+  if (typeof window === 'undefined' || !isNativeShell()) return () => {}
+
+  const onMessage = (event: MessageEvent) => {
+    let msg: Incoming
+    try {
+      msg = typeof event.data === 'string' ? JSON.parse(event.data) : (event.data as Incoming)
+    } catch {
+      // A shell sending something that is not JSON is a shell we cannot talk
+      // to. That is not an error the app should surface, or survive badly.
+      return
+    }
+    if (typeof msg !== 'object' || msg === null) return
+    // A shell from a future build speaking a protocol this one does not know.
+    // Ignoring it is right: the alternative is guessing at a shape.
+    if (msg.v !== BRIDGE_VERSION) return
+    const id = typeof msg.id === 'string' ? msg.id : null
+
+    const reply = (result: unknown, error?: string) => {
+      if (id) send('reply', { id, result, error })
+    }
+
+    try {
+      if (msg.kind === 'catalog') {
+        handlers
+          .catalog()
+          .then((r) => reply(r))
+          .catch((e: unknown) => reply(null, String(e)))
+        return
+      }
+      if (msg.kind === 'surahs') {
+        const reciterId = typeof msg.payload === 'string' ? msg.payload : ''
+        handlers
+          .surahs(reciterId)
+          .then((r) => reply(r))
+          .catch((e: unknown) => reply(null, String(e)))
+        return
+      }
+      if (msg.kind === 'command') {
+        const c = asCommand(msg.payload)
+        if (c) handlers.command(c)
+        reply(c ? true : null, c ? undefined : 'unrecognised command')
+        return
+      }
+    } catch (e) {
+      // A handler throwing synchronously must not take the listener down with
+      // it, or one bad message ends the bridge for the rest of the session.
+      reply(null, String(e))
+    }
+  }
+
+  window.addEventListener('message', onMessage)
+  // Tell the shell what it is talking to, so a newer wrapper can decide to
+  // stay quiet rather than sending v2 messages at a v1 build.
+  send('hello', { v: BRIDGE_VERSION })
+  return () => window.removeEventListener('message', onMessage)
+}
