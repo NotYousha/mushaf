@@ -17,7 +17,16 @@ import type { Lang } from '../i18n'
  */
 type Titled = {
   short: Record<string, string>
-  full: Record<string, string>
+  /**
+   * Optional, because the two are separate claims.
+   *
+   * `الشيخ` is the courtesy every one of these men is styled with in every
+   * listing that carries his recitation; it asserts no post. An office does,
+   * and for a few reciters no source establishes one. Those carry the
+   * honorific and no office rather than being left out of the file entirely,
+   * which is what the caller sees as a bare name.
+   */
+  full?: Record<string, string>
   source?: string
 }
 

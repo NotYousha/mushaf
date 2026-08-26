@@ -340,6 +340,36 @@
   },
   "source": "https://ar.wikipedia.org/wiki/%D8%B3%D8%B9%D8%AF_%D8%A7%D9%84%D8%BA%D8%A7%D9%85%D8%AF%D9%8A"
  },
+ "luhaidan": {
+  "short": { "ar": "الشيخ", "en": "Sh.", "ur": "شیخ", "fr": "Cheikh", "hi": "शेख़" },
+  "full": {
+   "ar": "قاضٍ بديوان المظالم وإمام جامع الناصر",
+   "en": "Judge at the Board of Grievances and imam of Al-Nasir Mosque",
+   "ur": "دیوانِ مظالم کے قاضی اور جامع الناصر کے امام",
+   "fr": "Juge au Conseil des doléances et imam de la mosquée An-Nâsir",
+   "hi": "दीवान-ए-मज़ालिम के क़ाज़ी और जामे अन-नासिर के इमाम"
+  },
+  "source": "https://ar.islamway.net/scholar/1038/profile"
+ },
+ "ossi": {
+  "short": { "ar": "الشيخ", "en": "Sh.", "ur": "شیخ", "fr": "Cheikh", "hi": "शेख़" },
+  "full": {
+   "ar": "إمام مسجد الإخلاص بالخبر",
+   "en": "Imam of the Al-Ikhlas Mosque in Al-Khobar",
+   "ur": "الخبر میں مسجدِ اخلاص کے امام",
+   "fr": "Imam de la mosquée Al-Ikhlâs à Al-Khobar",
+   "hi": "अल-ख़ुबर की मस्जिद-ए-इख़लास के इमाम"
+  },
+  "source": "https://ar.wikipedia.org/wiki/%D8%B9%D8%A8%D8%AF_%D8%A7%D9%84%D8%B1%D8%AD%D9%85%D9%86_%D8%A7%D9%84%D8%B9%D9%88%D8%B3%D9%8A"
+ },
+ "turki-abdulaziz": {
+  "short": { "ar": "الشيخ", "en": "Sh.", "ur": "شیخ", "fr": "Cheikh", "hi": "शेख़" },
+  "source": "https://midad.com/collection/461642"
+ },
+ "sudais-ali": {
+  "short": { "ar": "الشيخ", "en": "Sh.", "ur": "شیخ", "fr": "Cheikh", "hi": "शेख़" },
+  "source": "https://ar.wikipedia.org/wiki/%D8%B9%D9%84%D9%8A_%D8%A7%D9%84%D8%B3%D8%AF%D9%8A%D8%B3"
+ },
  "afasy": {
   "short": { "ar": "الشيخ", "en": "Sh.", "ur": "شیخ", "fr": "Cheikh", "hi": "शेख़" },
   "full": {
