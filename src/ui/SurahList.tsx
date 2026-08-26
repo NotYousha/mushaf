@@ -1,4 +1,4 @@
-import { memo } from 'react'
+import { memo, useLayoutEffect, useRef } from 'react'
 import type { SurahView } from '../catalog/types'
 import { voiceLabel } from '../catalog/voice'
 import { digits } from '../i18n/script'
@@ -7,6 +7,51 @@ import { Download } from './Icons'
 
 /** Bare surah name, diacritics removed. */
 export const plainName = (s: string) => s.replace(/[ؐ-ًؚ-ٰٟۖ-ۭ]/g, '').trim()
+
+/**
+ * Tells CSS how tall a row is, by measuring one.
+ *
+ * motion.css lets the browser skip laying out rows that are off screen, which
+ * costs it an estimate of their height. A wrong estimate is not cosmetic: the
+ * list claims a scroll length it does not have and then shrinks as the real
+ * rows are laid out, which reads as the list retreating while you scroll it.
+ *
+ * The height cannot be stated in CSS because it is not one number. A row grows
+ * a gloss line in English and a reciter line on a multi-voice Taraweeh year,
+ * so it ranges from 64px to 96px across the lists this component renders —
+ * and the constant that used to be hardcoded was measured on the tallest of
+ * them. Measuring the list's own first row is the only version of this that
+ * cannot drift the next time the row is redesigned.
+ */
+function useRowHeight() {
+  const ref = useRef<HTMLUListElement>(null)
+  useLayoutEffect(() => {
+    const list = ref.current
+    const row = list?.firstElementChild
+    if (!list || !(row instanceof HTMLElement)) return
+    const measure = () => {
+      const cs = getComputedStyle(row)
+      // contain-intrinsic-size names the content box; the row is border-box.
+      // Reserving the padding twice is how 4.6rem became 96px on screen.
+      const h =
+        row.getBoundingClientRect().height -
+        parseFloat(cs.paddingTop) -
+        parseFloat(cs.paddingBottom)
+      if (h > 0) list.style.setProperty('--row-h', `${h}px`)
+    }
+    measure()
+    // The Arabic face lands after first paint and the row grows when it does,
+    // so a single measurement at mount would pin the fallback font's height.
+    if (typeof ResizeObserver === 'undefined') return
+    const ro = new ResizeObserver(measure)
+    ro.observe(row)
+    return () => ro.disconnect()
+    // Deliberately every render: changing language or reciter replaces the
+    // first row, and a dependency list naming the props that do that is the
+    // same thing as the constant this replaced — correct until it is not.
+  })
+  return ref
+}
 
 type Props = {
   surahs: SurahView[]
@@ -55,6 +100,11 @@ export const SurahList = memo(function SurahList({
   onPlay,
   onDownload,
 }: Props) {
+  // Two lists, measured apart: an unreleased row ends in a word rather than a
+  // save control, so the two are not the same height.
+  const listedRef = useRowHeight()
+  const upcomingRef = useRowHeight()
+
   // A surah saved from your own files is playable even if the catalog has not
   // published it, so it belongs in the main list rather than the pending one.
   const playable = (s: SurahView) =>
@@ -68,7 +118,7 @@ export const SurahList = memo(function SurahList({
 
   return (
     <>
-      <ul className="surah-list">
+      <ul className="surah-list" ref={listedRef}>
         {listed.map((s) => {
           const active = current === s.surah
           const have = downloaded.has(s.surah)
@@ -166,7 +216,7 @@ export const SurahList = memo(function SurahList({
         </div>
       )}
 
-      <ul className="surah-list">
+      <ul className="surah-list" ref={upcomingRef}>
         {upcoming.map((s) => (
           <li key={s.surah} className="row is-off">
             <span className="row-main">

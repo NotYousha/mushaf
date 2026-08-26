@@ -176,16 +176,39 @@
 /* ============ scrolling ============ */
 
 /*
- * The surah list is 114 rows and the mushaf map is 604 cells. Telling the
- * browser it may skip laying out what is off screen — and roughly how tall
- * a row is, so the scrollbar stays honest — is what makes the list feel
- * weightless on a phone rather than merely correct.
+ * The surah list is 114 rows and the mushaf map is 604 cells. Letting the
+ * browser skip what is off screen earns its place on the list: opening a
+ * reciter costs 231ms of layout on a four-times-throttled phone without this
+ * and 19ms with it.
+ *
+ * The height is measured rather than written down, and the reason is a bug
+ * that shipped. `contain-intrinsic-size` names the *content* box, but the row
+ * is border-box with 1.4rem of vertical padding, so the 4.6rem that used to
+ * sit here reserved 6rem — 96px apiece for rows that are 64px. The eighty-odd
+ * rows below the fold were each 32px too tall, so the list claimed 10034px of
+ * scroll and shrank to 7378px as the reader went down it. That is the whole
+ * complaint: the list retreating under the thumb, 2656px of it.
+ *
+ * No constant could have been right. A row carries the English gloss only in
+ * English and the reciter's name only on a multi-voice Taraweeh year, so the
+ * real height is 64px, 77.28px, 78.88px, 81.63px or 96.28px depending on who
+ * is reciting and in what language — and 4.6rem is, near enough exactly, the
+ * English Taraweeh figure: a number that was true on the screen it was taken
+ * from and then applied to five others. SurahList measures its own first row
+ * into --row-h; the fallback here is the Arabic mushaf, the default, and is
+ * only load-bearing for the frame before that measurement lands.
  */
 .surah-list .row {
   content-visibility: auto;
-  contain-intrinsic-size: auto 4.6rem;
+  contain-intrinsic-size: auto var(--row-h, 2.6rem);
 }
 
+/*
+ * The map needs no size at all. A heat cell is a grid item in a 28-column
+ * track with `aspect-ratio: 1`, so its height follows the column width and
+ * not its contents — skipping what is inside it cannot change how tall it is,
+ * which is exactly the property the surah row does not have.
+ */
 .heat-cell {
   content-visibility: auto;
 }
