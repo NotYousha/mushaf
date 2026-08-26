@@ -182,14 +182,34 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  /*
+     * Room for the marks the ellipsis clip was cutting off.
+     *
+     * `overflow` has no per-axis setting, so hiding the horizontal overflow
+     * for the ellipsis hid the vertical too — and Arabic ink runs well above
+     * the line box. The capsule was slicing the top off a damma. The padding
+     * is cancelled by an equal negative margin, so nothing moves.
+     */
+  padding-block: 0.32rem;
+  margin-block: -0.32rem;
 }
 
 .cap-sub {
-  font-size: 0.68rem;
+  font-size: var(--text-xs);
   color: var(--muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  /*
+     * Room for the marks the ellipsis clip was cutting off.
+     *
+     * `overflow` has no per-axis setting, so hiding the horizontal overflow
+     * for the ellipsis hid the vertical too — and Arabic ink runs well above
+     * the line box. The capsule was slicing the top off a damma. The padding
+     * is cancelled by an equal negative margin, so nothing moves.
+     */
+  padding-block: 0.14rem;
+  margin-block: -0.14rem;
 }
 
 .cap-btn {

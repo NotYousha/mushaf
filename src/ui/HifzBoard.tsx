@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
-import type { Strings } from '../i18n'
+import type { Strings, Lang } from '../i18n'
+import { digits } from '../i18n/script'
 import {
   allPageRecords,
   markReviewed,
@@ -20,6 +21,14 @@ const PAGES = 604
 
 type Props = {
   t: Strings
+  /**
+   * Needed for the numerals, not for the words.
+   *
+   * The three tier counts were rendered straight from the numbers, so an
+   * Arabic or Urdu reader got Latin 0, 1, 2 in the middle of a screen where
+   * every other digit in the app is Arabic-Indic.
+   */
+  lang: Lang
   /** Open a mushaf page for review. */
   onOpenPage?: (page: number) => void
 }
@@ -39,7 +48,7 @@ function heat(rec: PageRecord | undefined, stumbles: number): number {
   return Math.max(0, Math.min(1, shaky / 6 + 0.25 - settled * 0.25))
 }
 
-export function HifzBoard({ t, onOpenPage }: Props) {
+export function HifzBoard({ t, lang, onOpenPage }: Props) {
   const [records, setRecords] = useState<PageRecord[]>([])
   const [stumbles, setStumbles] = useState<Map<number, number>>(new Map())
   const [plan, setPlan] = useState<WirdPlan | null>(null)
@@ -104,15 +113,15 @@ export function HifzBoard({ t, onOpenPage }: Props) {
       */}
       <div className="hifz-tiers">
         <div className="tier">
-          <span className="tier-n">{tiers.sabaq}</span>
+          <span className="tier-n">{digits(lang, tiers.sabaq)}</span>
           <span className="tier-name">{t.sabaq}</span>
         </div>
         <div className="tier">
-          <span className="tier-n">{tiers.sabqi}</span>
+          <span className="tier-n">{digits(lang, tiers.sabqi)}</span>
           <span className="tier-name">{t.sabqi}</span>
         </div>
         <div className="tier">
-          <span className="tier-n">{tiers.manzil}</span>
+          <span className="tier-n">{digits(lang, tiers.manzil)}</span>
           <span className="tier-name">{t.manzil}</span>
         </div>
       </div>

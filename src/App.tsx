@@ -1993,7 +1993,7 @@ export default function App() {
 
           {tab === 'hifz' && (
             <div className="panel">
-              <HifzBoard t={t} onOpenPage={(p) => openMushafAtPage(p)} />
+              <HifzBoard t={t} lang={lang} onOpenPage={(p) => openMushafAtPage(p)} />
               <h3 className="hifz-h">{t.forkDrill}</h3>
               <ForkDrill
                 t={t}
@@ -2055,7 +2055,15 @@ export default function App() {
                   a cached copy for days, and without this there is no way to
                   tell "the fix did not work" from "the fix never arrived". */}
               <p className="build-stamp">
-                {t.buildLabel} {BUILD}
+                {/*
+                    The stamp is isolated because it is Latin and digits inside
+                    a line whose language may be Arabic. Left to the paragraph
+                    it came out as three runs in the wrong order — the date,
+                    the time and the commit rearranged around each other, which
+                    made the one thing this exists for unreadable.
+                */}
+                {t.buildLabel}{' '}
+                <bdi className="trk">{BUILD}</bdi>
                 <button
                   type="button"
                   className="build-update"

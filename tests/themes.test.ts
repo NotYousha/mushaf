@@ -123,3 +123,41 @@ describe('themes', () => {
     }
   })
 })
+
+/**
+ * The default palette, which the block scanner above walks straight past.
+ *
+ * Every theme lives behind a [data-theme] attribute except the one the app
+ * opens with, which is on :root — so fifteen palettes were held to 4.5:1 and
+ * the sixteenth, the one most people see, was exempt. Its --muted sat at 3.90
+ * on the card while carrying the surah number, the English gloss, an imam's
+ * honorific and the dock labels.
+ *
+ * Only the pairs that mean the same thing here are asserted; :root differs
+ * from a theme block in ways that are not defects, so it is not simply fed
+ * through the same loop.
+ */
+describe('the default palette', () => {
+  it('keeps secondary text readable on the surfaces it sits on', () => {
+    for (const surface of ['card', 'card-2']) {
+      const r = contrast(rgb(defaults['muted']), rgb(defaults[surface]))
+      expect(r, `muted on ${surface} is ${r.toFixed(2)}`).toBeGreaterThanOrEqual(4.5)
+    }
+  })
+
+  it('keeps its body text readable', () => {
+    for (const surface of ['card', 'card-2', 'bg']) {
+      const r = contrast(rgb(defaults['ink']), rgb(defaults[surface]))
+      expect(r, `ink on ${surface} is ${r.toFixed(2)}`).toBeGreaterThanOrEqual(4.5)
+    }
+  })
+
+  it('keeps a gold that can carry a word apart from gold as material', () => {
+    // --gold is the one that may hold text; --accent is the metal and must
+    // never be asked to. If they ever converge, the distinction has been lost.
+    const gold = contrast(rgb(defaults['gold']), rgb(defaults['card']))
+    const accent = contrast(rgb(defaults['accent']), rgb(defaults['card']))
+    expect(gold, `gold on card is ${gold.toFixed(2)}`).toBeGreaterThanOrEqual(4.5)
+    expect(gold).toBeGreaterThan(accent)
+  })
+})

@@ -31,7 +31,19 @@
   --ink: #5b4227;
   --ink-strong: #43301a;
   --ink-soft: #7a5f3d;
-  --muted: #93795a;
+  /*
+   * Darkened to clear 4.5:1 on the card surfaces.
+   *
+   * At #93795a this was 3.90 on --card and 3.77 on --card-2, and it carries
+   * real text — the surah number, the English gloss, an imam's honorific, the
+   * dock labels. Every other palette in the app is held to 4.5 by
+   * tests/themes.test.ts; this one escaped only because the scanner matched
+   * [data-theme=…] and the default lives on :root. It is now in that test.
+   *
+   * This is the lightest value that clears the bar, so it stays a step away
+   * from --ink-soft (5.66) rather than collapsing into it.
+   */
+  --muted: #846d51;
   --divider: #efe5d2;
 
   --play-a: #ead5a8;
@@ -421,6 +433,14 @@ body {
 
 .search input {
   flex: 1;
+  /*
+   * An input's automatic minimum size is its own intrinsic width -- about
+   * twenty characters, 283px here -- and `flex: 1` only sets the basis, not
+   * that floor. So the field refused to shrink below 331px inside a 238px
+   * pill, the overflow propagated all the way out to `.scroll`, and the whole
+   * "See all" screen could be dragged 64px sideways on a 320px phone.
+   */
+  min-width: 0;
   border: 0;
   background: none;
   font: inherit;
@@ -556,6 +576,16 @@ body {
 .names {
   min-width: 0;
   text-align: start;
+  /*
+   * Grid, only so that adjacent margins cannot collapse.
+   *
+   * .name-ar below pays for its own clip room with a negative margin, and as
+   * a block container that margin collapsed with .name-plain's -0.1rem: the
+   * larger of the two won instead of both applying, and every English row
+   * grew by the 1.6px the gloss was pulling up. Grid items do not collapse,
+   * so the two offsets stay independent and the row keeps its height.
+   */
+  display: grid;
 }
 
 .name-ar {
@@ -567,6 +597,24 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  /*
+   * Clip room for the harakat, bought back with a negative margin.
+   *
+   * `overflow: hidden` is here for the ellipsis, which is a horizontal
+   * concern -- but overflow has no per-axis setting, so it was clipping
+   * vertically too. A fully vocalised name draws up to 8.3px above the line
+   * box and 4.4px below it: the shadda-and-damma stack on سُورَةُ النُّورِ
+   * lost its damma, and the kasra under سُورَةُ الحَجِّ was sliced flat.
+   * Every one of the 114 rows was losing something.
+   *
+   * Padding moves the clip edge without moving the text; the matching
+   * negative margin means the row is exactly as tall as it was. The marks now
+   * paint into the row's own padding, which is where they always visually
+   * belonged. Raising line-height instead would have added 700px of scroll to
+   * the list to solve a painting problem.
+   */
+  padding-block: 0.36em;
+  margin-block: -0.36em;
 }
 
 .name-plain {
@@ -731,6 +779,18 @@ body {
 }
 
 .player-top {
+  /*
+   * Headroom for the title's own marks.
+   *
+   * .player-fold-inner (motion.css) carries `overflow: hidden` so the fold
+   * animation has something to clip against, and the surah name is the first
+   * thing inside it. Amiri draws the shadda-and-damma stack of سُورَةُ النُّورِ
+   * about 9px above its line box, which put it 4.6px outside that clip and
+   * cut the damma flat -- on the sheet whose whole job is to say what is
+   * playing. The row starts lower rather than the fold being asked not to
+   * clip, which is what it is there to do.
+   */
+  padding-block-start: 0.4rem;
   display: grid;
   /* minmax(0, 1fr), not 1fr: a grid track's automatic minimum is its content,
      so a long Arabic title pushed the row wider than the sheet and the
@@ -788,6 +848,11 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  /* The same clip as .name-ar, for the same reason and at a tighter leading:
+     the title of what is playing loses its marks to the ellipsis's overflow
+     otherwise. .now is a grid, so nothing collapses into this margin. */
+  padding-block: 0.36em;
+  margin-block: -0.36em;
 }
 
 .now .label {
@@ -1469,6 +1534,9 @@ body {
 
 .verify-names {
   min-width: 0;
+  /* As .names: .name-ar's negative margin must not collapse with
+     .name-plain's, or the row grows by the difference. */
+  display: grid;
 }
 
 .verify-actions {
@@ -2550,6 +2618,12 @@ body {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  /* The ellipsis's `overflow: hidden` clips vertically as well, and at this
+     leading it took 1.4px off the bottom of رُخامٌ وليل. Padding moves the
+     clip edge, the negative margin gives the layout back; .theme-names is a
+     grid, so nothing collapses into it. Same trick as .name-ar. */
+  padding-block: 0.3em;
+  margin-block: -0.3em;
   /* What a theme is named after, written in the same script as the name
      above it -- so it follows --font-name and not the interface face. In
      Urdu that keeps "سواد الكعبة وذهبها" in Amiri, which is the language it
@@ -2575,8 +2649,19 @@ body {
   order: 3;
   width: 100%;
   font-size: var(--text-xs);
-  color: var(--sw-accent);
-  opacity: 0.9;
+  /*
+   * The swatch's ink, not its accent.
+   *
+   * This is the same rule the palette states at the top of the file: the
+   * accent is material, and material does not carry a word. Drawn in
+   * --sw-accent this line measured 3.65:1 on the Kiswah card and 3.80:1 on
+   * Tahajjud -- a sentence a reader is meant to read, printed in the one
+   * colour on the card chosen to be seen rather than read. --sw-ink is what
+   * the name above it uses, and it clears 4.5:1 on every swatch; the opacity
+   * is what keeps this quieter than the name.
+   */
+  color: var(--sw-ink);
+  opacity: 0.75;
   text-align: start;
 }
 
@@ -3793,6 +3878,21 @@ body {
   min-inline-size: 0;
   display: flex;
   align-items: center;
+  /*
+   * The count and the size take the line under the name, not the room the
+   * name needed.
+   *
+   * Caret, name, "2 surahs · 89 MB" and a "Delete all" button will not fit
+   * across a phone. Only .dl-name could shrink -- it is the one item here
+   * with `overflow: hidden`, so it is the one whose automatic minimum is zero
+   * -- and it lost every argument: 75px of "Yasser Al-Dosari" at 390px, and
+   * exactly 5px of it at 320px. The row that exists so someone can decide
+   * whose two gigabytes to delete was the row that would not say whose.
+   *
+   * This is the same shape .place-name and .place-meta already use in
+   * home.css: a name with its figure beneath it.
+   */
+  flex-wrap: wrap;
   gap: 0.55rem;
   padding: 0.7rem 0.8rem;
   min-block-size: 44px;
@@ -3820,6 +3920,11 @@ body {
 }
 
 .dl-name {
+  /* Grows into whatever the caret leaves. The 4rem basis is a floor, not a
+     width: with `auto` the name's full length is its hypothetical size, and a
+     long one pushed itself onto a line below the caret. */
+  flex: 1 1 4rem;
+  min-inline-size: 0;
   font-family: var(--font-name);
   font-size: var(--text-sm);
   color: var(--ink-strong);
@@ -3830,15 +3935,16 @@ body {
 
 .dl-meta,
 .dl-size {
-  font-size: 0.72rem;
+  font-size: var(--text-xs);
   color: var(--muted);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
 .dl-meta {
-  margin-inline-start: auto;
-  padding-inline-start: 0.5rem;
+  /* A line of its own, under the name. The auto margin it replaces pushed it
+     to the far edge of a row that had no far edge to spare. */
+  flex: 1 1 100%;
 }
 
 /* Destructive, so it is worded rather than an icon, and tinted rather than
@@ -3853,7 +3959,7 @@ body {
   border-radius: var(--radius-xs);
   background: none;
   font-family: inherit;
-  font-size: 0.72rem;
+  font-size: var(--text-xs);
   color: var(--danger, #b3261e);
   touch-action: manipulation;
 }
@@ -3879,7 +3985,7 @@ body {
   border: 0;
   background: none;
   font-family: inherit;
-  font-size: 0.72rem;
+  font-size: var(--text-xs);
   color: var(--gold);
   touch-action: manipulation;
 }
@@ -3941,7 +4047,7 @@ body {
   border: 0;
   border-radius: var(--radius-pill);
   background: none;
-  font-size: 1.2rem;
+  font-size: var(--text-md);
   line-height: 1;
   color: var(--muted);
   touch-action: manipulation;
