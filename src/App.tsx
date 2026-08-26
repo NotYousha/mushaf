@@ -324,6 +324,10 @@ export default function App() {
           job.surah,
           onProgress,
           signal,
+          // Archive.org and the other direct hosts do not expose
+          // Content-Range across origins, so the size has to travel with the
+          // job or the download files itself complete after one chunk.
+          job.bytes,
         ),
       // The download persists its own chunks as they arrive, so there is
       // nothing left to save. Writing the assembled blob again here would

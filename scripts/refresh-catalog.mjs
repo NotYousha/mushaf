@@ -73,6 +73,59 @@ const only = process.argv[2] ?? null
 const meta = JSON.parse(readFileSync('data/surahs.json', 'utf8'))
 const catalog = JSON.parse(readFileSync('data/catalog.json', 'utf8'))
 
+/**
+ * Sources whose audio the browser can fetch itself, without the proxy.
+ *
+ * The Worker exists to add CORS and to resolve URLs that have to be looked up
+ * — scraped index pages, signed URLs that expire, items whose files are named
+ * in Arabic. Where neither is needed, proxying is pure cost: every 2 MB chunk
+ * of a download was a request against a free plan with a daily cap, and one
+ * 2.9 GB mushaf is about fifteen hundred of them.
+ *
+ * A source qualifies only if all three hold, and each was checked against the
+ * live host rather than assumed:
+ *
+ *   1. `Access-Control-Allow-Origin: *`, so a browser may read the bytes.
+ *   2. `Last-Modified` present. Content-Range and ETag are NOT CORS-safelisted
+ *      and none of these hosts exposes them, so neither is readable from a
+ *      page — but Last-Modified is safelisted, and If-Range accepts an
+ *      HTTP-date. Verified end to end: If-Range with the file's own date
+ *      returns 206, and with a stale date returns 200, which is what the
+ *      downloader already reads as 'this file changed, drop what is stored'.
+ *   3. The URL is a pure function of the surah number. Nothing to resolve
+ *      means nothing for the Worker to do.
+ *
+ * Al-Afasy, Al-Muaiqly, Baleela, As-Sudais, Al-Budair and Ash-Shamsan are
+ * archive.org items whose
+ * files really are named 001.mp3 .. 114.mp3 — checked against each item's
+ * metadata. Abdulaziz Al-Turki's is not (his are `002 - البقرة.mp3`), so his
+ * stays on the proxy, as do every scraped collection and the two mosques'
+ * Madinah 1446, which is served from an item with Arabic names.
+ *
+ * The size the browser cannot read is taken from this catalog instead — see
+ * ChunkedOpts.totalBytes. Without it a download files itself complete after
+ * one chunk.
+ */
+const DIRECT = {
+  af: (n) => `https://archive.org/download/alafasy-1445-2024/${pad(n)}.mp3`,
+  mq: (n) => `https://archive.org/download/mushaf-almuaiqly/${pad(n)}.mp3`,
+  bl: (n) =>
+    `https://archive.org/download/alfirdwsiy1433356856356835683568568568mail_002/${pad(n)}.mp3`,
+  sd: (n) => `https://archive.org/download/sudais-murattal-saudi-center/${pad(n)}.mp3`,
+  jq: (n) =>
+    `https://download.quranicaudio.com/quran/abdullaah_3awwaad_al-juhaynee/${pad(n)}.mp3`,
+  lh: (n) => `https://server8.mp3quran.net/lhdan/${pad(n)}.mp3`,
+  bd: (n) => `https://archive.org/download/Salah_Albudair_MP3_Quran/${pad(n)}.mp3`,
+  ws: (n) => `https://archive.org/download/Waleed-Al-Shamsan/${pad(n)}.mp3`,
+}
+
+const pad = (n) => String(n).padStart(3, '0')
+
+/** Where a surah's audio actually lives, proxied only if it has to be. */
+const audioUrlFor = (src, surah) => {
+  const file = src.remap?.[surah] ?? surah
+  return DIRECT[src.route]?.(file) ?? `${WORKER}/${src.route}/${file}.mp3`
+}
 const SOURCES = {
   dosari: {
     home: true,
@@ -689,8 +742,8 @@ async function fetchWithRetry(url, attempts = Number(process.env.REFRESH_ATTEMPT
  * is not that surah, and serving it would play the wrong recitation with no
  * warning. Reads the first 128 KB, which is enough for the frame header.
  */
-async function measure(route, surah) {
-  const res = await fetchWithRetry(`${WORKER}/${route}/${surah}.mp3`)
+async function measureUrl(url) {
+  const res = await fetchWithRetry(url)
   if (!res.ok && res.status !== 206) throw new Error(`HTTP ${res.status}`)
   const cr = res.headers.get('content-range')
   const total = cr ? Number(/\/(\d+)\s*$/.exec(cr)?.[1]) : 0
@@ -738,7 +791,9 @@ async function refresh(id) {
         continue
       }
       try {
-        results.set(surah, await measure(src.route, src.remap?.[surah] ?? surah))
+        // Measured at the URL the catalog will carry, so a direct URL that is
+        // wrong fails here rather than on somebody's phone.
+        results.set(surah, await measureUrl(audioUrlFor(src, surah)))
       } catch (e) {
         failures.push({ surah, error: e.message })
       }
@@ -856,9 +911,7 @@ async function refresh(id) {
         surah,
         // A locally hosted file wins; otherwise a remapped surah is fetched
         // from the file that actually holds it.
-        url: src.localFiles?.[surah]
-          ? src.localFiles[surah]
-          : `${WORKER}/${src.route}/${src.remap?.[surah] ?? surah}.mp3`,
+        url: src.localFiles?.[surah] ? src.localFiles[surah] : audioUrlFor(src, surah),
         fallbackUrl: null,
         bytes: results.get(surah).bytes,
         // Files are resolved from each surah's own page, so the name-to-audio

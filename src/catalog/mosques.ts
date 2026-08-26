@@ -20,6 +20,38 @@ import type { Reciter } from './types'
 
 const WORKER = 'https://mushaf-audio.mushaftarteel.workers.dev'
 
+/**
+ * The Taraweeh years come straight from archive.org, not through the proxy.
+ *
+ * This is the bulk of the app — thirty-odd Ramadans of both mosques, a couple
+ * of gigabytes each — and it does not need a proxy at all. Archive.org answers
+ * `Access-Control-Allow-Origin: *`, and every file in these items is named
+ * `001.mp3` .. `114.mp3`, so the URL is a pure function of the year and the
+ * surah with nothing to resolve. Sending it through a Worker cost a request
+ * per 2 MB chunk — about fifteen hundred for one year — against a free plan
+ * with a daily cap, for no benefit but a header the app can live without.
+ *
+ * What it does cost: Content-Range is not CORS-safelisted and archive.org does
+ * not expose it, so a cross-origin read of it is null and the download cannot
+ * learn the file's length from the response. It takes the length from the
+ * catalog instead — see ChunkedOpts.totalBytes, which exists for this.
+ *
+ * `/download/` rather than a node hostname: nodes rotate and individual ones
+ * go unhealthy, and that path always redirects to a live one.
+ */
+const ARCHIVE = 'https://archive.org/download'
+
+/**
+ * The one year that still needs the proxy.
+ *
+ * Madinah 1446 is served from a different item than its name implies, because
+ * the obvious one holds a sped-up edit, and that item's files are named in
+ * Arabic — `002 - البقرة .mp3` — so the name has to be read from the item's
+ * metadata rather than built from the surah number. That is a lookup, which is
+ * what the Worker is for. One year of thirty-three.
+ */
+const NEEDS_PROXY = new Set(['nabawi-1446'])
+
 export type Place = 'makkah' | 'madinah'
 
 type YearRow = { year: number; ce: number | null; imams: string[]; bytes: number[]; secs: number[] }
@@ -52,6 +84,15 @@ export const PLACES: {
   /** Kept as 'haram' for Makkah: it is in the URLs of audio people have
    *  already saved, and renaming it would orphan every one of them. */
   route: string
+  /**
+   * The archive.org item prefix, which the year is appended to.
+   *
+   * Deliberately not the same string as `route`: the route is ours and is
+   * frozen into saved URLs, the item is the archive's and is capitalised the
+   * way the uploader capitalised it. The Worker's MOSQUES table has to agree
+   * with this — it still serves Madinah 1446.
+   */
+  item: string
   ar: string
   en: string
   shortAr: string
@@ -60,6 +101,7 @@ export const PLACES: {
   {
     place: 'makkah',
     route: 'haram',
+    item: 'Mecca',
     ar: 'المسجد الحرام',
     en: 'The Grand Mosque',
     shortAr: 'تراويح الحرم',
@@ -68,6 +110,7 @@ export const PLACES: {
   {
     place: 'madinah',
     route: 'nabawi',
+    item: 'Nabawi',
     ar: 'المسجد النبوي',
     en: "The Prophet's Mosque",
     shortAr: 'تراويح النبوي',
@@ -206,7 +249,9 @@ function toReciter(place: Place, row: YearRow): Reciter {
     total: 114,
     surahs: row.bytes.map((bytes, i) => ({
       surah: i + 1,
-      url: `${WORKER}/${m.route}/${row.year}/${i + 1}.mp3`,
+      url: NEEDS_PROXY.has(`${m.route}-${row.year}`)
+        ? `${WORKER}/${m.route}/${row.year}/${i + 1}.mp3`
+        : `${ARCHIVE}/${m.item}${row.year}/${String(i + 1).padStart(3, '0')}.mp3`,
       fallbackUrl: null,
       bytes,
       ...voiceFields(place, row.year, i + 1),

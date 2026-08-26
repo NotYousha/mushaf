@@ -2,8 +2,8 @@
 
 Everything to paste into the Console, and the answers to the questionnaires.
 Written from what the code actually does — the Data Safety section in
-particular is checkable against `index.html`'s Content-Security-Policy, which
-permits exactly one external host.
+particular is checkable against `index.html`'s Content-Security-Policy, whose
+connect-src and media-src name every host the app may reach.
 
 ---
 
@@ -44,7 +44,7 @@ Al-Mau'iza is a Quran listening app built around complete murattal mushafs and
 reading along with them.
 
 RECITERS
-Seventeen complete mushafs, and the Taraweeh and Tahajjud archives of the two
+16 complete mushafs, and the Taraweeh and Tahajjud archives of the two
 Holy Mosques going back to 1414 AH. Among them: Yasser Al-Dosari, Abdurrahman
 As-Sudais, Maher Al-Muaiqly, Bandar Baleela, Muhammad Al-Luhaidan, Mishary
 Rashid Al-Afasy, Badr Al-Turki, Abdullah Al-Bu'ayjan and Muhammad Burhaji,
@@ -83,7 +83,8 @@ and full right-to-left layout.
 
 NO ACCOUNTS, NO ADS, NO TRACKING
 No sign-in, no advertising, no analytics, and no third-party SDKs of any kind.
-The app contacts exactly one server, to fetch audio, and that is enforced by a
+The only requests the app makes are for the recitation audio itself, mostly
+straight from the Internet Archive — and that is enforced by a
 Content-Security-Policy rather than merely promised.
 
 Recitations are produced by the Saudi Center for Quranic Recitations, the King
@@ -112,12 +113,14 @@ Justification, if review asks:
   language. Nothing is transmitted.
 - There is no account system, no analytics, no advertising, no crash reporting
   and no third-party SDK. Runtime dependencies are React, React-DOM and `idb`.
-- The only external request is audio retrieval from
+- The only external requests are for the recitation audio itself: mostly
+  `archive.org`, plus `download.quranicaudio.com` and `server8.mp3quran.net`,
+  and — for the few reciters whose links must be looked up or that expire —
   `mushaf-audio.mushaftarteel.workers.dev`, a proxy operated by the developer.
-  It carries the device IP as any HTTP request must, and nothing else — no
-  identifier, no cookie. The proxy does not forward the client IP upstream.
-- This is enforced by the CSP in `index.html`: `connect-src` and `media-src`
-  permit `'self'` and that one host; `object-src 'none'`.
+  Each carries the device IP as any HTTP request must, and nothing else: no
+  identifier, no cookie.
+- This is enforced by the CSP in `index.html`, whose `connect-src` and
+  `media-src` name exactly those hosts; `object-src 'none'`.
 
 Tick, in the optional security section:
 

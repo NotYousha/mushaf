@@ -17,6 +17,8 @@ export class CatalogSource implements AudioSource {
     surah: number,
     onProgress: (loaded: number, total: number) => void,
     signal: AbortSignal,
+    /** What the catalog says this surah weighs; see ChunkedOpts.totalBytes. */
+    totalBytes?: number,
   ): Promise<Blob> {
     const url = this.urls.get(surah)
     if (!url) throw new Error(`Surah ${surah} is not released yet`)
@@ -33,6 +35,6 @@ export class CatalogSource implements AudioSource {
     }
 
     // Chunks are persisted as they arrive, so this both fetches and stores.
-    return downloadChunked(this.reciterId, surah, url, { onProgress, signal })
+    return downloadChunked(this.reciterId, surah, url, { onProgress, signal, totalBytes })
   }
 }

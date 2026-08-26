@@ -344,8 +344,21 @@ describe('bundled data', () => {
       expect(seconds(74)).toBeGreaterThan(350) // al-Muddaththir
     })
 
-    it('gives every surah its own recording', () => {
-      for (const s of sd.surahs) expect(s.url).toContain(`/sd/${s.surah}.mp3`)
+    /*
+     * Each surah points at its own file, and does so straight at the archive.
+     *
+     * This asserted `/sd/{surah}.mp3` while the audio went through the proxy.
+     * It now comes from the archive item directly — archive.org sends
+     * `Access-Control-Allow-Origin: *` and a Last-Modified a resume can be
+     * validated against, so there was nothing left for a proxy to add. The
+     * thing worth pinning is unchanged: one file per surah, named for it.
+     */
+    it('gives every surah its own recording, from the archive', () => {
+      for (const s of sd.surahs) {
+        expect(s.url, String(s.surah)).toBe(
+          `https://archive.org/download/sudais-murattal-saudi-center/${String(s.surah).padStart(3, '0')}.mp3`,
+        )
+      }
     })
   })
 

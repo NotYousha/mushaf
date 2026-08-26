@@ -8,8 +8,9 @@
 
   Everything below is a claim about this code and has to stay true of it. The
   short version — nothing leaves the device except a request for audio — is
-  enforced by the Content-Security-Policy in index.html, which permits exactly
-  one external host. If that policy ever widens, this file is wrong.
+  enforced by the Content-Security-Policy in index.html, whose connect-src and
+  media-src name every host the app may reach. If a host is added there, the
+  "Where the audio comes from" section here is wrong until it names it too.
 -->
 <html lang="en" dir="ltr">
   <head>
@@ -95,6 +96,7 @@
         collects nothing about you and sends nothing about you anywhere. What it
         saves — your place in a recitation, your favourites, your settings, and
         any audio you download — is stored on your own device and stays there.
+        The only requests it makes are for the recitation audio itself.
       </div>
 
       <h2>What is stored, and where</h2>
@@ -121,24 +123,27 @@
         clearing this site's data in your browser, removes all of it.
       </p>
 
-      <h2>The one network request the app makes</h2>
+      <h2>Where the audio comes from</h2>
       <p>
-        Playing or downloading a recitation fetches audio from
+        Playing or downloading a recitation fetches audio from the archive that
+        publishes it. Most of it comes straight from
+        <code>archive.org</code>, and some from
+        <code>download.quranicaudio.com</code> or
+        <code>server8.mp3quran.net</code>.
+      </p>
+      <p>
+        A few reciters' audio sits behind links that have to be looked up or
+        that expire, and those requests pass through
         <code>mushaf-audio.mushaftarteel.workers.dev</code>, a proxy operated by
-        the developer of this app on Cloudflare. Like any web request, it
-        necessarily carries your device's IP address to that service. It carries
-        nothing else about you: there is no account, no identifier, and no
-        cookie.
+        the developer of this app.
       </p>
       <p>
-        That proxy fetches the recitation from the archive that publishes it, on
-        your behalf. It does not pass your IP address on — the upstream archives
-        see Cloudflare, not you.
-      </p>
-      <p>
-        No other host is contacted. This is enforced rather than merely
-        intended: the app ships a Content-Security-Policy that permits
-        connections to that single origin and blocks everything else.
+        Like any web request, these carry your device's IP address to whichever
+        host serves the file. They carry nothing else about you: there is no
+        account, no identifier, and no cookie. No request is made to any host
+        other than those listed above — the app ships a
+        Content-Security-Policy that permits exactly these and blocks
+        everything else.
       </p>
 
       <h2>What the app does not do</h2>

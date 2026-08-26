@@ -12,6 +12,23 @@ export type ChunkedOpts = {
   chunkSize?: number
   onProgress?: (loaded: number, total: number) => void
   signal?: AbortSignal
+  /**
+   * The size the catalog says this surah is, when it is known.
+   *
+   * Not an optimisation — it is what makes fetching straight from the archive
+   * possible. Content-Range is not a CORS-safelisted response header, and
+   * archive.org, quranicaudio and mp3quran all send `Access-Control-Allow-
+   * Origin: *` without exposing it, so a cross-origin read of it returns null.
+   * With no total, the loop below ran on `Infinity` and wrote
+   * `totalBytes: buf.byteLength` — the first chunk — so a 138 MB surah was
+   * filed as complete after 2 MB and played as two minutes of al-Baqarah with
+   * no error anywhere.
+   *
+   * The server still wins where it speaks: a readable Content-Range overrides
+   * this, because the catalog is a measurement from last week and the response
+   * is the file as it is now.
+   */
+  totalBytes?: number
 }
 
 const DEFAULT_CHUNK = 2 * 1024 * 1024 // 2 MB
@@ -103,7 +120,10 @@ export async function downloadChunked(
   }
 
   let from = m?.bytesWritten ?? 0
-  let total = m?.totalBytes ?? Infinity
+  // The manifest first (it is a measurement of this download), then the
+  // catalog hint, then unknown.
+  const hinted = opts.totalBytes && opts.totalBytes > 0 ? opts.totalBytes : Infinity
+  let total = m?.totalBytes ?? hinted
 
   /*
    * A resume needs something to prove the file has not changed.
@@ -119,7 +139,7 @@ export async function downloadChunked(
     await deleteDownload(key)
     m = undefined
     from = 0
-    total = Infinity
+    total = hinted
   }
 
   while (from < total) {
@@ -154,7 +174,7 @@ export async function downloadChunked(
       await deleteDownload(key)
       m = undefined
       from = 0
-      total = Infinity
+      total = hinted
       continue
     }
     if (!res.ok && res.status !== 206) throw new Error(`HTTP ${res.status}`)

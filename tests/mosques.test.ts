@@ -40,22 +40,64 @@ describe('the mosque years', () => {
     }
   })
 
-  // archive.org sends Access-Control-Allow-Origin: * but no
-  // Access-Control-Expose-Headers, and neither ETag nor Content-Range is
-  // CORS-safelisted — so a browser reads null for both and can neither size
-  // nor resume a download. Pointing straight at an item would look like it
-  // worked right up until someone tried to save a surah.
-  it('routes every surah through the CORS proxy', () => {
-    for (const r of all) {
+  /**
+   * The years come straight from archive.org. One does not.
+   *
+   * This test used to assert the opposite, and its reasoning was sound at the
+   * time: archive.org sends `Access-Control-Allow-Origin: *` but no
+   * `Access-Control-Expose-Headers`, and neither ETag nor Content-Range is
+   * CORS-safelisted — so a browser reads null for both and can neither size a
+   * download nor resume one. Pointing straight at an item would have looked
+   * like it worked until somebody tried to save a surah.
+   *
+   * Both halves of that are now answered, and measured against the real host
+   * rather than assumed:
+   *
+   *   size    the catalog already knows it, and the downloader takes it from
+   *           there — see ChunkedOpts.totalBytes, which exists for this and
+   *           without which a 2 MB first chunk was filed as a whole surah.
+   *   resume  Last-Modified IS safelisted, and archive.org sends it. Checked
+   *           end to end: If-Range with that date returns 206, and If-Range
+   *           with a stale date returns 200 — which is the signal the
+   *           downloader already treats as 'the file changed, drop what is
+   *           stored'. So a resume can still prove the file has not moved.
+   *
+   * Why it was worth changing: this is the bulk of the app, and every 2 MB
+   * chunk of it was a request against a proxy on a free plan with a daily cap.
+   * A single Ramadan is about fifteen hundred of them.
+   */
+  it('takes the Taraweeh years straight from archive.org', () => {
+    const direct = all.filter((r) => !/workers\.dev/.test(r.surahs[0].url))
+    expect(direct.length).toBeGreaterThan(25)
+
+    for (const r of direct) {
       for (const s of r.surahs) {
-        expect(s.url).toMatch(
-          /^https:\/\/mushaf-audio\.mushaftarteel\.workers\.dev\/(haram|nabawi)\/\d{4}\/\d{1,3}\.mp3$/,
+        // The item prefix is the archive's capitalisation, the year is
+        // appended, and the file is zero-padded to three digits.
+        expect(s.url, `${r.id}:${s.surah}`).toMatch(
+          /^https:\/\/archive\.org\/download\/(Mecca|Nabawi)\d{4}\/\d{3}\.mp3$/,
         )
-        expect(s.url).not.toMatch(/archive\.org/)
       }
     }
   })
 
+  /**
+   * Madinah 1446 keeps the proxy, and is meant to.
+   *
+   * It is served from a different item than its name implies — the obvious one
+   * holds a sped-up edit — and that item's files are named in Arabic, so the
+   * name has to be read from the item's metadata rather than built from the
+   * surah number. That is a lookup, and a lookup is what the Worker is for.
+   */
+  it('leaves the one year that needs a lookup on the proxy', () => {
+    const odd = all.find((r) => r.id === 'nabawi-1446')
+    expect(odd, 'nabawi-1446 should still be published').toBeDefined()
+    for (const s of odd!.surahs) {
+      expect(s.url).toMatch(
+        /^https:\/\/mushaf-audio\.mushaftarteel\.workers\.dev\/nabawi\/1446\/\d{1,3}\.mp3$/,
+      )
+    }
+  })
   /**
    * Makkah ids stay on the 'haram' prefix they first shipped with. Saved audio
    * is keyed by reciter id, so renaming would orphan every download someone
