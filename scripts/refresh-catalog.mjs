@@ -900,7 +900,12 @@ async function refresh(id) {
     // faces and names. Absent where the name is already unambiguous.
     ...(src.tag ? { tag: src.tag, tagEn: src.tagEn } : {}),
     ...(src.note ? { note: src.note } : {}),
-    source: `${WORKER}/${src.route}/{surah}.mp3`,
+    // Where the audio comes from, as a human-readable note. Not a template to
+    // build URLs from — the entries below carry their own — but it is the
+    // field a maintainer would trust, so it has to say which of the two it is.
+    source: DIRECT[src.route]
+      ? DIRECT[src.route](1).replace(/\/\d{3}\.mp3$/, '/{surah}.mp3')
+      : `${WORKER}/${src.route}/{surah}.mp3`,
     photo: src.photo,
     released: count,
     total: 114,

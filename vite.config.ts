@@ -104,7 +104,19 @@ export default defineConfig({
         // App shell only. Audio lives in IndexedDB and must never enter the SW cache.
         // Fonts are precached now that they are ours: the mushaf must render
         // correctly offline, not fall back to a system face.
-        globPatterns: ['**/*.{js,css,html,png,svg,woff2}'],
+        // A pattern with no leading globstar matches the root of dist and
+        // nothing below it, so '*.{webp,jpg}' precaches the portraits while
+        // leaving the 604 Ad-Duri pages under /duri/ alone. That distinction is
+        // the whole reason the comment further down says webp cannot go in this
+        // list: written with a globstar it would pull 79 MB into the install.
+        //
+        // Precached rather than left to the runtime cache because a portrait
+        // nobody has looked at was never fetched — every face is a CSS
+        // background image, so nothing requests it until its grid paints. A
+        // reader who had only opened the home screen and then went offline
+        // found six faces and fifteen empty rings on 'See all', which reads as
+        // a broken app rather than as a cache miss.
+        globPatterns: ['**/*.{js,css,html,png,svg,woff2}', '*.{webp,jpg}'],
         // The mushaf layout and the word timings are lazy chunks worth about
         // 3 MB. Precaching them would pull the whole lot down at install,
         // which is exactly what lazy-loading them was meant to avoid. They are
@@ -146,7 +158,15 @@ export default defineConfig({
             handler: 'CacheFirst',
             options: {
               cacheName: 'reciter-photos',
-              expiration: { maxEntries: 60, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              /*
+               * 120, against 34 root-level images today.
+               *
+               * The ceiling only grows — four reciters were added in a single
+               * commit recently — and when it crosses the limit the symptom is
+               * portraits vanishing offline in least-recently-used order, on
+               * devices nobody can inspect, with no error raised anywhere.
+               */
+              expiration: { maxEntries: 120, maxAgeSeconds: 60 * 60 * 24 * 365 },
               cacheableResponse: { statuses: [0, 200] },
             },
           },

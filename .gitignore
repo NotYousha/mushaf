@@ -8,3 +8,11 @@ worker/.wrangler/
 .cache/
 tsconfig.tsbuildinfo
 .claude/
+
+# The Android signing identity and its output. Bubblewrap runs outside this
+# repo (see store/ANDROID.md), so none of this should ever appear here — but
+# an upload key committed once is an upload key to rotate with Google.
+*.keystore
+*.jks
+*.aab
+*.apk

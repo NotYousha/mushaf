@@ -235,7 +235,9 @@ function toReciter(place: Place, row: YearRow): Reciter {
     fullName: `تراويح وتهجد ${m.ar} ${ar}`,
     mushaf: `المصحف الصوتي من صلاتي التراويح والتهجد ${m.ar} ${ar}`,
     mushafEn: `Taraweeh and Tahajjud at ${m.en}, ${row.year}${row.ce ? ` (${row.ce})` : ''}`,
-    source: `archive.org, via the mushaf-audio Worker`,
+    source: NEEDS_PROXY.has(`${m.route}-${row.year}`)
+      ? 'archive.org, via the mushaf-audio Worker'
+      : 'archive.org',
     note: 'تلاوات لأئمة متعددين — لم تُنسب كل سورة إلى قارئها.',
     // A compilation has no one face, and picking any single imam's would
     // misrepresent everyone else who led that year.
