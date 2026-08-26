@@ -7,3 +7,4 @@ worker/node_modules/
 worker/.wrangler/
 .cache/
 tsconfig.tsbuildinfo
+.claude/

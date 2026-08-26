@@ -1,0 +1,15 @@
+# The Content-Security-Policy in index.html admits its inline boot script by a
+# SHA-256 of that script's exact bytes, and tests/themeboot.test.ts recomputes
+# the hash from the file on disk to prove the two still agree.
+#
+# With core.autocrlf=true -- the default on a Windows checkout -- the working
+# tree gets CRLF, so the recomputed hash is of different bytes than the ones
+# hashed when the policy was written. The test then fails on Windows and passes
+# in CI on Linux, which is the worst of both: it cannot be trusted locally, and
+# a `npm run build` on Windows emits a document whose policy blocks its own
+# boot script.
+#
+# Pinned so that the working tree, the object store, CI and the browser are all
+# hashing the same bytes.
+index.html text eol=lf
+app/index.html text eol=lf
