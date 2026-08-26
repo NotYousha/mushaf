@@ -6,7 +6,10 @@ Two strings per person, in the app's five languages (`ar`, `en`, `ur`, `fr`, `hi
   honorific: `الشيخ د.` / `Sh. Dr.`, or `الشيخ` / `Sh.` Never the name.
 - **`full`** — the office, one short clause, shown on one line under the name in
   the expanded player: `إمام وخطيب المسجد الحرام` / `Imam and Khatib of the
-  Grand Mosque`. Never the name.
+  Grand Mosque`. Never the name. **Optional.** The two are separate claims:
+  `الشيخ` is the courtesy every man here is styled with in every listing that
+  carries his recitation and asserts no post, whereas an office does. A reciter
+  for whom no source establishes an office carries the honorific alone.
 
 Keys are the same reciter/imam ids used by `data/catalog.json` (`reciters[].id`)
 and `data/imams.json`. The three recitation-variant ids — `juhany-hafs`,
@@ -72,18 +75,32 @@ Devanagari; French uses ordinary French sentence capitalisation.
   as a former imam and khatib; the circumstances are not the app's business.
 - **`maghamsi`** — appointed to the Prophet's Mosque in February 2026, recent
   enough to be worth re-checking. He is on the current roster.
+- **`luhaidan`** — he is محمد بن إبراهيم اللحيدان, not بن عبد الله as
+  `catalog.json` first had it; بن عبد الله is his grandfather. Biographies give
+  a **master's** from المعهد العالي للقضاء, while at least one fan site styles
+  him *د.*, so he carries plain `الشيخ` — the same call made for `thubaiti`.
+  Sources also disagree on geography, placing his judgeship at ديوان المظالم in
+  Madinah and جامع الناصر in Riyadh, so neither city is named.
+- **`ossi`** — عبد الرحمن بن جمال العوسي, imam of مسجد الإخلاص in Al-Khobar and
+  a teacher; no doctorate in any source, so plain `الشيخ`. His mushaf circulates
+  under app-store titles that name no origin, but the files themselves carry
+  `TCOP="Reserved For KFGQPC"`.
 
-## Currently omitted
+## Honorific only, no office
 
-- **`turki-abdulaziz`** (عبد العزيز التركي) — no source found for this person at
-  all: no Wikipedia article, no entry in the mp3quran or quranicaudio reciter
-  databases. He may be a confusion with `turki` (بدر بن محمد التركي), imam of the
-  Grand Mosque since October 2024. Left out until the identity is settled.
+Two men are styled `الشيخ` with no `full`, because no source establishes a post
+for either. Withholding the honorific as well would have been the wrong kind of
+caution: it asserts nothing, and every listing that carries their recitation
+uses it.
+
+- **`turki-abdulaziz`** (عبد العزيز التركي) — a distinct reciter from Qassim
+  with a complete murattal mushaf in wide circulation, and *not* a confusion
+  with `turki` (بدر بن محمد التركي) as this file previously suspected. Still no
+  biography, no roster entry, and no office.
 - **`sudais-ali`** (علي السديس) — brother of Abdurrahman As-Sudais. Everything
-  findable traces back to one unreferenced Arabic Wikipedia stub saying he was
-  formerly an imam of the Prophet's Mosque; no service years, no degree, and he
-  appears in no roster or imam list. Not enough to put a title against a man's
-  name, so he has none.
+  findable still traces to one unreferenced Arabic Wikipedia stub saying he was
+  formerly an imam of the Prophet's Mosque; no service years, no degree, no
+  roster. Not enough for an office, so he has none.
 
 ## Re-checking
 
