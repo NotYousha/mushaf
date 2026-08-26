@@ -232,5 +232,16 @@ export const fr: Strings = {
     surfaceName: { player: 'Lecteur', card: 'Carte du dock' },
     dragToPosition: 'Faites glisser la photo pour la déplacer.',
     zoom: 'Zoom',
-    resetFraming: 'Réinitialiser'
+    resetFraming: 'Réinitialiser',
+    screen: 'Écran',
+    screenNote:
+      "Choisi automatiquement. Une grande tablette et un téléviseur se ressemblent pour un navigateur ; corrigez ici si la détection se trompe.",
+    screenNames: {
+      auto: 'Automatique',
+      phone: 'Téléphone',
+      tablet: 'Tablette',
+      desktop: 'Ordinateur',
+      tv: 'Téléviseur',
+      native: 'Application',
+    },
 }

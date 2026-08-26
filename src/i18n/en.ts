@@ -247,7 +247,26 @@ export const en = {
     surfaceName: { player: 'Player', card: 'Dock card' },
     dragToPosition: 'Drag the photo to move it.',
     zoom: 'Zoom',
-    resetFraming: 'Reset'
+    resetFraming: 'Reset',
+    /*
+     * Which surface the layout is drawn for.
+     *
+     * Named "Screen" rather than "Surface" because the reader is choosing what
+     * kind of screen they are on, and because surfaceName above already means
+     * something else entirely -- which of the two places a reciter's photo is
+     * framed for.
+     */
+    screen: 'Screen',
+    screenNote:
+      'Chosen automatically. A large tablet and a television look the same to a browser, so set it here if the guess is wrong.',
+    screenNames: {
+      auto: 'Automatic',
+      phone: 'Phone',
+      tablet: 'Tablet',
+      desktop: 'Computer',
+      tv: 'Television',
+      native: 'App',
+    },
 }
 
 export type Strings = typeof en

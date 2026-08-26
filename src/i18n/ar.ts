@@ -234,5 +234,16 @@ export const ar: Strings = {
     surfaceName: { player: 'المشغّل', card: 'بطاقة الشريط' },
     dragToPosition: 'اسحب الصورة لتحريكها.',
     zoom: 'تكبير',
-    resetFraming: 'إعادة'
+    resetFraming: 'إعادة',
+    screen: 'الشاشة',
+    screenNote:
+      'تُختار تلقائيًا. اللوح الكبير والتلفاز سواء في نظر المتصفح، فاخترها هنا إن أخطأ الحدس.',
+    screenNames: {
+      auto: 'تلقائي',
+      phone: 'هاتف',
+      tablet: 'لوح',
+      desktop: 'حاسوب',
+      tv: 'تلفاز',
+      native: 'تطبيق',
+    },
 }

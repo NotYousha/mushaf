@@ -87,6 +87,8 @@ import { stringsFor, type Lang, bootLang, LANG_KEY } from './i18n'
 import { brandName, brandSecondary } from './brand'
 import { LangPicker } from './ui/LangPicker'
 import { ThemePicker } from './ui/ThemePicker'
+import { SurfacePicker } from './ui/SurfacePicker'
+import { useSurface } from './ui/useSurface'
 import { Dock, type DockTab } from './ui/Dock'
 import {
   applyNativeInsets,
@@ -164,6 +166,12 @@ export default function App() {
   // Opens on the home screen: the recitation you were in the middle of is
   // more useful than the top of a list of a hundred and fourteen surahs.
   const [tab, setTabState] = useState<Tab>('home')
+  /*
+   * Which surface the layout is drawn for. Stamped on <html> before the first
+   * paint by the boot script; this hook only keeps React in agreement with it
+   * and re-resolves when the window or the pointer changes.
+   */
+  const { surface, choice: screenChoice, setChoice: setScreenChoice } = useSurface()
   /**
    * Changing tab is a screen change, so it cross-fades.
    *
@@ -1952,6 +1960,13 @@ export default function App() {
                   setAppearance(m)
                   void setPref('appearance', m)
                 }}
+              />
+
+              <SurfacePicker
+                t={t}
+                choice={screenChoice}
+                resolved={surface}
+                onChoose={setScreenChoice}
               />
 
               {/*

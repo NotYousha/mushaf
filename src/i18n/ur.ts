@@ -232,5 +232,16 @@ export const ur: Strings = {
     surfaceName: { player: 'پلیئر', card: 'ڈاک کارڈ' },
     dragToPosition: 'تصویر کو کھینچ کر منتقل کریں۔',
     zoom: 'زوم',
-    resetFraming: 'ری سیٹ'
+    resetFraming: 'ری سیٹ',
+    screen: 'اسکرین',
+    screenNote:
+      'خودکار طور پر منتخب ہوتی ہے۔ بڑا ٹیبلٹ اور ٹی وی براؤزر کو ایک جیسے لگتے ہیں، اس لیے اندازہ غلط ہو تو یہاں سے بدلیں۔',
+    screenNames: {
+      auto: 'خودکار',
+      phone: 'فون',
+      tablet: 'ٹیبلٹ',
+      desktop: 'کمپیوٹر',
+      tv: 'ٹی وی',
+      native: 'ایپ',
+    },
 }

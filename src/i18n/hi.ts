@@ -232,5 +232,16 @@ export const hi: Strings = {
     surfaceName: { player: 'प्लेयर', card: 'डॉक कार्ड' },
     dragToPosition: 'तस्वीर को खींचकर हिलाएँ।',
     zoom: 'ज़ूम',
-    resetFraming: 'रीसेट'
+    resetFraming: 'रीसेट',
+    screen: 'स्क्रीन',
+    screenNote:
+      'स्वचालित रूप से चुनी जाती है। बड़ा टैबलेट और टीवी ब्राउज़र को एक जैसे दिखते हैं, इसलिए अनुमान गलत हो तो यहाँ बदलें।',
+    screenNames: {
+      auto: 'स्वचालित',
+      phone: 'फ़ोन',
+      tablet: 'टैबलेट',
+      desktop: 'कंप्यूटर',
+      tv: 'टीवी',
+      native: 'ऐप',
+    },
 }
