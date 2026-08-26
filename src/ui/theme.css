@@ -3748,6 +3748,8 @@ body {
   .head-save:not(:disabled):hover {
     background: var(--tile);
   }
+}
+
 /* ============ the downloads list ============
    What is saved on the device, grouped by reciter, and the controls that
    remove it. Built to the same rules the rest of this file follows for touch:
