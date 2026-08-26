@@ -87,9 +87,17 @@
   --control: var(--ink-soft);
   --control-quiet: var(--muted);
 
-  /* Portrait crop. The source is a 555x764 portrait with the face at roughly
-     55% across and 30% down; these values centre it in the medallion.
-     Raise --face-zoom to crop tighter, lower --face-y to move the face up. */
+  /*
+   * Portrait crop, for a photograph that has not been cropped already.
+   *
+   * These frame Al-Dosari's 555x764 original, which is the only one left --
+   * every other portrait in public/ is cropped square on the face by
+   * scripts/crop-imam-photos.py before it ships. So the medallion overrides
+   * these back to 100/50/50 and names him as the exception; see the rule
+   * beside `.medallion[data-reciter='dosari']`. Do not add a reciter here.
+   *
+   * Raise --face-zoom to crop tighter, lower --face-y to move the face up.
+   */
   --face-zoom: 160%;
   --face-x: 63%;
   --face-y: 13%;
@@ -1374,25 +1382,41 @@ body {
   direction: ltr;
 }
 
-/* Each portrait is framed differently, so the crop is per reciter.
-   Barhaji's source is 302x662 — much narrower than Al-Dosari's 555x764 —
-   and needs its own zoom and offset to sit correctly in the medallion. */
 /*
- * The portraits are cropped square on the face before they ship, so the
- * frame needs no per-reciter nudging: one set of values is right for every
- * one of them, at every size, on every screen. The variables stay because
- * Al-Dosari's photo is still an uncropped original.
+ * Framing the medallion, the right way round.
+ *
+ * This used to be an allow-list: the --face-* defaults framed Al-Dosari's
+ * uncropped original, and each portrait that shipped cropped square was named
+ * here to opt back out to 100/50/50. That is backwards, and it silently broke
+ * every reciter added afterwards -- scripts/crop-imam-photos.py has cropped
+ * portraits square on the face for a long time now, so `sheikh.jpg` at 555x764
+ * is the only original left and every other file in public/ is 400x400 or
+ * 512x512.
+ *
+ * The list had four names in it and there are eight square portraits, so
+ * Alafasy and Al-Turki (Abdulaziz) were being blown up 160% and pushed to
+ * 63%/13% -- a crop into the forehead of a picture that was already framed.
+ * Al-Luhaidan would have been the ninth.
+ *
+ * So: square is the rule, and the one uncropped photograph is the exception.
+ * A portrait added tomorrow is framed correctly by doing nothing, which is the
+ * only version of this that stays correct.
  */
-.medallion[data-reciter='burhaji-nabawi'],
-.medallion[data-reciter='turki'],
-.medallion[data-reciter='juhany'],
-/* The same portrait reached by imam id rather than entry id: on a Taraweeh
-   year the medallion shows the surah's reciter, not the entry's. The other
-   ids happen to be identical in both spellings; this one is not. */
-.medallion[data-reciter='burhaji'] {
+.medallion {
   --face-zoom: 100%;
   --face-x: 50%;
   --face-y: 50%;
+}
+
+/*
+ * Al-Dosari's is the one photograph still shipping as an uncropped original,
+ * with his head high in a 555x764 frame. Centred, `cover` takes a band from
+ * the middle and cuts the top of the ghutra off.
+ */
+.medallion[data-reciter='dosari'] {
+  --face-zoom: 160%;
+  --face-x: 63%;
+  --face-y: 13%;
 }
 
 /* ============ verify + import panels ============ */

@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest'
+import { readFileSync } from 'node:fs'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { FacePanel, type FaceSubject } from '../src/ui/FacePanel'
@@ -134,5 +135,49 @@ describe('the photo settings', () => {
       expect(Boolean(r.photo), `${r.id} has no portrait and is not listed as faceless`)
         .toBe(!FACELESS.has(r.id))
     }
+  })
+})
+
+/*
+ * How a bundled portrait gets framed in the player's medallion.
+ *
+ * This was an allow-list and it rotted: the --face-* defaults framed
+ * Al-Dosari's uncropped 555x764 original, and each portrait that shipped
+ * cropped square had to be named to opt back out to 100/50/50. Four were
+ * named and there were eight, so Alafasy and Al-Turki were being blown up
+ * 160% and pushed to 63%/13% -- a crop into the forehead of a picture that
+ * was already framed -- and every reciter added afterwards inherited the same
+ * bug by default.
+ *
+ * It is now the other way round: square is the rule and the one uncropped
+ * photograph is the exception. These assertions exist so it cannot be turned
+ * back, because the failure is invisible in a diff and only shows up as one
+ * reciter's face looking wrong in a ring.
+ */
+describe('the medallion frames square portraits by default', () => {
+  // Comments stripped first: the prose beside these rules names the selector
+  // it is explaining, and a bare search would count that as a second override.
+  const css = readFileSync('src/ui/theme.css', 'utf8').replace(/\/\*[\s\S]*?\*\//g, '')
+
+  it('defaults to the whole picture, centred', () => {
+    const rule = /\.medallion \{\s*--face-zoom: 100%;\s*--face-x: 50%;\s*--face-y: 50%;\s*\}/
+    expect(css).toMatch(rule)
+  })
+
+  it('names exactly one reciter as the uncropped exception', () => {
+    const overrides = [
+      ...css.matchAll(/\.medallion\[data-reciter='([^']+)'\]\s*\{/g),
+    ].map((m) => m[1])
+    expect(overrides).toEqual(['dosari'])
+  })
+
+  /*
+   * The exception has to be a reciter who actually ships an uncropped
+   * original. If his photo is ever re-cropped square, the override must go
+   * with it rather than being left to crop a cropped picture.
+   */
+  it('is the reciter whose photo is still an original', () => {
+    const dosari = getReciters().find((r) => r.id === 'dosari')
+    expect(dosari?.photo).toBe('sheikh.jpg')
   })
 })
