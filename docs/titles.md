@@ -85,6 +85,24 @@ Devanagari; French uses ordinary French sentence capitalisation.
   a teacher; no doctorate in any source, so plain `الشيخ`. His mushaf circulates
   under app-store titles that name no origin, but the files themselves carry
   `TCOP="Reserved For KFGQPC"`.
+- **`minshawi`** — the only office any source gives him is his accreditation as
+  a reciter of Egyptian Radio in 1953, held until his death in 1969. The Grand
+  Mosque, the Prophet's Mosque and Al-Aqsa appear in his biography as places he
+  *recited on visits*, never as appointments. A broadcasting post is thinner
+  than the mosque offices elsewhere in this file, and it is what there is.
+- **`jaber`** — imam of the Grand Mosque by royal order in 1401 AH, and **imam
+  only**: the sources say إمام throughout and never خطيب, so he does not carry
+  the `إمام وخطيب` wording that Ash-Shuraim and Al-Ghamdi do. Doctorate 1407 AH
+  in الفقه المقارن, so `د.` is earned.
+- **`ghilan`** — the doctorate is real and does not rest on the YouTube playlist
+  title that prompted it: Al-Madinah International University's own news service
+  reports him holding a master's and doctorate in القراءات from its faculty.
+  Sources disagree on *which* university awarded it — the reciter catalogues say
+  the Islamic University of Madinah — but not on whether it exists, and the
+  entry names no institution, so the disagreement does not touch it. His office
+  could not be established: the widely repeated imamate of جامع ابن القيم traces
+  only to social-media captions of him leading a prayer there, which is the same
+  distinction drawn for `kalbani` and `bauthman`.
 
 ## Honorific only, no office
 

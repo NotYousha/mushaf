@@ -68,6 +68,10 @@ NAMES = {
     "khalil": "khalil",
     "husain-alsheikh": "alsheikh",
     "thubaiti": "thubaiti",
+    # On the Prophet's Mosque roster, so his portrait is written as an imam
+    # and data/imams.json picks it up. The catalog entry for his mushaf points
+    # at the same file rather than shipping a second copy of his face.
+    "ayyub": "ayyub",
 }
 
 SIDE = 400          # comfortably sharp on a 3x screen at 5.4rem
@@ -121,6 +125,17 @@ FRAMING = {
     # sits in the top third and a plain pass-through would put a shoulder in
     # the medallion. Tight, and high.
     "ossi": dict(zoom=175, cx=47, cy=33),
+    # Square already, and the head fills most of it: barely a crop, just enough
+    # to lose the calligraphy in the corners.
+    "minshawi": dict(zoom=112, cx=48, cy=44),
+    # A tall seated portrait, and the only one here where the subject is not
+    # near the middle: his face sits in the top fifth and right of centre, so
+    # the centred-and-high rule would give back a lap and a sofa arm.
+    "ali-jaber": dict(zoom=185, cx=58, cy=31),
+    # Square, cut out onto white, face high. Tight enough to fill the ring.
+    "gillan": dict(zoom=145, cx=45, cy=34),
+    # Square, head centred and large; the crop only trims the shoulders.
+    "ayyub": dict(zoom=118, cx=50, cy=42),
 }
 
 # Reciters the catalog names directly, and the file it asks for. These are the
@@ -132,6 +147,13 @@ RECITERS = {
     # he is named by the catalog and stays out of data/imams.json.
     "luhaidan": "luhaidan.webp",
     "ossi": "ossi.webp",
+    # Egypt, and dead since 1969 — no roster on earth lists him.
+    "minshawi": "minshawi.webp",
+    # He was an imam of the Grand Mosque, but this roster exists to attribute
+    # Taraweeh surahs to the man who led them, and he is in none of the years
+    # the app carries. A catalog reciter, then.
+    "ali-jaber": "ali-jaber.webp",
+    "gillan": "ghilan.webp",
 }
 
 

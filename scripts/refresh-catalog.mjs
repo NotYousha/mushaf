@@ -303,6 +303,90 @@ const SOURCES = {
     mushafEn: "Murattal mushaf, 2016 — King Fahd Glorious Qur'an Printing Complex",
     photo: 'ossi.webp',
   },
+  /*
+   * Al-Minshawi's Al-Mushaf Al-Murattal.
+   *
+   * The complete murattal, not the mujawwad and not the 1387 AH set, which
+   * stops at 110 surahs — see the note on the `mn` route in the Worker.
+   *
+   * No year is claimed. He recorded the murattal across studio tapes in the
+   * 1960s and the figure usually given is 1965, but nothing in these files
+   * says so: TPE1 names him and there is no TCOP and no recording date. A date
+   * in the subtitle would be repeating a claim this app cannot check.
+   */
+  minshawi: {
+    route: 'mn',
+    fixedCount: 114,
+    name: 'محمد صديق المنشاوي',
+    nameEn: 'Muhammad Siddiq Al-Minshawi',
+    fullName: 'الشيخ محمد صديق المنشاوي',
+    mushaf: 'المصحف المرتل',
+    mushafEn: 'Al-Mushaf Al-Murattal',
+    photo: 'minshawi.webp',
+  },
+  /* Ali Jaber's complete murattal. TPE1 names him and nothing else does, so
+     nothing else is claimed. */
+  jaber: {
+    route: 'aj',
+    fixedCount: 114,
+    name: 'علي جابر',
+    nameEn: 'Ali Jaber',
+    fullName: 'الشيخ علي بن عبد الله جابر',
+    mushaf: 'المصحف المرتل',
+    mushafEn: 'Murattal mushaf',
+    photo: 'ali-jaber.webp',
+  },
+  /*
+   * Muhammad Ayyub, the King Fahd Complex recording.
+   *
+   * Neither Ayyub set on mp3quran is clean, and they are different
+   * performances rather than one encoded twice. The other, labelled
+   * "المصحف المرتل" and carrying no copyright tag, loses nine surahs to the
+   * length check — several half again longer than his own median, which reads
+   * like a set assembled from more than one sitting.
+   *
+   * This is the one tied to the Complex: TCOP="Reserved For KFGQPC" on every
+   * file, and a TIT2 naming its own surah. Four of its files are truncated —
+   * 31, 32, 52 and 54, at about 0.53 of the same surah in the other set
+   * against a baseline of 0.81 — so 110 of 114 ship and those four are left
+   * out rather than served as though whole.
+   *
+   * The subtitle says the Complex, because the files do. It does not say 1411
+   * AH: that attribution is very likely right and is simply not something
+   * these recordings can be made to show.
+   *
+   * His portrait is the roster's: he is on the Prophet's Mosque roster, so
+   * data/imams.json owns the file and this points at it rather than shipping
+   * a second copy of the same face.
+   */
+  ayyub: {
+    route: 'ay',
+    fixedCount: 114,
+    name: 'محمد أيوب',
+    nameEn: 'Muhammad Ayyub',
+    fullName: 'الشيخ محمد أيوب بن محمد يوسف',
+    mushaf: 'المصحف المرتل — إنتاج مجمع الملك فهد لطباعة المصحف الشريف',
+    mushafEn: "Murattal mushaf — King Fahd Glorious Qur'an Printing Complex",
+    partialOk: true,
+    photo: 'imam-ayyub.webp',
+  },
+  /*
+   * Abdullah Muhammad Ghilan — not عبدالبديع غيلان, who is a different man
+   * with his own complete mushaf on the same host.
+   *
+   * Every file carries the KFGQPC copyright and a TIT2 naming its own surah,
+   * and TPE1 reads "Abdullah Muhammad Ghaylan عبدالله غيلان".
+   */
+  ghilan: {
+    route: 'gh',
+    fixedCount: 114,
+    name: 'عبد الله غيلان',
+    nameEn: 'Abdullah Ghilan',
+    fullName: 'الشيخ عبد الله بن محمد غيلان',
+    mushaf: 'المصحف المرتل — إنتاج مجمع الملك فهد لطباعة المصحف الشريف',
+    mushafEn: "Murattal mushaf — King Fahd Glorious Qur'an Printing Complex",
+    photo: 'ghilan.webp',
+  },
   buayjan: {
     route: 'bu',
     name: 'عبد الله البعيجان',

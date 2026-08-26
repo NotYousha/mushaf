@@ -24,7 +24,7 @@
  "burhaji": {"name": "محمد برهجي", "nameEn": "Muhammad Burhaji", "match": "برهجي", "serves": ["madinah"], "photo": "imam-burhaji.webp"},
  "maghamsi": {"name": "صالح المغامسي", "nameEn": "Salih Al-Maghamsi", "match": "المغامسي", "serves": ["madinah"], "photo": "imam-maghamsi.webp"},
  "khalil": {"name": "محمد خليل القارئ", "nameEn": "Muhammad Khalil Al-Qari", "match": "محمد خليل", "serves": ["madinah"], "photo": "imam-khalil.webp"},
- "ayyub": {"name": "محمد أيوب", "nameEn": "Muhammad Ayyub", "match": "أيوب", "serves": ["madinah"]},
+ "ayyub": {"name": "محمد أيوب", "nameEn": "Muhammad Ayyub", "match": "أيوب", "serves": ["madinah"], "photo": "imam-ayyub.webp"},
  "alsheikh": {"name": "حسين آل الشيخ", "nameEn": "Husain Al ash-Sheikh", "match": "آل الشيخ", "serves": ["madinah"], "photo": "imam-alsheikh.webp"},
  "thubaiti": {"name": "عبد الباري الثبيتي", "nameEn": "Abdul Bari Ath-Thubaiti", "match": "الثبيتي", "serves": ["madinah"], "photo": "imam-thubaiti.webp"},
  "humaid": {"name": "أحمد بن طالب بن حميد", "nameEn": "Ahmad bin Talib bin Humaid", "match": "بن حميد", "serves": ["madinah"], "photo": "imam-humaid.webp"}

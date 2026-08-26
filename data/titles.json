@@ -316,7 +316,7 @@
    "fr": "Ancien imam de la Mosquée du Prophète (m. 2016)",
    "hi": "मस्जिद-ए-नबवी के पूर्व इमाम (देहांत 2016)"
   },
-  "source": "https://en.wikipedia.org/wiki/Muhammad_Ayyub"
+  "source": "https://ar.wikipedia.org/wiki/%D9%85%D8%AD%D9%85%D8%AF_%D8%A3%D9%8A%D9%88%D8%A8"
  },
  "khalil": {
   "short": { "ar": "الشيخ", "en": "Sh.", "ur": "شیخ", "fr": "Cheikh", "hi": "शेख़" },
@@ -369,6 +369,32 @@
  "sudais-ali": {
   "short": { "ar": "الشيخ", "en": "Sh.", "ur": "شیخ", "fr": "Cheikh", "hi": "शेख़" },
   "source": "https://ar.wikipedia.org/wiki/%D8%B9%D9%84%D9%8A_%D8%A7%D9%84%D8%B3%D8%AF%D9%8A%D8%B3"
+ },
+ "minshawi": {
+  "short": { "ar": "الشيخ", "en": "Sh.", "ur": "شیخ", "fr": "Cheikh", "hi": "शेख़" },
+  "full": {
+   "ar": "قارئ بالإذاعة المصرية (ت ١٩٦٩م)",
+   "en": "Reciter of Egyptian Radio (d. 1969)",
+   "ur": "مصری ریڈیو کے قاری (وفات ۱۹۶۹ء)",
+   "fr": "Récitateur de la Radio égyptienne (m. 1969)",
+   "hi": "मिस्री रेडियो के क़ारी (देहांत 1969)"
+  },
+  "source": "https://ar.wikipedia.org/wiki/%D9%85%D8%AD%D9%85%D8%AF_%D8%B5%D8%AF%D9%8A%D9%82_%D8%A7%D9%84%D9%85%D9%86%D8%B4%D8%A7%D9%88%D9%8A"
+ },
+ "jaber": {
+  "short": { "ar": "الشيخ د.", "en": "Sh. Dr.", "ur": "شیخ ڈاکٹر", "fr": "Cheikh Dr", "hi": "शेख़ डॉ." },
+  "full": {
+   "ar": "إمام سابق للمسجد الحرام (ت ٢٠٠٥م)",
+   "en": "Former imam of the Grand Mosque (d. 2005)",
+   "ur": "مسجدِ حرام کے سابق امام (وفات ۲۰۰۵ء)",
+   "fr": "Ancien imam de la Grande Mosquée de La Mecque (m. 2005)",
+   "hi": "मस्जिद-ए-हराम के पूर्व इमाम (देहांत 2005)"
+  },
+  "source": "https://ar.wikipedia.org/wiki/%D8%B9%D9%84%D9%8A_%D8%B9%D8%A8%D8%AF_%D8%A7%D9%84%D9%84%D9%87_%D8%AC%D8%A7%D8%A8%D8%B1"
+ },
+ "ghilan": {
+  "short": { "ar": "الشيخ د.", "en": "Sh. Dr.", "ur": "شیخ ڈاکٹر", "fr": "Cheikh Dr", "hi": "शेख़ डॉ." },
+  "source": "https://news.mediu.edu.my/%D9%81%D8%B6%D9%8A%D9%84%D8%A9-%D8%A7%D9%84%D8%B4%D9%8A%D8%AE-%D8%A7%D9%84%D8%AF%D9%83%D8%AA%D9%88%D8%B1-%D8%B9%D8%A8%D8%AF%D8%A7%D9%84%D9%84%D9%87-%D8%BA%D9%8A%D9%84%D8%A7%D9%86-%D9%8A%D8%B2%D9%88/?lang=ar"
  },
  "afasy": {
   "short": { "ar": "الشيخ", "en": "Sh.", "ur": "شیخ", "fr": "Cheikh", "hi": "शेख़" },

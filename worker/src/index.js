@@ -524,6 +524,65 @@ const MP3QURAN = {
     base: 'https://server6.mp3quran.net/aloosi',
     name: 'Al-Ossi — King Fahd Complex',
   },
+  /*
+   * Muhammad Siddiq Al-Minshawi's Al-Mushaf Al-Murattal.
+   *
+   * mp3quran carries four Minshawi sets and only this one is the complete
+   * murattal: `minsh1387` is the 1387 AH recording and stops at 110 surahs,
+   * and the other two are the mujawwad and the mu'allim, which are different
+   * readings rather than different files of the same one.
+   *
+   * The files name him — TPE1 "Muhammad Siddiq Al-Minshawi" — and nothing
+   * more. There is no TCOP and no recording date in the tags, so the catalog
+   * entry claims neither.
+   */
+  mn: {
+    base: 'https://server10.mp3quran.net/minsh',
+    name: 'Al-Minshawi — Al-Mushaf Al-Murattal',
+  },
+  /* Ali Jaber's complete murattal. TPE1 names him; no copyright tag, so no
+     production is claimed for it. */
+  aj: {
+    base: 'https://server11.mp3quran.net/a_jbr',
+    name: 'Ali Jaber — Murattal',
+  },
+  /*
+   * Muhammad Ayyub, the King Fahd Complex recording.
+   *
+   * Neither of the two Ayyub sets mp3quran carries is clean, and they are
+   * different performances rather than one encoded twice.
+   *
+   * `ayyub/` is labelled "المصحف المرتل" and carries no copyright tag; nine of
+   * its surahs fail the length check, several of them half again longer than
+   * his own median, which reads like a set assembled from more than one
+   * sitting. 105 of 114 survive.
+   *
+   * This one carries TCOP="Reserved For KFGQPC" on every file and a TIT2 that
+   * names its own surah, which is what ties it to the Complex. Four of its
+   * files — 31, 32, 52 and 54 — are short: about 0.53 of the same surah in the
+   * other set, against a baseline of 0.81 across the healthy ones, so they are
+   * truncated copies rather than a different reading. 110 of 114 survive, and
+   * the four are left out rather than served as though whole.
+   *
+   * That is a defect in this host's files, not in the recording. If a complete
+   * copy of the Complex's Ayyub turns up, those four are what to fill.
+   */
+  ay: {
+    base: 'https://server16.mp3quran.net/ayyoub2/Rewayat-Hafs-A-n-Assem',
+    name: 'Muhammad Ayyub — King Fahd Complex',
+  },
+  /*
+   * Abdullah Muhammad Ghilan.
+   *
+   * Not عبدالبديع غيلان, who is a different man with his own complete mushaf
+   * on the same host — the two are one letter apart in a list and would be
+   * easy to swap. TPE1 here reads "Abdullah Muhammad Ghaylan عبدالله غيلان",
+   * and every file carries the KFGQPC copyright and names its own surah.
+   */
+  gh: {
+    base: 'https://server8.mp3quran.net/gulan',
+    name: 'Abdullah Ghilan — King Fahd Complex',
+  },
 }
 
 const resolveMp3Quran = (site, surah) =>
@@ -919,6 +978,36 @@ const ROUTES = {
     ttl: HARAMAIN_PAGE_TTL,
     resolve: (surah) => resolveMp3Quran(MP3QURAN.ao, surah),
     name: MP3QURAN.ao.name,
+  },
+  mn: {
+    ttl: HARAMAIN_PAGE_TTL,
+    resolve: (surah) => resolveMp3Quran(MP3QURAN.mn, surah),
+    name: MP3QURAN.mn.name,
+  },
+  aj: {
+    ttl: HARAMAIN_PAGE_TTL,
+    resolve: (surah) => resolveMp3Quran(MP3QURAN.aj, surah),
+    name: MP3QURAN.aj.name,
+  },
+  ay: {
+    ttl: HARAMAIN_PAGE_TTL,
+    /*
+     * A fresh namespace, because this route pointed at the other Ayyub set for
+     * one deploy while the two were being compared.
+     *
+     * The resolved URL is memoised for the route's whole TTL, so changing the
+     * base alone leaves the Worker handing out the old target for seven days —
+     * and a refresh run against it measures a mix of two performances, which is
+     * how a set that scored 110 came back as 100. Same trick `sd` uses.
+     */
+    ns: 'ay-kfgqpc',
+    resolve: (surah) => resolveMp3Quran(MP3QURAN.ay, surah),
+    name: MP3QURAN.ay.name,
+  },
+  gh: {
+    ttl: HARAMAIN_PAGE_TTL,
+    resolve: (surah) => resolveMp3Quran(MP3QURAN.gh, surah),
+    name: MP3QURAN.gh.name,
   },
   af: {
     ttl: HARAMAIN_PAGE_TTL,
