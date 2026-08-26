@@ -473,6 +473,37 @@ const QURANICAUDIO = {
 const resolveQuranicAudio = (site, surah) =>
   `https://download.quranicaudio.com/quran/${site.path}/${String(surah).padStart(3, '0')}.mp3`
 
+/* ---------------- complete mushafs on mp3quran ----------------
+ * The same shape again — a directory of 001.mp3 .. 114.mp3, ranges, no index —
+ * but on its own host, and kept separate because the provenance story is
+ * different and belongs next to the entry it is about rather than in a shared
+ * comment.
+ *
+ * Al-Luhaidan's is a King Fahd Complex production, and that is read off the
+ * files rather than taken from a listing: every one carries
+ * TCOP="Reserved For KFGQPC / حقوق التسجيل محفوظة لمجمع الملك فهد". Worth
+ * checking that this is not boilerplate, and it is not — As-Sudais's and
+ * Al-Buayjan's mushafs on the same host carry no TCOP at all.
+ *
+ * So this is his studio murattal, not the Taraweeh compilation of 1446 that
+ * circulates under the name "المصحف الكامل". That compilation does exist as
+ * an archive.org item of 114 files, and it is a different performance — three
+ * to forty per cent apart from this one surah by surah — but it is encoded at
+ * 64 kbps where this is a steady 128, its bitrate is not even consistent
+ * within itself, and it carries no ID3 at all, so nothing in it says whose
+ * recording it is or which Ramadan it came from. This one can be shown to be
+ * what it claims. All 114 answered a range request before it was added.
+ */
+const MP3QURAN = {
+  lh: {
+    base: 'https://server8.mp3quran.net/lhdan',
+    name: 'Al-Luhaidan — King Fahd Complex',
+  },
+}
+
+const resolveMp3Quran = (site, surah) =>
+  `${site.base}/${String(surah).padStart(3, '0')}.mp3`
+
 /* ---------------- the two mosques, by year ----------------
  * Unlike the mushafs above, these are not one sheikh's. Taraweeh and Tahajjud
  * rotate imams across the month, so attribution belongs per surah rather than
@@ -789,7 +820,7 @@ async function publishedSurahs(key, ctx, opts) {
       .map(Number)
       .sort((x, y) => x - y)
   }
-  if (QURANICAUDIO[key] || key === 'b') {
+  if (QURANICAUDIO[key] || MP3QURAN[key] || key === 'b') {
     return Array.from({ length: SURAH_COUNT }, (_, i) => i + 1)
   }
   const err = new Error(`unknown route ${key}`)
@@ -853,6 +884,11 @@ const ROUTES = {
     ttl: HARAMAIN_PAGE_TTL,
     resolve: (surah) => resolveQuranicAudio(QURANICAUDIO.jq, surah),
     name: QURANICAUDIO.jq.name,
+  },
+  lh: {
+    ttl: HARAMAIN_PAGE_TTL,
+    resolve: (surah) => resolveMp3Quran(MP3QURAN.lh, surah),
+    name: MP3QURAN.lh.name,
   },
   af: {
     ttl: HARAMAIN_PAGE_TTL,

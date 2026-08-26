@@ -241,6 +241,39 @@ const SOURCES = {
     // murattal that used to sit beside this one has been removed.
     photo: 'imam-sudais.webp',
   },
+  /**
+   * Al-Luhaidan's complete mushaf, produced by the King Fahd Complex.
+   *
+   * Added on a request for "the latest complete compilation", which is
+   * circulated as the Taraweeh of 1446. This is not that, and the difference
+   * is worth stating rather than papering over. That compilation does exist —
+   * an archive.org item of 114 files uploaded in October 2025 — and it is a
+   * genuinely different performance, three to forty per cent apart from this
+   * one surah by surah. But it is 64 kbps where this is a steady 128, its
+   * bitrate is not even consistent within itself, and it carries no ID3 at
+   * all, so nothing in it says whose recitation it is or which Ramadan it came
+   * from. Its only provenance is an uploader's description.
+   *
+   * This one can be shown to be what it says. Every file carries
+   * TCOP="Reserved For KFGQPC" — the King Fahd Glorious Qur'an Printing
+   * Complex — and that is not a boilerplate tag mp3quran stamps on everything:
+   * As-Sudais's and Al-Buayjan's mushafs on the same host carry no TCOP at all.
+   *
+   * No portrait yet, so the card shows his name without a face rather than
+   * borrowing somebody else's, and he stays off the home screen, which is for
+   * mushafs that have one.
+   */
+  luhaidan: {
+    route: 'lh',
+    // complete; no need to ask
+    fixedCount: 114,
+    name: 'محمد اللحيدان',
+    nameEn: 'Muhammad Al-Luhaidan',
+    fullName: 'الشيخ محمد بن عبد الله اللحيدان',
+    mushaf: 'المصحف المرتل — إنتاج مجمع الملك فهد لطباعة المصحف الشريف',
+    mushafEn: "Murattal mushaf — King Fahd Glorious Qur'an Printing Complex",
+    photo: null,
+  },
   buayjan: {
     route: 'bu',
     name: 'عبد الله البعيجان',

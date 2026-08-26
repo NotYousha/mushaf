@@ -113,7 +113,23 @@ describe('the photo settings', () => {
     for (const r of individual) {
       expect(html, r.id).toContain(esc(r.nameEn))
     }
-    // Every one of them ships a portrait, so every one is framable.
-    expect(individual.every((r) => r.photo)).toBe(true)
+    /**
+     * Almost every one ships a portrait, and the ones that do not are named.
+     *
+     * A bundled portrait is a claim about who a man is, so a reciter added
+     * without one keeps a blank ring rather than borrowing a face that might
+     * be somebody else's — the failure this file was written against is a
+     * reciter appearing under the wrong portrait, not under none. Listing him
+     * here is the point: this panel is where a face gets supplied, so a
+     * faceless entry has to reach it to stop being faceless.
+     *
+     * Drop public/<id>.webp in and set `photo` in the source entry to close
+     * one of these out.
+     */
+    const FACELESS = new Set(['luhaidan'])
+    for (const r of individual) {
+      expect(Boolean(r.photo), `${r.id} has no portrait and is not listed as faceless`)
+        .toBe(!FACELESS.has(r.id))
+    }
   })
 })
