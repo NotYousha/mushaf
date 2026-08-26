@@ -58,7 +58,18 @@ from a user.
 - `phone` — coarse pointer, viewport under 48rem.
 - `tablet` — coarse pointer, 48rem and up.
 - `desktop` — fine pointer with hover, 64rem and up.
-- `tv` — no hover, 80rem and up, and either a coarse pointer or none at all.
+- `tv` — no hover, and either a television platform named in the user agent or
+  96rem and up with no fine pointer.
+
+  **96rem, not 80rem.** Writing the resolver showed 80rem to be wrong: an iPad
+  Pro in landscape is 1366 CSS px, coarse-pointered and hoverless, so it clears
+  80rem and is otherwise indistinguishable from a television through a media
+  query — that bar would have sent every iPad to the 10-foot UI. And the reverse
+  error exists too: Android TV's browser commonly reports 1280 px at 1.5×
+  device pixel ratio, which is *narrower* than the tablet, so no width test can
+  find it. Hence the user-agent signal, which is usually the wrong answer and is
+  the right one here, since TV platforms all announce themselves and none of
+  them is also a tablet. What neither signal settles, the override settles.
 - `native` — a native shell has declared itself; `isNativeShell()` already
   answers this and keeps precedence, because the platform owns the chrome there
   regardless of screen size.
