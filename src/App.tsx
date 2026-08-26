@@ -122,6 +122,9 @@ import './ui/themes.css'
 import './ui/glass.css'
 import './ui/motion.css'
 import './ui/desktop.css'
+// After desktop.css, so a surface rule wins a tie against what is left of
+// the width queries there.
+import './ui/surfaces.css'
 import './ui/home.css'
 
 type Tab = 'home' | 'quran' | 'library' | 'text' | 'hifz' | 'more'

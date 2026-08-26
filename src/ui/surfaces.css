@@ -1,0 +1,156 @@
+/* =====================================================================
+   Geometry per surface
+   ---------------------------------------------------------------------
+   desktop.css grew a stack of min-width steps trying to say "tablet" and
+   "desktop" in pixels. The surface is now named on <html> before the page
+   paints, so these say it directly — which is not only shorter, it is the
+   only way a television layout can be selected on a laptop and looked at.
+
+   What stayed a media query in desktop.css stayed for a reason: a phone on
+   its side is a very short screen rather than a small tablet, and hover is
+   about a pointer rather than a class of device.
+   ===================================================================== */
+
+/* ---------------------------------------------------------------------
+   Tablet — the split view
+   ---------------------------------------------------------------------
+   An iPad in portrait is 768 or 834 wide. The old rules capped the column
+   at 42rem and centred it, so a third of the screen sat empty on either
+   side and tapping a surah replaced the list you were reading it from.
+
+   The fix is not a wider column. It is two panes, with the list one
+   persisting — push navigation is right on a phone and wrong the moment
+   there is room to show both.
+   --------------------------------------------------------------------- */
+[data-surface='tablet'] .app {
+  max-width: none;
+  padding-inline: var(--space-4);
+}
+
+[data-surface='tablet'] .split {
+  display: grid;
+  /* The list keeps a fixed measure and the reader takes the rest: a surah
+     list gains nothing from growing, and the page has a measure anyway. */
+  grid-template-columns: 20rem minmax(0, 1fr);
+  gap: var(--space-4);
+  align-items: start;
+}
+
+[data-surface='tablet'] .split-list {
+  position: sticky;
+  top: 0;
+  /* Its own scroller, so the list does not drag the reader with it. */
+  max-height: 100dvh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/*
+ * Landscape: the page takes the height, and the list gives way to a rail it
+ * can be pulled back out of.
+ *
+ * A 15-line page is the point of the app, and 1024x768 has the height for it
+ * only if nothing else claims it. Note this is `orientation`, not the
+ * `max-height: 30rem` query in desktop.css — that one is about a phone on its
+ * side, which is a very short screen and a different problem.
+ */
+@media (orientation: landscape) {
+  [data-surface='tablet'] .split {
+    grid-template-columns: 4.5rem minmax(0, 1fr);
+  }
+
+  [data-surface='tablet'] .split-list:not(.is-open) .row-main,
+  [data-surface='tablet'] .split-list:not(.is-open) .name-plain {
+    display: none;
+  }
+
+  [data-surface='tablet'] .split-list.is-open {
+    /* Over the reader rather than shoving it, so opening the list does not
+       reflow the page being read. */
+    position: fixed;
+    inset-block: 0;
+    inset-inline-start: 0;
+    width: 20rem;
+    z-index: 5;
+    box-shadow: var(--shadow-lg);
+    background: var(--bg);
+  }
+}
+
+/* A tablet is still a touch device. 44pt stays 44pt. */
+[data-surface='tablet'] .row,
+[data-surface='tablet'] .dock-tab,
+[data-surface='tablet'] .screen-option {
+  min-height: 2.75rem;
+}
+
+/* ---------------------------------------------------------------------
+   Two lines of a surah name fit once there is width for them, so the
+   meaning can sit beside the name rather than under it. Moved here from
+   the 40rem and 48rem steps, which existed only to interpolate.
+   --------------------------------------------------------------------- */
+[data-surface='tablet'] .name-plain,
+[data-surface='desktop'] .name-plain {
+  font-size: 0.86rem;
+}
+
+[data-surface='tablet'] .dock-tab,
+[data-surface='desktop'] .dock-tab {
+  font-size: 0.72rem;
+}
+
+/* ---------------------------------------------------------------------
+   The screen picker
+   ---------------------------------------------------------------------
+   Shown on every surface, because the surface it is most needed on is the
+   one the app guessed wrong — and you cannot reach a setting that hides
+   itself on the layout you are trying to leave.
+   --------------------------------------------------------------------- */
+.screen-note {
+  color: var(--muted);
+  font-size: var(--text-xs);
+  margin: 0 0 var(--space-3);
+  max-width: 44ch;
+}
+
+.screen-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.screen-option {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  border: 0;
+  background: var(--tile);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--text-xs);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+}
+
+.screen-option[aria-checked='true'] {
+  background: linear-gradient(var(--tile-active-a), var(--tile-active-b));
+  color: var(--tile-active-ink);
+}
+
+/* What `auto` currently lands on. Shown so the guess is visible rather than
+   something to be inferred from the layout you are looking at. */
+.screen-resolved {
+  color: inherit;
+  opacity: 0.7;
+}
+
+.screen-resolved::before {
+  content: '·';
+  margin-inline-end: 0.35em;
+}
+
+.screen-option:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}

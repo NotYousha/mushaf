@@ -156,231 +156,215 @@
    --------------------------------------------------------------------- */
 /* Large phones and unfolded foldables sat frozen at exactly 480px with the
    margins growing around them all the way to 640. */
-@media (min-width: 30rem) {
-  .app {
-    max-width: 36rem;
-  }
-}
 
-@media (min-width: 40rem) {
-  .app {
-    max-width: 34rem;
-  }
 
-  /* Two lines of a surah name fit comfortably now, so the meaning can sit
-     beside the name rather than under it. */
-  .name-plain {
-    font-size: 0.86rem;
-  }
-}
+
 
 /* An iPad in portrait is 768 or 834 wide and the rail does not arrive until
    1024, so without this it showed a 544px phone column with a third of the
    screen empty on either side. */
-@media (min-width: 48rem) {
-  .app {
-    max-width: 42rem;
-  }
 
-  .dock-tab {
-    font-size: 0.72rem;
-  }
-}
 
 /* ---------------------------------------------------------------------
    Desktop: rail beside the reading column
+   ---------------------------------------------------------------------
+   Was @media (min-width: 64rem). Keyed off the named surface instead, so
+   the desktop layout can be selected deliberately rather than only
+   arrived at by dragging a window wide — and so a coarse-pointered
+   tablet at 1100px stops inheriting a layout built for a mouse.
    --------------------------------------------------------------------- */
-@media (min-width: 64rem) {
-  .app {
-    max-width: 68rem;
-    display: grid;
-    grid-template-columns: 15rem minmax(0, 1fr);
-    grid-template-areas: 'rail main';
-    align-items: stretch;
-    gap: var(--space-4);
-    padding-inline: var(--space-4);
-  }
-
-  .sheet {
-    grid-area: main;
-    margin: var(--space-4) 0;
-    /* Past this the row's name and its controls drift so far apart that the
-       eye stops connecting them. */
-    max-width: 46rem;
-    margin-inline: auto;
-    width: 100%;
-  }
-
+[data-surface='desktop'] .app {
   /*
-   * The dock unfolds into a rail. It leaves the fixed layer entirely —
-   * on a pointer device there is no scrolling-away to do, so it simply
-   * sits in the grid and never overlaps what is being read.
+   * One cap, not two. This was 68rem with a second rule lifting it to 76rem
+   * past 90rem; that step existed only to interpolate between breakpoints
+   * that no longer exist now the surface is named, and the wider value is the
+   * one that was winning on any real desktop anyway.
    */
-  .dock {
-    grid-area: rail;
-    position: static;
-    flex-direction: column;
-    flex-wrap: nowrap;
-    align-items: stretch;
-    justify-content: flex-start;
-    gap: var(--space-3);
-    padding: var(--space-4) 0;
-    max-width: none;
-    margin: 0;
-  }
-
-  .dock-tabs {
-    order: 1;
-    flex: none;
-    flex-direction: column;
-    align-items: stretch;
-    height: auto;
-    padding: var(--space-2);
-    border-radius: var(--radius-lg);
-  }
-
-  .dock-tab {
-    /* Icon and label on one line, as a sidebar item reads. */
-    grid-auto-flow: column;
-    grid-template-columns: 1.6rem 1fr;
-    justify-items: start;
-    align-items: center;
-    gap: var(--space-2);
-    max-width: none;
-    padding: 0.7rem var(--space-3);
-    font-size: 0.9rem;
-    border-radius: var(--radius-sm);
-  }
-
-  /* Nothing folds away on a desktop: there is no scroll gesture to
-     trigger it and no screen height to reclaim. */
-  .dock.is-tight .dock-tab:not([aria-selected='true']) {
-    max-width: none;
-    padding-inline: var(--space-3);
-    opacity: 1;
-  }
-
-  .dock.is-tight .dock-tab span {
-    display: block;
-  }
-
-  .dock.is-tight .dock-tabs {
-    flex-grow: 0;
-  }
-
-  /*
-   * On the rail the capsule becomes a card: artwork across the top, then the
-   * transport side by side underneath. Laid out as a grid rather than a
-   * column so the two buttons share a row without needing a wrapper element
-   * that would only exist for desktop.
-   */
-  .now-capsule,
-  .dock.is-tight .now-capsule {
-    order: 2;
-    flex: none;
-    --cap-basis: auto;
-    height: auto;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    align-items: stretch;
-    gap: var(--space-2);
-    padding: var(--space-3);
-    border-radius: var(--radius-lg);
-  }
-
-  .cap-open {
-    grid-column: 1 / -1;
-  }
-
-  .cap-open {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: var(--space-2);
-    margin-bottom: var(--space-1);
-  }
-
-  /* Room for real artwork once there is a rail to put it in. */
-  .cap-art {
-    width: 8rem;
-    height: 8rem;
-    border-radius: var(--radius-md);
-  }
-
-  .cap-text {
-    text-align: center;
-    width: 100%;
-  }
-
-  .cap-title {
-    font-size: 1.15rem;
-    white-space: normal;
-  }
-
-  .now-capsule .cap-btn {
-    width: 100%;
-    height: 2.8rem;
-    border-radius: var(--radius-sm);
-    background: rgb(var(--shadow-rgb) / 0.05);
-  }
-
-  .dock-circle {
-    order: 3;
-    width: 100%;
-    height: 3.2rem;
-    border-radius: var(--radius-sm);
-    grid-auto-flow: column;
-    grid-template-columns: 1.6rem 1fr;
-    justify-items: start;
-    align-items: center;
-    gap: var(--space-2);
-    padding-inline: var(--space-3);
-  }
-
-  .dock-circle-label {
-    display: block;
-    font-size: 0.9rem;
-  }
-
-  /* The sheet belongs over the reading column, not the rail. */
-  .player {
-    inset-inline-start: auto;
-    inset-inline-end: auto;
-    max-width: 40rem;
-  }
-
-  .scroll {
-    padding-bottom: var(--space-4);
-  }
-
-  /*
-   * A printed page has a measure, and it does not grow because the window
-   * did. Past this width the page stops widening and centres instead, so
-   * a line of Uthmani never runs further than an eye can track.
-   */
-  .mushaf-page,
-  .paged-mushaf {
-    max-width: 34rem;
-    margin-inline: auto;
-  }
-
-  .theme-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
-  .heat {
-    grid-template-columns: repeat(44, 1fr);
-  }
+  max-width: 76rem;
+  display: grid;
+  grid-template-columns: 15rem minmax(0, 1fr);
+  grid-template-areas: 'rail main';
+  align-items: stretch;
+  gap: var(--space-4);
+  padding-inline: var(--space-4);
 }
+
+[data-surface='desktop'] .sheet {
+  grid-area: main;
+  margin: var(--space-4) 0;
+  /* Past this the row's name and its controls drift so far apart that the
+     eye stops connecting them. */
+  max-width: 46rem;
+  margin-inline: auto;
+  width: 100%;
+}
+
+/*
+ * The dock unfolds into a rail. It leaves the fixed layer entirely —
+ * on a pointer device there is no scrolling-away to do, so it simply
+ * sits in the grid and never overlaps what is being read.
+ */
+[data-surface='desktop'] .dock {
+  grid-area: rail;
+  position: static;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4) 0;
+  max-width: none;
+  margin: 0;
+}
+
+[data-surface='desktop'] .dock-tabs {
+  order: 1;
+  flex: none;
+  flex-direction: column;
+  align-items: stretch;
+  height: auto;
+  padding: var(--space-2);
+  border-radius: var(--radius-lg);
+}
+
+[data-surface='desktop'] .dock-tab {
+  /* Icon and label on one line, as a sidebar item reads. */
+  grid-auto-flow: column;
+  grid-template-columns: 1.6rem 1fr;
+  justify-items: start;
+  align-items: center;
+  gap: var(--space-2);
+  max-width: none;
+  padding: 0.7rem var(--space-3);
+  font-size: 0.9rem;
+  border-radius: var(--radius-sm);
+}
+
+/* Nothing folds away on a desktop: there is no scroll gesture to
+   trigger it and no screen height to reclaim. */
+[data-surface='desktop'] .dock.is-tight .dock-tab:not([aria-selected='true']) {
+  max-width: none;
+  padding-inline: var(--space-3);
+  opacity: 1;
+}
+
+[data-surface='desktop'] .dock.is-tight .dock-tab span {
+  display: block;
+}
+
+[data-surface='desktop'] .dock.is-tight .dock-tabs {
+  flex-grow: 0;
+}
+
+/*
+ * On the rail the capsule becomes a card: artwork across the top, then the
+ * transport side by side underneath. Laid out as a grid rather than a
+ * column so the two buttons share a row without needing a wrapper element
+ * that would only exist for desktop.
+ */
+[data-surface='desktop'] .now-capsule,
+[data-surface='desktop'] .dock.is-tight .now-capsule {
+  order: 2;
+  flex: none;
+  --cap-basis: auto;
+  height: auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: stretch;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
+}
+
+[data-surface='desktop'] .cap-open {
+  grid-column: 1 / -1;
+}
+
+[data-surface='desktop'] .cap-open {
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-1);
+}
+
+/* Room for real artwork once there is a rail to put it in. */
+[data-surface='desktop'] .cap-art {
+  width: 8rem;
+  height: 8rem;
+  border-radius: var(--radius-md);
+}
+
+[data-surface='desktop'] .cap-text {
+  text-align: center;
+  width: 100%;
+}
+
+[data-surface='desktop'] .cap-title {
+  font-size: 1.15rem;
+  white-space: normal;
+}
+
+[data-surface='desktop'] .now-capsule .cap-btn {
+  width: 100%;
+  height: 2.8rem;
+  border-radius: var(--radius-sm);
+  background: rgb(var(--shadow-rgb) / 0.05);
+}
+
+[data-surface='desktop'] .dock-circle {
+  order: 3;
+  width: 100%;
+  height: 3.2rem;
+  border-radius: var(--radius-sm);
+  grid-auto-flow: column;
+  grid-template-columns: 1.6rem 1fr;
+  justify-items: start;
+  align-items: center;
+  gap: var(--space-2);
+  padding-inline: var(--space-3);
+}
+
+[data-surface='desktop'] .dock-circle-label {
+  display: block;
+  font-size: 0.9rem;
+}
+
+/* The sheet belongs over the reading column, not the rail. */
+[data-surface='desktop'] .player {
+  inset-inline-start: auto;
+  inset-inline-end: auto;
+  max-width: 40rem;
+}
+
+[data-surface='desktop'] .scroll {
+  padding-bottom: var(--space-4);
+}
+
+/*
+ * A printed page has a measure, and it does not grow because the window
+ * did. Past this width the page stops widening and centres instead, so
+ * a line of Uthmani never runs further than an eye can track.
+ */
+[data-surface='desktop'] .mushaf-page,
+[data-surface='desktop'] .paged-mushaf {
+  max-width: 34rem;
+  margin-inline: auto;
+}
+
+[data-surface='desktop'] .theme-grid {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+[data-surface='desktop'] .heat {
+  grid-template-columns: repeat(44, 1fr);
+}
+
 
 /* ---------------------------------------------------------------------
    Very wide: stop growing, start centring
    --------------------------------------------------------------------- */
-@media (min-width: 90rem) {
-  .app {
-    max-width: 76rem;
-  }
-}
+
 
 /*
  * A second column was tried here and removed. CSS columns flow top to bottom
