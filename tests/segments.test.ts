@@ -181,3 +181,97 @@ describe('changeovers land inside the recording', () => {
     expect(list[list.length - 1][0]).toBeLessThan(length)
   })
 })
+
+/**
+ * A changeover must be a measured onset, not a typed second.
+ *
+ * This is the fault the "next reciter" button was reported for: it landed a
+ * second or two before the handover, so pressing it left you in the previous
+ * imam's last phrase. The times come from chapter lists typed by hand under
+ * the uploads, and a whole second is as fine as anyone types — but a typist
+ * writes the second they notice the change, which is before the new voice
+ * actually opens. Measured against the audio, forty of those marks moved a
+ * median 1.06s later, and that lateness is exactly what a listener heard.
+ *
+ * A whole second is therefore a smell here, and this pins every handover that
+ * still is one. Integer-ness is only a proxy for provenance, though, and it
+ * has two kinds of exception — so each entry says which it is:
+ *
+ *   "no pause"  the onset could not be measured. No detectable quiet around
+ *               the mark: the imam runs straight on, or the mark is somewhere
+ *               else entirely. Measurement declined rather than guessed, and
+ *               these are the ones still likely to feel a beat early.
+ *   "measured"  the onset WAS measured and happens to land on a whole second.
+ *               Nothing wrong with it; it just cannot be told from a typed
+ *               mark by looking at the number.
+ *
+ * Any other whole-second handover means an unmeasured mark has been added —
+ * most likely build-segments.mjs re-run without refine-segments.mjs after it.
+ * Removing an entry when it does get measured is the point of having the list.
+ */
+describe('changeovers are measured, not typed', () => {
+  // 1447's stored values are on the player's clock, a flat 0.997705 of true
+  // time, so a typed second survives there as that second times the factor.
+  const ELEMENT_FACTOR = 15963.28 / 16000
+
+  const WHOLE_SECONDS: Record<string, 'no pause' | 'measured'> = {
+    '1447:2@1836.78': 'measured',
+    '1447:6@319.27': 'no pause',
+    '1447:7@3148.76': 'no pause',
+    '1446:6@2136': 'measured',
+    '1446:7@1317': 'no pause',
+    '1446:7@2231.98': 'measured',
+    '1446:9@296': 'no pause',
+    '1446:9@1238': 'no pause',
+    '1446:9@2406': 'no pause',
+    '1446:12@1050': 'measured',
+    '1446:23@522': 'no pause',
+    '1446:25@562': 'no pause',
+    '1446:26@653': 'no pause',
+    '1446:35@305': 'no pause',
+    '1446:38@305': 'no pause',
+    '1446:40@486': 'no pause',
+    '1446:41@432': 'no pause',
+    '1446:58@342': 'no pause',
+  }
+
+  /** Every handover in the data, as `year:surah@at`. */
+  const handovers = () => {
+    const out: { id: string; whole: boolean }[] = []
+    for (const [key, surahs] of Object.entries(doc)) {
+      const year = Number(key.split('-')[1])
+      for (const [surah, list] of Object.entries(surahs)) {
+        list.forEach(([at], i) => {
+          // The opening entry is not a handover — it is whoever starts the
+          // file, and 4 is a true value there rather than a typed one.
+          if (i === 0) return
+          const trueSecond = year === 1447 ? at / ELEMENT_FACTOR : at
+          out.push({ id: `${year}:${surah}@${at}`, whole: Math.abs(trueSecond - Math.round(trueSecond)) <= 0.02 })
+        })
+      }
+    }
+    return out
+  }
+
+  it('carries no whole second that is not accounted for', () => {
+    const unexplained = handovers().filter((h) => h.whole && !(h.id in WHOLE_SECONDS))
+    expect(unexplained.map((h) => h.id)).toEqual([])
+  })
+
+  // A stale entry is worse than none: it accounts for a boundary that has
+  // since moved, and hides the next real one.
+  it('accounts for nothing that is no longer there', () => {
+    const present = new Set(handovers().map((h) => h.id))
+    for (const id of Object.keys(WHOLE_SECONDS)) {
+      expect(present.has(id), `${id} is not in the data`).toBe(true)
+    }
+  })
+
+  // The majority were measurable, and that is what makes the button land on
+  // the voice. If this ratio collapses, the refinement pass did not run.
+  it('has measured the large majority of handovers', () => {
+    const all = handovers()
+    const unmeasured = all.filter((h) => WHOLE_SECONDS[h.id] === 'no pause').length
+    expect(all.length - unmeasured).toBeGreaterThan(all.length * 0.85)
+  })
+})
