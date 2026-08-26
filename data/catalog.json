@@ -12962,6 +12962,818 @@
      "verified": true
     }
    ]
+  },
+  {
+   "id": "ossi",
+   "name": "عبد الرحمن العوسي",
+   "nameEn": "Abdul Rahman Al-Ossi",
+   "fullName": "الشيخ عبد الرحمن بن عبد العزيز العوسي",
+   "mushaf": "المصحف المرتل ١٤٣٧ — إنتاج مجمع الملك فهد لطباعة المصحف الشريف",
+   "mushafEn": "Murattal mushaf, 2016 — King Fahd Glorious Qur'an Printing Complex",
+   "source": "https://mushaf-audio.mushaftarteel.workers.dev/ao/{surah}.mp3",
+   "photo": "ossi.webp",
+   "released": 114,
+   "total": 114,
+   "surahs": [
+    {
+     "surah": 1,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/1.mp3",
+     "fallbackUrl": null,
+     "bytes": 808930,
+     "verified": true
+    },
+    {
+     "surah": 2,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/2.mp3",
+     "fallbackUrl": null,
+     "bytes": 114144830,
+     "verified": true
+    },
+    {
+     "surah": 3,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/3.mp3",
+     "fallbackUrl": null,
+     "bytes": 68682576,
+     "verified": true
+    },
+    {
+     "surah": 4,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/4.mp3",
+     "fallbackUrl": null,
+     "bytes": 75847646,
+     "verified": true
+    },
+    {
+     "surah": 5,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/5.mp3",
+     "fallbackUrl": null,
+     "bytes": 58420006,
+     "verified": true
+    },
+    {
+     "surah": 6,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/6.mp3",
+     "fallbackUrl": null,
+     "bytes": 60520249,
+     "verified": true
+    },
+    {
+     "surah": 7,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/7.mp3",
+     "fallbackUrl": null,
+     "bytes": 69490489,
+     "verified": true
+    },
+    {
+     "surah": 8,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/8.mp3",
+     "fallbackUrl": null,
+     "bytes": 26238819,
+     "verified": true
+    },
+    {
+     "surah": 9,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/9.mp3",
+     "fallbackUrl": null,
+     "bytes": 49165133,
+     "verified": true
+    },
+    {
+     "surah": 10,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/10.mp3",
+     "fallbackUrl": null,
+     "bytes": 34852113,
+     "verified": true
+    },
+    {
+     "surah": 11,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/11.mp3",
+     "fallbackUrl": null,
+     "bytes": 38528896,
+     "verified": true
+    },
+    {
+     "surah": 12,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/12.mp3",
+     "fallbackUrl": null,
+     "bytes": 39403270,
+     "verified": true
+    },
+    {
+     "surah": 13,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/13.mp3",
+     "fallbackUrl": null,
+     "bytes": 19181573,
+     "verified": true
+    },
+    {
+     "surah": 14,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/14.mp3",
+     "fallbackUrl": null,
+     "bytes": 18109094,
+     "verified": true
+    },
+    {
+     "surah": 15,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/15.mp3",
+     "fallbackUrl": null,
+     "bytes": 15029566,
+     "verified": true
+    },
+    {
+     "surah": 16,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/16.mp3",
+     "fallbackUrl": null,
+     "bytes": 39387810,
+     "verified": true
+    },
+    {
+     "surah": 17,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/17.mp3",
+     "fallbackUrl": null,
+     "bytes": 30375361,
+     "verified": true
+    },
+    {
+     "surah": 18,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/18.mp3",
+     "fallbackUrl": null,
+     "bytes": 27372737,
+     "verified": true
+    },
+    {
+     "surah": 19,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/19.mp3",
+     "fallbackUrl": null,
+     "bytes": 18960888,
+     "verified": true
+    },
+    {
+     "surah": 20,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/20.mp3",
+     "fallbackUrl": null,
+     "bytes": 24890052,
+     "verified": true
+    },
+    {
+     "surah": 21,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/21.mp3",
+     "fallbackUrl": null,
+     "bytes": 27345997,
+     "verified": true
+    },
+    {
+     "surah": 22,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/22.mp3",
+     "fallbackUrl": null,
+     "bytes": 24242221,
+     "verified": true
+    },
+    {
+     "surah": 23,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/23.mp3",
+     "fallbackUrl": null,
+     "bytes": 21086641,
+     "verified": true
+    },
+    {
+     "surah": 24,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/24.mp3",
+     "fallbackUrl": null,
+     "bytes": 28856073,
+     "verified": true
+    },
+    {
+     "surah": 25,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/25.mp3",
+     "fallbackUrl": null,
+     "bytes": 17584557,
+     "verified": true
+    },
+    {
+     "surah": 26,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/26.mp3",
+     "fallbackUrl": null,
+     "bytes": 30318104,
+     "verified": true
+    },
+    {
+     "surah": 27,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/27.mp3",
+     "fallbackUrl": null,
+     "bytes": 24854533,
+     "verified": true
+    },
+    {
+     "surah": 28,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/28.mp3",
+     "fallbackUrl": null,
+     "bytes": 28612823,
+     "verified": true
+    },
+    {
+     "surah": 29,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/29.mp3",
+     "fallbackUrl": null,
+     "bytes": 21611180,
+     "verified": true
+    },
+    {
+     "surah": 30,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/30.mp3",
+     "fallbackUrl": null,
+     "bytes": 18934140,
+     "verified": true
+    },
+    {
+     "surah": 31,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/31.mp3",
+     "fallbackUrl": null,
+     "bytes": 11206493,
+     "verified": true
+    },
+    {
+     "surah": 32,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/32.mp3",
+     "fallbackUrl": null,
+     "bytes": 8148708,
+     "verified": true
+    },
+    {
+     "surah": 33,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/33.mp3",
+     "fallbackUrl": null,
+     "bytes": 25280438,
+     "verified": true
+    },
+    {
+     "surah": 34,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/34.mp3",
+     "fallbackUrl": null,
+     "bytes": 18326840,
+     "verified": true
+    },
+    {
+     "surah": 35,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/35.mp3",
+     "fallbackUrl": null,
+     "bytes": 16232449,
+     "verified": true
+    },
+    {
+     "surah": 36,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/36.mp3",
+     "fallbackUrl": null,
+     "bytes": 15637272,
+     "verified": true
+    },
+    {
+     "surah": 37,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/37.mp3",
+     "fallbackUrl": null,
+     "bytes": 19539770,
+     "verified": true
+    },
+    {
+     "surah": 38,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/38.mp3",
+     "fallbackUrl": null,
+     "bytes": 15558273,
+     "verified": true
+    },
+    {
+     "surah": 39,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/39.mp3",
+     "fallbackUrl": null,
+     "bytes": 23812980,
+     "verified": true
+    },
+    {
+     "surah": 40,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/40.mp3",
+     "fallbackUrl": null,
+     "bytes": 24627160,
+     "verified": true
+    },
+    {
+     "surah": 41,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/41.mp3",
+     "fallbackUrl": null,
+     "bytes": 17683606,
+     "verified": true
+    },
+    {
+     "surah": 42,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/42.mp3",
+     "fallbackUrl": null,
+     "bytes": 16830557,
+     "verified": true
+    },
+    {
+     "surah": 43,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/43.mp3",
+     "fallbackUrl": null,
+     "bytes": 19420655,
+     "verified": true
+    },
+    {
+     "surah": 44,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/44.mp3",
+     "fallbackUrl": null,
+     "bytes": 8223941,
+     "verified": true
+    },
+    {
+     "surah": 45,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/45.mp3",
+     "fallbackUrl": null,
+     "bytes": 9618675,
+     "verified": true
+    },
+    {
+     "surah": 46,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/46.mp3",
+     "fallbackUrl": null,
+     "bytes": 11473157,
+     "verified": true
+    },
+    {
+     "surah": 47,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/47.mp3",
+     "fallbackUrl": null,
+     "bytes": 9398819,
+     "verified": true
+    },
+    {
+     "surah": 48,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/48.mp3",
+     "fallbackUrl": null,
+     "bytes": 9485756,
+     "verified": true
+    },
+    {
+     "surah": 49,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/49.mp3",
+     "fallbackUrl": null,
+     "bytes": 7734932,
+     "verified": true
+    },
+    {
+     "surah": 50,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/50.mp3",
+     "fallbackUrl": null,
+     "bytes": 7752049,
+     "verified": true
+    },
+    {
+     "surah": 51,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/51.mp3",
+     "fallbackUrl": null,
+     "bytes": 7917584,
+     "verified": true
+    },
+    {
+     "surah": 52,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/52.mp3",
+     "fallbackUrl": null,
+     "bytes": 7090849,
+     "verified": true
+    },
+    {
+     "surah": 53,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/53.mp3",
+     "fallbackUrl": null,
+     "bytes": 7141841,
+     "verified": true
+    },
+    {
+     "surah": 54,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/54.mp3",
+     "fallbackUrl": null,
+     "bytes": 7697727,
+     "verified": true
+    },
+    {
+     "surah": 55,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/55.mp3",
+     "fallbackUrl": null,
+     "bytes": 9476565,
+     "verified": true
+    },
+    {
+     "surah": 56,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/56.mp3",
+     "fallbackUrl": null,
+     "bytes": 9535500,
+     "verified": true
+    },
+    {
+     "surah": 57,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/57.mp3",
+     "fallbackUrl": null,
+     "bytes": 11203571,
+     "verified": true
+    },
+    {
+     "surah": 58,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/58.mp3",
+     "fallbackUrl": null,
+     "bytes": 9259651,
+     "verified": true
+    },
+    {
+     "surah": 59,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/59.mp3",
+     "fallbackUrl": null,
+     "bytes": 8521943,
+     "verified": true
+    },
+    {
+     "surah": 60,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/60.mp3",
+     "fallbackUrl": null,
+     "bytes": 6682098,
+     "verified": true
+    },
+    {
+     "surah": 61,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/61.mp3",
+     "fallbackUrl": null,
+     "bytes": 4142982,
+     "verified": true
+    },
+    {
+     "surah": 62,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/62.mp3",
+     "fallbackUrl": null,
+     "bytes": 3179593,
+     "verified": true
+    },
+    {
+     "surah": 63,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/63.mp3",
+     "fallbackUrl": null,
+     "bytes": 3610935,
+     "verified": true
+    },
+    {
+     "surah": 64,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/64.mp3",
+     "fallbackUrl": null,
+     "bytes": 4343194,
+     "verified": true
+    },
+    {
+     "surah": 65,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/65.mp3",
+     "fallbackUrl": null,
+     "bytes": 5558614,
+     "verified": true
+    },
+    {
+     "surah": 66,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/66.mp3",
+     "fallbackUrl": null,
+     "bytes": 5091339,
+     "verified": true
+    },
+    {
+     "surah": 67,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/67.mp3",
+     "fallbackUrl": null,
+     "bytes": 5838644,
+     "verified": true
+    },
+    {
+     "surah": 68,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/68.mp3",
+     "fallbackUrl": null,
+     "bytes": 6174684,
+     "verified": true
+    },
+    {
+     "surah": 69,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/69.mp3",
+     "fallbackUrl": null,
+     "bytes": 5608353,
+     "verified": true
+    },
+    {
+     "surah": 70,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/70.mp3",
+     "fallbackUrl": null,
+     "bytes": 4655827,
+     "verified": true
+    },
+    {
+     "surah": 71,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/71.mp3",
+     "fallbackUrl": null,
+     "bytes": 4247047,
+     "verified": true
+    },
+    {
+     "surah": 72,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/72.mp3",
+     "fallbackUrl": null,
+     "bytes": 5353391,
+     "verified": true
+    },
+    {
+     "surah": 73,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/73.mp3",
+     "fallbackUrl": null,
+     "bytes": 3892633,
+     "verified": true
+    },
+    {
+     "surah": 74,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/74.mp3",
+     "fallbackUrl": null,
+     "bytes": 5658932,
+     "verified": true
+    },
+    {
+     "surah": 75,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/75.mp3",
+     "fallbackUrl": null,
+     "bytes": 3487631,
+     "verified": true
+    },
+    {
+     "surah": 76,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/76.mp3",
+     "fallbackUrl": null,
+     "bytes": 5128536,
+     "verified": true
+    },
+    {
+     "surah": 77,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/77.mp3",
+     "fallbackUrl": null,
+     "bytes": 4328150,
+     "verified": true
+    },
+    {
+     "surah": 78,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/78.mp3",
+     "fallbackUrl": null,
+     "bytes": 3863788,
+     "verified": true
+    },
+    {
+     "surah": 79,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/79.mp3",
+     "fallbackUrl": null,
+     "bytes": 3768501,
+     "verified": true
+    },
+    {
+     "surah": 80,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/80.mp3",
+     "fallbackUrl": null,
+     "bytes": 3199645,
+     "verified": true
+    },
+    {
+     "surah": 81,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/81.mp3",
+     "fallbackUrl": null,
+     "bytes": 2232916,
+     "verified": true
+    },
+    {
+     "surah": 82,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/82.mp3",
+     "fallbackUrl": null,
+     "bytes": 1822065,
+     "verified": true
+    },
+    {
+     "surah": 83,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/83.mp3",
+     "fallbackUrl": null,
+     "bytes": 3864635,
+     "verified": true
+    },
+    {
+     "surah": 84,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/84.mp3",
+     "fallbackUrl": null,
+     "bytes": 2246713,
+     "verified": true
+    },
+    {
+     "surah": 85,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/85.mp3",
+     "fallbackUrl": null,
+     "bytes": 2271365,
+     "verified": true
+    },
+    {
+     "surah": 86,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/86.mp3",
+     "fallbackUrl": null,
+     "bytes": 2777932,
+     "verified": true
+    },
+    {
+     "surah": 87,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/87.mp3",
+     "fallbackUrl": null,
+     "bytes": 1545369,
+     "verified": true
+    },
+    {
+     "surah": 88,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/88.mp3",
+     "fallbackUrl": null,
+     "bytes": 1964589,
+     "verified": true
+    },
+    {
+     "surah": 89,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/89.mp3",
+     "fallbackUrl": null,
+     "bytes": 2996522,
+     "verified": true
+    },
+    {
+     "surah": 90,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/90.mp3",
+     "fallbackUrl": null,
+     "bytes": 1739301,
+     "verified": true
+    },
+    {
+     "surah": 91,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/91.mp3",
+     "fallbackUrl": null,
+     "bytes": 1288324,
+     "verified": true
+    },
+    {
+     "surah": 92,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/92.mp3",
+     "fallbackUrl": null,
+     "bytes": 1657798,
+     "verified": true
+    },
+    {
+     "surah": 93,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/93.mp3",
+     "fallbackUrl": null,
+     "bytes": 940580,
+     "verified": true
+    },
+    {
+     "surah": 94,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/94.mp3",
+     "fallbackUrl": null,
+     "bytes": 618336,
+     "verified": true
+    },
+    {
+     "surah": 95,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/95.mp3",
+     "fallbackUrl": null,
+     "bytes": 915502,
+     "verified": true
+    },
+    {
+     "surah": 96,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/96.mp3",
+     "fallbackUrl": null,
+     "bytes": 1463030,
+     "verified": true
+    },
+    {
+     "surah": 97,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/97.mp3",
+     "fallbackUrl": null,
+     "bytes": 689387,
+     "verified": true
+    },
+    {
+     "surah": 98,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/98.mp3",
+     "fallbackUrl": null,
+     "bytes": 1847976,
+     "verified": true
+    },
+    {
+     "surah": 99,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/99.mp3",
+     "fallbackUrl": null,
+     "bytes": 860340,
+     "verified": true
+    },
+    {
+     "surah": 100,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/100.mp3",
+     "fallbackUrl": null,
+     "bytes": 935574,
+     "verified": true
+    },
+    {
+     "surah": 101,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/101.mp3",
+     "fallbackUrl": null,
+     "bytes": 933064,
+     "verified": true
+    },
+    {
+     "surah": 102,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/102.mp3",
+     "fallbackUrl": null,
+     "bytes": 743730,
+     "verified": true
+    },
+    {
+     "surah": 103,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/103.mp3",
+     "fallbackUrl": null,
+     "bytes": 397651,
+     "verified": true
+    },
+    {
+     "surah": 104,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/104.mp3",
+     "fallbackUrl": null,
+     "bytes": 791374,
+     "verified": true
+    },
+    {
+     "surah": 105,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/105.mp3",
+     "fallbackUrl": null,
+     "bytes": 586986,
+     "verified": true
+    },
+    {
+     "surah": 106,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/106.mp3",
+     "fallbackUrl": null,
+     "bytes": 513424,
+     "verified": true
+    },
+    {
+     "surah": 107,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/107.mp3",
+     "fallbackUrl": null,
+     "bytes": 689392,
+     "verified": true
+    },
+    {
+     "surah": 108,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/108.mp3",
+     "fallbackUrl": null,
+     "bytes": 396820,
+     "verified": true
+    },
+    {
+     "surah": 109,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/109.mp3",
+     "fallbackUrl": null,
+     "bytes": 700681,
+     "verified": true
+    },
+    {
+     "surah": 110,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/110.mp3",
+     "fallbackUrl": null,
+     "bytes": 485005,
+     "verified": true
+    },
+    {
+     "surah": 111,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/111.mp3",
+     "fallbackUrl": null,
+     "bytes": 593675,
+     "verified": true
+    },
+    {
+     "surah": 112,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/112.mp3",
+     "fallbackUrl": null,
+     "bytes": 350846,
+     "verified": true
+    },
+    {
+     "surah": 113,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/113.mp3",
+     "fallbackUrl": null,
+     "bytes": 497127,
+     "verified": true
+    },
+    {
+     "surah": 114,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/ao/114.mp3",
+     "fallbackUrl": null,
+     "bytes": 535577,
+     "verified": true
+    }
+   ]
   }
  ]
 }
