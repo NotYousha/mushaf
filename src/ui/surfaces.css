@@ -27,6 +27,16 @@
   padding-inline: var(--space-4);
 }
 
+/*
+ * The sheet is the pane container's parent and caps its own width. On a tablet
+ * that cap was the whole problem -- a 42rem column centred in an 834pt screen --
+ * so here it stands down and lets the split use the width.
+ */
+[data-surface='tablet'] .sheet {
+  max-width: none;
+  width: 100%;
+}
+
 [data-surface='tablet'] .split {
   display: grid;
   /* The list keeps a fixed measure and the reader takes the rest: a surah

@@ -38,6 +38,7 @@ import {
 import { nextSurah, nextVoiceChange, prevSurah, type RepeatMode } from './player/playQueue'
 import { getQuota, requestPersistence, canDownloadAll } from './storage/quota'
 import { SurahList, plainName } from './ui/SurahList'
+import { SplitView, splits } from './ui/SplitView'
 import { FavouritesPanel } from './ui/FavouritesPanel'
 import { HomePanel, type HomeFace, type HomeResume } from './ui/HomePanel'
 import { HOME_RECITERS } from './catalog/home'
@@ -1534,6 +1535,32 @@ export default function App() {
     [t, openText],
   )
 
+  /*
+   * The surah list, defined once.
+   *
+   * On a phone it renders inside the scroller as it always has. On a tablet or
+   * a desktop the same element is lifted into a pane that persists, so playing
+   * a surah no longer throws away the place in the list you played it from --
+   * which is the whole difference between an iPad app and a stretched phone.
+   */
+  const surahList = (
+    <SurahList
+      surahs={filtered}
+      reciterId={reciterId}
+      lang={lang}
+      t={t}
+      downloaded={downloadedHere}
+      partials={partialsHere}
+      progress={progress}
+      current={current}
+      playing={playing}
+      verified={isVerified}
+      rejected={rejected}
+      onPlay={startSurah}
+      onDownload={startDownload}
+    />
+  )
+
   const pct = duration ? (time / duration) * 100 : 0
 
   return (
@@ -1614,6 +1641,13 @@ export default function App() {
           </div>
         )}
 
+        {/*
+            Two panes on a tablet and a desktop, one everywhere else.
+
+            On a surface that does not split, this renders the scroller with no
+            wrapper element at all, so the phone's DOM is exactly what it was.
+        */}
+        <SplitView surface={surface} list={surahList}>
         <div className="scroll" ref={scrollRef}>
           {tab === 'home' && (
             <HomePanel
@@ -1641,23 +1675,9 @@ export default function App() {
             />
           )}
 
-          {tab === 'quran' && (
-            <SurahList
-              surahs={filtered}
-              reciterId={reciterId}
-              lang={lang}
-              t={t}
-              downloaded={downloadedHere}
-              partials={partialsHere}
-              progress={progress}
-              current={current}
-              playing={playing}
-              verified={isVerified}
-              rejected={rejected}
-              onPlay={startSurah}
-              onDownload={startDownload}
-            />
-          )}
+          {/* On a splitting surface this same list lives in the pane beside
+              the reader, so rendering it here as well would show it twice. */}
+          {tab === 'quran' && !splits(surface) && surahList}
 
           {tab === 'library' && (
             <div className="panel">
@@ -2029,6 +2049,7 @@ export default function App() {
             </div>
           )}
         </div>
+        </SplitView>
       </div>
 
       {currentView && reciter && (!playerMin || leaving) && (
