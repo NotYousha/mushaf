@@ -39,7 +39,6 @@ import { nextSurah, nextVoiceChange, prevSurah, type RepeatMode } from './player
 import { getQuota, requestPersistence, canDownloadAll } from './storage/quota'
 import { SurahList, plainName } from './ui/SurahList'
 import { FavouritesPanel } from './ui/FavouritesPanel'
-import { ImamPanel } from './ui/ImamPanel'
 import { HomePanel, type HomeFace, type HomeResume } from './ui/HomePanel'
 import { HOME_RECITERS } from './catalog/home'
 import { withTransition } from './ui/transition'
@@ -172,6 +171,39 @@ export default function App() {
    * none, because the app then animates unpredictably.
    */
   const setTab = useCallback((next: Tab) => withTransition(() => setTabState(next)), [])
+
+  /**
+   * The screen a reciter was chosen from, so the surah list can offer it back.
+   *
+   * Choosing a reciter is a drill-in: it replaces the whole screen with that
+   * reciter's surahs and, until now, left no way back except the dock — which
+   * does not know whether the reader arrived from the home screen or from the
+   * full roster, and would have guessed wrong half the time.
+   *
+   * Cleared whenever a tab is chosen from the dock, because that is not a
+   * drill-in and a back arrow pointing at a screen nobody came from is worse
+   * than none.
+   */
+  const [cameFrom, setCameFrom] = useState<Tab | null>(null)
+  const drillTo = useCallback(
+    (from: Tab, next: Tab) => {
+      setCameFrom(from)
+      setTab(next)
+    },
+    [setTab],
+  )
+  const goBack = useCallback(() => {
+    const to = cameFrom
+    setCameFrom(null)
+    if (to) setTab(to)
+  }, [cameFrom, setTab])
+  const pickTab = useCallback(
+    (next: Tab) => {
+      setCameFrom(null)
+      setTab(next)
+    },
+    [setTab],
+  )
   const [query, setQuery] = useState('')
   const [quota, setQuota] = useState({ usage: 0, quota: 0, free: 0 })
   const [error, setError] = useState<string | null>(null)
@@ -1467,10 +1499,10 @@ export default function App() {
        * home screen's reciter section opens it with "See all", which is where
        * someone looking for the whole collection would reach for it anyway.
        */
-      { id: 'home', label: t.tabHome, icon: <HomeIcon size={21} />, onSelect: () => setTab('home') },
-      { id: 'quran', label: t.tabQuran, icon: <QuranMark size={21} />, onSelect: () => setTab('quran') },
+      { id: 'home', label: t.tabHome, icon: <HomeIcon size={21} />, onSelect: () => pickTab('home') },
+      { id: 'quran', label: t.tabQuran, icon: <QuranMark size={21} />, onSelect: () => pickTab('quran') },
       { id: 'text', label: t.tabText, icon: <Broadcast size={21} />, onSelect: openText },
-      { id: 'hifz', label: t.tabHifz, icon: <Heart size={21} />, onSelect: () => setTab('hifz') },
+      { id: 'hifz', label: t.tabHifz, icon: <Heart size={21} />, onSelect: () => pickTab('hifz') },
       { id: 'more', label: t.tabMore, icon: <More size={21} />, onSelect: () => setTab('more') },
     ],
     [t, openText],
@@ -1486,6 +1518,18 @@ export default function App() {
             so the shared one, which is a player header, stands down there. */}
         {tab !== 'home' && (
         <div className="sheet-head">
+          {/*
+              Back to the screen this was opened from, when there is one.
+
+              Placed at the leading edge, which is the left in English and the
+              right in Arabic — a back arrow belongs where the reading starts,
+              and the icon is mirrored by the same rule.
+          */}
+          {cameFrom && (
+            <button type="button" className="sheet-back" onClick={goBack} aria-label={t.back}>
+              <Back size={20} />
+            </button>
+          )}
           {/* The same mark the home screen carries. Without it the header on
               every other tab was the wordmark set in Amiri and nothing else,
               which is the app's name in a typeface rather than its logo. */}
@@ -1560,7 +1604,7 @@ export default function App() {
               }}
               onPickReciter={(id) => {
                 void switchReciter(id)
-                setTab('quran')
+                drillTo('home', 'quran')
               }}
               onSeeAll={() => setTab('library')}
               onSearch={() => {
@@ -1609,14 +1653,21 @@ export default function App() {
                 onPick={(id) => {
                   setYearsOpen(null)
                   void switchReciter(id)
-                  setTab('quran')
+                  drillTo('library', 'quran')
                 }}
                 onTogglePlace={(place) =>
                   setYearsOpen(yearsOpen === place ? null : (place as Place))
                 }
-              />
+                /*
+                  Drawn under the card that opened it, not after both cards.
 
-            {PLACES.map((m) => {
+                  Rendering the two year lists after the panel meant the
+                  Grand Mosque's years unfolded below the Prophet's Mosque
+                  card, which reads as the wrong mosque having opened.
+                */
+                renderYears={(place) => {
+                  const m = PLACES.find((x) => x.place === place)
+                  if (!m) return null
               const years = mosqueYears.get(m.place) ?? []
               if (!years.length) return null
               const open = yearsOpen === m.place
@@ -1659,6 +1710,9 @@ export default function App() {
                             onClick={() => {
                               setYearsOpen(null)
                               void switchReciter(r.id)
+                              // A year is a reciter too: same drill-in, so the
+                              // surah list can offer the roster back.
+                              drillTo('library', 'quran')
                             }}
                           >
                             <span className="year-num">
@@ -1714,7 +1768,9 @@ export default function App() {
                   </div>
                 </section>
               )
-            })}
+                }}
+              />
+
 
               <FavouritesPanel
                 t={t}
@@ -1733,20 +1789,6 @@ export default function App() {
                 }}
               />
 
-              <ImamPanel
-                t={t}
-                lang={lang}
-                surahMeta={surahMeta}
-                faces={faces}
-                onPlay={(id, surah, at) => {
-                  requestPlay(id, surah, at)
-                  setTab('quran')
-                }}
-                onOpenYear={(id) => {
-                  void switchReciter(id)
-                  setTab('quran')
-                }}
-              />
 
               <h2 style={{ marginTop: '1.6rem' }}>{t.storage}</h2>
               <p>{t.storageIntro}</p>

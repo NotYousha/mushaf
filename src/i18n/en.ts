@@ -177,6 +177,8 @@ export const en = {
    *  reciters: a Ramadan is thirty nights and a dozen imams. */
   taraweeh: 'Taraweeh',
   /** The first tab: what the app opens on. */
+  /** The control that returns to the screen a reciter was chosen from. */
+  back: 'Back',
   tabHome: 'Home',
   /** Label over the card that takes you back to where you stopped. */
   continueReading: 'Continue Reading',

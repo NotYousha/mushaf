@@ -163,6 +163,7 @@ export const ur: Strings = {
    *  reciters: a Ramadan is thirty nights and a dozen imams. */
   taraweeh: 'تراویح',
   /** The first tab: what the app opens on. */
+  back: 'واپس',
   tabHome: 'ہوم',
   /** Label over the card that takes you back to where you stopped. */
   continueReading: 'پڑھنا جاری رکھیں',

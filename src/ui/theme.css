@@ -3597,3 +3597,35 @@ body {
   min-inline-size: 0;
   margin-inline-end: auto;
 }
+
+/*
+ * Back to where a reciter was chosen from.
+ *
+ * At the leading edge, which is the left in English and the right in Arabic.
+ * The arrow is mirrored with the direction for the same reason the position
+ * is: back means "the way you came", and in a right-to-left reading that is
+ * the other way round.
+ */
+.sheet-back {
+  flex: none;
+  display: grid;
+  place-items: center;
+  inline-size: 2.5rem;
+  block-size: 2.5rem;
+  border-radius: 50%;
+  border: 1px solid var(--accent-line);
+  background: var(--card);
+  color: var(--control);
+  cursor: pointer;
+  padding: 0;
+}
+
+:root[dir='rtl'] .sheet-back svg {
+  transform: scaleX(-1);
+}
+
+@media (hover: hover) {
+  .sheet-back:hover {
+    background: var(--tile);
+  }
+}
