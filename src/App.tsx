@@ -1652,9 +1652,18 @@ export default function App() {
               faces={homeFaces}
               onResume={() => {
                 if (current === null) return
-                // Back to exactly where the playhead was left, not to zero.
+                /*
+                    Play, and stay.
+
+                    This used to open the surah list as well, which answers a
+                    question nobody asked: the card names the surah and the
+                    place in it, so pressing it means "continue", not "show me
+                    the other hundred and thirteen". The dock's capsule is the
+                    confirmation, and it appears without going anywhere.
+
+                    Back to exactly where the playhead was left, not to zero.
+                */
                 requestPlay(reciterId, current, time)
-                setTab('quran')
               }}
               onPickReciter={(id) => {
                 void switchReciter(id)
