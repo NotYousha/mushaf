@@ -5,6 +5,7 @@ export const hi: Strings = {
   dir: 'ltr' as 'ltr' | 'rtl',
   appTitle: 'क़ुरआन',
   search: 'सूरह खोजें',
+  searchReciters: 'क़ारी खोजें',
   surahWord: 'سُورَةُ',
 
   tabLibrary: 'लाइब्रेरी',

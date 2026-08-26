@@ -47,6 +47,20 @@ export const Pause = ({ size }: P) => (
   </svg>
 )
 
+/**
+ * A plain arrow, for going back a screen.
+ *
+ * `Back` below is two stacked triangles — a rewind, which is what it is for
+ * in the transport. Using it in the header said "skip to the beginning" where
+ * the button means "the screen you came from", and it read as a rewind
+ * because it is one.
+ */
+export const ArrowBack = ({ size }: P) => (
+  <svg {...s(size)} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M15 5 8 12l7 7" />
+  </svg>
+)
+
 export const Back = ({ size }: P) => (
   <svg {...s(size)} fill="currentColor">
     <path d="M11.6 6.3c0-.8-.9-1.3-1.6-.9L3.5 9.5c-.7.4-.7 1.4 0 1.8l6.5 4.1c.7.4 1.6-.1 1.6-.9V6.3Z" />

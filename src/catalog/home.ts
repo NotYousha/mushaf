@@ -9,7 +9,8 @@
  * choice has to be made somewhere a person can see it.
  *
  * The order here is the order on screen, which is why it is a list and not a
- * set. It also means the home screen can be arranged without reordering the
+ * set. Six of them, which fills two rows of three evenly — five left a row of
+ * two and a row of three, and the odd one out reads as an omission. It also means the home screen can be arranged without reordering the
  * catalogue, and reordering the catalogue would move the reciter strip on the
  * Quran tab as well.
  *
@@ -19,6 +20,7 @@ export const HOME_RECITERS: readonly string[] = [
   'dosari',
   'burhaji-nabawi',
   'sudais',
+  'muaiqly',
   'turki',
   'afasy',
 ]

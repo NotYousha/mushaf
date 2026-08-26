@@ -13,12 +13,13 @@ import catalog from '../data/catalog.json'
 
 const reciters = (catalog as { reciters: { id: string; nameEn: string }[] }).reciters
 
-describe('the home screen five', () => {
+describe('the home screen row', () => {
   it('is exactly the five chosen', () => {
     expect(HOME_RECITERS).toEqual([
       'dosari',
       'burhaji-nabawi',
       'sudais',
+      'muaiqly',
       'turki',
       'afasy',
     ])
@@ -32,7 +33,7 @@ describe('the home screen five', () => {
   it('does not grow when the catalogue does', () => {
     // The catalogue is meant to keep growing; this is not. If a mushaf is
     // added and someone wants it on the front, they have to say so here.
-    expect(HOME_RECITERS.length).toBe(5)
+    expect(HOME_RECITERS.length).toBe(6)
     expect(reciters.length).toBeGreaterThan(HOME_RECITERS.length)
   })
 

@@ -3672,3 +3672,76 @@ body {
 .face-cell-title {
   color: var(--muted);
 }
+
+/*
+ * An even transport row.
+ *
+ * The five controls were four different footprints: a wide pair of solid
+ * triangles at 26, a narrow outlined circle carrying a numeral at 24, and the
+ * play button. Equal gaps between unequal glyphs do not read as equal
+ * spacing — the eye measures the gap between the marks, not between their
+ * boxes — so the row looked as though the skip buttons had drifted.
+ *
+ * Every side control now occupies the same square and centres its glyph in
+ * it, which is what makes the rhythm even. The play button keeps its own
+ * size, because it is the one that should not be a peer.
+ */
+.controls .ctrl {
+  inline-size: 3rem;
+  block-size: 3rem;
+  min-width: 0;
+  padding: 0;
+}
+
+.controls .ctrl.big {
+  inline-size: 4.2rem;
+  block-size: 4.2rem;
+}
+
+/*
+ * Room for the portrait's ring.
+ *
+ * The medallion carries a 2px ring outside its border, and against the
+ * sheet's own padding the leading edge of that ring was reaching the card
+ * edge and being cut — on whichever side the language starts, which is why it
+ * is inline padding rather than a left or a right.
+ */
+.player-top {
+  padding-inline: 0.35rem;
+}
+
+/*
+ * Saving the whole mushaf, from the top of its own list.
+ *
+ * Compact on purpose: spelled out as "Download all · 2.24 GB" it took two
+ * lines and squeezed the wordmark into breaking mid-word. The icon carries
+ * the verb and the label carries the number, which is the part that is a
+ * decision. The full sentence stays as the accessible name.
+ */
+.head-save {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex: none;
+  padding: 0.4rem 0.7rem;
+  border: 1px solid var(--accent-line);
+  border-radius: var(--radius-pill);
+  background: var(--card-2);
+  color: var(--ink-soft);
+  font: inherit;
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.head-save:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+@media (hover: hover) {
+  .head-save:not(:disabled):hover {
+    background: var(--tile);
+  }
+}

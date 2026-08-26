@@ -5,6 +5,7 @@ export const fr: Strings = {
   dir: 'ltr' as 'ltr' | 'rtl',
   appTitle: 'Al Quran',
   search: 'Rechercher une sourate',
+  searchReciters: 'Rechercher un récitateur',
   surahWord: 'سُورَةُ',
 
   tabLibrary: 'Bibliothèque',

@@ -446,3 +446,15 @@
 .cap-art[data-reciter='dosari'] {
   background-position: 50% 20%;
 }
+
+/*
+ * The tab pill is the only thing in the bar now.
+ *
+ * The search circle used to sit beside it, so the pill was sized to leave
+ * room and sat off centre once its neighbour was gone. It takes its own
+ * width and the bar centres it.
+ */
+.dock-tabs {
+  flex: 0 1 auto;
+  margin-inline: auto;
+}

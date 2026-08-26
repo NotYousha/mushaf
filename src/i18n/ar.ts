@@ -4,6 +4,7 @@ export const ar: Strings = {
   dir: 'rtl' as const,
   appTitle: 'القرآن',
   search: 'البحث في السور',
+  searchReciters: 'البحث عن قارئ',
   surahWord: 'سُورَةُ',
 
   tabLibrary: 'المكتبة',

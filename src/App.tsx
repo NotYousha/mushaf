@@ -56,16 +56,17 @@ import {
   loadTimings,
   pageForKey,
 } from './mushaf/data'
-import { ImportPanel } from './ui/ImportPanel'
 import { formatBytes, formatTime } from './ui/format'
 import {
   Shuffle,
+  Download,
   Repeat,
   RepeatOne,
   Search,
   Play,
   Pause,
   Back,
+  ArrowBack,
   Forward,
   Moon,
   Star,
@@ -1345,13 +1346,6 @@ export default function App() {
     engine.current!.seek(Math.max(0, Math.min(1, f)) * duration)
   }
 
-  const saveImported = async (items: Array<{ surah: number; file: File }>) => {
-    for (const { surah, file } of items) {
-      await putAudio(reciterId, surah, file, 'import')
-    }
-    await refreshDownloaded()
-  }
-
   const changeLang = async (next: Lang) => {
     setLang(next)
     // Mirrored for the next launch's boot script, the way applyTheme does.
@@ -1542,15 +1536,22 @@ export default function App() {
           */}
           {cameFrom && (
             <button type="button" className="sheet-back" onClick={goBack} aria-label={t.back}>
-              <Back size={20} />
+              <ArrowBack size={20} />
             </button>
           )}
-          {/* The same mark the home screen carries. Without it the header on
-              every other tab was the wordmark set in Amiri and nothing else,
-              which is the app's name in a typeface rather than its logo. */}
-          <span className="sheet-mark" aria-hidden="true">
-            <img src={`${import.meta.env.BASE_URL}logo-mark.webp`} alt="" width={40} height={40} />
-          </span>
+          {/*
+              The mark, except on the surah list.
+
+              That screen belongs to whichever reciter was chosen, and it is
+              reached by drilling in from somewhere that already showed the
+              logo. Repeating it there spends the leading edge on branding at
+              the one moment the reader is looking for a way out of it.
+          */}
+          {tab !== 'quran' && (
+            <span className="sheet-mark" aria-hidden="true">
+              <img src={`${import.meta.env.BASE_URL}logo-mark.webp`} alt="" width={40} height={40} />
+            </span>
+          )}
           <h1 className="wordmark">
             <span className="wordmark-main">{brandName(lang)}</span>
             <span className="wordmark-alt">
@@ -1565,26 +1566,40 @@ export default function App() {
               </span>
             </span>
           </h1>
-          <div className="head-actions">
-            <button
-              className="round"
-              aria-pressed={shuffle}
-              aria-label={t.shuffle}
-              onClick={() => setShuffle(!shuffle)}
-            >
-              <Shuffle size={20} />
-            </button>
-            <button
-              className="round"
-              aria-pressed={repeat !== 'off'}
-              aria-label={t.repeat}
-              onClick={() =>
-                setRepeat(repeat === 'off' ? 'all' : repeat === 'all' ? 'one' : 'off')
-              }
-            >
-              {repeat === 'one' ? <RepeatOne size={20} /> : <Repeat size={20} />}
-            </button>
-          </div>
+          {/*
+              Saving the whole mushaf, where the mushaf is.
+
+              Shuffle and repeat used to sit here. They are playback settings
+              and they now live on the player with the speed and the sleep
+              timer, which is where someone reaches for them; what a list of a
+              hundred and fourteen surahs actually wants at the top is the one
+              action that applies to all of them.
+
+              The size is on the button because a gigabyte is a decision, and
+              the confirmation names the reciter and the count before anything
+              is fetched.
+          */}
+          {tab === 'quran' && missing.length > 0 && (
+            <div className="head-actions">
+              {/*
+                  The icon carries the verb, so the label is the size alone.
+
+                  Spelling out "Download all · 2.24 GB" took two lines and
+                  pushed the wordmark into breaking mid-word. The full
+                  sentence is the accessible name, and the confirmation names
+                  the reciter and the count before anything is fetched.
+              */}
+              <button
+                className="head-save"
+                disabled={queued > 0}
+                aria-label={t.downloadAllSize(formatBytes(missingBytes, lang))}
+                onClick={() => setConfirmAll(true)}
+              >
+                <Download size={17} />
+                <span>{formatBytes(missingBytes, lang)}</span>
+              </button>
+            </div>
+          )}
         </div>
         )}
 
@@ -1673,6 +1688,10 @@ export default function App() {
                 onTogglePlace={(place) =>
                   setYearsOpen(yearsOpen === place ? null : (place as Place))
                 }
+                // Back to the top when the roster is filtered: the matches are
+                // there, and the browser would otherwise leave the view
+                // wherever it clamped to as the list shrank.
+                onFilter={() => scrollRef.current?.scrollTo({ top: 0 })}
                 /*
                   Drawn under the card that opened it, not after both cards.
 
@@ -1876,14 +1895,6 @@ export default function App() {
                 {t.deleteSaved}
               </button>
 
-              {reciter && (
-                <ImportPanel
-                  reciterName={inScript(lang, reciter.name, reciter.nameEn)}
-                  meta={surahMeta}
-                  t={t}
-                  onSave={saveImported}
-                />
-              )}
             </div>
           )}
 
@@ -2246,7 +2257,7 @@ export default function App() {
                 if (p) void playSurah(p)
               }}
             >
-              <Back size={26} />
+              <Back size={24} />
             </button>
 
             {/* Either side of play, which is where a thumb expects them.
@@ -2282,7 +2293,7 @@ export default function App() {
               aria-label={t.next}
               onClick={() => void advance()}
             >
-              <Forward size={26} />
+              <Forward size={24} />
             </button>
 
           </div>
@@ -2351,6 +2362,32 @@ export default function App() {
                 <NextVoice size={22} />
               </button>
             )}
+            {/*
+                Shuffle and repeat, moved down from the header.
+
+                They are playback settings, and this row is where the other
+                playback settings are — the speed, the stumble mark, the sleep
+                timer. In the header they sat above a list they did not act on
+                and took the space the list's own action needed.
+            */}
+            <button
+              className="ctrl small"
+              aria-pressed={shuffle}
+              aria-label={t.shuffle}
+              onClick={() => setShuffle(!shuffle)}
+            >
+              <Shuffle size={22} />
+            </button>
+            <button
+              className="ctrl small"
+              aria-pressed={repeat !== 'off'}
+              aria-label={t.repeat}
+              onClick={() =>
+                setRepeat(repeat === 'off' ? 'all' : repeat === 'all' ? 'one' : 'off')
+              }
+            >
+              {repeat === 'one' ? <RepeatOne size={22} /> : <Repeat size={22} />}
+            </button>
             <button
               className="ctrl small"
               aria-label={t.speed}
@@ -2463,12 +2500,6 @@ export default function App() {
         }}
         onToggle={toggle}
         onNext={() => void advance()}
-        onSearch={() => {
-          setTab('quran')
-          // The field is in the panel that is about to mount, so focus waits
-          // for it rather than racing it.
-          window.setTimeout(() => searchRef.current?.focus(), 60)
-        }}
         scroller={scrollRef}
       />
     </div>

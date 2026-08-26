@@ -386,17 +386,19 @@
 /* ============ the reciter faces ============ */
 
 /*
- * A centred wrap rather than a fixed grid, so the last row centres itself
- * instead of leaving a hole. Seven reciters give three and four; eight give
- * four and four. Both look deliberate, which a left-aligned grid would not.
- */
-/*
- * Two faces on the first row and three on the second.
+ * Three faces to a row, on both screens that use this grid.
  *
- * Six columns, with the first two cells spanning three each and the rest two
- * each, so the arrangement is stated rather than left to how many happen to
- * fit. Wrapping a flex row put four on the first line and one stranded on the
- * second, which reads as an accident.
+ * Six columns with every cell spanning two, so the arrangement is stated
+ * rather than left to however many happen to fit. Wrapping a flex row put
+ * four on the first line and one stranded on the second, which reads as an
+ * accident rather than a layout.
+ *
+ * The home screen used to give its first two cells three columns each, which
+ * with five reciters made a deliberate-looking two over three. It opens with
+ * six now — Al-Muaiqly was added — and that exception laid them out two,
+ * three and one, leaving Al-Afasy alone on a third row: not a curated first
+ * row, just somebody who looks forgotten. Six over two rows of three needs no
+ * exception at all, so there no longer is one.
  */
 .face-grid {
   --face-gap: 0.8rem;
@@ -413,7 +415,7 @@
 }
 
 /*
- * Sized as a fraction of the row rather than in rem, so four always fit
+ * Sized as a fraction of the row rather than in rem, so a row always fits
  * whatever the screen. Four fixed 5.4rem cells and their gaps came to 394px
  * on a 390px phone: the row overflowed, which widened the scroller and pushed
  * the logo, the section heading and the first dock tab off the edge. A cell
@@ -423,18 +425,6 @@
   grid-column: span 2;
   inline-size: 100%;
   max-inline-size: 6rem;
-}
-
-/*
- * The first two take half the row each; everything after them takes a third.
- *
- * Scoped to the home screen. "See all" uses the same grid for the whole
- * roster, and there a wider first pair is not a curated row — it is just the
- * first two of sixteen looking arbitrarily more important.
- */
-.home .face-grid li:nth-child(1),
-.home .face-grid li:nth-child(2) {
-  grid-column: span 3;
 }
 
 .face-cell {
@@ -604,6 +594,25 @@
   font-size: var(--text-md);
   font-weight: 700;
   color: var(--ink-strong);
+}
+
+/*
+ * The roster's search field is the app's search field, borrowed whole.
+ *
+ * `.search` in theme.css carries the shape, the pill and the focus ring, and
+ * only its margin is wrong here: that rule is written for the field that sits
+ * in the Quran tab's header, outside the scroller and hard against the screen
+ * edges. Inside `.everyone`, which is a flex column with its own gap, the
+ * 1.2rem inset made the box visibly narrower than the grid beneath it and the
+ * 0.85rem bottom margin stacked on top of that gap.
+ *
+ * 0.4rem is the face grid's own padding, so the two line up down the page.
+ * Symmetric, so it needs no logical property — the field looks the same in
+ * Arabic and Urdu, and the icon and the text inside it are laid out by the
+ * flex row and `text-align: start`, which flip on their own.
+ */
+.everyone .search {
+  margin: 0 0.4rem;
 }
 
 /* The selected face, marked on the ring rather than with a tick: the ring is

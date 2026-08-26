@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Strings } from '../i18n'
-import { Play, Pause, Forward, Search } from './Icons'
+import { Play, Pause, Forward } from './Icons'
 import { isNativeShell } from '../native/shell'
 
 export type DockTab = {
@@ -28,7 +28,6 @@ type Props = {
   onOpenPlayer: () => void
   onToggle: () => void
   onNext: () => void
-  onSearch: () => void
   /** The element whose scrolling collapses the dock. */
   scroller: React.RefObject<HTMLElement | null>
 }
@@ -55,7 +54,6 @@ export function Dock({
   onOpenPlayer,
   onToggle,
   onNext,
-  onSearch,
   scroller,
 }: Props) {
   const [tight, setTight] = useState(false)
@@ -218,12 +216,6 @@ export function Dock({
         ))}
       </nav>
 
-      <button className="dock-circle glass" onClick={onSearch} aria-label={t.search}>
-        <Search size={22} />
-        {/* Shown only on the rail, where every other item is labelled and a
-            lone icon would look unfinished. */}
-        <span className="dock-circle-label">{t.search}</span>
-      </button>
     </div>
   )
 }

@@ -5,6 +5,7 @@ export const ur: Strings = {
   dir: 'rtl' as 'ltr' | 'rtl',
   appTitle: 'القرآن',
   search: 'سورتیں تلاش کریں',
+  searchReciters: 'قاری تلاش کریں',
   surahWord: 'سُورَةُ',
 
   tabLibrary: 'لائبریری',

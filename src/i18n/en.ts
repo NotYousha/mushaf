@@ -9,6 +9,9 @@ export const en = {
   dir: 'ltr' as 'ltr' | 'rtl',
   appTitle: 'Al Quran',
   search: 'Search surahs',
+  /** The reciter roster's own field. `search` says "surahs", which is the
+   *  wrong noun on a screen of people. */
+  searchReciters: 'Search reciters',
   surahWord: 'سُورَةُ',
 
   tabLibrary: 'Library',
