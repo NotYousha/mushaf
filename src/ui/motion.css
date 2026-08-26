@@ -801,23 +801,58 @@
 /*
  * The faces arrive in sequence rather than all at once.
  *
- * Five portraits appearing together is a flash; a short stagger reads as the
- * screen settling. Only the home grid does this, and only on the first paint
+ * A row of portraits appearing together is a flash; a short stagger reads as
+ * the screen settling. Only the home grid does this, and only on the first paint
  * of it, because it is the one place with a small fixed set of things.
+ *
+ * Scoped to the home screen, which is what the paragraph above always claimed
+ * and what the selector never said. `.face-grid` is shared with "See all",
+ * so the unscoped rule was staggering the whole roster — one-and-twenty
+ * portraits, sixteen of them on the same zero delay, which is not a stagger,
+ * only a fade. It cost that screen's faces 538ms between their bytes landing
+ * and their being legible, against 333ms with this rule off.
+ *
+ * The stagger is carried by the travel; the fade is over in the first fifth
+ * of it. Opacity multiplies down the tree, and the panel this grid sits in is
+ * running its own `panel-in` fade at the same moment — so a portrait was the
+ * product of two ramps and a delay, sitting under a quarter of its own
+ * opacity for a third of a second after its pixels had already decoded. That
+ * reads as the photograph loading slowly, which is the one thing it was not
+ * doing: measured on a four-times-throttled CPU, the last home face waited
+ * 609ms between its bytes arriving and being legible, against 211ms for the
+ * panel fade alone. Ending the fade early leaves the sequence visible and
+ * gives that third of a second back.
  */
-.face-grid li {
+.home .face-grid li {
   animation: face-in var(--t-slow) var(--ease-out) both;
 }
 
-.face-grid li:nth-child(2) { animation-delay: 40ms; }
-.face-grid li:nth-child(3) { animation-delay: 80ms; }
-.face-grid li:nth-child(4) { animation-delay: 120ms; }
-.face-grid li:nth-child(5) { animation-delay: 160ms; }
+.home .face-grid li:nth-child(2) { animation-delay: 40ms; }
+.home .face-grid li:nth-child(3) { animation-delay: 80ms; }
+.home .face-grid li:nth-child(4) { animation-delay: 120ms; }
+.home .face-grid li:nth-child(5) { animation-delay: 160ms; }
+/*
+ * Everything past the fifth lands on the last beat rather than the first.
+ *
+ * HOME_RECITERS in src/catalog/home.ts decides how many cards are here, and
+ * it went from five to six without this list noticing. An enumeration that
+ * stops short does not leave the newcomer unstaggered — it puts it back at
+ * zero, arriving alongside the first face, which is the one arrangement the
+ * stagger exists to avoid. Two hundred milliseconds is also where the tail
+ * stops: past that the last card is waiting on the sequence rather than on
+ * anything it needs.
+ */
+.home .face-grid li:nth-child(n + 6) { animation-delay: 200ms; }
 
 @keyframes face-in {
   from {
     opacity: 0;
     transform: translateY(8px) scale(0.96);
+  }
+  /* No 100% stop: the travel keeps interpolating to the element's own
+     transform, exactly as it did when `from` was the only keyframe. */
+  20% {
+    opacity: 1;
   }
 }
 
@@ -829,7 +864,7 @@
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-old(root),
   ::view-transition-new(root),
-  .face-grid li,
+  .home .face-grid li,
   .resume {
     animation: none;
   }

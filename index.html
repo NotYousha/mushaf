@@ -60,6 +60,38 @@
     <link rel="icon" type="image/png" sizes="192x192" href="/mark-192.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/mark-180.png" />
     <!--
+      The faces the app opens on, asked for before the app can ask.
+
+      These are background-images on the home grid, so nothing requests them
+      until React has mounted and painted that grid, by which time the
+      connection is already spoken for by the mushaf layout chunk, the Arabic
+      fonts and the 229KB page behind the resume card. At 10Mbps that put the
+      last portrait at 1.1s and drew the grid as a row of empty circles until
+      then; asked for here they are decoded by 0.46s, before the grid that
+      wants them exists.
+
+      Bought, not free: 175KB shares the pipe with the main bundle, so first
+      paint moves back 124ms at 10Mbps and 730ms on a 1.6Mbps link. Worth it
+      only because first paint here is the splash, which holds for 1650ms
+      afterwards anyway — so do not extend this to the rest of the roster on
+      the strength of it working for six. The fonts move back with it, and
+      every @font-face here is font-display: swap, so that is a beat of
+      fallback type rather than a line of missing text.
+
+      The list is HOME_RECITERS in src/catalog/home.ts, spelled out again
+      because a <link> cannot import, and it has already grown once. A face
+      added there and not here loses its head start; one left here after being
+      removed there costs a few kilobytes on first launch.
+
+      Absolute, so the base is prepended at build time, same as the icons.
+    -->
+    <link rel="preload" as="image" href="/sheikh.jpg" />
+    <link rel="preload" as="image" href="/imam-burhaji.webp" type="image/webp" />
+    <link rel="preload" as="image" href="/imam-sudais.webp" type="image/webp" />
+    <link rel="preload" as="image" href="/imam-muaiqly.webp" type="image/webp" />
+    <link rel="preload" as="image" href="/turki.webp" type="image/webp" />
+    <link rel="preload" as="image" href="/afasy.webp" type="image/webp" />
+    <!--
       The theme, stamped before anything is drawn.
 
       The preference lives in IndexedDB with every other setting, and that
