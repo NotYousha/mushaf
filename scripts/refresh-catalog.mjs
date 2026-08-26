@@ -201,12 +201,30 @@ const SOURCES = {
     photo: 'juhany.webp',
   },
   /**
-   * As-Sudais, still being recorded, and missing al-A'raf.
+   * As-Sudais, complete, from the centre's own publication of it.
    *
-   * The gap is the source's, not ours: the centre has published surahs 1-6
-   * and 8-21 and nothing yet for al-A'raf. Because the surah list is read by
-   * name rather than by position, the hole stays a hole instead of shifting
-   * everything after it by one.
+   * This entry read twenty surahs for a while and said the mushaf was still
+   * being recorded. It was not: the centre had finished it and published all
+   * 114. What was twenty was tilawatalharamain's copy, which follows the
+   * daily broadcast on Quran Radio rather than the publication — surah 21
+   * reached it on 2026-08-17. Believing the mirror was the recording is how
+   * the wrong mushaf nearly ended up in the app under his name.
+   *
+   * That the publication is the same recording as the twenty was measured
+   * before anything was moved: surah 2 runs 8635s there against 8635.1s on
+   * the old route, surah 21 runs 1678s against 1678.0s.
+   *
+   * Nowhere else carries this recording as mp3 — mp3quran, quranicaudio and
+   * every complete archive.org item hold his older murattal instead, which is
+   * a different performance entirely (al-Baqarah in 5626s against this one's
+   * 8635s), and the centre's own CMS publishes nineteen mushafs, none of them
+   * his. So it is mirrored to an archive.org item of our own, keyed by the
+   * title the centre published each surah under rather than by its position
+   * in the centre's playlist — that playlist is shuffled across 41-49 and
+   * 67-74, and position would have meant seventeen wrong recitations.
+   *
+   * Every file was checked before it went up: within five seconds of the
+   * length the centre publishes, and inside the band its own text implies.
    */
   sudais: {
     home: true,
@@ -218,35 +236,9 @@ const SOURCES = {
     fullName: 'أ. د. عبد الرحمن بن عبد العزيز السديس',
     mushaf: 'المصحف المرتل — إنتاج المركز السعودي للتلاوات القرآنية',
     mushafEn: 'Murattal mushaf — Saudi Center for Quranic Recitations',
-    tag: 'المركز السعودي',
-    tagEn: 'Saudi Center',
-    photo: 'imam-sudais.webp',
-    note: 'ما زال قيد التسجيل — ولم تُنشر سورة الأعراف بعد.',
-  },
-  /**
-   * As-Sudais's complete murattal — the one he has been known by for years.
-   *
-   * The centre's production above is twenty surahs and has not grown since it
-   * was added; al-A'raf still has not aired. Rather than leave the most
-   * recognisable voice in the app at a sixth of a mushaf, this is the whole
-   * thing, a different and much older recording of his, at 192 kbps on a host
-   * that serves ranges.
-   *
-   * Both are kept because they are not the same performance — al-Fatiha runs
-   * 64s in the centre's and 38s here — and a reader who picked one should not
-   * silently be handed the other partway through.
-   */
-  'sudais-murattal': {
-    route: 'sq',
-    // complete; no need to ask
-    fixedCount: 114,
-    name: 'عبد الرحمن السديس',
-    nameEn: 'Abdurrahman As-Sudais',
-    fullName: 'أ. د. عبد الرحمن بن عبد العزيز السديس',
-    mushaf: 'المصحف المرتل الكامل',
-    mushafEn: 'Complete murattal mushaf',
-    tag: 'كامل',
-    tagEn: 'Complete',
+    // No tag: he is in the app once again, so his name is not ambiguous, and
+    // a tag on the only card bearing it would say nothing. The old complete
+    // murattal that used to sit beside this one has been removed.
     photo: 'imam-sudais.webp',
   },
   buayjan: {

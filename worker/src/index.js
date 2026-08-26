@@ -20,9 +20,18 @@
  *                   sends no CORS header and is unreachable from some
  *                   networks entirely — the proxy fixes both.
  *
- *   /sd/{1-114}.mp3 As-Sudais, /bu/{1-114}.mp3 Al-Buayjan, both produced by
- *                   the Saudi Center and both still being recorded
- *                   (tilawatalharamain.com, same shape as /d).
+ *   /sd/{1-114}.mp3 As-Sudais's Saudi Center mushaf, complete, from an
+ *                   archive.org item mirrored from the centre's own
+ *                   publication. See ARCHIVE_MUSHAFS.sd for why it no longer
+ *                   reads the aggregator.
+ *
+ *   /bu/{1-114}.mp3 Al-Buayjan, also the Saudi Center's
+ *                   (tilawatalharamain.com, same shape as /d). That recording
+ *                   is finished and published in full too; what is partial is
+ *                   this aggregator's copy of it, which follows the daily
+ *                   radio broadcast rather than the publication — seventy-
+ *                   seven mirrored so far. The list endpoint reports the
+ *                   mirror, which is the only thing this proxy can serve.
  *
  *   /af/{1-114}.mp3 Al-Afasy's Hafs from the Ten Readings mushaf of 1445,
  *                   and /az/{1-114}.mp3 Abdulaziz Al-Turki, each a single
@@ -58,13 +67,24 @@ const SURAH_COUNT = 114
  * These collections are indexed by the surah name printed on each link, not
  * by the link's position in the list.
  *
- * Position is the obvious reading and it is wrong. As-Sudais's mushaf is
- * missing al-A'raf — the Saudi Center simply has not aired it — so from that
- * point on the Nth link is surah N+1, and an index built on position would
- * serve al-Anfal to anyone who asked for al-A'raf and go on being one surah
- * out for the rest of the mushaf. Silently: the audio plays, it is the right
- * reciter, and it is the wrong surah. Reading the name off the link cannot
- * make that mistake, and it lets a gap stay a gap.
+ * Position is the obvious reading and it is wrong, and it has been wrong here
+ * in both of the ways it can be.
+ *
+ * A gap: the aggregator's copy of As-Sudais's mushaf held surahs 1-6 and
+ * 8-21, with al-A'raf not yet mirrored, so from that point on the Nth link
+ * was surah N+1 and an index built on position would have served al-Anfal to
+ * anyone who asked for al-A'raf, and gone on being one surah out for the rest
+ * of the mushaf.
+ *
+ * A shuffle: the Saudi Center's own publication of that same mushaf is not in
+ * surah order at all. It holds al-Hujurat at position 41 with 41-48 shifted
+ * up one behind it, and a second shuffle across 67-74 — seventeen surahs at a
+ * position that is not their number, in a list that is otherwise perfectly
+ * ordered for ninety-seven of them.
+ *
+ * Both fail the same way: the audio plays, it is the right reciter, and it is
+ * the wrong surah, with nothing on screen to say so. Reading the name off the
+ * link cannot make either mistake, and it lets a gap stay a gap.
  *
  * Verified equivalent to the old position-based index on all four collections
  * that were already being served — same page id for every surah — so this is
@@ -192,11 +212,6 @@ const HARAMAIN = {
     host: 'https://abdullahjuhany.com',
     collection: 5,
     name: 'Al-Juhany — Ad-Duri from Abu Amr',
-  },
-  sd: {
-    host: 'https://tilawatalharamain.com',
-    collection: 65,
-    name: 'As-Sudais — Saudi Center',
   },
   bu: {
     host: 'https://tilawatalharamain.com',
@@ -355,6 +370,33 @@ const ARCHIVE_MUSHAFS = {
     item: 'mushaf-almuaiqly',
     name: 'Maher Al-Muaiqly — King Fahd Complex',
   },
+  /**
+   * As-Sudais's Saudi Center mushaf, all of it.
+   *
+   * This route used to read tilawatalharamain's collection 65, and the note
+   * on it here said the mushaf was still being recorded and that al-A'raf had
+   * never aired. Both were wrong, and wrong in a way worth spelling out: the
+   * centre finished this mushaf and published all 114 of it. What was partial
+   * was the aggregator's copy, which follows the daily broadcast on Quran
+   * Radio and had mirrored twenty.
+   *
+   * That it is the same recording rather than a second one is measured, not
+   * assumed — against the twenty the aggregator did have, surah 2 runs 8635s
+   * in the centre's publication against 8635.1s on the old route, and surah
+   * 21 runs 1678s against 1678.0s.
+   *
+   * The files here are keyed by surah from the title the centre published
+   * each one under, never from its position in the centre's own playlist:
+   * that playlist holds al-Hujurat at position 41 with 41-48 shifted up one
+   * behind it, and a second shuffle across 67-74. Seventeen surahs sit
+   * somewhere that is not their number, and taking position for surah would
+   * have served seventeen wrong recitations under the right sheikh with
+   * nothing on screen to say so.
+   */
+  sd: {
+    item: 'sudais-murattal-saudi-center',
+    name: 'As-Sudais — Saudi Center',
+  },
   /*
    * Baleelah's studio mushaf, which is the one his own site links to. Not the
    * copy on mp3quran under his name: that is three recordings spliced together
@@ -421,10 +463,6 @@ const ARCHIVE_MUSHAFS = {
  * All 114 of each were checked with a range request before being added.
  */
 const QURANICAUDIO = {
-  sq: {
-    path: 'abdurrahmaan_as-sudays',
-    name: 'As-Sudais — complete murattal',
-  },
   jq: {
     path: 'abdullaah_3awwaad_al-juhaynee',
     name: 'Al-Juhany — complete murattal, Hafs from Asim',
@@ -784,8 +822,17 @@ const ROUTES = {
   },
   sd: {
     ttl: HARAMAIN_PAGE_TTL,
-    resolve: (surah, ctx) => resolveHaramain(HARAMAIN.sd, surah, ctx),
-    name: HARAMAIN.sd.name,
+    resolve: (surah, ctx) =>
+      resolveArchiveItem(ARCHIVE_MUSHAFS.sd.item, surah, ctx, ARCHIVE_MUSHAFS.sd.min),
+    name: ARCHIVE_MUSHAFS.sd.name,
+    /*
+     * Re-pointed, so the namespace moves with it — for the same reason /t
+     * carries one. Resolutions from collection 65 are cached under
+     * `sd-{surah}` with a seven-day life, and without a new key the proxy
+     * goes on handing out the aggregator's URLs one surah at a time,
+     * whichever happens to be warm, for a week after the switch.
+     */
+    ns: 'sd-ia1',
   },
   bu: {
     ttl: HARAMAIN_PAGE_TTL,
@@ -801,11 +848,6 @@ const ROUTES = {
     ttl: HARAMAIN_PAGE_TTL,
     resolve: (surah, ctx) => resolveHaramain(HARAMAIN.qa, surah, ctx),
     name: HARAMAIN.qa.name,
-  },
-  sq: {
-    ttl: HARAMAIN_PAGE_TTL,
-    resolve: (surah) => resolveQuranicAudio(QURANICAUDIO.sq, surah),
-    name: QURANICAUDIO.sq.name,
   },
   jq: {
     ttl: HARAMAIN_PAGE_TTL,

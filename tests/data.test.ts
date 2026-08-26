@@ -304,32 +304,48 @@ describe('bundled data', () => {
   } as Record<string, number[]>
 
   /**
-   * As-Sudais's mushaf has a hole in it, and the hole is the point.
+   * As-Sudais, whole — and these tests used to say the opposite.
    *
-   * The Saudi Center has not aired al-A'raf. An index built on a link's
-   * position rather than its name would have filled that hole by sliding
-   * every later surah down one — al-Anfal served as al-A'raf, and wrong all
-   * the way to the end. The absence is what proves the index reads names.
+   * They asserted that al-A'raf was absent and that the note said so, because
+   * for a while the entry held twenty surahs with a hole at seven. That was
+   * read as "the Saudi Center has not aired it". It had: the centre finished
+   * this mushaf and published all 114. Twenty was the aggregator's mirror of
+   * it, which follows the daily broadcast on Quran Radio.
+   *
+   * Worth keeping the story, because the tests were confidently wrong for the
+   * same reason the source comments were — a partial mirror read as a partial
+   * recording. What replaces them is the assertion that survives being right:
+   * that the mushaf runs 1..114 with nothing missing and nothing shifted.
    */
-  describe('As-Sudais — recorded with a gap', () => {
+  describe('As-Sudais', () => {
     const sd = reciters.find((r) => r.id === 'sudais')!
 
-    it('is missing al-A\'raf rather than shifted past it', () => {
+    it('runs 1..114 with no gaps', () => {
       const nums = sd.surahs.map((s) => s.surah).sort((a, b) => a - b)
-      expect(nums).not.toContain(7)
-      expect(nums.filter((n) => n <= 21)).toEqual([
-        1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21,
-      ])
+      expect(nums).toEqual(Array.from({ length: 114 }, (_, i) => i + 1))
     })
 
-    // Al-Anfal is a third the length of al-A'raf, so if the shift had
-    // happened this is the entry that would show it.
-    it('gives surah 8 its own recording, not al-A\'raf\'s slot', () => {
-      expect(sd.surahs.find((s) => s.surah === 8)!.url).toContain('/sd/8.mp3')
+    /**
+     * The centre's own publication of this mushaf is not in surah order: it
+     * holds al-Hujurat where 41 belongs, with 41-48 shifted up one behind it,
+     * and shuffles 67-74 as well. Seventeen surahs in all, and taking
+     * position for surah would have served seventeen wrong recitations.
+     *
+     * Al-Hujurat is 551s and Fussilat 1215s, so byte size is the tell: an
+     * entry that had swallowed the shuffle would be badly out here.
+     */
+    it('is not shifted where its source is shuffled', () => {
+      const at = (n: number) => sd.surahs.find((s) => s.surah === n)!
+      // 128 kbps throughout, so bytes are a duration to within a frame.
+      const seconds = (n: number) => (at(n).bytes * 8) / 128000
+      expect(seconds(41)).toBeGreaterThan(1100) // Fussilat, not al-Hujurat
+      expect(seconds(49)).toBeLessThan(650) // al-Hujurat, not al-Fath
+      expect(seconds(67)).toBeLessThan(600) // al-Mulk, not al-Haaqqa
+      expect(seconds(74)).toBeGreaterThan(350) // al-Muddaththir
     })
 
-    it('says so, rather than looking merely unfinished', () => {
-      expect(sd.note).toContain('الأعراف')
+    it('gives every surah its own recording', () => {
+      for (const s of sd.surahs) expect(s.url).toContain(`/sd/${s.surah}.mp3`)
     })
   })
 
