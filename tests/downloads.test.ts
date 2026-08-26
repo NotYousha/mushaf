@@ -68,7 +68,7 @@ describe('a chunked download', () => {
     await putManifest(m)
     for (const fill of [1, 2, 3, 4]) m = await commitChunk(m, bytes(500, fill))
 
-    await deleteDownload(m.key, m)
+    await deleteDownload(m.key)
     const db = await getDB()
     expect(await db.getAllKeys('chunks')).toEqual([])
     expect(await db.get('downloads', m.key)).toBeUndefined()
@@ -94,12 +94,17 @@ describe('a chunked download', () => {
 
     // A non-finite count is what gave `Math.ceil(Infinity / n)` and a delete
     // loop that never ended, holding the queue's only slot until a reload.
-    it('never reports a non-finite count', () => {
+    // The loop is gone — deletion is one key range now and never consults the
+    // count — so this holds the count honest for the readers that do use it,
+    // and proves the delete no longer cares.
+    it('never reports a non-finite count, and deletes anyway', async () => {
       const bad = manifest({ bytesWritten: Infinity })
       delete (bad as { chunks?: number }).chunks
       expect(Number.isFinite(chunkCount(bad))).toBe(false)
-      // deleteDownload guards on exactly this, so it must still terminate.
-      expect(async () => deleteDownload(bad.key, bad)).not.toThrow()
+      await putManifest(bad)
+      await deleteDownload(bad.key)
+      const db = await getDB()
+      expect(await db.get('downloads', bad.key)).toBeUndefined()
     })
   })
 

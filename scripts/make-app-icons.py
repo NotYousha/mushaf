@@ -171,8 +171,15 @@ def place(canvas: Image.Image, glyphs: Image.Image, target_w: int) -> None:
 
 
 def build(size: int, glyph_share: float, glyphs: Image.Image) -> Image.Image:
-    """The mark: the name on black, filling the square. No frame, no tile."""
-    m = Image.new("RGB", (size, size), TILE)
+    """
+    The mark: the name on black, filling the square. No frame, no tile.
+
+    RGBA rather than RGB, and the alpha is not decoration: the Play Console
+    requires a 32-bit PNG for the 512x512 store icon and rejects a 24-bit one
+    outright. The tile is opaque either way — the channel exists so the file is
+    the format Play asks for. Nothing about how the icon looks changes.
+    """
+    m = Image.new("RGBA", (size, size), (*TILE, 255))
     place(m, glyphs, int(round(size * glyph_share)))
     return m
 
