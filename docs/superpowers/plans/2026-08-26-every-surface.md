@@ -21,6 +21,7 @@
 - **Five languages.** Any new user-visible string is added to all of `src/i18n/en.ts`, `ar.ts`, `ur.ts`, `hi.ts`, `fr.ts`. `en.ts` defines the `Strings` type, so it goes first or the others will not typecheck.
 - **Comment style.** This codebase explains *why*, in prose, including what was tried and rejected. Match it. Do not write `// set the surface`.
 - **The roadmap's exclusions stand.** No prayer times, qibla or athan. No accounts or cloud sync. No streaks, points or badges.
+- **Every line number in this plan is indicative, not authoritative.** `src/App.tsx` is under active concurrent development — commit `5ddb3bd` ("Say who these men are") landed in it while this plan was being written, and the working tree has moved since. Tasks 3, 5, 7, 10 and 11 all modify that file. Locate each insertion point by the surrounding code quoted in the step, never by the line number, and re-read the file at the start of every task rather than trusting a number written earlier.
 - **Swift is unverified.** This is Windows 11 with no Xcode. Every Swift file carries a header saying it has never been compiled. No commit message or report may claim otherwise.
 
 ---
