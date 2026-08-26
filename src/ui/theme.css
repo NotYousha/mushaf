@@ -3629,3 +3629,22 @@ body {
     background: var(--tile);
   }
 }
+
+/*
+ * The reciter's office, under his name on the expanded player.
+ *
+ * Set quietly and on its own line: it answers "who is this", which is why
+ * the sheet was opened, but the name above it is what is being looked for.
+ */
+.now-title {
+  margin: 0.15rem 0 0;
+  font-size: var(--text-xs);
+  color: var(--muted);
+  unicode-bidi: plaintext;
+}
+
+/* The honorific in a grid cell. Lighter than the name so the name still
+   reads first at a glance, which is what a grid of faces is scanned for. */
+.face-cell-title {
+  color: var(--muted);
+}

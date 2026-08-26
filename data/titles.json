@@ -1,0 +1,354 @@
+{
+ "sudais": {
+  "short": { "ar": "الشيخ د.", "en": "Sh. Dr.", "ur": "شیخ ڈاکٹر", "fr": "Cheikh Dr", "hi": "शेख़ डॉ." },
+  "full": {
+   "ar": "إمام وخطيب المسجد الحرام",
+   "en": "Imam and Khatib of the Grand Mosque",
+   "ur": "مسجدِ حرام کے امام و خطیب",
+   "fr": "Imam et prédicateur de la Grande Mosquée de La Mecque",
+   "hi": "मस्जिद-ए-हराम के इमाम व ख़तीब"
+  },
+  "source": "https://prh.gov.sa/ar/%D8%B9%D9%84%D9%85%D8%A7%D8%A1-%D9%88%D9%85%D8%B4%D8%A7%D8%A6%D8%AE-%D8%A7%D9%84%D8%AD%D8%B1%D9%85%D9%8A%D9%86"
+ },
+ "muaiqly": {
+  "short": { "ar": "الشيخ د.", "en": "Sh. Dr.", "ur": "شیخ ڈاکٹر", "fr": "Cheikh Dr", "hi": "शेख़ डॉ." },
+  "full": {
+   "ar": "إمام وخطيب المسجد الحرام",
+   "en": "Imam and Khatib of the Grand Mosque",
+   "ur": "مسجدِ حرام کے امام و خطیب",
+   "fr": "Imam et prédicateur de la Grande Mosquée de La Mecque",
+   "hi": "मस्जिद-ए-हराम के इमाम व ख़तीब"
+  },
+  "source": "https://prh.gov.sa/ar/%D8%B9%D9%84%D9%85%D8%A7%D8%A1-%D9%88%D9%85%D8%B4%D8%A7%D8%A6%D8%AE-%D8%A7%D9%84%D8%AD%D8%B1%D9%85%D9%8A%D9%86"
+ },
+ "juhany": {
+  "short": { "ar": "الشيخ د.", "en": "Sh. Dr.", "ur": "شیخ ڈاکٹر", "fr": "Cheikh Dr", "hi": "शेख़ डॉ." },
+  "full": {
+   "ar": "إمام وخطيب المسجد الحرام",
+   "en": "Imam and Khatib of the Grand Mosque",
+   "ur": "مسجدِ حرام کے امام و خطیب",
+   "fr": "Imam et prédicateur de la Grande Mosquée de La Mecque",
+   "hi": "मस्जिद-ए-हराम के इमाम व ख़तीब"
+  },
+  "source": "https://prh.gov.sa/ar/%D8%B9%D9%84%D9%85%D8%A7%D8%A1-%D9%88%D9%85%D8%B4%D8%A7%D8%A6%D8%AE-%D8%A7%D9%84%D8%AD%D8%B1%D9%85%D9%8A%D9%86"
+ },
+ "juhany-hafs": {
+  "short": { "ar": "الشيخ د.", "en": "Sh. Dr.", "ur": "شیخ ڈاکٹر", "fr": "Cheikh Dr", "hi": "शेख़ डॉ." },
+  "full": {
+   "ar": "إمام وخطيب المسجد الحرام",
+   "en": "Imam and Khatib of the Grand Mosque",
+   "ur": "مسجدِ حرام کے امام و خطیب",
+   "fr": "Imam et prédicateur de la Grande Mosquée de La Mecque",
+   "hi": "मस्जिद-ए-हराम के इमाम व ख़तीब"
+  },
+  "source": "https://prh.gov.sa/ar/%D8%B9%D9%84%D9%85%D8%A7%D8%A1-%D9%88%D9%85%D8%B4%D8%A7%D8%A6%D8%AE-%D8%A7%D9%84%D8%AD%D8%B1%D9%85%D9%8A%D9%86"
+ },
+ "baleela": {
+  "short": { "ar": "الشيخ د.", "en": "Sh. Dr.", "ur": "شیخ ڈاکٹر", "fr": "Cheikh Dr", "hi": "शेख़ डॉ." },
+  "full": {
+   "ar": "إمام وخطيب المسجد الحرام",
+   "en": "Imam and Khatib of the Grand Mosque",
+   "ur": "مسجدِ حرام کے امام و خطیب",
+   "fr": "Imam et prédicateur de la Grande Mosquée de La Mecque",
+   "hi": "मस्जिद-ए-हराम के इमाम व ख़तीब"
+  },
+  "source": "https://prh.gov.sa/ar/%D8%B9%D9%84%D9%85%D8%A7%D8%A1-%D9%88%D9%85%D8%B4%D8%A7%D8%A6%D8%AE-%D8%A7%D9%84%D8%AD%D8%B1%D9%85%D9%8A%D9%86"
+ },
+ "dosari": {
+  "short": { "ar": "الشيخ د.", "en": "Sh. Dr.", "ur": "شیخ ڈاکٹر", "fr": "Cheikh Dr", "hi": "शेख़ डॉ." },
+  "full": {
+   "ar": "إمام وخطيب المسجد الحرام",
+   "en": "Imam and Khatib of the Grand Mosque",
+   "ur": "مسجدِ حرام کے امام و خطیب",
+   "fr": "Imam et prédicateur de la Grande Mosquée de La Mecque",
+   "hi": "मस्जिद-ए-हराम के इमाम व ख़तीब"
+  },
+  "source": "https://prh.gov.sa/ar/%D8%B9%D9%84%D9%85%D8%A7%D8%A1-%D9%88%D9%85%D8%B4%D8%A7%D8%A6%D8%AE-%D8%A7%D9%84%D8%AD%D8%B1%D9%85%D9%8A%D9%86"
+ },
+ "turki": {
+  "short": { "ar": "الشيخ", "en": "Sh.", "ur": "شیخ", "fr": "Cheikh", "hi": "शेख़" },
+  "full": {
+   "ar": "إمام المسجد الحرام",
+   "en": "Imam of the Grand Mosque",
+   "ur": "مسجدِ حرام کے امام",
+   "fr": "Imam de la Grande Mosquée de La Mecque",
+   "hi": "मस्जिद-ए-हराम के इमाम"
+  },
+  "source": "https://prh.gov.sa/ar/%D8%B9%D9%84%D9%85%D8%A7%D8%A1-%D9%88%D9%85%D8%B4%D8%A7%D8%A6%D8%AE-%D8%A7%D9%84%D8%AD%D8%B1%D9%85%D9%8A%D9%86"
+ },
+ "shamsan": {
+  "short": { "ar": "الشيخ د.", "en": "Sh. Dr.", "ur": "شیخ ڈاکٹر", "fr": "Cheikh Dr", "hi": "शेख़ डॉ." },
+  "full": {
+   "ar": "إمام المسجد الحرام",
+   "en": "Imam of the Grand Mosque",
+   "ur": "مسجدِ حرام کے امام",
+   "fr": "Imam de la Grande Mosquée de La Mecque",
+   "hi": "मस्जिद-ए-हराम के इमाम"
+  },
+  "source": "https://prh.gov.sa/ar/%D8%B9%D9%84%D9%85%D8%A7%D8%A1-%D9%88%D9%85%D8%B4%D8%A7%D8%A6%D8%AE-%D8%A7%D9%84%D8%AD%D8%B1%D9%85%D9%8A%D9%86"
+ },
+ "shuraim": {
+  "short": { "ar": "الشيخ د.", "en": "Sh. Dr.", "ur": "شیخ ڈاکٹر", "fr": "Cheikh Dr", "hi": "शेख़ डॉ." },
+  "full": {
+   "ar": "إمام وخطيب سابق للمسجد الحرام",
+   "en": "Former Imam and Khatib of the Grand Mosque",
+   "ur": "مسجدِ حرام کے سابق امام و خطیب",
+   "fr": "Ancien imam et prédicateur de la Grande Mosquée de La Mecque",
+   "hi": "मस्जिद-ए-हराम के पूर्व इमाम व ख़तीब"
+  },
+  "source": "https://ar.wikipedia.org/wiki/%D8%B3%D8%B9%D9%88%D8%AF_%D8%A7%D9%84%D8%B4%D8%B1%D9%8A%D9%85"
+ },
+ "ghamdi": {
+  "short": { "ar": "الشيخ د.", "en": "Sh. Dr.", "ur": "شیخ ڈاکٹر", "fr": "Cheikh Dr", "hi": "शेख़ डॉ." },
+  "full": {
+   "ar": "إمام وخطيب سابق للمسجد الحرام",
+   "en": "Former Imam and Khatib of the Grand Mosque",
+   "ur": "مسجدِ حرام کے سابق امام و خطیب",
+   "fr": "Ancien imam et prédicateur de la Grande Mosquée de La Mecque",
+   "hi": "मस्जिद-ए-हराम के पूर्व इमाम व ख़तीब"
+  },
+  "source": "https://ar.wikipedia.org/wiki/%D8%AE%D8%A7%D9%84%D8%AF_%D8%A7%D9%84%D8%BA%D8%A7%D9%85%D8%AF%D9%8A"
+ },
+ "altalib": {
+  "short": { "ar": "الشيخ د.", "en": "Sh. Dr.", "ur": "شیخ ڈاکٹر", "fr": "Cheikh Dr", "hi": "शेख़ डॉ." },
+  "full": {
+   "ar": "إمام وخطيب سابق للمسجد الحرام",
+   "en": "Former Imam and Khatib of the Grand Mosque",
+   "ur": "مسجدِ حرام کے سابق امام و خطیب",
+   "fr": "Ancien imam et prédicateur de la Grande Mosquée de La Mecque",
+   "hi": "मस्जिद-ए-हराम के पूर्व इमाम व ख़तीब"
+  },
+  "source": "https://ar.wikipedia.org/wiki/%D8%B5%D8%A7%D9%84%D8%AD_%D8%A2%D9%84_%D8%B7%D8%A7%D9%84%D8%A8"
+ },
+ "bukhari": {
+  "short": { "ar": "الشيخ د.", "en": "Sh. Dr.", "ur": "شیخ ڈاکٹر", "fr": "Cheikh Dr", "hi": "शेख़ डॉ." },
+  "full": {
+   "ar": "إمام صلاة التراويح بالمسجد الحرام سابقًا",
+   "en": "Former Taraweeh imam of the Grand Mosque",
+   "ur": "مسجدِ حرام میں نمازِ تراویح کے سابق امام",
+   "fr": "Ancien imam des tarawih à la Grande Mosquée de La Mecque",
+   "hi": "मस्जिद-ए-हराम में तरावीह के पूर्व इमाम"
+  },
+  "source": "https://ar.wikipedia.org/wiki/%D8%AD%D8%B3%D9%86_%D8%A8%D8%AE%D8%A7%D8%B1%D9%8A"
+ },
+ "bauthman": {
+  "short": { "ar": "الشيخ د.", "en": "Sh. Dr.", "ur": "شیخ ڈاکٹر", "fr": "Cheikh Dr", "hi": "शेख़ डॉ." },
+  "full": {
+   "ar": "إمام صلاة التراويح بالمسجد الحرام سابقًا",
+   "en": "Former Taraweeh imam of the Grand Mosque",
+   "ur": "مسجدِ حرام میں نمازِ تراویح کے سابق امام",
+   "fr": "Ancien imam des tarawih à la Grande Mosquée de La Mecque",
+   "hi": "मस्जिद-ए-हराम में तरावीह के पूर्व इमाम"
+  },
+  "source": "https://ar.wikipedia.org/wiki/%D8%B5%D9%84%D8%A7%D8%AD_%D8%A8%D8%A7%D8%B9%D8%AB%D9%85%D8%A7%D9%86"
+ },
+ "kalbani": {
+  "short": { "ar": "الشيخ", "en": "Sh.", "ur": "شیخ", "fr": "Cheikh", "hi": "शेख़" },
+  "full": {
+   "ar": "إمام صلاة التراويح بالمسجد الحرام سابقًا",
+   "en": "Former Taraweeh imam of the Grand Mosque",
+   "ur": "مسجدِ حرام میں نمازِ تراویح کے سابق امام",
+   "fr": "Ancien imam des tarawih à la Grande Mosquée de La Mecque",
+   "hi": "मस्जिद-ए-हराम में तरावीह के पूर्व इमाम"
+  },
+  "source": "https://ar.wikipedia.org/wiki/%D8%B9%D8%A7%D8%AF%D9%84_%D8%A7%D9%84%D9%83%D9%84%D8%A8%D8%A7%D9%86%D9%8A"
+ },
+ "budair": {
+  "short": { "ar": "الشيخ د.", "en": "Sh. Dr.", "ur": "شیخ ڈاکٹر", "fr": "Cheikh Dr", "hi": "शेख़ डॉ." },
+  "full": {
+   "ar": "إمام وخطيب المسجد النبوي",
+   "en": "Imam and Khatib of the Prophet's Mosque",
+   "ur": "مسجدِ نبوی کے امام و خطیب",
+   "fr": "Imam et prédicateur de la Mosquée du Prophète",
+   "hi": "मस्जिद-ए-नबवी के इमाम व ख़तीब"
+  },
+  "source": "https://prh.gov.sa/ar/%D8%B9%D9%84%D9%85%D8%A7%D8%A1-%D9%88%D9%85%D8%B4%D8%A7%D8%A6%D8%AE-%D8%A7%D9%84%D8%AD%D8%B1%D9%85%D9%8A%D9%86"
+ },
+ "qasim": {
+  "short": { "ar": "الشيخ د.", "en": "Sh. Dr.", "ur": "شیخ ڈاکٹر", "fr": "Cheikh Dr", "hi": "शेख़ डॉ." },
+  "full": {
+   "ar": "إمام وخطيب المسجد النبوي",
+   "en": "Imam and Khatib of the Prophet's Mosque",
+   "ur": "مسجدِ نبوی کے امام و خطیب",
+   "fr": "Imam et prédicateur de la Mosquée du Prophète",
+   "hi": "मस्जिद-ए-नबवी के इमाम व ख़तीब"
+  },
+  "source": "https://prh.gov.sa/ar/%D8%B9%D9%84%D9%85%D8%A7%D8%A1-%D9%88%D9%85%D8%B4%D8%A7%D8%A6%D8%AE-%D8%A7%D9%84%D8%AD%D8%B1%D9%85%D9%8A%D9%86"
+ },
+ "hudhaify": {
+  "short": { "ar": "الشيخ د.", "en": "Sh. Dr.", "ur": "شیخ ڈاکٹر", "fr": "Cheikh Dr", "hi": "शेख़ डॉ." },
+  "full": {
+   "ar": "إمام وخطيب المسجد النبوي",
+   "en": "Imam and Khatib of the Prophet's Mosque",
+   "ur": "مسجدِ نبوی کے امام و خطیب",
+   "fr": "Imam et prédicateur de la Mosquée du Prophète",
+   "hi": "मस्जिद-ए-नबवी के इमाम व ख़तीब"
+  },
+  "source": "https://prh.gov.sa/ar/%D8%B9%D9%84%D9%85%D8%A7%D8%A1-%D9%88%D9%85%D8%B4%D8%A7%D8%A6%D8%AE-%D8%A7%D9%84%D8%AD%D8%B1%D9%85%D9%8A%D9%86"
+ },
+ "alsheikh": {
+  "short": { "ar": "الشيخ د.", "en": "Sh. Dr.", "ur": "شیخ ڈاکٹر", "fr": "Cheikh Dr", "hi": "शेख़ डॉ." },
+  "full": {
+   "ar": "إمام وخطيب المسجد النبوي",
+   "en": "Imam and Khatib of the Prophet's Mosque",
+   "ur": "مسجدِ نبوی کے امام و خطیب",
+   "fr": "Imam et prédicateur de la Mosquée du Prophète",
+   "hi": "मस्जिद-ए-नबवी के इमाम व ख़तीब"
+  },
+  "source": "https://prh.gov.sa/ar/%D8%B9%D9%84%D9%85%D8%A7%D8%A1-%D9%88%D9%85%D8%B4%D8%A7%D8%A6%D8%AE-%D8%A7%D9%84%D8%AD%D8%B1%D9%85%D9%8A%D9%86"
+ },
+ "buayjan": {
+  "short": { "ar": "الشيخ د.", "en": "Sh. Dr.", "ur": "شیخ ڈاکٹر", "fr": "Cheikh Dr", "hi": "शेख़ डॉ." },
+  "full": {
+   "ar": "إمام وخطيب المسجد النبوي",
+   "en": "Imam and Khatib of the Prophet's Mosque",
+   "ur": "مسجدِ نبوی کے امام و خطیب",
+   "fr": "Imam et prédicateur de la Mosquée du Prophète",
+   "hi": "मस्जिद-ए-नबवी के इमाम व ख़तीब"
+  },
+  "source": "https://prh.gov.sa/ar/%D8%B9%D9%84%D9%85%D8%A7%D8%A1-%D9%88%D9%85%D8%B4%D8%A7%D8%A6%D8%AE-%D8%A7%D9%84%D8%AD%D8%B1%D9%85%D9%8A%D9%86"
+ },
+ "buayjan-nabawi": {
+  "short": { "ar": "الشيخ د.", "en": "Sh. Dr.", "ur": "شیخ ڈاکٹر", "fr": "Cheikh Dr", "hi": "शेख़ डॉ." },
+  "full": {
+   "ar": "إمام وخطيب المسجد النبوي",
+   "en": "Imam and Khatib of the Prophet's Mosque",
+   "ur": "مسجدِ نبوی کے امام و خطیب",
+   "fr": "Imam et prédicateur de la Mosquée du Prophète",
+   "hi": "मस्जिद-ए-नबवी के इमाम व ख़तीब"
+  },
+  "source": "https://prh.gov.sa/ar/%D8%B9%D9%84%D9%85%D8%A7%D8%A1-%D9%88%D9%85%D8%B4%D8%A7%D8%A6%D8%AE-%D8%A7%D9%84%D8%AD%D8%B1%D9%85%D9%8A%D9%86"
+ },
+ "thubaiti": {
+  "short": { "ar": "الشيخ", "en": "Sh.", "ur": "شیخ", "fr": "Cheikh", "hi": "शेख़" },
+  "full": {
+   "ar": "إمام وخطيب المسجد النبوي",
+   "en": "Imam and Khatib of the Prophet's Mosque",
+   "ur": "مسجدِ نبوی کے امام و خطیب",
+   "fr": "Imam et prédicateur de la Mosquée du Prophète",
+   "hi": "मस्जिद-ए-नबवी के इमाम व ख़तीब"
+  },
+  "source": "https://prh.gov.sa/ar/%D8%B9%D9%84%D9%85%D8%A7%D8%A1-%D9%88%D9%85%D8%B4%D8%A7%D8%A6%D8%AE-%D8%A7%D9%84%D8%AD%D8%B1%D9%85%D9%8A%D9%86"
+ },
+ "hudhaify-ahmad": {
+  "short": { "ar": "الشيخ د.", "en": "Sh. Dr.", "ur": "شیخ ڈاکٹر", "fr": "Cheikh Dr", "hi": "शेख़ डॉ." },
+  "full": {
+   "ar": "إمام المسجد النبوي",
+   "en": "Imam of the Prophet's Mosque",
+   "ur": "مسجدِ نبوی کے امام",
+   "fr": "Imam de la Mosquée du Prophète",
+   "hi": "मस्जिद-ए-नबवी के इमाम"
+  },
+  "source": "https://prh.gov.sa/ar/%D8%B9%D9%84%D9%85%D8%A7%D8%A1-%D9%88%D9%85%D8%B4%D8%A7%D8%A6%D8%AE-%D8%A7%D9%84%D8%AD%D8%B1%D9%85%D9%8A%D9%86"
+ },
+ "muhanna": {
+  "short": { "ar": "الشيخ د.", "en": "Sh. Dr.", "ur": "شیخ ڈاکٹر", "fr": "Cheikh Dr", "hi": "शेख़ डॉ." },
+  "full": {
+   "ar": "إمام المسجد النبوي",
+   "en": "Imam of the Prophet's Mosque",
+   "ur": "مسجدِ نبوی کے امام",
+   "fr": "Imam de la Mosquée du Prophète",
+   "hi": "मस्जिद-ए-नबवी के इमाम"
+  },
+  "source": "https://prh.gov.sa/ar/%D8%B9%D9%84%D9%85%D8%A7%D8%A1-%D9%88%D9%85%D8%B4%D8%A7%D8%A6%D8%AE-%D8%A7%D9%84%D8%AD%D8%B1%D9%85%D9%8A%D9%86"
+ },
+ "burhaji": {
+  "short": { "ar": "الشيخ د.", "en": "Sh. Dr.", "ur": "شیخ ڈاکٹر", "fr": "Cheikh Dr", "hi": "शेख़ डॉ." },
+  "full": {
+   "ar": "إمام المسجد النبوي",
+   "en": "Imam of the Prophet's Mosque",
+   "ur": "مسجدِ نبوی کے امام",
+   "fr": "Imam de la Mosquée du Prophète",
+   "hi": "मस्जिद-ए-नबवी के इमाम"
+  },
+  "source": "https://prh.gov.sa/ar/%D8%B9%D9%84%D9%85%D8%A7%D8%A1-%D9%88%D9%85%D8%B4%D8%A7%D8%A6%D8%AE-%D8%A7%D9%84%D8%AD%D8%B1%D9%85%D9%8A%D9%86"
+ },
+ "burhaji-nabawi": {
+  "short": { "ar": "الشيخ د.", "en": "Sh. Dr.", "ur": "شیخ ڈاکٹر", "fr": "Cheikh Dr", "hi": "शेख़ डॉ." },
+  "full": {
+   "ar": "إمام المسجد النبوي",
+   "en": "Imam of the Prophet's Mosque",
+   "ur": "مسجدِ نبوی کے امام",
+   "fr": "Imam de la Mosquée du Prophète",
+   "hi": "मस्जिद-ए-नबवी के इमाम"
+  },
+  "source": "https://prh.gov.sa/ar/%D8%B9%D9%84%D9%85%D8%A7%D8%A1-%D9%88%D9%85%D8%B4%D8%A7%D8%A6%D8%AE-%D8%A7%D9%84%D8%AD%D8%B1%D9%85%D9%8A%D9%86"
+ },
+ "qarafi": {
+  "short": { "ar": "الشيخ د.", "en": "Sh. Dr.", "ur": "شیخ ڈاکٹر", "fr": "Cheikh Dr", "hi": "शेख़ डॉ." },
+  "full": {
+   "ar": "إمام المسجد النبوي",
+   "en": "Imam of the Prophet's Mosque",
+   "ur": "مسجدِ نبوی کے امام",
+   "fr": "Imam de la Mosquée du Prophète",
+   "hi": "मस्जिद-ए-नबवी के इमाम"
+  },
+  "source": "https://prh.gov.sa/ar/%D8%B9%D9%84%D9%85%D8%A7%D8%A1-%D9%88%D9%85%D8%B4%D8%A7%D8%A6%D8%AE-%D8%A7%D9%84%D8%AD%D8%B1%D9%85%D9%8A%D9%86"
+ },
+ "maghamsi": {
+  "short": { "ar": "الشيخ", "en": "Sh.", "ur": "شیخ", "fr": "Cheikh", "hi": "शेख़" },
+  "full": {
+   "ar": "إمام المسجد النبوي",
+   "en": "Imam of the Prophet's Mosque",
+   "ur": "مسجدِ نبوی کے امام",
+   "fr": "Imam de la Mosquée du Prophète",
+   "hi": "मस्जिद-ए-नबवी के इमाम"
+  },
+  "source": "https://prh.gov.sa/ar/%D8%B9%D9%84%D9%85%D8%A7%D8%A1-%D9%88%D9%85%D8%B4%D8%A7%D8%A6%D8%AE-%D8%A7%D9%84%D8%AD%D8%B1%D9%85%D9%8A%D9%86"
+ },
+ "humaid": {
+  "short": { "ar": "الشيخ د.", "en": "Sh. Dr.", "ur": "شیخ ڈاکٹر", "fr": "Cheikh Dr", "hi": "शेख़ डॉ." },
+  "full": {
+   "ar": "إمام وخطيب سابق للمسجد النبوي",
+   "en": "Former Imam and Khatib of the Prophet's Mosque",
+   "ur": "مسجدِ نبوی کے سابق امام و خطیب",
+   "fr": "Ancien imam et prédicateur de la Mosquée du Prophète",
+   "hi": "मस्जिद-ए-नबवी के पूर्व इमाम व ख़तीब"
+  },
+  "source": "https://ar.wikipedia.org/wiki/%D8%A3%D8%AD%D9%85%D8%AF_%D8%B7%D8%A7%D9%84%D8%A8_%D8%AD%D9%85%D9%8A%D8%AF"
+ },
+ "ayyub": {
+  "short": { "ar": "الشيخ د.", "en": "Sh. Dr.", "ur": "شیخ ڈاکٹر", "fr": "Cheikh Dr", "hi": "शेख़ डॉ." },
+  "full": {
+   "ar": "إمام سابق بالمسجد النبوي (ت ٢٠١٦م)",
+   "en": "Former imam of the Prophet's Mosque (d. 2016)",
+   "ur": "مسجدِ نبوی کے سابق امام (وفات ۲۰۱۶ء)",
+   "fr": "Ancien imam de la Mosquée du Prophète (m. 2016)",
+   "hi": "मस्जिद-ए-नबवी के पूर्व इमाम (देहांत 2016)"
+  },
+  "source": "https://en.wikipedia.org/wiki/Muhammad_Ayyub"
+ },
+ "khalil": {
+  "short": { "ar": "الشيخ", "en": "Sh.", "ur": "شیخ", "fr": "Cheikh", "hi": "शेख़" },
+  "full": {
+   "ar": "إمام سابق لمسجد قباء بالمدينة المنورة (ت ٢٠٢٣م)",
+   "en": "Former imam of the Quba Mosque in Madinah (d. 2023)",
+   "ur": "مدینہ منورہ میں مسجدِ قبا کے سابق امام (وفات ۲۰۲۳ء)",
+   "fr": "Ancien imam de la mosquée de Qubâ à Médine (m. 2023)",
+   "hi": "मदीना की मस्जिद-ए-क़ुबा के पूर्व इमाम (देहांत 2023)"
+  },
+  "source": "https://ar.wikipedia.org/wiki/%D9%85%D8%AD%D9%85%D8%AF_%D8%AE%D9%84%D9%8A%D9%84_%D8%A7%D9%84%D9%82%D8%A7%D8%B1%D8%A6"
+ },
+ "ghamdi-saad": {
+  "short": { "ar": "الشيخ", "en": "Sh.", "ur": "شیخ", "fr": "Cheikh", "hi": "शेख़" },
+  "full": {
+   "ar": "إمام وخطيب جامع يوسف بن أحمد كانو بالدمام",
+   "en": "Imam and Khatib of the Kanoo Mosque in Dammam",
+   "ur": "دمام میں جامع یوسف بن احمد کانو کے امام و خطیب",
+   "fr": "Imam et prédicateur de la mosquée Kanoo à Dammam",
+   "hi": "दम्माम की कानू मस्जिद के इमाम व ख़तीब"
+  },
+  "source": "https://ar.wikipedia.org/wiki/%D8%B3%D8%B9%D8%AF_%D8%A7%D9%84%D8%BA%D8%A7%D9%85%D8%AF%D9%8A"
+ },
+ "afasy": {
+  "short": { "ar": "الشيخ", "en": "Sh.", "ur": "شیخ", "fr": "Cheikh", "hi": "शेख़" },
+  "full": {
+   "ar": "إمام المسجد الكبير بالكويت",
+   "en": "Imam of the Grand Mosque of Kuwait",
+   "ur": "کویت کی مسجدِ کبیر کے امام",
+   "fr": "Imam de la Grande Mosquée du Koweït",
+   "hi": "कुवैत की मस्जिद-ए-कबीर के इमाम"
+  },
+  "source": "https://ar.wikipedia.org/wiki/%D9%85%D8%B4%D8%A7%D8%B1%D9%8A_%D8%A7%D9%84%D8%B9%D9%81%D8%A7%D8%B3%D9%8A"
+ }
+}

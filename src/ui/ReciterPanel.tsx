@@ -101,7 +101,10 @@ export function ReciterPanel({
                       : undefined
                   }
                 />
-                <span className="face-cell-name">{f.label}</span>
+                <span className="face-cell-name">
+                  {f.title && <span className="face-cell-title">{f.title} </span>}
+                  {f.label}
+                </span>
                 {/* Set only where a second card carries the same name and
                     face — see allFaces in App.tsx. */}
                 {f.tag && <span className="face-cell-tag">{f.tag}</span>}
