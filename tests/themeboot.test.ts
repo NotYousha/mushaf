@@ -28,7 +28,11 @@ import {
  * list boots as cream for everyone who picks it.
  */
 
-const html = readFileSync('index.html', 'utf8')
+/*
+ * The app's document, which moved to app/ when the landing page took the site
+ * root. The boot script and the policy that admits it moved with it.
+ */
+const html = readFileSync('app/index.html', 'utf8')
 
 const inlineScripts = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)]
 

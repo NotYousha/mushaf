@@ -39,6 +39,7 @@ import { nextSurah, nextVoiceChange, prevSurah, type RepeatMode } from './player
 import { getQuota, requestPersistence, canDownloadAll } from './storage/quota'
 import { SurahList, plainName } from './ui/SurahList'
 import { SplitView, splits } from './ui/SplitView'
+import { FocusManager } from './tv/FocusManager'
 import { FavouritesPanel } from './ui/FavouritesPanel'
 import { HomePanel, type HomeFace, type HomeResume } from './ui/HomePanel'
 import { HOME_RECITERS } from './catalog/home'
@@ -127,6 +128,13 @@ import './ui/desktop.css'
 // the width queries there.
 import './ui/surfaces.css'
 import './ui/home.css'
+/*
+ * Last on purpose. The television's focus ring and its redefined type scale
+ * carry the same specificity as the rules they are meant to beat -- the ring in
+ * theme.css, the face grid in home.css -- so imported any earlier they lose the
+ * tie and the ring stays 2px on a set nobody is sitting within reach of.
+ */
+import './ui/tv.css'
 
 type Tab = 'home' | 'quran' | 'library' | 'text' | 'hifz' | 'more'
 
@@ -2473,6 +2481,11 @@ export default function App() {
           </button>
         </div>
       )}
+
+      {/* Arrow keys, Enter and Back, but only where a remote is the input.
+          On a desktop the arrows seek the player and on a phone there is no
+          keyboard at all, so this claims nothing anywhere else. */}
+      <FocusManager active={surface === 'tv'} />
 
       <Dock
         t={t}

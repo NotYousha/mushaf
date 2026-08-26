@@ -1,4 +1,5 @@
 /// <reference types="vitest" />
+import { resolve } from 'node:path'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
@@ -21,6 +22,31 @@ const BUILD = JSON.stringify(
 export default defineConfig({
   base,
   define: { __BUILD__: BUILD },
+  /*
+   * Two documents rather than one.
+   *
+   * GitHub Pages serves static files and has no routing, so a landing page and
+   * an app have to be two real files -- a client-side route would need a 404
+   * fallback and would ship the whole bundle just to decide which of two
+   * things to show.
+   *
+   * The landing page deliberately imports no React. Its job is to load fast
+   * and show the word-sync moving, and a framework standing between a visitor
+   * and the one thing worth showing them serves nobody.
+   */
+  build: {
+    rollupOptions: {
+      input: {
+        /*
+         * At the root, not in landing/, because Vite mirrors an input's source
+         * path into dist -- from landing/index.html the front door would have
+         * been served at /mushaf/landing/ rather than at /mushaf/.
+         */
+        landing: resolve(__dirname, 'index.html'),
+        app: resolve(__dirname, 'app/index.html'),
+      },
+    },
+  },
   plugins: [
     react(),
     VitePWA({
@@ -31,7 +57,19 @@ export default defineConfig({
       manifest: {
         name: "Al-Mau'iza — الموعظة",
         short_name: "Al-Mau'iza",
-        start_url: base,
+        /*
+         * The app now lives a level down, so this points there.
+         *
+         * Scope stays at the base and must: /mushaf/ still covers /mushaf/app/,
+         * which is what keeps every already-installed app working. Narrowing it
+         * to match start_url would revoke the scope of every installation made
+         * before this change.
+         *
+         * There is still a window where an installed client holds the old
+         * start_url and opens the landing page instead of the app. That is what
+         * the redirect in landing/landing.ts is for -- see src/landing/enter.ts.
+         */
+        start_url: `${base}app/`,
         scope: base,
         display: 'standalone',
         background_color: '#f6f0e6',

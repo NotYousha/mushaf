@@ -1,0 +1,261 @@
+/* =====================================================================
+   The landing page
+   ---------------------------------------------------------------------
+   One palette — Isha's, the one the mark itself is drawn in: white script
+   on black, and the night it is read in.
+
+   The app's tokens are deliberately not imported. They carry eight themes
+   and a light/dark switch resolved before first paint, and all of that
+   exists so a reader can settle in. A front door has one job and one look,
+   and inheriting a themeable design system to do it would mean shipping the
+   theme machinery to someone who has not decided to stay yet.
+   ===================================================================== */
+
+:root {
+  --l-bg: #07080b;
+  --l-card: #11161f;
+  --l-line: #1b2029;
+  --l-ink: #f6f8fc;
+  --l-soft: #c3cddd;
+  --l-quiet: #7c869c;
+  --l-accent: #c3cddd;
+  --l-now: #2c3b55;
+  --l-measure: 34rem;
+}
+
+/*
+ * Someone whose system is set to light gets a light page.
+ *
+ * The app spent commits making sure a dark phone never opens onto cream; the
+ * same jolt exists in the other direction, and a front door is the worst place
+ * to deliver it.
+ */
+@media (prefers-color-scheme: light) {
+  :root {
+    --l-bg: #eceef2;
+    --l-card: #ffffff;
+    --l-line: #dde2ea;
+    --l-ink: #11161f;
+    --l-soft: #4a5b76;
+    --l-quiet: #6b7488;
+    --l-accent: #4a5b76;
+    --l-now: #cfd9e8;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--l-bg);
+  color: var(--l-ink);
+  font-family: 'IBM Plex Sans Arabic', system-ui, -apple-system, sans-serif;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------------------------------------------------------------------
+   The hero
+   --------------------------------------------------------------------- */
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: clamp(2.5rem, 8vw, 5rem) 1.5rem 3rem;
+  text-align: center;
+}
+
+.hero-mark {
+  border-radius: 18px;
+  margin-bottom: 0.75rem;
+}
+
+.hero-name {
+  font-family: 'Amiri', serif;
+  /* The name is Arabic and is set as Arabic, on a page whose prose is not. */
+  direction: rtl;
+  font-size: clamp(2.75rem, 10vw, 4.5rem);
+  font-weight: 400;
+  margin: 0;
+  line-height: 1.15;
+}
+
+.hero-sub {
+  margin: 0;
+  color: var(--l-quiet);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+}
+
+.hero-claim {
+  margin: 2rem 0 0;
+  max-width: 22ch;
+  font-size: clamp(1.35rem, 4.5vw, 2rem);
+  line-height: 1.3;
+  color: var(--l-ink);
+}
+
+/* ---------------------------------------------------------------------
+   The demo — the whole reason this page exists
+   --------------------------------------------------------------------- */
+.demo {
+  margin: 2.5rem 0 0;
+  width: 100%;
+  max-width: var(--l-measure);
+}
+
+.demo-page {
+  background: var(--l-card);
+  border: 1px solid var(--l-line);
+  border-radius: 22px;
+  padding: clamp(1.5rem, 5vw, 2.5rem) 1.25rem;
+  /* Sized against the printed page it imitates, not against any interface
+     scale. Scripture is exempt from a type scale, here as in the app. */
+  font-family: 'Amiri Quran', 'Amiri', serif;
+  font-size: clamp(1.6rem, 5.5vw, 2.4rem);
+  line-height: 2.1;
+  text-align: center;
+}
+
+.dw {
+  border-radius: 8px;
+  padding: 0.05em 0.18em;
+  /*
+   * Only colour moves. Transitioning size or position would reflow the line on
+   * every word, and a printed page does not reflow while it is being read —
+   * which is the illusion the whole demo depends on.
+   */
+  transition: background-color 120ms linear, color 120ms linear;
+}
+
+.dw.is-now {
+  background: var(--l-now);
+  color: var(--l-ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dw {
+    transition: none;
+  }
+}
+
+.demo-cap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin: 1.25rem 0 0;
+}
+
+.demo-play {
+  font: inherit;
+  font-size: 0.95rem;
+  color: var(--l-bg);
+  background: var(--l-accent);
+  border: 0;
+  border-radius: 999px;
+  padding: 0.65rem 1.5rem;
+  cursor: pointer;
+}
+
+.demo-play .demo-play-off,
+.demo-play[data-state='playing'] .demo-play-on {
+  display: none;
+}
+
+.demo-play[data-state='playing'] .demo-play-off {
+  display: inline;
+}
+
+.demo-note {
+  margin: 0;
+  color: var(--l-quiet);
+  font-size: 0.85rem;
+  max-width: 46ch;
+}
+
+/* ---------------------------------------------------------------------
+   The way in
+   --------------------------------------------------------------------- */
+.cta,
+.foot-cta {
+  margin-top: 2.75rem;
+  display: inline-block;
+  padding: 0.95rem 2.4rem;
+  border-radius: 999px;
+  background: var(--l-ink);
+  color: var(--l-bg);
+  text-decoration: none;
+  font-size: 1.05rem;
+}
+
+.cta-note {
+  margin: 0.9rem 0 0;
+  color: var(--l-quiet);
+  font-size: 0.85rem;
+}
+
+/* ---------------------------------------------------------------------
+   What it does, and what it refuses to
+   --------------------------------------------------------------------- */
+main {
+  max-width: var(--l-measure);
+  margin: 0 auto;
+  padding: 1rem 1.5rem 4rem;
+  display: grid;
+  gap: 3rem;
+}
+
+.feature h2 {
+  font-family: 'Amiri', serif;
+  font-size: 1.75rem;
+  font-weight: 400;
+  margin: 0 0 0.6rem;
+}
+
+.feature p {
+  margin: 0;
+  color: var(--l-soft);
+}
+
+/* The refusals are set apart, because a list of what a thing will not do is
+   not another feature and should not read as one. */
+.feature-quiet {
+  border-top: 1px solid var(--l-line);
+  padding-top: 3rem;
+}
+
+.feature-quiet h2,
+.feature-quiet p {
+  color: var(--l-quiet);
+}
+
+.foot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem 1.5rem 5rem;
+  text-align: center;
+}
+
+.foot-cta {
+  margin-top: 0;
+}
+
+.foot-note {
+  margin: 1rem 0 0;
+  color: var(--l-quiet);
+  font-size: 0.8rem;
+  max-width: 42ch;
+}
+
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--l-accent);
+  outline-offset: 3px;
+}

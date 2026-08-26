@@ -35,7 +35,7 @@
     <meta
       http-equiv="Content-Security-Policy"
       content="default-src 'self';
-               script-src 'self' 'sha256-LRfbr44m0b2zBlL5pxxuMSudPiASQMTflziRt4QPFgQ=';
+               script-src 'self' 'sha256-wVWoUqLzhFZaWVj+6cXzC4p29Raj8siWWQUURCZGwF0=';
                style-src 'self' 'unsafe-inline';
                font-src 'self';
                img-src 'self' data: blob:;
@@ -47,7 +47,13 @@
                base-uri 'none';
                form-action 'none'"
     />
-    <link rel="stylesheet" href="./fonts/fonts.css" />
+    <!--
+      Absolute, for the same reason the icons below are: the base is prepended
+      at build time. Document-relative was right while this file sat at the
+      site root; from app/ it would resolve a level too deep and the mushaf
+      would render in a system face.
+    -->
+    <link rel="stylesheet" href="/fonts/fonts.css" />
     <!--
       Absolute, so the base is prepended at build time. A document-relative
       "./" resolves against whatever URL the page was opened at, and on the one
@@ -180,12 +186,26 @@
           else surface = 'phone'
         }
         root.setAttribute('data-surface', surface)
+        /*
+         * Read by the landing page, synchronously, to decide whether someone
+         * arriving at / has been here before.
+         *
+         * Written here rather than from the app so that it is set even if the
+         * bundle fails to load at all -- someone whose app is broken should
+         * still be sent to the app, where the error is, rather than to a page
+         * advertising it to them.
+         */
+        try {
+          localStorage.setItem('mushaf:used', '1')
+        } catch (e) {
+          /* Private window. The cost is seeing the landing page again. */
+        }
       })()
     </script>
     <title>الموعظة — Al-Mau'iza</title>
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <script type="module" src="../src/main.tsx"></script>
   </body>
 </html>
