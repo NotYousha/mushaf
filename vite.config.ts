@@ -127,5 +127,13 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: ['./tests/setup.ts'],
     globals: true,
+    /*
+     * A git worktree checked out under .claude/ is a second, complete copy of
+     * this repo, tests and all -- so vitest's default glob found every suite
+     * twice and reported eighty files where there are forty. Worse, the copy
+     * fails or passes on its own branch's code, which makes a run of this one
+     * unreadable.
+     */
+    exclude: ['**/node_modules/**', '**/dist/**', '**/.claude/**'],
   },
 })

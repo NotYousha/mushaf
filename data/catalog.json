@@ -12159,7 +12159,7 @@
    "mushaf": "المصحف المرتل — إنتاج مجمع الملك فهد لطباعة المصحف الشريف",
    "mushafEn": "Murattal mushaf — King Fahd Glorious Qur'an Printing Complex",
    "source": "https://mushaf-audio.mushaftarteel.workers.dev/lh/{surah}.mp3",
-   "photo": null,
+   "photo": "luhaidan.webp",
    "released": 114,
    "total": 114,
    "surahs": [

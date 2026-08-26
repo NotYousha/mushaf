@@ -124,9 +124,12 @@ describe('the photo settings', () => {
      * faceless entry has to reach it to stop being faceless.
      *
      * Drop public/<id>.webp in and set `photo` in the source entry to close
-     * one of these out.
+     * one of these out. Al-Luhaidan was the last of them, so the set is empty
+     * -- which is the state to keep it in. It stays here rather than being
+     * deleted because the next reciter added without a portrait needs
+     * somewhere to be named, and an empty set still fails him loudly.
      */
-    const FACELESS = new Set(['luhaidan'])
+    const FACELESS = new Set<string>([])
     for (const r of individual) {
       expect(Boolean(r.photo), `${r.id} has no portrait and is not listed as faceless`)
         .toBe(!FACELESS.has(r.id))

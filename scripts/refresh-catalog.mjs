@@ -272,7 +272,7 @@ const SOURCES = {
     fullName: 'الشيخ محمد بن عبد الله اللحيدان',
     mushaf: 'المصحف المرتل — إنتاج مجمع الملك فهد لطباعة المصحف الشريف',
     mushafEn: "Murattal mushaf — King Fahd Glorious Qur'an Printing Complex",
-    photo: null,
+    photo: 'luhaidan.webp',
   },
   buayjan: {
     route: 'bu',

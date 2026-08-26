@@ -112,6 +112,11 @@ FRAMING = {
     # centre square is mostly microphone. Read off the picture rather than
     # guessed: the first attempt put him at 62/22 and cropped a fold of cloth.
     "thubaiti": dict(zoom=200, cx=47, cy=32),
+    # Already square, which is the trap: the centred rule below only crops when
+    # the picture is taller than it is wide, so a square source passes through
+    # whole and his face ends up small in a medallion with a chest under it.
+    # Named here to crop at all. He sits a little right of centre and high.
+    "luhaidan": dict(zoom=120, cx=49, cy=43),
 }
 
 # Reciters the catalog names directly, and the file it asks for. These are the
@@ -119,6 +124,9 @@ FRAMING = {
 RECITERS = {
     "mishary": "afasy.webp",
     "abdulaziz-turki": "turki-abdulaziz.webp",
+    # Reads the King Fahd Complex's murattal mushaf. Not a Taraweeh imam, so
+    # he is named by the catalog and stays out of data/imams.json.
+    "luhaidan": "luhaidan.webp",
 }
 
 
