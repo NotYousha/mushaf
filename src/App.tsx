@@ -40,6 +40,8 @@ import { getQuota, requestPersistence, canDownloadAll } from './storage/quota'
 import { SurahList, plainName } from './ui/SurahList'
 import { SplitView, splits } from './ui/SplitView'
 import { FocusManager } from './tv/FocusManager'
+import { CommandPalette, type Command } from './ui/CommandPalette'
+import { matchShortcut } from './ui/shortcuts'
 import { FavouritesPanel } from './ui/FavouritesPanel'
 import { HomePanel, type HomeFace, type HomeResume } from './ui/HomePanel'
 import { HOME_RECITERS } from './catalog/home'
@@ -104,6 +106,7 @@ import {
   asTheme,
   bootPreference,
   watchSystemMode,
+  THEMES,
   type Mode,
   type ThemeId,
 } from './ui/theming'
@@ -542,6 +545,9 @@ export default function App() {
   )
 
   const advanceRef = useRef<(() => Promise<void>) | null>(null)
+  /* Same trick, for the same reason: the keyboard listener binds once and
+     reaches the current toggle through here. */
+  const toggleRef = useRef<(() => Promise<void>) | null>(null)
 
   const playSurah = useCallback(
     async (surah: number, startAt = 0) => {
@@ -1051,6 +1057,8 @@ export default function App() {
     await playSurah(current, from)
   }
 
+  toggleRef.current = toggle
+
   const currentView = surahs.find((s) => s.surah === current) ?? null
   /**
    * The portrait to show, and whose it is.
@@ -1516,6 +1524,95 @@ export default function App() {
   )
 
   const startSurah = useCallback((n: number) => void playSurah(n), [playSurah])
+
+  const [paletteOpen, setPaletteOpen] = useState(false)
+
+  /**
+   * What the palette can do.
+   *
+   * Surahs first, because jumping to one is the thing anyone actually opens
+   * this for; the themes after, because they are the other thing buried a tab
+   * away. Labelled in the reader's own language so the plain substring filter
+   * in the palette matches what they can see.
+   */
+  const paletteCommands: Command[] = useMemo(() => {
+    const surahCommands: Command[] = surahs.map((s) => ({
+      id: `surah-${s.surah}`,
+      label: `${s.surah}. ${plainName(s.name)}`,
+      hint: t.tabQuran,
+      run: () => {
+        setTab('quran')
+        void playSurah(s.surah)
+      },
+    }))
+
+    const themeCommands: Command[] = THEMES.map((th) => ({
+      id: `theme-${th.id}`,
+      label: `${th.latin} — ${th.ar}`,
+      hint: t.theme,
+      run: () => {
+        setTheme(th.id)
+        void setPref('theme', th.id)
+      },
+    }))
+
+    return [...surahCommands, ...themeCommands]
+  }, [surahs, t, setTab, playSurah])
+
+  /*
+   * The keyboard.
+   *
+   * Bound to the same handler object the lock screen and Control Centre use, so
+   * a key and a steering-wheel button cannot drift apart -- they are one
+   * implementation with two ways in.
+   *
+   * matchShortcut is what decides whether a press is ours at all: it refuses
+   * everything while a text field has focus, and everything at all on a surface
+   * that is not a desktop. Without the first, typing a surah name into search
+   * pauses the recitation on every space.
+   */
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const action = matchShortcut(
+        {
+          key: e.key,
+          metaKey: e.metaKey,
+          ctrlKey: e.ctrlKey,
+          altKey: e.altKey,
+          target: e.target as { tagName?: string; isContentEditable?: boolean } | null,
+        },
+        surface,
+      )
+      if (!action) return
+      e.preventDefault()
+      const h = engine.current?.handlers.current
+      switch (action) {
+        case 'palette':
+          setPaletteOpen((v) => !v)
+          break
+        case 'toggle':
+          void toggleRef.current?.()
+          break
+        case 'next':
+          h?.next()
+          break
+        case 'prev':
+          h?.prev()
+          break
+        case 'ayahNext':
+          h?.step(1)
+          break
+        case 'ayahPrev':
+          h?.step(-1)
+          break
+        case 'goto':
+          setTab('text')
+          break
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [surface, setTab])
 
   const startDownload = useCallback(
     (n: number) => {
@@ -2486,6 +2583,13 @@ export default function App() {
           On a desktop the arrows seek the player and on a phone there is no
           keyboard at all, so this claims nothing anywhere else. */}
       <FocusManager active={surface === 'tv'} />
+
+      <CommandPalette
+        t={t}
+        open={paletteOpen}
+        commands={paletteCommands}
+        onClose={() => setPaletteOpen(false)}
+      />
 
       <Dock
         t={t}
