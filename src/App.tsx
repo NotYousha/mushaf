@@ -41,6 +41,7 @@ import { SurahList, plainName } from './ui/SurahList'
 import { FavouritesPanel } from './ui/FavouritesPanel'
 import { HomePanel, type HomeFace, type HomeResume } from './ui/HomePanel'
 import { HOME_RECITERS } from './catalog/home'
+import { shortTitle, fullTitle } from './catalog/titles'
 import { withTransition } from './ui/transition'
 import { ReciterPanel, type PlaceCard } from './ui/ReciterPanel'
 import { MushafView, ayahStartsFor } from './ui/MushafView'
@@ -1131,6 +1132,17 @@ export default function App() {
    * voice this is; an individual mushaf is titled after the man reciting it,
    * so printing both would print him twice.
    */
+  /**
+   * The office of whoever is reciting right now.
+   *
+   * On a multi-voice Taraweeh year that is the imam of the moment rather than
+   * the collection, which is the same rule the name on the line above follows.
+   */
+  const playingTitle = (() => {
+    const id = liveWho ? voiceIdNow : reciter?.id
+    return id ? fullTitle(id, lang) : null
+  })()
+
   const collectionLabel = (() => {
     if (!reciter || !currentView) return null
     const title = inScript(lang, reciter.name, reciter.nameEn)
@@ -1217,6 +1229,9 @@ export default function App() {
       return {
         id: r.id,
         label,
+        /* The honorific alone, kept out of `label` so the duplicate-name check
+           above still compares names to names. */
+        title: shortTitle(r.id, lang),
         tag: shared.has(label) && r.tag ? inScript(lang, r.tag, r.tagEn) : null,
         src: photo ? (mine ? photo : `${import.meta.env.BASE_URL}${photo}`) : null,
         frame:
@@ -2142,6 +2157,21 @@ export default function App() {
                   </span>
                 )}
               </button>
+
+              {/*
+                  His office, on the expanded player only.
+
+                  A third line, which the two-line rule above was written
+                  against — but it earns it: the sheet is where someone has
+                  stopped to look at who is reciting, and "Imam and Khatib of
+                  the Grand Mosque" is the answer to the question they opened
+                  it with. The grids get the honorific alone, which is all
+                  they have room for.
+
+                  Absent for anyone whose office could not be verified, which
+                  is deliberate: see docs/titles.md.
+              */}
+              {playingTitle && <p className="now-title">{playingTitle}</p>}
             </div>
 
             <div className="player-actions">

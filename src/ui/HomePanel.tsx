@@ -5,6 +5,8 @@ import { Search, Chevron } from './Icons'
 
 /** A portrait already resolved to a drawable source and its framing. */
 export type HomeFace = {
+  /** The honorific that goes in front of the name, where one is known. */
+  title?: string | null
   id: string
   label: string
   src: string | null
@@ -200,7 +202,10 @@ export function HomePanel({
                       : undefined
                   }
                 />
-                <span className="face-cell-name">{f.label}</span>
+                <span className="face-cell-name">
+                  {f.title && <span className="face-cell-title">{f.title} </span>}
+                  {f.label}
+                </span>
               </button>
             </li>
           ))}
