@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { readFileSync } from 'node:fs'
 import { createHash } from 'node:crypto'
 import { DEFAULT_LANG, LANGS } from '../src/i18n'
+import { resolveSurface, SURFACES, TV_UA } from '../src/surface'
 import {
   THEMES,
   DEFAULT_THEME,
@@ -39,26 +40,43 @@ type Stamped = {
   mode: string | null
   lang: string | null
   dir: string | null
+  surface: string | null
 }
 
+/** What the pointer and hover queries answer, and how wide the window is. */
+type Env = { width?: number; hover?: boolean; fine?: boolean; coarse?: boolean; ua?: string }
+
 /** Run the real script text with whatever globals the case is about. */
-function boot(opts: {
-  store?: Record<string, string> | 'throws'
-  prefersDark?: boolean | 'throws'
-} = {}): Stamped {
-  const stamped: Stamped = { theme: null, mode: null, lang: null, dir: null }
+function boot(
+  opts: {
+    store?: Record<string, string> | 'throws'
+    prefersDark?: boolean | 'throws'
+    env?: Env
+    native?: boolean
+  } = {},
+): Stamped {
+  const stamped: Stamped = { theme: null, mode: null, lang: null, dir: null, surface: null }
   const localStorage = {
     getItem(key: string) {
       if (opts.store === 'throws') throw new DOMException('blocked', 'SecurityError')
       return opts.store?.[key] ?? null
     },
   }
+  const env = opts.env ?? {}
   const win = {
+    innerWidth: env.width ?? 390,
+    MushafNative: opts.native ? { ready: true } : undefined,
     matchMedia(query: string) {
       if (opts.prefersDark === 'throws') throw new TypeError('no matchMedia')
+      if (query.includes('hover')) return { matches: env.hover ?? false }
+      if (query.includes('pointer: fine')) return { matches: env.fine ?? false }
+      if (query.includes('pointer: coarse')) return { matches: env.coarse ?? true }
       return { matches: opts.prefersDark === true && query.includes('dark') }
     },
   }
+  // The script reads navigator.userAgent for the television test. Passed in
+  // rather than leaned on from jsdom, so a case can say what device it is about.
+  const nav = { userAgent: env.ua ?? 'jsdom' }
   const doc = {
     documentElement: {
       setAttribute(name: string, value: string) {
@@ -66,10 +84,17 @@ function boot(opts: {
         if (name === 'data-mode') stamped.mode = value
         if (name === 'lang') stamped.lang = value
         if (name === 'dir') stamped.dir = value
+        if (name === 'data-surface') stamped.surface = value
       },
     },
   }
-  new Function('localStorage', 'window', 'document', inlineScripts[0][1])(localStorage, win, doc)
+  new Function(
+    'localStorage',
+    'window',
+    'document',
+    'navigator',
+    inlineScripts[0][1],
+  )(localStorage, win, doc, nav)
   return stamped
 }
 
@@ -245,5 +270,67 @@ describe('what React starts from', () => {
     localStorage.setItem(THEME_KEY, 'sadaf')
     localStorage.setItem(MODE_KEY, 'light')
     expect(bootPreference()).toMatchObject({ theme: DEFAULT_THEME, mode: 'light' })
+  })
+})
+
+/*
+ * The surface rule now exists twice: once in src/surface.ts and once inline in
+ * index.html, because nothing can be imported before the first paint. Two
+ * copies of a rule drift, and this drift would be invisible — the app would
+ * resolve one surface in the head and a different one after mount, which is
+ * the reflow the inline copy exists to prevent.
+ *
+ * So both are run over the same device cases and required to agree.
+ */
+describe('the surface stamped in the head', () => {
+  const cases: { name: string; env: Env; native?: boolean }[] = [
+    { name: 'phone', env: { width: 390 } },
+    { name: 'large phone', env: { width: 428 } },
+    { name: 'iPad portrait', env: { width: 834 } },
+    { name: 'iPad Pro landscape', env: { width: 1366 } },
+    { name: 'desktop', env: { width: 1440, fine: true, coarse: false, hover: true } },
+    { name: 'laptop on a projector', env: { width: 1920, fine: true, coarse: false, hover: true } },
+    { name: 'a television that says so', env: { width: 960, ua: 'Mozilla/5.0 (Android TV)' } },
+    { name: 'a very large hoverless screen', env: { width: 1920, coarse: false } },
+  ]
+
+  for (const c of cases) {
+    it(`agrees with resolveSurface for ${c.name}`, () => {
+      const stamped = boot({ env: c.env, native: c.native }).surface
+      const expected = resolveSurface(
+        {
+          width: c.env.width ?? 390,
+          hover: c.env.hover ?? false,
+          fine: c.env.fine ?? false,
+          coarse: c.env.coarse ?? true,
+          tvUA: TV_UA.test(c.env.ua ?? 'jsdom'),
+          native: c.native ?? false,
+        },
+        'auto',
+      )
+      expect(stamped, c.name).toBe(expected)
+    })
+  }
+
+  it('stamps a stored override', () => {
+    expect(boot({ store: { 'mushaf:surface': 'tv' } }).surface).toBe('tv')
+  })
+
+  it('ignores a stored value no stylesheet would match', () => {
+    expect(boot({ store: { 'mushaf:surface': 'watch' } }).surface).toBe('phone')
+  })
+
+  it('lets a native shell outrank a stored override', () => {
+    expect(boot({ store: { 'mushaf:surface': 'tv' }, native: true }).surface).toBe('native')
+  })
+
+  it('stamps a surface even when site data is blocked', () => {
+    expect(boot({ store: 'throws' }).surface).toBe('phone')
+  })
+
+  it('knows every surface src/surface.ts does, and only those', () => {
+    const listed = /var SURFACES = \[([^\]]*)\]/.exec(inlineScripts[0][1])?.[1] ?? ''
+    const names = [...listed.matchAll(/'([^']+)'/g)].map((m) => m[1])
+    expect(names).toEqual(SURFACES)
   })
 })

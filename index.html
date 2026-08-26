@@ -35,7 +35,7 @@
     <meta
       http-equiv="Content-Security-Policy"
       content="default-src 'self';
-               script-src 'self' 'sha256-t6PmvZkam6I8UddHy8NW6tb76xumByjq/lsqLc71wHY=';
+               script-src 'self' 'sha256-LRfbr44m0b2zBlL5pxxuMSudPiASQMTflziRt4QPFgQ=';
                style-src 'self' 'unsafe-inline';
                font-src 'self';
                img-src 'self' data: blob:;
@@ -120,6 +120,66 @@
          */
         root.setAttribute('lang', lang)
         root.setAttribute('dir', DIRS[lang])
+        /*
+         * Which surface, stamped before the first paint for the same reason the
+         * theme is: the choice lives in IndexedDB, that cannot be read without
+         * awaiting, and a television that opens the phone layout and reflows a
+         * second later is the flash this whole arrangement exists to prevent.
+         *
+         * The rule is duplicated from src/surface.ts rather than imported,
+         * because nothing can be imported this early. tests/themeboot.test.ts
+         * runs both over the same device cases and requires them to agree, so
+         * the drift -- which would otherwise be invisible, one surface in the
+         * head and another after mount -- fails the suite instead.
+         */
+        var SURFACES = ['phone', 'tablet', 'desktop', 'tv', 'native']
+        var choice = 'auto'
+        try {
+          var sf = localStorage.getItem('mushaf:surface')
+          if (sf === 'auto' || SURFACES.indexOf(sf) !== -1) choice = sf
+        } catch (e) {
+          /* Site data blocked. 'auto' stands, which is what surface.ts also
+             falls back to, so React's first render agrees with this. */
+        }
+        var surface
+        if (window.MushafNative && window.MushafNative.ready) surface = 'native'
+        else if (choice !== 'auto') surface = choice
+        else {
+          var hover = false
+          var fine = false
+          var coarse = false
+          try {
+            hover = window.matchMedia('(hover: hover)').matches
+            fine = window.matchMedia('(pointer: fine)').matches
+            coarse = window.matchMedia('(pointer: coarse)').matches
+          } catch (e) {
+            /* No matchMedia. All three stay false, which lands on the phone
+               layout -- the one that is correct at any size. */
+          }
+          var tvUA = false
+          try {
+            tvUA = /\b(smart-?tv|googletv|android ?tv|appletv|hbbtv|netcast|viera|web ?os|tizen|bravia|crkey|aft[bms]|silk.*tv)\b/i.test(
+              navigator.userAgent,
+            )
+          } catch (e) {
+            /* No navigator. Not a television, then. */
+          }
+          /*
+           * 1536 rather than the 1280 an 80rem step would give.
+           *
+           * An iPad Pro in landscape is 1366 and clears 80rem, so that bar sent
+           * every one of them to the ten-foot layout. Android TV meanwhile often
+           * reports 1280 at 1.5x DPR -- narrower than the tablet -- which is why
+           * the user agent carries the real televisions and this only catches
+           * the very large hoverless screens that name nothing.
+           */
+          var w = window.innerWidth
+          if (!hover && (tvUA || ((w >= 1536 || (!fine && !coarse)) && !fine))) surface = 'tv'
+          else if (fine && hover && w >= 1024) surface = 'desktop'
+          else if (w >= 768) surface = 'tablet'
+          else surface = 'phone'
+        }
+        root.setAttribute('data-surface', surface)
       })()
     </script>
     <title>الموعظة — Al-Mau'iza</title>
