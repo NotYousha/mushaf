@@ -254,3 +254,64 @@
   color: var(--muted);
   font-size: var(--text-xs);
 }
+
+/* ---------------------------------------------------------------------
+   Desktop — three panes, which it already has
+   ---------------------------------------------------------------------
+   The plan for this called for a third column holding a now-playing
+   inspector. Reading desktop.css closely, that column already exists and
+   already holds one: the dock unfolds into a rail carrying 8rem of
+   artwork, the title, the reciter and the transport. A second pane
+   showing the same four things would have been a duplicate of the thing
+   beside it.
+
+   So the arrangement on a desktop is rail, list, reader — and the work
+   here is making the three of them size honestly, because .sheet caps
+   itself at 46rem, which was right when it held one column and squeezes
+   the split to a phone width now that it holds two.
+   --------------------------------------------------------------------- */
+[data-surface='desktop'] .sheet {
+  max-width: none;
+}
+
+[data-surface='desktop'] .split {
+  display: grid;
+  grid-template-columns: 21rem minmax(0, 1fr);
+  gap: var(--space-5);
+  align-items: start;
+}
+
+[data-surface='desktop'] .split-list {
+  position: sticky;
+  top: var(--space-4);
+  max-height: calc(100dvh - var(--space-6));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/*
+ * The measure is protected, not spent.
+ *
+ * The extra width a desktop has goes to the panes beside the reading column
+ * and never to the line: a metre of Uthmani is unreadable, and desktop.css was
+ * right to stop the page widening at 34rem. This only re-centres what is left.
+ */
+[data-surface='desktop'] .split-main {
+  min-width: 0;
+}
+
+/*
+ * Below 80rem there is not room for a rail, a list and a reader at once, and
+ * squeezing all three puts the reading column below its own measure — which is
+ * the one thing the extra panes exist to protect. The list gives way first,
+ * because the rail is how you navigate and the reader is what you came for.
+ */
+@media (max-width: 79.99rem) {
+  [data-surface='desktop'] .split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  [data-surface='desktop'] .split-list {
+    display: none;
+  }
+}
