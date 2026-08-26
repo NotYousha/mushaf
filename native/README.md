@@ -46,3 +46,21 @@ The offline architecture — chunked resumable downloads, the IndexedDB store,
 the service worker, the 604-page renderer, the word alignment — is web code and
 stays web code. Rewriting it against URLSession and Core Data is the whole app,
 not the chrome.
+
+## The watch
+
+`watch/` is a watchOS companion: the transport, and the wird counter. It is
+not a mushaf, and it should not become one — 604 pages on a 45mm screen is not
+a smaller version of a good idea.
+
+State reaches it in two hops, because watchOS has no web view: the web app
+publishes to `MushafBridge` on the phone, and the phone relays over
+WatchConnectivity. Both directions are fire-and-forget. A watch that awaits
+the phone, which awaits a web view that may be suspended, is a watch whose
+buttons hang.
+
+The phone side of the relay is **not written**. `WatchConnector` is the watch
+half; the iOS half — a `WCSessionDelegate` on the phone that forwards
+`nowPlaying` out and `command` in — still has to be added to
+`MushafBridge.swift`, and it is the first thing to write once a Mac is
+available.
