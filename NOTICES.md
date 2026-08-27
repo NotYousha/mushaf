@@ -61,11 +61,15 @@ were checked, on 2026-08-27:
 There is a **promising but unverified** lead. If the PDF was a King Fahd
 Complex publication, the Complex's own terms appear to permit free use in
 computer programs, inside and outside Saudi Arabia, restricting only
-commercial-sale printing of masahif. That wording reached this repository as a
-2024 Wayback snapshot relayed between sessions; `dm.qurancomplex.gov.sa`
-refuses connections from here and could not be read directly, so it is not
-confirmed — and it would only matter if the PDF were theirs, which is exactly
-what cannot now be shown.
+commercial-sale printing of masahif.
+
+**Nobody has read the live terms.** That wording
+came from a Wayback snapshot recovered by a research subagent and relayed
+between sessions; `dm.qurancomplex.gov.sa` and `qurancomplex.gov.sa` refuse
+connections from this network, and `web.archive.org` is unreachable from the
+tooling here. Treat it as a snapshot until somebody on a network that can reach
+the host reads it. And it would only matter if the PDF were theirs, which is
+exactly what cannot now be shown.
 
 **Decision, 2026-08-27: kept for internal and closed testing, to be settled
 before production.** Those tracks are private, so the exposure there is
@@ -81,14 +85,29 @@ sourced as Unicode text and set in it, `public/duri/` and its 76 MB go away,
 the rights question goes with them, and Ad-Duri gains word following, search
 and screen-reader support that page images can never have.
 
-Two things to know before trying:
+Two things to know before trying, both narrower than they first look.
 
-- The missing piece is a **page layout for the Ad-Duri riwayah** — which words
-  fall on which of the 604 pages. `data/mushaf-layout.json` is Hafs.
-- KFGQPC's fonts are **all rights reserved and must not be modified**. Verified
-  by parsing `QCF_P001.TTF`: no licence or licence-URL name records, only a
-  reservation. So it ships whole or not at all — `scripts/build-fonts.mjs`
-  subsets, and must not be pointed at it.
+**The deliverable is one file, not a mushaf.** Everything downstream of the
+layout is already riwayah-agnostic: `MushafView` renders any
+`{pages: [{n, w: [[text, key]]}]}`, and `src/mushaf/divisions.ts`, the juz
+index, the veil and the fit measurement all key off `surah:ayah:word`. So what
+is missing is a page layout for Ad-Duri in that shape — which words fall on
+which of the 604 pages — plus a font that renders it. `data/mushaf-layout.json`
+is Hafs and cannot be reused. Nothing else changes.
+
+**Do not vendor the font.** KFGQPC's faces are all rights reserved and must not
+be modified — verified by parsing `QCF_P001.TTF`, which carries no licence or
+licence-URL name record, only a reservation. Two separate hazards follow, and
+the second is the one that is easy to miss:
+
+- `scripts/build-fonts.mjs` **subsets**, which is modification. It must not be
+  pointed at one.
+- `globPatterns` in `vite.config.ts` includes `**/*.woff2`, so a face dropped
+  into `public/fonts/` is **precached into every installed service worker** —
+  confirmed against the built `sw.js`, which carries 18 of them. That is
+  redistribution twice over, in the repository and on every device, and it
+  cannot be walked back once installs exist. Hotlink it, or get written
+  permission first.
 
 **Action, before the production release:** either establish the PDF's publisher
 and record it here, or take the text-and-font route, or remove the images and
