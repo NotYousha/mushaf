@@ -218,22 +218,15 @@ const HARAMAIN = {
     collection: 66,
     name: 'Al-Buayjan — Saudi Center',
   },
-  /**
-   * Al-Buayjan's complete mushaf, recorded at the Prophet's Mosque.
+  /*
+   * `bn` was Al-Buayjan's Prophet's Mosque mushaf, and it is gone.
    *
-   * His Saudi Center murattal above is 77 surahs so far and has not moved in
-   * a while; this one is all 114, and the whole of it was checked rather than
-   * assumed — every surah resolves, every file answers a range request, and
-   * the durations are what the text implies. Two surahs sit on the
-   * aggregator's media host and one on an older node of it; the rest are on
-   * the site's own uploads, which is why this goes through the proxy like
-   * everything else.
+   * It existed because the Saudi Center's recording of him had stalled at 77
+   * surahs, and a second, complete performance was better than an unfinished
+   * one. The Center has since published all 114, so the app carries the
+   * recording it meant to carry and the stand-in is no longer a kindness --
+   * it is the same sheikh twice, which is a confusing thing to offer.
    */
-  bn: {
-    host: 'https://tilawatalharamain.com',
-    collection: 20,
-    name: "Al-Buayjan — Prophet's Mosque",
-  },
   /*
    * Al-Qarafi, in the riwayah of Hafs from Asim — every file of the aggregator's
    * copy says so in its tags, and so does this collection's own page.
@@ -953,11 +946,6 @@ const ROUTES = {
     ttl: HARAMAIN_PAGE_TTL,
     resolve: (surah, ctx) => resolveHaramain(HARAMAIN.bu, surah, ctx),
     name: HARAMAIN.bu.name,
-  },
-  bn: {
-    ttl: HARAMAIN_PAGE_TTL,
-    resolve: (surah, ctx) => resolveHaramain(HARAMAIN.bn, surah, ctx),
-    name: HARAMAIN.bn.name,
   },
   qa: {
     ttl: HARAMAIN_PAGE_TTL,

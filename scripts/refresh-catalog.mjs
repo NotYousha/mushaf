@@ -450,38 +450,14 @@ const SOURCES = {
     tag: 'المركز السعودي',
     tagEn: 'Saudi Center',
     photo: 'imam-buayjan.webp',
-    note: 'ما زال قيد التسجيل — تُضاف السور الجديدة تلقائيًا.',
-  },
-  /**
-   * Al-Buayjan's mushaf from the Prophet's Mosque, all 114 of it.
-   *
-   * The centre's production above stops at 77. This is his complete one, and
-   * a different recording again — five to twenty-three per cent apart from
-   * the centre's across the surahs both hold, which is a different night, not
-   * a different encode.
-   */
-  'buayjan-nabawi': {
-    route: 'bn',
-    name: 'عبد الله البعيجان',
-    nameEn: "Abdullah Al-Bu'ayjan",
-    fullName: 'أ. د. عبد الله بن عواد البعيجان',
-    mushaf: 'المصحف المرتل من المسجد النبوي',
-    mushafEn: "Murattal mushaf from the Prophet's Mosque",
-    tag: 'المسجد النبوي',
-    tagEn: "Prophet's Mosque",
-    photo: 'imam-buayjan.webp',
-    /**
-     * Eight short surahs the length check reads as too long, and they are not.
-     *
-     * He recites the short ones slowly here — the ratio climbs smoothly the
-     * shorter the surah gets, from 1.05x around surah 70 to 1.90x at
-     * al-Aadiyaat, which is a pace, not a shuffle: files holding each other's
-     * recitations scatter, they do not form a gradient. Every one of these
-     * was then confirmed from the file's own ID3 title, which names the surah
-     * it is served as — "سورة العاديات" in the file for 100, and so on for
-     * all eight. Excluding them would drop eight surahs he really did record.
+    /*
+     * The note is gone with the last of the holes: the Center finished this
+     * mushaf, and all 114 are published. Sixteen of them -- 1, 2 and 101-114 --
+     * are served as AAC under an .mp3 URL, with an honest audio/x-m4a
+     * content-type. Browsers sniff the container and play them; what they cost
+     * is the length check, which reads MP3 frame headers and cannot measure
+     * them, so those sixteen ship unverified by it.
      */
-    identityConfirmed: [80, 82, 92, 93, 95, 99, 100, 101],
   },
   /**
    * Al-Afasy's Hafs from the Ten Readings mushaf of 1445.
@@ -629,6 +605,20 @@ const SOURCES = {
     route: 'bl',
     // complete
     fixedCount: 114,
+    /*
+     * Ad-Duha reads at 1.45x what its letter count implies, which is exactly
+     * the threshold, and it was being thrown out for it -- the entry sat at
+     * 113 with a hole at 93 and no missing file behind it.
+     *
+     * Identity is settled some other way here, which is what this list is for.
+     * All 114 files exist in one numbered archive item at a steady bitrate,
+     * and 93 sits between a correct 92 and a correct 94 in that sequence:
+     * 092 is 951,074 bytes and 118.57 s, 093 is 633,007 and 78.81 s, 094 is
+     * 346,078 and 42.95 s. A file that is the 93rd of 114 in a complete
+     * mastered mushaf, flanked by its right neighbours, is Ad-Duha. He simply
+     * reads it slowly, which is a fact about the recitation and not a defect.
+     */
+    identityConfirmed: [93],
     name: 'بندر بليلة',
     nameEn: 'Bandar Baleela',
     fullName: 'الشيخ بندر بن عبد العزيز بليلة',
