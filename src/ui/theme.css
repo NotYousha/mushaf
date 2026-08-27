@@ -1797,10 +1797,27 @@ body {
   gap: 0.5em;
 }
 
-/* Centred within whatever max-width the fit measurement capped it to, so a
-   short line keeps its words together and gives the slack to the margins. */
+/*
+ * Centred in the measure, and stretched back out to fill it.
+ *
+ * The fit measurement narrows the box by the same factor it then scales the
+ * line by, so the two cancel and the line reaches both margins with its word
+ * gaps at the minimum. Centred rather than flush so that a line which hits
+ * the stretch cap and still falls short is short at both margins, which reads
+ * as a short line, rather than at one, which reads as a mistake.
+ */
 .mushaf-line {
-  margin-inline: auto;
+  /*
+   * Grown from the right margin, which is where an Arabic line begins.
+   *
+   * The fit measurement narrows the box by the same factor it then scales
+   * the line by, so the two cancel and the line reaches both margins with
+   * its word gaps at the minimum. The origin is physical — 100% is the right
+   * edge whatever the direction — and it has to be the reading edge, because
+   * anchoring the middle pushes the line half its own stretch off to one
+   * side, and anchoring the wrong edge pushes it the whole way.
+   */
+  transform-origin: 100% 50%;
 }
 
 .mw {

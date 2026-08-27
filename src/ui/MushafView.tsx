@@ -130,14 +130,13 @@ const ZOOMS = [1, 1.2, 1.45, 1.75, 2.1]
 const MIN_GAP_EM = 0.12
 
 /**
- * The widest a word gap may open before the line stops justifying.
+ * How far a line's letters may be stretched to fill the measure.
  *
- * Beyond this the line is centred instead, because a line thirty per cent
- * under the measure would otherwise put a finger's width between every pair
- * of words. Print solves this with kashida — stretching the letters — which
- * is not available to us without altering the text.
+ * This is kashida by other means. A third is about where the widening starts
+ * to read as a difference in weight between one line and its neighbour;
+ * anything a line still needs past that goes into the word gaps instead.
  */
-const MAX_GAP_EM = 0.3
+const MAX_STRETCH = 1.34
 
 /**
  * The veil: the page is taken away a layer at a time.
@@ -627,29 +626,49 @@ export function MushafView({
     host.style.setProperty('--zoom', String(ZOOMS[zoomRef.current]))
 
     /*
-     * Cap how far a short line may spread.
+     * Fill the measure by stretching the letters, not the gaps.
      *
-     * Every line is justified to the same measure, and the type is sized so
-     * the *longest* one fills it — which means a line that happens to be
-     * short has all the difference to give away, and space-between gives it
-     * to the word gaps. On a line thirty per cent under the measure that is
-     * a finger's width between every pair of words.
+     * Every line of a mushaf reaches both margins. Ours do too — they are
+     * flex rows justified edge to edge — but the *type* is not the type the
+     * line breaks were computed for: these breaks come from the King Fahd
+     * Complex's page and we set them in Amiri Quran, which renders some
+     * lines nearly a third narrower than the original face did. Justifying
+     * that with `space-between` puts the whole difference into the word
+     * gaps, eleven pixels of them, and the line stops looking like scripture
+     * and starts looking like a ransom note.
      *
-     * A printed mushaf has the same problem and solves it with kashida,
-     * stretching the letters themselves. We cannot: the text is Unicode and
-     * the elongation would have to be inserted into scripture. So the line
-     * is allowed to justify only up to a sane gap and is then centred, which
-     * leaves a little air at the margins on the shortest lines and keeps the
-     * words together — much the lesser of the two wrongs.
+     * Print has exactly this problem and answers it with kashida: it
+     * stretches the letters along the baseline until the line fills. We
+     * cannot insert kashida — the text is Unicode and the elongation would go
+     * into the scripture itself — but we can stretch the drawing of it, which
+     * is the same idea one layer down.
+     *
+     * So each line is laid out in a box narrowed by exactly its stretch
+     * factor, justified inside that box at the minimum gap, and then scaled
+     * back out to the full measure. The arithmetic cancels: the gaps land at
+     * the minimum and the letters take up the slack. Capped, because past
+     * about a third the widening is visible as a difference in weight
+     * between one line and the next; beyond the cap the remainder goes back
+     * into the gaps, which is the lesser fault.
      */
-    const capped = base * fit * MAX_GAP_EM
     for (const line of Array.from(block.querySelectorAll<HTMLElement>('.mushaf-line'))) {
+      line.style.width = ''
+      line.style.transform = ''
       const words = Array.from(line.children)
+      if (words.length < 2) continue
       let natural = 0
       for (const word of words) natural += word.getBoundingClientRect().width
-      // Measured before the fit is applied on this pass, so scale it up.
-      const at = (natural / base) * base * fit
-      line.style.maxWidth = `${Math.round(at + Math.max(0, words.length - 1) * capped)}px`
+      if (natural <= 0) continue
+      const gaps = (words.length - 1) * base * fit * MIN_GAP_EM
+      const want = (avail - gaps) / natural
+      const k = Math.max(1, Math.min(MAX_STRETCH, want))
+      if (k <= 1.001) continue
+      // Width, not max-width, and anchored at the reading edge. Centring the
+      // narrowed box and scaling about its middle put the line half its own
+      // stretch off to one side; growing it from the right margin — where an
+      // Arabic line begins — lands it exactly on both.
+      line.style.width = `${avail / k}px`
+      line.style.transform = `scaleX(${k})`
     }
 
     /*
