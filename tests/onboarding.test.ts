@@ -140,7 +140,11 @@ describe('the mushaf editions offered', () => {
       expect(e.id, 'an edition needs a stable id').toBeTruthy()
       expect(e.name).toBeTruthy()
       expect(e.nameAr).toBeTruthy()
-      expect(['text', 'images']).toContain(e.kind)
+      // Three, and they are not interchangeable: text loses nothing, glyphs
+      // keep word following but lose search and speech, images lose all
+      // three. Anything reading this field to decide what to offer needs
+      // that middle case kept separate.
+      expect(['text', 'glyphs', 'images']).toContain(e.kind)
     }
   })
 

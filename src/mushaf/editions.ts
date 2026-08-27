@@ -37,14 +37,24 @@ export type Edition = {
    */
   badge?: 'experimental'
   /**
-   * How the page is drawn.
+   * How the page is drawn, and so what the app can still do on it.
    *
-   * `text` is Unicode with one span per word. `glyphs` would be a per-page
-   * font in the private use area — still one span per word, so highlighting
-   * survives, but unsearchable and unreadable aloud. Nothing ships as
-   * `glyphs` yet; the type exists so the picker can already say so.
+   * - `text` — Unicode, one span per word. Loses nothing.
+   * - `glyphs` — a per-page font in the private use area. Still one span per
+   *   word, so word following survives; unsearchable and unreadable aloud,
+   *   because every codepoint is private.
+   * - `images` — pictures of pages. Loses all three.
+   *
+   * The three are deliberately not collapsed to two. `glyphs` sits between
+   * the others on exactly the axis that matters, and anything consulting this
+   * field to decide whether to offer search or a screen-reader path needs
+   * that middle case kept.
+   *
+   * Only `text` ships, and a test enforces it — see `editions.test.ts`. The
+   * other two exist because the choice is real and the next edition may not
+   * have the luxury.
    */
-  kind: 'text' | 'glyphs'
+  kind: 'text' | 'glyphs' | 'images'
   /**
    * Colour the letters by tajweed rule, from public/tajweed.json.
    *

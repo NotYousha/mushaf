@@ -13,41 +13,40 @@ import { DEFAULT_EDITION, EDITIONS, type Edition } from '../mushaf/editions'
  *
  * Anything added to `EDITIONS` appears here for free.
  */
-export type EditionKind = 'text' | 'images'
+/**
+ * Three, because an edition can lose these things separately.
+ *
+ * - `text` — live Unicode. Loses nothing: word highlighting, search and a
+ *   screen reader all work.
+ * - `glyphs` — a per-page font in the private use area. **Keeps** word
+ *   following, because it is still one element per word; loses search and
+ *   speech, because every codepoint is private.
+ * - `images` — pictures of pages. Loses all three.
+ *
+ * This was briefly two values, with `glyphs` flattened onto `images`. That
+ * read the same on screen and was wrong in the field: `kind` is what a later
+ * caller consults to decide whether to offer search or skip a screen-reader
+ * path, and a glyph edition would have had its highlighting turned off for no
+ * reason. Nothing ships as anything but `text` today, which is exactly why it
+ * was worth correcting before something depends on it.
+ */
+export type EditionKind = 'text' | 'glyphs' | 'images'
 
 export type EditionChoice = {
   id: string
   name: string
   nameAr: string
   description: string
-  /**
-   * 'text' means live Unicode, so word highlighting, search and a screen
-   * reader all work on it. 'images' means page pictures, so none of them do —
-   * which is worth telling somebody before they choose it.
-   *
-   * Nothing ships as 'images', and the registry explains why: every edition
-   * that would have to be pictures was rejected in favour of one that need
-   * not be. The case is kept here because the choice is a real one and the
-   * next edition may not have that luxury.
-   */
+  /** What this edition can still do — see EditionKind. */
   kind: EditionKind
 }
 
-/**
- * The registry's glyph editions read as 'images' to the onboarding step.
- *
- * A per-page glyph font is not a picture — it keeps one element per word, so
- * highlighting survives — but it is unsearchable and cannot be read aloud,
- * which is the distinction this step is actually making for the reader.
- * Calling it 'text' here would tell them something untrue about the thing
- * they most need to know.
- */
 const asChoice = (e: Edition): EditionChoice => ({
   id: e.id,
   name: e.name,
   nameAr: e.nameAr,
   description: e.description,
-  kind: e.kind === 'text' ? 'text' : 'images',
+  kind: e.kind,
 })
 
 export function editions(): EditionChoice[] {
