@@ -241,3 +241,17 @@ export const Chevron = ({ size }: P) => (
     <path d="M6 9l6 6 6-6" />
   </svg>
 )
+
+/** Full screen: four corners pushing outward. */
+export const Expand = ({ size }: P) => (
+  <svg {...s(size)} stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M9 3H3v6M15 3h6v6M9 21H3v-6M15 21h6v-6" />
+  </svg>
+)
+
+/** Out of full screen: the same four corners pulling in. */
+export const Collapse = ({ size }: P) => (
+  <svg {...s(size)} stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M3 9h6V3M21 9h-6V3M3 15h6v6M21 15h-6v6" />
+  </svg>
+)

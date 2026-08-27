@@ -135,6 +135,27 @@ export const en = {
   nothingDue: 'Nothing is due right now.',
   noPagesYet: 'No pages recorded yet. Open the mushaf and review one to begin.',
   pageN: (n: number) => `Page ${n}`,
+  /**
+   * The juz, and what an IndoPak mushaf calls the same thirtieth.
+   *
+   * The number arrives already in the reader's numerals, so this takes a
+   * string rather than formatting one.
+   */
+  juzN: (n: string) => `Juz' ${n}`,
+  paraN: (n: string) => `Para ${n}`,
+  hizbN: (n: string) => `Hizb ${n}`,
+  rubN: (n: string) => `Quarter ${n}`,
+  fullScreen: 'Full screen',
+  exitFullScreen: 'Leave full screen',
+  mushafIndex: 'Index',
+  surahsTab: 'Surahs',
+  juzTab: "Juz'",
+  paraTab: 'Para',
+  makki: 'Makki',
+  madani: 'Madani',
+  ayahCount: (n: string) => `${n} verses`,
+  /** Under a juz heading no surah opens: the one running through it. */
+  continues: 'continues here',
   review: 'Review',
   markClean: 'Clean',
   heatMap: 'Mushaf map',

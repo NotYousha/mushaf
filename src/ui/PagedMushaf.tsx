@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { Strings } from '../i18n'
+import { Library } from './Icons'
 
 const PAGES = 604
 const BASE = import.meta.env?.BASE_URL ?? '/'
@@ -17,6 +18,9 @@ type Props = {
   riwayah: string
   gotoPage?: number | null
   onWentToPage?: () => void
+  /** Open the index. The same six hundred and four pages need the same way
+   *  in, whichever riwayah is printed on them. */
+  onOpenIndex?: () => void
 }
 
 /**
@@ -34,7 +38,7 @@ type Props = {
  * One page is fetched at a time, so reading costs about 128 KB a page rather
  * than the 79 MB the whole mushaf weighs.
  */
-export function PagedMushaf({ t, riwayah, gotoPage, onWentToPage }: Props) {
+export function PagedMushaf({ t, riwayah, gotoPage, onWentToPage, onOpenIndex }: Props) {
   const [page, setPage] = useState(1)
   const [loaded, setLoaded] = useState(false)
 
@@ -86,6 +90,12 @@ export function PagedMushaf({ t, riwayah, gotoPage, onWentToPage }: Props) {
         >
           ›
         </button>
+
+        {onOpenIndex && (
+          <button className="btn" aria-label={t.mushafIndex} onClick={onOpenIndex}>
+            <Library size={18} />
+          </button>
+        )}
       </div>
     </div>
   )

@@ -7,7 +7,8 @@ import {
   useRef,
   useState,
 } from 'react'
-import type { Strings } from '../i18n'
+import type { Lang, Strings } from '../i18n'
+import { digits } from '../i18n/script'
 import {
   loadLayout,
   loadTimings,
@@ -15,11 +16,14 @@ import {
   type Layout,
   type Timings,
 } from '../mushaf/data'
+import { juzOfPage, surahOfPage, type UnitWord } from '../mushaf/divisions'
 import surahMeta from '../../data/surahs.json'
 import { getPref, setPref } from '../db/prefs'
+import { Collapse, Expand, Library } from './Icons'
 
 type Props = {
   surah: number | null
+  lang: Lang
   /** Playback position in seconds. */
   time: number
   reciterId: string
@@ -42,6 +46,24 @@ type Props = {
    * is not the wording being recited.
    */
   riwayah?: string | null
+  /**
+   * The page has the whole screen: no app header, no dock, no card.
+   *
+   * Owned by the app rather than by this component, because what it turns off
+   * is the app's own chrome. This is told what state it is in so it can size
+   * the type to the room it actually has and print its own margins.
+   */
+  immersive?: boolean
+  onImmersive?: (on: boolean) => void
+  /** Open the index — the way to a surah, a juz or a hizb by name. */
+  onOpenIndex?: () => void
+  /** The page now showing, so the index can mark where the reader is. */
+  onPageChange?: (page: number) => void
+  /**
+   * Juz, or Para. Both name the same thirtieth; an IndoPak reader knows it
+   * only by the second name.
+   */
+  unitWord?: UnitWord
 }
 
 /**
@@ -82,6 +104,10 @@ const arabicNumber = (n: number) =>
 export const showsBasmala = (surah: number) => surah !== 1 && surah !== 9
 
 const NAMES = new Map((surahMeta as { surah: number; name: string }[]).map((m) => [m.surah, m.name]))
+/** The transliterated name, for the margin in a language that is not Arabic. */
+const EN_NAMES = new Map(
+  (surahMeta as { surah: number; nameEn: string }[]).map((m) => [m.surah, m.nameEn]),
+)
 
 /**
  * One word of the page.
@@ -126,6 +152,7 @@ export { ayahStartsFor } from '../mushaf/data'
 
 export function MushafView({
   surah,
+  lang,
   time,
   reciterId,
   t,
@@ -137,6 +164,11 @@ export function MushafView({
   gotoPage,
   onWentToPage,
   riwayah,
+  immersive = false,
+  onImmersive,
+  onOpenIndex,
+  onPageChange,
+  unitWord = 'juz',
 }: Props) {
   const [layout, setLayout] = useState<Layout | null>(null)
   const [timings, setTimings] = useState<Timings | null>(null)
@@ -150,6 +182,19 @@ export function MushafView({
   const peekStart = useRef(0)
   const zoomRef = useRef(0)
   zoomRef.current = zoomIdx
+  /**
+   * Whether the controls are showing over a full-screen page.
+   *
+   * Full screen starts with them away — that is the point of it — and a tap
+   * on the page brings them back. Read from a ref inside the fit
+   * measurement, which must not re-run when they appear: they float over the
+   * page rather than taking room from it, so the type size does not change.
+   */
+  const [chrome, setChrome] = useState(false)
+  const immersiveRef = useRef(false)
+  immersiveRef.current = immersive
+  /** Where a horizontal drag on the page began, for turning pages by swipe. */
+  const swipe = useRef<{ x: number; y: number } | null>(null)
 
   useEffect(() => {
     void getPref<number>('mushafZoom', 0).then((z) => setZoomIdx(Math.min(ZOOMS.length - 1, Math.max(0, z))))
@@ -338,6 +383,14 @@ export function MushafView({
     onWentToPage?.()
   }, [gotoPage, onWentToPage])
 
+  // The page is owned here, but the index outside needs to know which one it
+  // is to mark the reader's place, and the page is turned from four
+  // directions — the buttons, a swipe, the hifz board, and the recitation
+  // itself. One report from here covers all four.
+  useEffect(() => {
+    onPageChange?.(page + 1)
+  }, [page, onPageChange])
+
   useEffect(() => {
     // Located rather than held by a ref: a ref on the active word would be a
     // changing prop, which is exactly what memoising the word avoids.
@@ -390,8 +443,18 @@ export function MushafView({
      */
     const lines = el.querySelectorAll('.mushaf-line').length || 15
     const viewport = window.innerHeight || 800
-    // What is left after the dock and the page's own chrome.
-    const budget = Math.max(160, viewport - 190)
+    /*
+     * What is left after the dock and the page's own chrome.
+     *
+     * Full screen is most of why the page was too small to read. The app
+     * header carrying the logo and wordmark, the dock, the card's padding
+     * and the page's own frame together took a hundred and ninety pixels
+     * off the height budget — on a phone that is nearly a quarter of the
+     * screen, and fifteen lines were being sized into what was left. With
+     * the chrome gone the page keeps everything but its two printed
+     * margins, and the type grows to match.
+     */
+    const budget = Math.max(160, viewport - (immersiveRef.current ? 84 : 190))
     // Each line occupies its line-height, which is 2.5em of the page's size.
     const byHeight = budget / (lines * 2.5 * base)
 
@@ -404,7 +467,7 @@ export function MushafView({
 
   useLayoutEffect(() => {
     fitPage()
-  }, [fitPage, page, layout, zoomIdx])
+  }, [fitPage, page, layout, zoomIdx, immersive])
 
   // A rotation changes the height budget, and on iOS does not always fire a
   // resize on the page element itself.
@@ -451,6 +514,21 @@ export function MushafView({
   if (!layout) return <p className="empty">{t.noResults}</p>
 
   const lines = layout.pages[page] ?? []
+  const lastPage = layout.pages.length - 1
+
+  /** Turn the page by hand, which stops playback dragging the view back. */
+  const turn = (delta: number) => {
+    const next = Math.max(0, Math.min(lastPage, page + delta))
+    if (next === page) return
+    setManual(true)
+    setPage(next)
+  }
+
+  // The margins name the reader's place the way the printed page does: the
+  // juz in one corner, the surah in the other, the page number at the foot.
+  const printed = page + 1
+  const marginSurah = surahOfPage(printed)
+  const marginJuz = juzOfPage(printed)
 
 
   // The line Talqeen is on, marked so you can see where to pick up — and,
@@ -470,7 +548,35 @@ export function MushafView({
   }
 
   return (
-    <div className={`mushaf${yourTurn ? ' your-turn' : ''}`}>
+    <div
+      className={`mushaf${yourTurn ? ' your-turn' : ''}${
+        immersive ? ' is-immersive' : ''
+      }${immersive && chrome ? ' show-chrome' : ''}`}
+    >
+      {/*
+          The margins of the printed page.
+
+          Only in full screen, and for the reason the printed mushaf has them:
+          with the app's own header gone there is nothing else on the screen
+          saying which juz this is or which surah. Inside the app they would
+          be a second copy of what the header above already says.
+      */}
+      {immersive && (
+        <div className="mushaf-margin top" aria-hidden="true">
+          <span className="margin-juz">
+            {(unitWord === 'para' ? t.paraN : t.juzN)(digits(lang, marginJuz))}
+          </span>
+          <span className="margin-surah">
+            {lang !== 'ar' && (
+              <span className="margin-surah-en">{EN_NAMES.get(marginSurah)}</span>
+            )}
+            <span className="margin-surah-ar" lang="ar">
+              {NAMES.get(marginSurah)}
+            </span>
+          </span>
+        </div>
+      )}
+
       <div
         lang="ar"
         // Hidden from assistive technology in favour of the ayah-by-ayah
@@ -481,10 +587,48 @@ export function MushafView({
           veil === 'off' ? '' : ` veil-${veil}`
         }${peeking ? ' is-peeking' : ''}`}
         ref={pageRef}
-        onPointerDown={startPeek}
-        onPointerUp={endPeek}
-        onPointerCancel={endPeek}
-        onPointerLeave={endPeek}
+        onPointerDown={(e) => {
+          swipe.current = { x: e.clientX, y: e.clientY }
+          startPeek()
+        }}
+        onPointerUp={(e) => {
+          endPeek()
+          const from = swipe.current
+          swipe.current = null
+          if (!from) return
+          const dx = e.clientX - from.x
+          const dy = e.clientY - from.y
+          /*
+           * A swipe turns the page; a tap brings the controls back.
+           *
+           * Right-to-left, so dragging the page to the right pulls the next
+           * one in, the way turning a leaf of a mushaf does. The threshold
+           * is generous and the vertical guard is strict, because the page
+           * scrolls under a finger too and a scroll must never turn it.
+           */
+          if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+            turn(dx > 0 ? 1 : -1)
+            return
+          }
+          // A tap on a word seeks; a tap on the page itself is for the
+          // controls, and only in full screen where they are hidden.
+          if (
+            immersive &&
+            Math.abs(dx) < 10 &&
+            Math.abs(dy) < 10 &&
+            !(e.target as HTMLElement).closest('.mw')
+          ) {
+            setChrome((c) => !c)
+          }
+        }}
+        onPointerCancel={() => {
+          swipe.current = null
+          endPeek()
+        }}
+        onPointerLeave={() => {
+          swipe.current = null
+          endPeek()
+        }}
         // Two fingers means "I stumbled here" — the whole input, deliberately.
         // Anything cleverer would need to listen to the reciter, which this
         // app will not do.
@@ -559,28 +703,55 @@ export function MushafView({
         </div>
       )}
 
+      {/* The foot of the printed page: its number, and nothing else. */}
+      {immersive && (
+        <div className="mushaf-margin bottom" aria-hidden="true">
+          <span className="margin-page">{digits(lang, printed)}</span>
+        </div>
+      )}
+
       <div className="mushaf-bar">
-        <button
-          className="btn"
-          onClick={() => {
-            setManual(true)
-            setPage(Math.min(layout.pages.length - 1, page + 1))
-          }}
-          disabled={page >= layout.pages.length - 1}
-        >
+        <button className="btn" onClick={() => turn(1)} disabled={page >= lastPage}>
           ‹
         </button>
         <span className="mushaf-num">{arabicNumber(page + 1)}</span>
-        <button
-          className="btn"
-          onClick={() => {
-            setManual(true)
-            setPage(Math.max(0, page - 1))
-          }}
-          disabled={page <= 0}
-        >
+        <button className="btn" onClick={() => turn(-1)} disabled={page <= 0}>
           ›
         </button>
+
+        {/*
+            The index.
+
+            Six hundred and four pages and two buttons that move one at a
+            time. Everything else here adjusts how the page looks; this is
+            the only control that answers "take me somewhere".
+        */}
+        {onOpenIndex && (
+          <button className="btn" aria-label={t.mushafIndex} onClick={onOpenIndex}>
+            <Library size={18} />
+          </button>
+        )}
+
+        {/*
+            Full screen.
+
+            Placed on the page's own bar rather than in the app's header,
+            because the header is the first thing it takes away — a control
+            that removes itself is a control you cannot use again.
+        */}
+        {onImmersive && (
+          <button
+            className={`btn full-btn${immersive ? ' on' : ''}`}
+            aria-pressed={immersive}
+            aria-label={immersive ? t.exitFullScreen : t.fullScreen}
+            onClick={() => {
+              setChrome(false)
+              onImmersive(!immersive)
+            }}
+          >
+            {immersive ? <Collapse size={18} /> : <Expand size={18} />}
+          </button>
+        )}
 
         <button
           className={`btn veil-btn${veil === 'off' ? '' : ' on'}`}

@@ -45,6 +45,7 @@ import { shortTitle, fullTitle } from './catalog/titles'
 import { withTransition } from './ui/transition'
 import { ReciterPanel, type PlaceCard } from './ui/ReciterPanel'
 import { MushafView, ayahStartsFor } from './ui/MushafView'
+import { MushafIndex } from './ui/MushafIndex'
 import { HifzBoard } from './ui/HifzBoard'
 import { ForkDrill } from './ui/ForkDrill'
 import { PagedMushaf } from './ui/PagedMushaf'
@@ -837,6 +838,31 @@ export default function App() {
     setTab('text')
   }
 
+  /**
+   * The mushaf has the whole screen.
+   *
+   * Held here rather than in the page itself, because what it turns off is
+   * this component's chrome: the header carrying the logo and the wordmark,
+   * and the dock. Remembered between sessions — someone who reads full
+   * screen once reads full screen — but only ever applied on the mushaf, so
+   * the rest of the app can never be left with no way out of it.
+   */
+  const [fullPage, setFullPage] = useState(false)
+  useEffect(() => {
+    void getPref<boolean>('mushafFullPage', false).then(setFullPage)
+  }, [])
+
+  /** The index, open over the page rather than beside it. */
+  const [indexOpen, setIndexOpen] = useState(false)
+  /** Which page the mushaf is showing, reported up so the index can mark it. */
+  const [atPage, setAtPage] = useState(1)
+  const immersive = tab === 'text' && fullPage && !indexOpen
+
+  const goToPage = useCallback((page: number) => {
+    setGotoPage(page)
+    setIndexOpen(false)
+  }, [])
+
   // Stamped on <html>, so the palette reaches the page background and the
   // browser's own chrome, not just the React tree.
   useEffect(() => {
@@ -1573,7 +1599,7 @@ export default function App() {
   const pct = duration ? (time / duration) * 100 : 0
 
   return (
-    <div className="app" dir={t.dir}>
+    <div className={`app${immersive ? ' is-immersive' : ''}`} dir={t.dir}>
       <Splash lang={lang} />
 
       {/*
@@ -2026,21 +2052,45 @@ export default function App() {
 
           {tab === 'text' && (
             <div className="panel">
-              {!isHafs(reciter) ? (
+              {/*
+                  The index replaces the page rather than sliding over it.
+
+                  It is a destination, not a peek: you go to it to leave the
+                  page you are on. Layering it over a mushaf that is still
+                  rendering underneath costs a second copy of the heaviest
+                  view in the app for a page nobody is looking at.
+              */}
+              {indexOpen ? (
+                <MushafIndex
+                  t={t}
+                  lang={lang}
+                  page={atPage}
+                  onOpenPage={goToPage}
+                />
+              ) : !isHafs(reciter) ? (
                 <PagedMushaf
                   t={t}
                   riwayah={riwayahLabel(reciter, lang) ?? ''}
                   gotoPage={gotoPage}
                   onWentToPage={() => setGotoPage(null)}
+                  onOpenIndex={() => setIndexOpen(true)}
                 />
               ) : !currentView ? (
                 <p className="empty">{t.pickSurahForText}</p>
               ) : (
                 <MushafView
                   surah={currentView.surah}
+                  lang={lang}
                   time={time}
                   reciterId={reciterId}
                   t={t}
+                  immersive={immersive}
+                  onImmersive={(on) => {
+                    setFullPage(on)
+                    void setPref('mushafFullPage', on)
+                  }}
+                  onOpenIndex={() => setIndexOpen(true)}
+                  onPageChange={setAtPage}
                   onSeek={(sec) => engine.current!.seek(sec)}
                   activeLine={drill?.segment ?? null}
                   yourTurn={drill?.phase === 'echo'}

@@ -1715,7 +1715,11 @@ body {
   cursor: pointer;
 }
 
-.seg button[aria-pressed='true'] {
+/* aria-selected as well as aria-pressed: a two-way switch is a pair of
+   toggle buttons, but a pair of *views* is a tablist, and the two states are
+   spelled differently in ARIA while looking identical on screen. */
+.seg button[aria-pressed='true'],
+.seg button[aria-selected='true'] {
   background: linear-gradient(160deg, var(--tile-active-a), var(--tile-active-b));
   color: var(--tile-active-ink);
 }
@@ -2045,6 +2049,309 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .mw {
+    transition: none;
+  }
+}
+
+/* ============ the mushaf index ============ */
+
+/*
+ * The way into six hundred and four pages.
+ *
+ * Deliberately not styled as the Quran tab's surah list, though it shares
+ * that list's row skeleton. That one is a reciter's; every row plays
+ * something and carries a download control. This one is the book's: every row
+ * ends in a page number and turns to it.
+ */
+.mindex {
+  padding: 0.9rem 0 1.5rem;
+}
+
+.mindex > .seg {
+  display: flex;
+  margin: 0 auto 1rem;
+}
+
+.mindex > .seg button {
+  flex: 1;
+}
+
+.mindex-juz {
+  margin-bottom: 0.9rem;
+}
+
+/* The heading is the whole width and the whole target: a chevron alone is a
+   16px hit area on a list meant to be folded away by the handful. */
+.mindex-h {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.5rem 0.35rem;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-family: var(--font-name);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+.mindex-chev {
+  display: inline-flex;
+  color: var(--muted);
+  transition: transform 160ms ease;
+}
+
+.mindex-chev.is-shut {
+  transform: rotate(-90deg);
+}
+
+:root[dir='rtl'] .mindex-chev.is-shut {
+  transform: rotate(90deg);
+}
+
+.mindex-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-radius: var(--radius-card);
+  background: var(--tile);
+  overflow: hidden;
+}
+
+.mindex-row + .mindex-row {
+  border-top: 1px solid var(--accent-line);
+}
+
+.mindex-row .row-main {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+/* The page number, which is the point of every row here. Tabular so the
+   column does not shift between 7 and 604. */
+.mindex-page {
+  margin-inline-start: auto;
+  font-size: var(--text-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  flex: none;
+}
+
+.mindex-row.is-cont .name-plain {
+  font-style: italic;
+}
+
+.name-plain.strong {
+  color: var(--ink-strong);
+  font-weight: 600;
+}
+
+.mindex-unit {
+  list-style: none;
+}
+
+.mindex-unit + .mindex-unit {
+  border-top: 1px solid var(--accent-line);
+}
+
+.mindex-unit-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.mindex-hizbs,
+.mindex-rubs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* The quarters are indented under their hizb, and the hizb under its juz, so
+   the three depths read as containment rather than as one flat list of two
+   hundred and seventy rows. */
+.mindex-hizbs {
+  padding-inline-start: 1.4rem;
+  padding-bottom: 0.5rem;
+}
+
+.mindex-rubs {
+  padding-inline-start: 1.4rem;
+}
+
+.mindex-hizb,
+.mindex-rub {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  padding: 0.5rem 0.9rem 0.5rem 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: var(--text-sm);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.mindex-rub {
+  color: var(--muted);
+}
+
+/* ============ the mushaf, full screen ============ */
+
+/*
+ * Everything between the page and the edge of the screen, taken away.
+ *
+ * The complaint this answers was that the page was small and the logo was on
+ * top of it, and those were one fault: the mushaf rendered inside the shared
+ * card, so it paid for a header carrying the mark and the wordmark, a dock,
+ * the card's own margin and radius, and the page's gold frame — about a
+ * quarter of a phone screen, with fifteen lines sized into what was left.
+ *
+ * The app keeps its scroll container and its safe-area padding. Only the
+ * furniture goes.
+ */
+.app.is-immersive .sheet {
+  margin: 0;
+  border-radius: 0;
+  box-shadow: none;
+  background: var(--page);
+}
+
+.app.is-immersive .sheet-head,
+.app.is-immersive .dock {
+  display: none;
+}
+
+.app.is-immersive .panel {
+  padding: 0;
+}
+
+.mushaf.is-immersive {
+  display: flex;
+  flex-direction: column;
+  /* The scroller's full height, so the two margins can sit at the extremes
+     of the screen rather than wherever the page happens to end. */
+  min-height: 100%;
+  padding: 0;
+}
+
+/* The leaf itself: no frame, no rounding, no inset border. A printed page
+   has margins, not a box drawn round it. */
+.mushaf.is-immersive .mushaf-page {
+  flex: 1;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 0.35rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+/*
+ * The printed margins.
+ *
+ * Set in the interface face rather than the Quran face, and in the muted
+ * ink, because they are not scripture — a mushaf sets its running heads in a
+ * plainer, smaller hand than the text for the same reason.
+ */
+.mushaf-margin {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  flex: none;
+  padding: 0.55rem 1.1rem 0.15rem;
+  font-family: var(--font-name);
+  font-size: var(--text-sm);
+  color: var(--muted);
+  /* The juz belongs on the reading-start side in either direction, and the
+     surah opposite it, so this follows the interface rather than the page. */
+  direction: inherit;
+}
+
+.mushaf-margin.bottom {
+  justify-content: center;
+  padding: 0.15rem 1.1rem calc(0.5rem + env(safe-area-inset-bottom));
+}
+
+.margin-surah {
+  display: flex;
+  align-items: baseline;
+  gap: 0.45rem;
+}
+
+/*
+ * The surah's own name, in its own face.
+ *
+ * No size of its own. Arabic does set smaller than Latin at the same nominal
+ * size and the temptation to nudge it is real, but this is a running head,
+ * not scripture — the type scale covers it, and a one-off here is how the app
+ * ended up with thirty-six font sizes the first time.
+ */
+.margin-surah-ar {
+  font-family: var(--font-ar);
+  color: var(--ink);
+}
+
+.margin-juz,
+.margin-surah-en {
+  color: var(--muted);
+}
+
+.margin-page {
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+/*
+ * The controls, away until asked for.
+ *
+ * A tap on the page brings them back — anywhere that is not a word, since a
+ * word already means "seek here". They float over the page rather than
+ * taking room from it, so the type size does not jump when they appear.
+ */
+.mushaf.is-immersive .mushaf-bar {
+  position: fixed;
+  inset-inline: 0;
+  bottom: calc(1rem + env(safe-area-inset-bottom));
+  z-index: 45;
+  width: fit-content;
+  max-width: calc(100% - 1.5rem);
+  margin: 0 auto;
+  padding: 0.4rem 0.6rem;
+  border-radius: 999px;
+  background: var(--card);
+  box-shadow: var(--shadow-md);
+  opacity: 0;
+  transform: translateY(0.6rem);
+  pointer-events: none;
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.mushaf.is-immersive.show-chrome .mushaf-bar {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+
+/* Notes below the page are the app talking, not the mushaf. Full screen is
+   the one place the page should be alone. */
+.mushaf.is-immersive .mushaf-note {
+  display: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mushaf.is-immersive .mushaf-bar {
     transition: none;
   }
 }
