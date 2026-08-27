@@ -2446,9 +2446,17 @@ body {
 .mushaf.is-immersive {
   display: flex;
   flex-direction: column;
-  /* The scroller's full height, so the two margins can sit at the extremes
-     of the screen rather than wherever the page happens to end. */
-  min-height: 100%;
+  /*
+   * A definite height, not `100%`.
+   *
+   * A percentage resolves against a parent that has no height of its own —
+   * the scroller sizes to its content — so it computed to nothing, the page
+   * did not stretch, and a short page like the opening of Al-Baqarah sat
+   * jammed against the top of an otherwise empty screen. The viewport minus
+   * the insets is the real figure, and it is the one the fit measurement is
+   * already working from.
+   */
+  min-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
   padding: 0;
 }
 
@@ -2473,6 +2481,15 @@ body {
  * plainer, smaller hand than the text for the same reason.
  */
 .mushaf-margin {
+  /*
+   * Printed on the page, not laid over it.
+   *
+   * These are aria-hidden ornament, and they were taking the taps meant for
+   * the page underneath — near the foot of the screen a tap reached the page
+   * number instead of the words, so it neither sought to a word nor brought
+   * the controls back. Nothing here is a target.
+   */
+  pointer-events: none;
   display: flex;
   align-items: baseline;
   justify-content: space-between;
