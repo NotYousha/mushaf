@@ -14,12 +14,31 @@ connect-src and media-src name every host the app may reach.
 | App name (30 max) | `Al-Mau'iza — الموعظة` (21) |
 | Default language | Arabic (ar) — the app's own default, matching the manifest |
 | App or game | App |
-| Free or paid | Free |
+| Free or paid | **Free — and not a choice. See below.** |
 | Category | Books & Reference |
 | Tags | Islam, Quran, Audio |
 | Contact email | yousha.ahmed55@gmail.com |
 | Website | https://notyousha.github.io/mushaf/ |
 | Privacy policy | https://notyousha.github.io/mushaf/privacy.html |
+
+### Free is a licence condition, not a pricing decision
+
+The app bundles six translations obtained from the Tanzil Project, whose terms
+are explicit: *"The translations provided at this page are for non-commercial
+purposes only. If used otherwise, you need to obtain necessary permission from
+the translator or the publisher."*
+
+So while those translations ship, **Al-Mau'iza must not be sold, must not carry
+in-app purchases or ads, and must not be bundled into anything sold.** Setting
+this listing to paid would breach the licence on its content, not merely change
+its price. Saheeh International in particular is not public domain — it is
+carried under Tanzil's terms, © Al-Muntada al-Islami.
+
+If it ever needs to change, the route is to license the translations directly
+rather than to change this field: NOTICES.md names Furqaan Institute of Quranic
+Education as the holder to approach for The Clear Quran, and they do grant free
+app licences. Until somebody has done that and written it down, Free is the
+only lawful setting.
 
 ## Short description (80 max)
 
