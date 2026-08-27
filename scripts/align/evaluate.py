@@ -30,7 +30,10 @@ BASMALA = 'بسم الله الرحمن الرحيم'
 
 def fetch(route, surah):
     os.makedirs(CACHE, exist_ok=True)
-    path = os.path.join(CACHE, f'{route}{surah}.mp3')
+    # A mosque-year route is two segments — haram/1447 — and the slash would
+    # ask for a subdirectory nobody made. Flattened, so a Taraweeh year can be
+    # aligned with the same command as a reciter.
+    path = os.path.join(CACHE, f"{route.replace('/', '-')}{surah}.mp3")
     if not os.path.exists(path):
         req = urllib.request.Request(
             f'{WORKER}/{route}/{surah}.mp3', headers={'User-Agent': 'Mozilla/5.0'}

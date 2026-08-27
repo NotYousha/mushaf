@@ -77,6 +77,22 @@ function rawSizes(css: string) {
   return found
 }
 
+/**
+ * Which exemption, if any, covers a selector.
+ *
+ * Matched on the rightmost simple selector as well as the whole string,
+ * because the element carrying the font-size is the one at the end: when
+ * `.mushaf-line` became `.mpage-lines .mushaf-line` it was still the same line
+ * of the same mushaf, but an exact-string check called it a new offender and
+ * called the old entry an orphan in the same run. That has now happened twice
+ * — `.mushaf-page` was the first — and it is nesting, not a new size.
+ */
+const exemptedBy = (selector: string): string | null => {
+  if (EXEMPT.has(selector)) return selector
+  const last = selector.split(/\s+/).pop() ?? selector
+  return EXEMPT.has(last) ? last : null
+}
+
 describe('the type scale', () => {
   it('states five steps and nothing under 12.8px', () => {
     const root = readFileSync('src/ui/theme.css', 'utf8')
@@ -92,7 +108,7 @@ describe('the type scale', () => {
     const offenders: string[] = []
     for (const file of FILES) {
       for (const { selector, value } of rawSizes(readFileSync(`src/ui/${file}`, 'utf8'))) {
-        if (!EXEMPT.has(selector)) offenders.push(`${file}: ${selector} { font-size: ${value} }`)
+        if (!exemptedBy(selector)) offenders.push(`${file}: ${selector} { font-size: ${value} }`)
       }
     }
     expect(offenders).toEqual([])
@@ -102,10 +118,15 @@ describe('the type scale', () => {
     // An entry that no longer names a real rule is an entry nobody is
     // checking; it should come off the list rather than sit there granting
     // permission to whatever takes that selector next.
-    const seen = new Set<string>()
+    const used = new Set<string>()
     for (const file of FILES) {
-      for (const { selector } of rawSizes(readFileSync(`src/ui/${file}`, 'utf8'))) seen.add(selector)
+      for (const { selector } of rawSizes(readFileSync(`src/ui/${file}`, 'utf8'))) {
+        // Credit the entry that actually covered it, so an exemption still
+        // counts as used once its rule is nested inside something else.
+        const by = exemptedBy(selector)
+        if (by) used.add(by)
+      }
     }
-    expect([...EXEMPT].filter((s) => !seen.has(s))).toEqual([])
+    expect([...EXEMPT].filter((s) => !used.has(s))).toEqual([])
   })
 })

@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { readFileSync, existsSync } from 'node:fs'
+import dosari from '../data/timings-dosari.json'
 import {
   loadTimings,
   timingGranularity,
@@ -60,14 +61,23 @@ describe('timing granularity', () => {
    */
   it('reports nothing where there is nothing, per surah', async () => {
     await loadTimings('dosari')
-    // The whole of juz 30 is aligned now, so the boundary is at its edge.
-    // Verse, though the file holds word times: see the note on his registry
-    // entry. Half a second of lag is invisible on a shaded verse and plainly
-    // wrong on a boxed word.
-    expect(timingGranularity('dosari', 78)).toBe('ayah')
-    expect(timingGranularity('dosari', 114)).toBe('ayah')
-    expect(timingGranularity('dosari', 77)).toBe(null)
-    expect(timingGranularity('dosari', 1)).toBe(null)
+    /*
+     * Read off the file rather than written down as surah numbers.
+     *
+     * His coverage grows: the aligner runs for hours at a time and publishes
+     * whatever it has finished, so any boundary named here is only true until
+     * the next surah lands. Naming 77 and 1 as untimed was correct when it was
+     * written and wrong forty minutes later.
+     *
+     * Verse, though the file holds word times — see the note on his registry
+     * entry. Half a second of lag is invisible on a shaded verse and plainly
+     * wrong on a boxed word.
+     */
+    const timed = Object.keys(dosari.surahs).map(Number)
+    expect(timed.length, 'he has some coverage').toBeGreaterThan(0)
+    for (const n of timed.slice(0, 3)) expect(timingGranularity('dosari', n), `surah ${n}`).toBe('ayah')
+    const untimed = Array.from({ length: 114 }, (_, i) => i + 1).find((n) => !timed.includes(n))
+    if (untimed) expect(timingGranularity('dosari', untimed), `surah ${untimed}`).toBe(null)
     expect(timingGranularity('nobody', 1)).toBe(null)
     expect(timingGranularity('burhaji-nabawi', null)).toBe(null)
   })
