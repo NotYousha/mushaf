@@ -120,6 +120,17 @@ describe('the shipped timing files', () => {
   })
 
   it('gives a verse-timed ayah exactly one start', () => {
+    /*
+     * Collected, then asserted once.
+     *
+     * Eighteen thousand ayahs, and an `expect` inside the loop made this
+     * three to five seconds against vitest's five-second default — a test
+     * that passed here and failed on a busier machine, which is the worst
+     * kind. The assertion overhead was the whole cost: the same work in
+     * plain node is under two hundred milliseconds. Collecting also reports
+     * every bad ayah instead of dying on the first.
+     */
+    const wrong: string[] = []
     for (const id of ['budair', 'jaber', 'juhany-hafs']) {
       const file = `data/timings-${id}.json`
       expect(existsSync(file), file).toBe(true)
@@ -129,10 +140,13 @@ describe('the shipped timing files', () => {
       // recording, and the only reason these three are here is that their
       // audio was checked against the source the timings came from.
       expect(t.source, id).toMatch(/identical|agrees|within/i)
-      for (const verses of Object.values(t.surahs)) {
-        for (const [, starts] of verses) expect(starts).toHaveLength(1)
+      for (const [surah, verses] of Object.entries(t.surahs)) {
+        for (const [ayah, starts] of verses) {
+          if (starts.length !== 1) wrong.push(`${id} ${surah}:${ayah} has ${starts.length}`)
+        }
       }
     }
+    expect(wrong.slice(0, 5)).toEqual([])
   })
 
   it('covers whole surahs or none of them', () => {
@@ -143,12 +157,15 @@ describe('the shipped timing files', () => {
       const s = Number(k.split(':')[0])
       counts.set(s, (counts.get(s) ?? 0) + 1)
     }
+    const short: string[] = []
     for (const id of ['budair', 'jaber', 'juhany-hafs']) {
       const t = read(`data/timings-${id}.json`)
       for (const [surah, verses] of Object.entries(t.surahs)) {
-        expect(verses.length, `${id} surah ${surah}`).toBe(counts.get(Number(surah)))
+        const want = counts.get(Number(surah))
+        if (verses.length !== want) short.push(`${id} ${surah}: ${verses.length}/${want}`)
       }
     }
+    expect(short.slice(0, 5)).toEqual([])
   })
 
   it('ships no timings for any Taraweeh compilation', () => {
