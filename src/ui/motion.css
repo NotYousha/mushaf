@@ -229,9 +229,26 @@
 .scroll,
 .years-scroll,
 .player {
-  scroll-behavior: smooth;
   scrollbar-width: none;
   -ms-overflow-style: none;
+}
+
+/*
+ * Smooth scrolling, and only where it is asked for.
+ *
+ * This used to sit in the rule above, whose whole subject is the scrollbar,
+ * and it applied to the surah list. That made every stray programmatic scroll
+ * of the list visible as a slow slide — most obviously on choosing a surah
+ * from the home screen, which scrolled the list by a few hundred pixels for
+ * reasons that had nothing to do with the surah and took a second doing it.
+ *
+ * The list is a phone list: it should land where it is put. Centring a year in
+ * the picker is the opposite case — that is a short sideways move the eye
+ * wants to follow — so the strip and the player sheet keep it.
+ */
+.years-scroll,
+.player {
+  scroll-behavior: smooth;
 }
 
 .scroll::-webkit-scrollbar,
@@ -348,7 +365,10 @@
     transform: none;
   }
 
-  .scroll {
+  /* .scroll is no longer smooth at any setting, so only the two that are
+     still need turning off here. */
+  .years-scroll,
+  .player {
     scroll-behavior: auto;
   }
 }

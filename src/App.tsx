@@ -951,8 +951,32 @@ export default function App() {
   const searchRef = useRef<HTMLInputElement | null>(null)
   const selectedChip = useRef<HTMLButtonElement | null>(null)
 
+  /**
+   * Centre the chosen year in the picker's strip.
+   *
+   * Done by moving that strip's own scrollLeft, and not with scrollIntoView.
+   * scrollIntoView scrolls every scrollable ancestor it can reach, and the
+   * surah list is one of them — so choosing a surah from the home screen,
+   * which changes `tab` and runs this, sent the whole list gliding downward
+   * for a second. `block: 'nearest'` minimises that movement but does not
+   * forbid it; what made the stray scroll *slow* was a scroll-behavior: smooth
+   * on .scroll, which motion.css no longer sets. Both halves are fixed, and
+   * this one is the half that stops the scroll happening at all.
+   *
+   * Two details worth keeping. The chip is only in the tree while the picker
+   * is open, so a detached ref is checked for rather than scrolled to. And the
+   * offset is measured as a delta between two rectangles rather than computed
+   * from offsetLeft, because scrollLeft's sign under dir=rtl differs between
+   * engines and this app is right-to-left in two of its five languages.
+   */
   useEffect(() => {
-    selectedChip.current?.scrollIntoView({ inline: 'center', block: 'nearest' })
+    const chip = selectedChip.current
+    if (!chip || !document.contains(chip)) return
+    const strip = chip.closest<HTMLElement>('.years-scroll')
+    if (!strip) return
+    const c = chip.getBoundingClientRect()
+    const box = strip.getBoundingClientRect()
+    strip.scrollLeft += c.left + c.width / 2 - (box.left + box.width / 2)
   }, [reciterId, reciters.length, tab])
 
   const talqeenRef = useRef<Talqeen | null>(null)
