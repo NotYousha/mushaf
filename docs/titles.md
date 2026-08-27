@@ -12,9 +12,9 @@ Two strings per person, in the app's five languages (`ar`, `en`, `ur`, `fr`, `hi
   for whom no source establishes an office carries the honorific alone.
 
 Keys are the same reciter/imam ids used by `data/catalog.json` (`reciters[].id`)
-and `data/imams.json`. The three recitation-variant ids — `juhany-hafs`,
-`buayjan-nabawi`, `burhaji-nabawi` — are the same men as `juhany`, `buayjan` and
-`burhaji`, and carry identical titles so a lookup on either id works.
+and `data/imams.json`. The recitation-variant ids — `juhany-hafs` and
+`burhaji-nabawi` — are the same men as `juhany` and `burhaji`, and carry
+identical titles so a lookup on either id works.
 
 `source` is one URL that was actually read to establish the office. It is not
 shown in the app; it is there so the next person can re-check.
