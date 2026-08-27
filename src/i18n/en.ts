@@ -158,6 +158,24 @@ export const en = {
   ayahCount: (n: string) => `${n} verses`,
   /** Under a juz heading no surah opens: the one running through it. */
   continues: 'continues here',
+  chooseMushaf: 'Choose Mushaf',
+  pickerHint: 'Tap a mushaf for more information.',
+  familyUthmani: 'Uthmani',
+  familyTajweed: 'Tajweed',
+  familyIndoPak: 'IndoPak',
+  experimental: 'EXPERIMENTAL',
+  /** What a reader keeps, or gives up, by choosing an edition. */
+  editionLive: 'Live text — followed word by word, searchable, read aloud.',
+  editionGlyphs: 'Printed glyphs — followed word by word, but not searchable or read aloud.',
+  notYetHere: 'Not here yet',
+  unavailableWhy: {
+    'no-source':
+      'no public source exists for it. It is in no mushaf registry we can reach, and the apps that show it did not get it from anywhere public.',
+    'needs-permission':
+      'the text is free and the font is not. The only face that renders it forbids distribution without written permission, which has to be asked for.',
+    buildable:
+      'obtainable, and not built yet. It needs its own page layout and 604 per-page fonts, and it could not be searched or read aloud.',
+  },
   mushafTab: 'Mushaf',
   translationTab: 'Translation',
   translation: 'Translation',

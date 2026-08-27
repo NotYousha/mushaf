@@ -180,8 +180,11 @@ export default defineConfig({
              * English — so they are fetched on first use and kept, which
              * makes the one you actually read work offline at the cost of the
              * one you actually read.
+             *
+             * The tajweed rules ride the same rule: 1.3 MB, and only the
+             * reader who chooses the tajweed mushaf ever asks for it.
              */
-            urlPattern: /\/trans\/[\w-]+\.json$/,
+            urlPattern: /\/(trans\/[\w-]+|tajweed)\.json$/,
             handler: 'CacheFirst',
             options: {
               cacheName: 'translations',

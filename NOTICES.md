@@ -228,6 +228,44 @@ none of them is a licence. **Action:** if it is wanted, ask Furqaan Institute
 licences, and Quran for Android carries an explicit one. Until then, Talal
 Itani's translation of the same name is offered instead.
 
+## Tajweed colouring
+
+`public/tajweed.json` marks where each tajweed rule falls inside each word,
+built by `scripts/build-tajweed.py` from **quran.com's** `uthmani_tajweed`
+text (<https://api.quran.com/api/v4/quran/verses/uthmani_tajweed>), which is
+open and key-less. The colour scheme follows the Dar al-Marefa convention.
+
+No tajweed mushaf is reproduced. The rules are projected onto the app's own
+text by character alignment — quran.com's markup sits on Tanzil's spelling and
+our page comes from the King Fahd Complex's, and the two differ in about sixty
+systematic ways. Anchor accuracy is checked at build time and the script
+refuses to write below 99.5%.
+
+The alternative, which was rejected, was the KFGQPC V4 colour font or a scan
+of the Dar al-Marefa edition. Both would have replaced our page with something
+that cannot be searched, cannot be followed word by word, and cannot be read
+aloud by a screen reader.
+
+## Mushaf editions not shipped, and why
+
+Recorded so nobody re-derives it. See `src/mushaf/editions.ts`.
+
+- **Hafs, Medina 1421 AH** and **Madani Mushaf 1441** — obtainable. Both are
+  604 per-page glyph fonts on `static.qurancdn.com`, which serves them with
+  open CORS. The King Fahd Complex's own usage terms permit free use in
+  computer programs and websites; the fonts themselves are all-rights-reserved
+  and **may not be modified**, so no subsetting. Not built yet.
+- **Hafs, Medina 1440 AH** and **Madani Mushaf 1439** — no public source of
+  any kind. Absent from quran.com's mushaf registry, absent from the Quranic
+  Universal Library's layouts.
+- **IndoPak 15-line** — the text is free and complete (quran.com mushaf 6, 610
+  pages). The blocker is the font: QuranWBW's AlQuran IndoPak is the only face
+  that renders it, and its embedded licence reads *"NOT FOR SALE, NOT FOR
+  MODIFICATION, NOT FOR DISTRIBUTION OR NOT FOR DEVELOPMENT WITHOUT WRITTEN
+  NOTICE BY QURANWBW.COM"*. **Action:** email quranwbw@gmail.com. Note also
+  that IndoPak paginates in 610 pages, so every page number in the app would
+  have to become edition-scoped.
+
 ## Quran division metadata
 
 Juz, hizb and rub' al-hizb boundaries in `data/divisions.json` are derived

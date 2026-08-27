@@ -4598,3 +4598,299 @@ body {
 .reading-switch .seg button {
   flex: 1;
 }
+
+/* ============ tajweed ============ */
+
+/*
+ * The colours a tajweed mushaf prints.
+ *
+ * Taken from the scheme the Dar al-Marefa edition uses, which is the one most
+ * people mean by "the tajweed mushaf" — red for qalqalah, green for the
+ * ghunnah, blue for the madds, grey for a letter not pronounced.
+ *
+ * Set as tokens rather than inline so the dark themes can lift them. The same
+ * red that reads as a warning on paper disappears into a dark ground, and a
+ * rule you cannot see is a rule that is not being taught.
+ */
+:root {
+  --tj-qalqalah: #c8102e;
+  --tj-ghunnah: #0f8a4a;
+  --tj-madd: #1f5fd0;
+  --tj-madd-long: #7b2ea8;
+  --tj-idgham: #b8541c;
+  --tj-ikhfa: #8a6d00;
+  --tj-silent: #9a9a9a;
+}
+
+/*
+ * Keyed on data-mode, not on prefers-color-scheme.
+ *
+ * The app resolves the reader's choice — light, dark, or follow the system —
+ * into data-mode on the root itself, and every palette in themes.css is
+ * written against that. A media query here would ignore a reader who has
+ * chosen light on a dark phone, and print the pale scheme on white paper.
+ */
+:root[data-mode='dark'] {
+  --tj-qalqalah: #ff6b7f;
+  --tj-ghunnah: #4fd18b;
+  --tj-madd: #7aa7ff;
+  --tj-madd-long: #c58bf0;
+  --tj-idgham: #ff9d63;
+  --tj-ikhfa: #e0c14a;
+  --tj-silent: #7d7d7d;
+}
+
+/* A coloured run inside a word. Colour only — no weight, no background: the
+   word still has to sit in a justified line of exactly the width the fit
+   measurement computed for it. */
+.tj {
+  color: inherit;
+}
+
+.tj-q { color: var(--tj-qalqalah); }
+.tj-g { color: var(--tj-ghunnah); }
+.tj-m2 { color: var(--tj-madd); }
+.tj-m4,
+.tj-mo { color: var(--tj-madd-long); }
+.tj-m6 { color: var(--tj-qalqalah); }
+.tj-ig,
+.tj-iw,
+.tj-is,
+.tj-im,
+.tj-iq { color: var(--tj-idgham); }
+.tj-n,
+.tj-ns,
+.tj-b { color: var(--tj-ikhfa); }
+/* Hamzat wasl and a letter that is written but not read. Grey rather than
+   coloured, because these mark an absence of sound, not a rule of it. */
+.tj-h,
+.tj-l,
+.tj-s { color: var(--tj-silent); }
+
+/* The word being recited keeps its own colour over the top. The highlight is
+   a solid fill and coloured letters inside it become unreadable. */
+.mw.is-now .tj {
+  color: inherit;
+}
+
+/* ============ choose mushaf ============ */
+
+.picker {
+  padding: 0.5rem 0 2rem;
+}
+
+.picker-hint {
+  font-size: var(--text-xs);
+  color: var(--muted);
+  text-align: center;
+  margin: 0 0 0.75rem;
+}
+
+.picker-h {
+  font-family: var(--font-name);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--ink-strong);
+  margin: 0 0 1rem;
+}
+
+.picker-seg {
+  display: flex;
+  width: 100%;
+  margin-bottom: 1.25rem;
+}
+
+.picker-seg button {
+  flex: 1;
+}
+
+.picker-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* A card is one target. The reference UI puts a tick in a floating circle on
+   the corner, which looks like a second control and is not one. */
+.picker-card {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.9rem;
+  width: 100%;
+  text-align: start;
+  padding: 1.1rem;
+  border: 2px solid transparent;
+  border-radius: var(--radius-card);
+  background: var(--tile);
+  font: inherit;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.picker-card.is-chosen {
+  border-color: var(--accent);
+}
+
+.picker-tick {
+  position: absolute;
+  top: -0.7rem;
+  inset-inline-end: -0.4rem;
+  display: grid;
+  place-items: center;
+  width: 2.6rem;
+  height: 2.6rem;
+  border-radius: 50%;
+  background: linear-gradient(160deg, var(--tile-active-a), var(--tile-active-b));
+  color: var(--tile-active-ink);
+  box-shadow: var(--shadow-md);
+}
+
+.picker-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  flex: 1;
+  min-width: 0;
+}
+
+/*
+ * No tracking on this pill.
+ *
+ * The reference UI sets EXPERIMENTAL in spaced small caps and it looks right
+ * in English. The same pill reads تجريبي in Arabic and تجرباتی in Urdu, and
+ * letter-spacing pulls a cursive script apart at exactly the joins that make
+ * it legible. The pill is distinguished by its shape and its colour instead,
+ * which work in every script.
+ */
+.picker-badge {
+  align-self: flex-start;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  background: var(--card-2);
+  font-size: var(--text-xs);
+  color: var(--gold);
+}
+
+.picker-name {
+  font-family: var(--font-name);
+  font-size: var(--text-md);
+  font-weight: 700;
+  color: var(--ink-strong);
+}
+
+.picker-desc {
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+/* What the reader keeps by choosing this edition. Quieter than the
+   description but never absent. */
+.picker-can {
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+/* The thumbnail. Two lines of the mushaf in the edition's own colouring —
+   drawn, not photographed, so it is the page you will actually get. */
+.picker-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  flex: none;
+  width: 8rem;
+  padding: 0.5rem;
+  border-radius: 8px;
+  background: var(--page);
+  direction: rtl;
+  overflow: hidden;
+}
+
+.pp-band {
+  height: 0.5rem;
+  border-radius: 2px;
+  border: 1px solid var(--accent-line);
+  background: var(--tile);
+}
+
+.pp-line {
+  font-family: var(--font-quran);
+  /* Scripture, at thumbnail size — sized against the page it is a picture
+     of, like every other setting of the mushaf's own text. */
+  font-size: 0.6rem;
+  line-height: 2;
+  color: var(--ink-strong);
+  white-space: nowrap;
+}
+
+.pp-line em {
+  font-style: normal;
+}
+
+.picker-preview.is-tajweed .tj-h { color: var(--tj-silent); }
+.picker-preview.is-tajweed .tj-m2 { color: var(--tj-madd); }
+.picker-preview.is-tajweed .tj-g { color: var(--tj-ghunnah); }
+
+/*
+ * What is not here, and why.
+ *
+ * Every other Quran app quietly lists the editions it has. Saying which ones
+ * are missing, and that one of them is waiting on an email to a font
+ * designer, is the more useful thing to put on this screen — and it stops the
+ * next person rediscovering it.
+ */
+.picker-missing {
+  margin-top: 1.75rem;
+  padding: 1rem 1.1rem;
+  border-radius: var(--radius-card);
+  background: var(--card-2);
+}
+
+.picker-missing h3 {
+  font-family: var(--font-name);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--ink-soft);
+  margin: 0 0 0.6rem;
+}
+
+.picker-missing ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+}
+
+.picker-missing li {
+  font-size: var(--text-xs);
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.picker-missing strong {
+  color: var(--ink);
+}
+
+/* The way from the index to Choose Mushaf. A quiet row above the tabs: it is
+   reached rarely and changes everything, which is the opposite of what wants
+   a prominent button. */
+.mindex-edition {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.6rem 0.35rem;
+  margin-bottom: 0.5rem;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: var(--text-sm);
+  color: var(--gold);
+  cursor: pointer;
+}

@@ -46,6 +46,8 @@ import { withTransition } from './ui/transition'
 import { ReciterPanel, type PlaceCard } from './ui/ReciterPanel'
 import { MushafView, ayahStartsFor } from './ui/MushafView'
 import { MushafIndex } from './ui/MushafIndex'
+import { MushafPicker } from './ui/MushafPicker'
+import { editionById } from './mushaf/editions'
 import { TranslationView } from './ui/TranslationView'
 import { ReadingSwitch } from './ui/ReadingSwitch'
 import { defaultFor, translationById } from './mushaf/translations'
@@ -857,6 +859,16 @@ export default function App() {
 
   /** The index, open over the page rather than beside it. */
   const [indexOpen, setIndexOpen] = useState(false)
+  /** Choose Mushaf, reached from the index. */
+  const [pickerOpen, setPickerOpen] = useState(false)
+  /**
+   * The chosen edition, resolved.
+   *
+   * Everything the page needs to know about which mushaf this is comes from
+   * here: whether to colour the tajweed, and whether the thirtieth is called
+   * a juz or a para.
+   */
+  const chosenEdition = editionById(edition)
 
   /**
    * Which way the Quran is being read: as the printed page, or as ayahs with
@@ -883,7 +895,7 @@ export default function App() {
   }, [])
   /** Which page the mushaf is showing, reported up so the index can mark it. */
   const [atPage, setAtPage] = useState(1)
-  const immersive = tab === 'text' && fullPage && !indexOpen
+  const immersive = tab === 'text' && fullPage && !indexOpen && !pickerOpen
 
   const goToPage = useCallback((page: number) => {
     setGotoPage(page)
@@ -2111,12 +2123,25 @@ export default function App() {
                   rendering underneath costs a second copy of the heaviest
                   view in the app for a page nobody is looking at.
               */}
-              {indexOpen ? (
+              {pickerOpen ? (
+                <MushafPicker
+                  t={t}
+                  lang={lang}
+                  chosen={edition}
+                  onChoose={(id) => {
+                    setEdition(id)
+                    void setPref('mushafEdition', id)
+                    setPickerOpen(false)
+                  }}
+                />
+              ) : indexOpen ? (
                 <MushafIndex
                   t={t}
                   lang={lang}
+                  unitWord={chosenEdition.unitWord}
                   page={atPage}
                   onOpenPage={goToPage}
+                  onChooseMushaf={() => setPickerOpen(true)}
                 />
               ) : !isHafs(reciter) ? (
                 <PagedMushaf
@@ -2151,6 +2176,7 @@ export default function App() {
                       void setPref('translationId', id)
                     }}
                     onSeek={(sec) => engine.current!.seek(sec)}
+                    unitWord={chosenEdition.unitWord}
                   />
                 </>
               ) : (
@@ -2182,6 +2208,8 @@ export default function App() {
                   }}
                   onOpenIndex={() => setIndexOpen(true)}
                   onPageChange={setAtPage}
+                  unitWord={chosenEdition.unitWord}
+                  tajweed={chosenEdition.tajweed ?? false}
                   onSeek={(sec) => engine.current!.seek(sec)}
                   activeLine={drill?.segment ?? null}
                   yourTurn={drill?.phase === 'echo'}

@@ -133,6 +133,22 @@ export const fr: Strings = {
   madani: 'Médinoise',
   ayahCount: (n: string) => `${n} versets`,
   continues: 'se poursuit ici',
+  chooseMushaf: 'Choisir un Mushaf',
+  pickerHint: 'Touchez un mushaf pour en savoir plus.',
+  familyUthmani: 'Uthmani',
+  familyTajweed: 'Tajwid',
+  familyIndoPak: 'IndoPak',
+  experimental: 'EXPÉRIMENTAL',
+  editionLive: 'Texte vivant — suivi mot à mot, cherchable, lu à voix haute.',
+  editionGlyphs: 'Glyphes imprimés — suivi mot à mot, mais ni cherchable ni lu à voix haute.',
+  notYetHere: 'Pas encore ici',
+  unavailableWhy: {
+    'no-source': "aucune source publique n'existe.",
+    'needs-permission':
+      "le texte est libre, la police ne l'est pas : sa distribution exige une autorisation écrite.",
+    buildable:
+      'disponible mais pas encore construit : il faut sa propre mise en page et 604 polices.',
+  },
   mushafTab: 'Mushaf',
   translationTab: 'Traduction',
   translation: 'Traduction',

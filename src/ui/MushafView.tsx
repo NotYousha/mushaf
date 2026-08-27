@@ -19,6 +19,7 @@ import {
   type Timings,
 } from '../mushaf/data'
 import { juzOfPage, surahOfPage, type UnitWord } from '../mushaf/divisions'
+import { loadTajweed, runs, type Span, type Tajweed } from '../mushaf/tajweed'
 import surahMeta from '../../data/surahs.json'
 import { getPref, setPref } from '../db/prefs'
 import { Collapse, Expand, Library } from './Icons'
@@ -66,6 +67,8 @@ type Props = {
    * only by the second name.
    */
   unitWord?: UnitWord
+  /** Colour the letters by tajweed rule — the Tajweed mushaf. */
+  tajweed?: boolean
 }
 
 /**
@@ -124,6 +127,7 @@ const MushafWord = memo(function MushafWord({
   active,
   inAyah,
   lead,
+  spans,
   onSeek,
 }: {
   text: string
@@ -133,6 +137,8 @@ const MushafWord = memo(function MushafWord({
    *  word being recited. */
   inAyah: boolean
   lead: boolean
+  /** Tajweed rules falling inside this word, on a tajweed mushaf. */
+  spans?: Span[]
   onSeek?: (key: string) => void
 }) {
   if (!wordKey) {
@@ -149,7 +155,27 @@ const MushafWord = memo(function MushafWord({
       }${lead ? ' is-lead' : ''}`}
       onClick={onSeek ? () => onSeek(wordKey) : undefined}
     >
-      {text}
+      {/*
+          Coloured inside, whole outside.
+
+          The rules colour letters, not words, so the word is cut into runs —
+          but it stays one element, which is what keeps the highlight, the
+          tap target, the Veil and the fit measurement working unchanged. A
+          word with no rules in it is rendered as bare text, with no wrapper
+          at all: about a third of the Quran's words carry no colour and they
+          should not each cost a span.
+      */}
+      {spans?.length
+        ? runs(text, spans).map((r, i) =>
+            r.rule ? (
+              <span key={i} className={`tj tj-${r.rule}`}>
+                {r.text}
+              </span>
+            ) : (
+              r.text
+            ),
+          )
+        : text}
     </span>
   )
 })
@@ -175,6 +201,7 @@ export function MushafView({
   onOpenIndex,
   onPageChange,
   unitWord = 'juz',
+  tajweed = false,
 }: Props) {
   const [layout, setLayout] = useState<Layout | null>(null)
   const [timings, setTimings] = useState<Timings | null>(null)
@@ -201,6 +228,25 @@ export function MushafView({
   immersiveRef.current = immersive
   /** Where a horizontal drag on the page began, for turning pages by swipe. */
   const swipe = useRef<{ x: number; y: number } | null>(null)
+  /**
+   * The tajweed rules, once fetched.
+   *
+   * Only for the tajweed mushaf, and only after it is chosen — 1.3 MB is not
+   * a cost to put on a reader who never opens that edition. Until it arrives
+   * the page renders uncoloured, which is the same page it was.
+   */
+  const [rules, setRules] = useState<Tajweed | null>(null)
+  useEffect(() => {
+    if (!tajweed) {
+      setRules(null)
+      return
+    }
+    let alive = true
+    void loadTajweed().then((r) => alive && setRules(r))
+    return () => {
+      alive = false
+    }
+  }, [tajweed])
 
   useEffect(() => {
     void getPref<number>('mushafZoom', 0).then((z) => setZoomIdx(Math.min(ZOOMS.length - 1, Math.max(0, z))))
@@ -753,6 +799,7 @@ export function MushafView({
                     ayah === activeAyah &&
                     key?.startsWith(`${surah}:`) === true
                   }
+                  spans={w[1] ? rules?.[w[1]] : undefined}
                   onSeek={onSeek ? jumpTo : undefined}
                 />
               )

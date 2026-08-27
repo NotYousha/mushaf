@@ -10,7 +10,7 @@ import {
   surahsOfJuz,
   type UnitWord,
 } from '../mushaf/divisions'
-import { Chevron } from './Icons'
+import { Chevron, Library } from './Icons'
 
 type Meta = {
   surah: number
@@ -31,6 +31,8 @@ type Props = {
   /** The page the reader is on, so the index can mark where they are. */
   page?: number
   onOpenPage: (page: number) => void
+  /** Open Choose Mushaf — which script and edition the page is set in. */
+  onChooseMushaf?: () => void
 }
 
 type Mode = 'surahs' | 'units'
@@ -57,6 +59,7 @@ export const MushafIndex = memo(function MushafIndex({
   unitWord = 'juz',
   page,
   onOpenPage,
+  onChooseMushaf,
 }: Props) {
   const [mode, setMode] = useState<Mode>('surahs')
   /** Which juz headings are folded away, by number. */
@@ -78,6 +81,21 @@ export const MushafIndex = memo(function MushafIndex({
 
   return (
     <div className="mindex">
+      {/*
+          Which mushaf, above which place in it.
+
+          The reference app puts this behind a small books icon in the corner
+          of its surah list, and it is the right home for it: choosing an
+          edition and choosing a page are the same kind of decision — where
+          to read — and they belong on the same screen.
+      */}
+      {onChooseMushaf && (
+        <button type="button" className="mindex-edition" onClick={onChooseMushaf}>
+          <Library size={18} />
+          <span>{t.chooseMushaf}</span>
+        </button>
+      )}
+
       <div className="seg" role="tablist" aria-label={t.mushafIndex}>
         <button
           type="button"

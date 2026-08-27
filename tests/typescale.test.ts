@@ -33,6 +33,10 @@ const EXEMPT = new Set([
   // same printed page — it is the mushaf's own text lifted out of the page
   // and set as a document, not an interface string that happens to be large.
   '.tayah-ar',
+  // The two lines of mushaf drawn in a Choose Mushaf card's thumbnail. Also
+  // scripture, sized against the page it is a picture of — the card has to
+  // fit a real line of the real font into eight rems.
+  '.pp-line',
   // The fork drill, which sets the Quran in its own measure.
   '.fork-text',
   '.fork-cue',

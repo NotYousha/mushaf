@@ -255,3 +255,11 @@ export const Collapse = ({ size }: P) => (
     <path d="M3 9h6V3M21 9h-6V3M3 15h6v6M21 15h-6v6" />
   </svg>
 )
+
+/** A bare tick, for the mushaf that is chosen. Saved is a tick in a ring and
+ *  means something else — a surah already on the device. */
+export const Check = ({ size }: P) => (
+  <svg {...s(size)} stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+    <path d="m5 12.5 4.5 4.5L19 7" />
+  </svg>
+)
