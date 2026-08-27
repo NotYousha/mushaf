@@ -29,8 +29,18 @@ describe('who the app can actually follow word by word', () => {
     for (const n of listed) {
       expect(surahs[n], `surah ${n} is registered but empty`).not.toHaveLength(0)
     }
-    expect(hasTimings('dosari')).toBe(true)
-    expect(timedReciters()).toContain('dosari')
+    /*
+     * And still not word-timed, which is not a contradiction.
+     *
+     * `hasTimings` gates Talqeen and the Fork Drill, and both need to know
+     * which *word* is being said. Al-Dosari's alignment is ours rather than
+     * anyone's published set: verse median 20 ms, word p90 half a second to
+     * a second. That is excellent for shading a verse and not good enough
+     * for boxing a word, so the registry files him under 'ayah' and these
+     * two features correctly decline to open.
+     */
+    expect(hasTimings('dosari')).toBe(false)
+    expect(timedReciters()).not.toContain('dosari')
   })
 
   it('still claims them for the reciter who has them', () => {

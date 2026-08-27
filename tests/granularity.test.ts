@@ -61,8 +61,11 @@ describe('timing granularity', () => {
   it('reports nothing where there is nothing, per surah', async () => {
     await loadTimings('dosari')
     // The whole of juz 30 is aligned now, so the boundary is at its edge.
-    expect(timingGranularity('dosari', 78)).toBe('word')
-    expect(timingGranularity('dosari', 114)).toBe('word')
+    // Verse, though the file holds word times: see the note on his registry
+    // entry. Half a second of lag is invisible on a shaded verse and plainly
+    // wrong on a boxed word.
+    expect(timingGranularity('dosari', 78)).toBe('ayah')
+    expect(timingGranularity('dosari', 114)).toBe('ayah')
     expect(timingGranularity('dosari', 77)).toBe(null)
     expect(timingGranularity('dosari', 1)).toBe(null)
     expect(timingGranularity('nobody', 1)).toBe(null)
@@ -77,6 +80,24 @@ describe('timing granularity', () => {
     expect(hasTimings('burhaji-nabawi')).toBe(true)
     expect(timedReciters()).not.toContain('budair')
     expect(timedReciters()).toContain('burhaji-nabawi')
+  })
+
+  it('lets the registry overrule a file that carries word times', async () => {
+    /*
+     * Two sources of truth would be one too many.
+     *
+     * data/timings-dosari.json is full of word times and the registry has
+     * decided they are not accurate enough to box a word with. If
+     * wordSchedule read the file's own field it would hand those positions
+     * out anyway, and the decision would apply to nothing.
+     */
+    await loadTimings('dosari')
+    expect(timingGranularity('dosari', 78)).toBe('ayah')
+    const t = await loadTimings('dosari')
+    expect(t!.granularity).toBe('ayah')
+    expect(wordSchedule(t, 78)).toEqual([])
+    // The verse starts survive, which is the point of keeping the file.
+    expect((ayahStartsFor('dosari', 78) ?? []).length).toBeGreaterThan(1)
   })
 
   it('offers no word positions for a verse-timed recitation', () => {

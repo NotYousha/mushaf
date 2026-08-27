@@ -129,8 +129,23 @@ const TIMED: Record<string, { granularity: Granularity; load: () => Promise<Timi
    * per surah, so al-Fatihah simply reports no word timing while an-Naba
    * reports one. Registration was never the thing that had to be complete.
    */
+  /*
+   * Verse, not word — and the file holds word times.
+   *
+   * This is our own forced alignment rather than anyone's published set, and
+   * measured against a recitation whose true timings we do have, it is
+   * excellent per verse and merely good per word: verse median 20 ms with
+   * 86% inside half a second, against word p90 of 0.5–1.0 s. Half a second
+   * of lag is invisible on a shaded verse and plainly wrong on a boxed word
+   * — the box sits on the word before the one being said.
+   *
+   * So the word times stay in the file, because they are what produced the
+   * verse starts and because a better model will make them usable, and the
+   * app reads only the first of each. When alignment gets tighter this line
+   * becomes 'word' and nothing else changes.
+   */
   dosari: {
-    granularity: 'word',
+    granularity: 'ayah',
     load: () =>
       import('../../data/timings-dosari.json').then((m) => m.default as unknown as Timings),
   },
@@ -149,7 +164,22 @@ const TIMED: Record<string, { granularity: Granularity; load: () => Promise<Timi
 export const loadTimings = (reciterId: string) => {
   if (!timingCache.has(reciterId)) {
     const entry = TIMED[reciterId]
-    timingCache.set(reciterId, entry ? entry.load() : Promise.resolve(null))
+    /*
+     * The registry stamps its granularity onto what it loaded.
+     *
+     * Otherwise two sources of truth: the entry says one thing and the file's
+     * own field says another, and the two are read by different code.
+     * Al-Dosari is exactly that case — a file full of word times that the app
+     * deliberately reads a verse at a time — and without this, wordSchedule
+     * would consult the file, find no 'ayah', and hand out word positions the
+     * registry had just decided were not good enough to show.
+     */
+    timingCache.set(
+      reciterId,
+      entry
+        ? entry.load().then((t) => ({ ...t, granularity: entry.granularity }))
+        : Promise.resolve(null),
+    )
     void timingCache.get(reciterId)!.then((t) => {
       if (t) loadedTimings.set(reciterId, t)
     })
