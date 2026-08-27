@@ -1,0 +1,41 @@
+{
+  "packageId": "io.github.notyousha.mushaf",
+  "host": "notyousha.github.io",
+  "name": "Al-Mau'iza — الموعظة",
+  "launcherName": "Al-Mau'iza",
+  "display": "standalone",
+  "orientation": "portrait",
+  "themeColor": "#f6f0e6",
+  "themeColorDark": "#17120c",
+  "navigationColor": "#f6f0e6",
+  "navigationColorDark": "#17120c",
+  "navigationDividerColor": "#f6f0e6",
+  "navigationDividerColorDark": "#17120c",
+  "backgroundColor": "#f6f0e6",
+  "enableNotifications": false,
+  "startUrl": "/mushaf/",
+  "iconUrl": "https://notyousha.github.io/mushaf/mark-512.png",
+  "maskableIconUrl": "https://notyousha.github.io/mushaf/mark-maskable-512.png",
+  "appVersionName": "1.0.0",
+  "appVersionCode": 26082701,
+  "shortcuts": [],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://notyousha.github.io/mushaf/manifest.webmanifest",
+  "fallbackType": "customtabs",
+  "features": {},
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://notyousha.github.io/mushaf/",
+  "minSdkVersion": 21,
+  "additionalTrustedOrigins": [],
+  "retainedBundles": [],
+  "appVersion": "1.0.0",
+  "signingKey": {
+    "path": "./android.keystore",
+    "alias": "android"
+  }
+}
