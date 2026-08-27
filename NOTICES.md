@@ -37,25 +37,65 @@ pages.
 - **Action:** record Quran.com's terms of use, and whether the KFGQPC glyph
   codes carry conditions of their own.
 
-## Printed mushaf page images — **UNRESOLVED**
+## Printed mushaf page images — **UNRESOLVED, and now unprovable**
 
-`public/duri/001.webp` … `604.webp` — 604 rasterised pages, about 76 MB.
+`public/duri/001.webp` … `604.webp` — 604 rasterised pages, about 76 MB. They
+exist for one reason: Al-Juhany reads Ad-Duri, whose wording differs from the
+Hafs text the app bundles, so his mushaf cannot be shown as text.
 
-`scripts/build-duri-pages.py` renders them with PyMuPDF from a local file:
+`scripts/build-duri-pages.py` rendered them with PyMuPDF from
+`~/Downloads/quran-douri-mushaf_260822_162138.pdf`.
 
-```
-~/Downloads/quran-douri-mushaf_260822_162138.pdf
-```
+**Provenance can no longer be established from what remains.** Three things
+were checked, on 2026-08-27:
 
-Nothing in this repository records who published that PDF, which edition it is,
-or on what terms it may be redistributed. That is 604 pages of a specific
-printed edition being served from the app.
+- The source PDF is **gone** from that path. It cannot be inspected, and its
+  metadata — where a publisher would name itself — is unrecoverable.
+- The rendered pages carry **no publisher mark**: no frame, no colophon, no
+  footer. Page 604 is the last three surahs on white and nothing else. The
+  script skipped PDF page 0, described in its own comment as the cover, which
+  is the one page that would have said.
+- The filename is a timestamp (`260822_162138`), the shape of a download from
+  some site rather than a publisher's release.
 
-- **Action, before release:** identify the publisher and the terms. If they
-  cannot be established, remove these images and let the mushaf view fall back
-  to text, rather than ship them. This is the single largest rights exposure in
-  the repository.
+There is a **promising but unverified** lead. If the PDF was a King Fahd
+Complex publication, the Complex's own terms appear to permit free use in
+computer programs, inside and outside Saudi Arabia, restricting only
+commercial-sale printing of masahif. That wording reached this repository as a
+2024 Wayback snapshot relayed between sessions; `dm.qurancomplex.gov.sa`
+refuses connections from here and could not be read directly, so it is not
+confirmed — and it would only matter if the PDF were theirs, which is exactly
+what cannot now be shown.
 
+**Decision, 2026-08-27: kept for internal and closed testing, to be settled
+before production.** Those tracks are private, so the exposure there is
+negligible, and the alternative is putting a lesser app in front of the twelve
+testers whose feedback unlocks production. Production is public distribution
+and a different question.
+
+### The route that would end this rather than document it
+
+Serve Ad-Duri as **text plus a font**, not as pictures. The Complex's download
+portal lists an Ad-Duri font (`Douri`) beside Hafs and Warsh. If Ad-Duri can be
+sourced as Unicode text and set in it, `public/duri/` and its 76 MB go away,
+the rights question goes with them, and Ad-Duri gains word following, search
+and screen-reader support that page images can never have.
+
+Two things to know before trying:
+
+- The missing piece is a **page layout for the Ad-Duri riwayah** — which words
+  fall on which of the 604 pages. `data/mushaf-layout.json` is Hafs.
+- KFGQPC's fonts are **all rights reserved and must not be modified**. Verified
+  by parsing `QCF_P001.TTF`: no licence or licence-URL name records, only a
+  reservation. So it ships whole or not at all — `scripts/build-fonts.mjs`
+  subsets, and must not be pointed at it.
+
+**Action, before the production release:** either establish the PDF's publisher
+and record it here, or take the text-and-font route, or remove the images and
+let Al-Juhany fall back to the behaviour the app already has — the page view is
+hidden for a non-Hafs riwayah, with a line saying why. Shipping 604 pages of an
+edition nobody can name is the one option that should not survive to
+production.
 ## Reciter and imam photographs — **UNRESOLVED**
 
 `public/imam-*.webp`, `public/afasy.webp`, `public/turki*.webp`,

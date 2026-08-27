@@ -193,10 +193,17 @@ Category: **Reference, News, or Educational**. Expected outcome: Everyone / 3+.
    a TWA that shows a browser address bar in production. Put both in.
 3. **Back up the upload keystore** somewhere that is not this repository and
    not only this machine. A lost upload key needs a Play-side reset.
-4. **Settle the two UNRESOLVED entries in NOTICES.md** — the 604 printed page
-   images and the 25 imam photographs. Both are shipped assets with no
-   recorded licence, and for a Quran app a publisher's complaint is the most
-   likely route to a takedown.
+4. **Settle the two UNRESOLVED entries in NOTICES.md before production, not
+   before testing.** Internal and closed testing are private; production is
+   public distribution and a different question.
+   - The **604 printed page images** are the larger one, and as of 2026-08-27
+     their provenance is unprovable: the source PDF has been deleted and the
+     rendered pages carry no publisher mark. Either name the publisher, or
+     replace them with Ad-Duri as text plus the Douri font, or remove them and
+     let that reciter fall back to the page-hidden behaviour the app already
+     has. NOTICES.md has the detail and the replacement route.
+   - The **25 imam photographs** have no recorded source or licence, and they
+     also appear in the store screenshots, which is more exposed than in-app.
 5. **Confirm Cloudflare Workers log retention** (`worker/wrangler.toml` sets no
    `[observability]` block, and recent compatibility dates default it on). The
    privacy policy says what is logged; make it true.
