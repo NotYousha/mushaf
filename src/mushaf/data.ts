@@ -56,11 +56,45 @@ export const loadLayout = () => {
  * than a day of compute on a laptop, so coverage grows rather than arriving
  * complete.
  */
-const TIMED: Record<string, () => Promise<Timings>> = {
-  'burhaji-nabawi': () =>
-    import('../../data/timings-burhaji-nabawi.json').then(
-      (m) => m.default as unknown as Timings,
-    ),
+const TIMED: Record<string, { granularity: Granularity; load: () => Promise<Timings> }> = {
+  'burhaji-nabawi': {
+    granularity: 'word',
+    load: () =>
+      import('../../data/timings-burhaji-nabawi.json').then(
+        (m) => m.default as unknown as Timings,
+      ),
+  },
+  /*
+   * Verse timings, from the Quranic Universal Library.
+   *
+   * These three and no others, because a timing file belongs to a *recording*
+   * rather than to a reciter, and almost none of ours are the recordings the
+   * published data was made against. Surah 114 runs 52 seconds in our
+   * As-Sudais and 26 in the one that was timed: the same sheikh, a different
+   * take, and the timings would point confidently at the wrong word.
+   *
+   * Each of these was checked against its source before being listed —
+   * md5-identical for Al-Juhany, frame-identical for Al-Budair, and within a
+   * second across five surahs for Ali Jaber. The provenance is written into
+   * each file's `source` field.
+   */
+  budair: {
+    granularity: 'ayah',
+    load: () =>
+      import('../../data/timings-budair.json').then((m) => m.default as unknown as Timings),
+  },
+  jaber: {
+    granularity: 'ayah',
+    load: () =>
+      import('../../data/timings-jaber.json').then((m) => m.default as unknown as Timings),
+  },
+  'juhany-hafs': {
+    granularity: 'ayah',
+    load: () =>
+      import('../../data/timings-juhany-hafs.json').then(
+        (m) => m.default as unknown as Timings,
+      ),
+  },
   /**
    * Al-Dosari is deliberately absent.
    *
@@ -72,10 +106,20 @@ const TIMED: Record<string, () => Promise<Timings>> = {
    */
 }
 
+/**
+ * Every Taraweeh compilation is absent, and always will be from this route.
+ *
+ * No word or verse timings exist for any Makkah or Madinah Taraweeh
+ * recording, from any published source — QUL lists the recitations and
+ * reports no segments for a single one of them. They are one MP3 per surah
+ * per year, recorded in the mosque, and nobody has aligned them. The only
+ * route is forced alignment here, which is why scripts/align exists.
+ */
+
 export const loadTimings = (reciterId: string) => {
   if (!timingCache.has(reciterId)) {
-    const load = TIMED[reciterId]
-    timingCache.set(reciterId, load ? load() : Promise.resolve(null))
+    const entry = TIMED[reciterId]
+    timingCache.set(reciterId, entry ? entry.load() : Promise.resolve(null))
     void timingCache.get(reciterId)!.then((t) => {
       if (t) loadedTimings.set(reciterId, t)
     })
@@ -96,7 +140,7 @@ export const loadTimings = (reciterId: string) => {
  * so the answer is honest before the file arrives as well as after.
  */
 export const hasTimings = (reciterId: string) => {
-  if (!(reciterId in TIMED)) return false
+  if (TIMED[reciterId]?.granularity !== 'word') return false
   const t = loadedTimings.get(reciterId)
   // Not loaded yet: trust the registry, and surahTimed will refuse per surah.
   if (!t) return true
@@ -106,9 +150,34 @@ export const hasTimings = (reciterId: string) => {
 /** Everyone the app can actually follow word by word, for offering a switch. */
 export const timedReciters = (): string[] =>
   Object.keys(TIMED).filter((id) => {
+    if (TIMED[id].granularity !== 'word') return false
     const t = loadedTimings.get(id)
     return !t || Object.keys(t.surahs).length > 0
   })
+
+/**
+ * How finely this recitation of this surah can be followed.
+ *
+ * The one question every following surface should ask, in place of the
+ * boolean it used to. `word` boxes the word, `ayah` shades the verse, and
+ * null shows nothing and says nothing.
+ *
+ * Per surah rather than per reciter, because coverage is per surah: an
+ * alignment that has been through forty of them is not a claim about the
+ * other seventy-four. It answers null until the file has actually loaded,
+ * which is the honest answer at that moment — the alternative is a page that
+ * promises to follow and then does not.
+ */
+export function timingGranularity(
+  reciterId: string,
+  surah: number | null,
+): Granularity | null {
+  const entry = TIMED[reciterId]
+  if (!entry || surah === null) return null
+  const t = loadedTimings.get(reciterId)
+  if (!t?.surahs[String(surah)]) return null
+  return entry.granularity
+}
 
 /**
  * Whether a particular surah is timed.
@@ -170,6 +239,18 @@ export function wordSchedule(
   surah: number | null,
 ): { at: number; key: string }[] {
   if (!timings || !surah) return []
+  /*
+   * Nothing, for a verse-timed recitation.
+   *
+   * A verse-timed file is a word-timed one whose `starts` hold a single
+   * number, so this would happily return one entry per ayah — and every
+   * consumer would then treat the first word of each ayah as the only word
+   * being recited. The mushaf would box a word and leave it boxed for a
+   * minute; Talqeen would call a whole ayah of Al-Baqarah one line and ask
+   * you to repeat it. Refusing here is what makes those features degrade to
+   * off rather than to wrong.
+   */
+  if (timings.granularity === 'ayah') return []
   const verses = timings.surahs[String(surah)]
   if (!verses) return []
   const out: { at: number; key: string }[] = []

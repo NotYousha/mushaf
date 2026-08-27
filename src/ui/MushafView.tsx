@@ -12,7 +12,9 @@ import { digits } from '../i18n/script'
 import {
   loadLayout,
   loadTimings,
+  timingGranularity,
   wordSchedule,
+  type Granularity,
   type Layout,
   type Timings,
 } from '../mushaf/data'
@@ -120,27 +122,31 @@ const MushafWord = memo(function MushafWord({
   text,
   wordKey,
   active,
+  inAyah,
   lead,
   onSeek,
 }: {
   text: string
   wordKey: string | undefined
   active: boolean
+  /** This word belongs to the ayah being recited, whether or not it is the
+   *  word being recited. */
+  inAyah: boolean
   lead: boolean
   onSeek?: (key: string) => void
 }) {
   if (!wordKey) {
     return (
-      <span className="ayah-mark" aria-hidden="true">
+      <span className={`ayah-mark${inAyah ? ' in-ayah' : ''}`} aria-hidden="true">
         {text}
       </span>
     )
   }
   return (
     <span
-      className={`mw${active ? ' is-now' : ''}${onSeek ? ' tap' : ''}${
-        lead ? ' is-lead' : ''
-      }`}
+      className={`mw${active ? ' is-now' : ''}${inAyah ? ' in-ayah' : ''}${
+        onSeek ? ' tap' : ''
+      }${lead ? ' is-lead' : ''}`}
       onClick={onSeek ? () => onSeek(wordKey) : undefined}
     >
       {text}
@@ -246,8 +252,29 @@ export function MushafView({
     }
   }, [reciterId])
 
-  /** Every word of this surah in order, with the time it begins. */
+  /** Every word of this surah in order, with the time it begins. Empty for a
+   *  verse-timed recitation, which has no word positions to offer. */
   const schedule = useMemo(() => wordSchedule(timings, surah), [timings, surah])
+
+  /**
+   * How finely this recitation can be followed: word, ayah, or not at all.
+   *
+   * Recomputed when the loaded timings change rather than asked once, because
+   * the answer before the file arrives is "not at all" and it must be allowed
+   * to become something else.
+   */
+  const granularity: Granularity | null = useMemo(
+    () => (timings ? timingGranularity(reciterId, surah) : null),
+    [timings, reciterId, surah],
+  )
+
+  /** Where each ayah of this surah begins, in ms. Both kinds of timing carry
+   *  this; it is the only thing they agree on. */
+  const ayahStarts = useMemo(() => {
+    const verses = surah !== null ? timings?.surahs[String(surah)] : undefined
+    if (!verses) return null
+    return verses.map(([ayah, starts]) => ({ ayah, at: starts[0] }))
+  }, [timings, surah])
 
   /** First page on which this surah appears. */
   /**
@@ -359,20 +386,55 @@ export function MushafView({
     return found >= 0 ? schedule[found].key : null
   }, [schedule, time])
 
+  /**
+   * The ayah being recited: the last one whose start has passed.
+   *
+   * Computed whatever the granularity, because the reference apps shade the
+   * verse *and* box the word, and they are right to — the verse is the unit
+   * of meaning, and a single boxed word in a page of a hundred and fifty
+   * gives the eye nowhere to land. Where only verse timings exist this is the
+   * whole of the following, and it is a real feature rather than a fallback.
+   */
+  const activeAyah = useMemo(() => {
+    if (!ayahStarts?.length) return null
+    const ms = time * 1000
+    let lo = 0
+    let hi = ayahStarts.length - 1
+    let found = -1
+    while (lo <= hi) {
+      const mid = (lo + hi) >> 1
+      if (ayahStarts[mid].at <= ms) {
+        found = mid
+        lo = mid + 1
+      } else hi = mid - 1
+    }
+    return found >= 0 ? ayahStarts[found].ayah : null
+  }, [ayahStarts, time])
+
+  /**
+   * The word the page turns to follow.
+   *
+   * The word being recited where one is known, and the first word of the ayah
+   * otherwise — so a verse-timed recitation turns the page at the right
+   * moment even though it cannot say which word is being said on it.
+   */
+  const followKey =
+    activeKey ?? (activeAyah !== null && surah !== null ? `${surah}:${activeAyah}:1` : null)
+
   // Follow the recitation across pages, unless the reader has turned a page
   // themselves — then stay put until playback catches up to that page.
   useEffect(() => {
-    if (!activeKey) return
-    const p = pageOfKey.get(activeKey)
+    if (!followKey) return
+    const p = pageOfKey.get(followKey)
     if (p === undefined) return
     if (manual && p !== page) return
     if (p !== page) setPage(p)
     if (manual && p === page) setManual(false)
-  }, [activeKey, pageOfKey, manual, page])
+  }, [followKey, pageOfKey, manual, page])
 
   useEffect(() => {
-    if (!manual && surahFirstPage !== null && !activeKey) setPage(surahFirstPage)
-  }, [surahFirstPage, manual, activeKey])
+    if (!manual && surahFirstPage !== null && !followKey) setPage(surahFirstPage)
+  }, [surahFirstPage, manual, followKey])
 
   // Arriving from the hifz board. This counts as turning the page by hand, so
   // playback does not immediately drag the view back to where the audio is.
@@ -670,18 +732,31 @@ export function MushafView({
               line.w.length <= 3 ? ' is-short' : ''
             }`}
           >
-            {line.w.map((w, i) => (
-              <MushafWord
-                key={`${line.n}-${i}`}
-                text={w[0]}
-                wordKey={w[1]}
-                // A line can open with an ayah rosette, so "first word" is
-                // not the same as first child.
-                lead={i === line.w.findIndex((x) => x[1])}
-                active={w[1] !== undefined && w[1] === activeKey}
-                onSeek={onSeek ? jumpTo : undefined}
-              />
-            ))}
+            {line.w.map((w, i) => {
+              // The rosette belongs to the ayah it closes, and the layout
+              // gives it no key — so it takes its shading from the word
+              // before it, or the ayah's last word would sit inside the
+              // highlight with its own number left outside.
+              const key = w[1] ?? line.w[i - 1]?.[1]
+              const ayah = key ? Number(key.split(':')[1]) : null
+              return (
+                <MushafWord
+                  key={`${line.n}-${i}`}
+                  text={w[0]}
+                  wordKey={w[1]}
+                  // A line can open with an ayah rosette, so "first word" is
+                  // not the same as first child.
+                  lead={i === line.w.findIndex((x) => x[1])}
+                  active={w[1] !== undefined && w[1] === activeKey}
+                  inAyah={
+                    activeAyah !== null &&
+                    ayah === activeAyah &&
+                    key?.startsWith(`${surah}:`) === true
+                  }
+                  onSeek={onSeek ? jumpTo : undefined}
+                />
+              )
+            })}
           </p>
         </div>
           )
@@ -783,10 +858,18 @@ export function MushafView({
 
       {zoomIdx > 0 && <p className="mushaf-note">{t.zoomedNote}</p>}
 
-      {/* Coverage is per surah: a reciter can be timed for one and not the
-          next, so this asks about the surah on screen rather than the
-          reciter. */}
-      {!schedule.length && <p className="mushaf-note">{t.noTimings}</p>}
+      {/*
+          What the page can and cannot follow, said plainly.
+
+          Coverage is per surah — a reciter can be timed for one and not the
+          next — so this asks about the surah on screen. Three answers, not
+          two: following the word, following the verse, or following nothing.
+          Verse-following is a real thing the page is doing and saying so is
+          not an apology; claiming word-following while shading a verse would
+          be the actual failure.
+      */}
+      {granularity === 'ayah' && <p className="mushaf-note">{t.ayahTimingsOnly}</p>}
+      {granularity === null && <p className="mushaf-note">{t.noTimings}</p>}
     </div>
   )
 }

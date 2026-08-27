@@ -246,6 +246,8 @@ export const fr: Strings = {
   noResults: 'Aucun résultat',
   loading: 'Chargement…',
   pickSurahForText: 'Choisissez une sourate pour ouvrir le mushaf.',
+  ayahTimingsOnly:
+    'Cette récitation est minutée verset par verset : le verset entier est marqué, pas le mot.',
   noTimings: "Le suivi des mots nécessite le minutage de la récitation, qui n'est pas publié pour ce récitateur.",
   page: 'Page',
   cast: 'Lire sur un autre appareil',

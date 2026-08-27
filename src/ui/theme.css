@@ -1801,7 +1801,24 @@ body {
   cursor: pointer;
 }
 
-/* The word being recited. */
+/*
+ * The ayah being recited.
+ *
+ * A quieter mark than the word's, and underneath it — the two are meant to be
+ * seen together, the verse giving the eye somewhere to land and the word
+ * saying exactly where inside it. A single boxed word in a page of a hundred
+ * and fifty is very hard to find.
+ *
+ * On a verse-timed recitation this is the whole of the following, and it is
+ * a feature rather than a fallback: most recitations have verse boundaries
+ * and almost none have word ones.
+ */
+.mw.in-ayah,
+.ayah-mark.in-ayah {
+  background: var(--tile);
+}
+
+/* The word being recited, over the top of it. */
 .mw.is-now {
   background: linear-gradient(160deg, var(--tile-active-a), var(--tile-active-b));
   color: var(--tile-active-ink);

@@ -272,6 +272,8 @@ export const en = {
   noResults: 'No results',
   loading: 'Loading…',
   pickSurahForText: 'Pick a surah to open the mushaf.',
+  ayahTimingsOnly:
+    'This recitation is timed verse by verse, so the whole verse is marked rather than the word.',
   noTimings: 'Word tracking needs recitation timings, which are not published for this reciter.',
   page: 'Page',
   cast: 'Play on another device',
