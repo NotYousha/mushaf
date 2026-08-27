@@ -33,6 +33,59 @@ already solves the size problem the transcode was for: the app itself is
 
 Only Barhaji is synced today, which limits every feature below to one voice.
 
+**Re-checked in full (2026-08-27). Nothing drops in, and one thing nearly
+does.** Every reciter in the catalogue was swept against all 42 of QUL's
+segmented sets — surahs 36 and 78 of each against each — so "nothing exists" is
+a measurement here rather than a name search. Five pairs agreed within 2%: the
+two already registered, which agree to **0.00%** exactly as identical files
+should, one real find below, and two coincidences that fell apart on a third
+surah.
+
+**QUL's segment data needs no account after all.** The bulk export still 401s,
+but its own preview player reads an open endpoint:
+
+```
+https://qul.tarteel.ai/api/v1/audio/surah_segments/{recitationId}?surah=N&from=1&to={ayahs}
+```
+
+It returns the per-word offsets *and the audio URL they were timed against*,
+which is what makes the next paragraph checkable at all. One surah per request,
+114 per reciter, no key.
+
+That URL splits QUL's sets in two, and the split decides everything. Twenty-six
+were timed against the original `download.quranicaudio.com` files — natural
+inter-ayah gaps, a real lead-in — and those are the only reusable ones; both
+sets already registered came from there. The other sixteen were timed against
+`audio-cdn.tarteel.ai` re-cuts, where every ayah begins exactly 200 ms after the
+last and ayah 1 begins at 0. Those timings are true only of those files.
+
+**Al-Minshawi is the one real find, and it is not free.** QUL rec 9 is the same
+performance we serve — sample-level cross-correlation of the raw waveforms peaks
+at **0.691** at a 3.45 s lag, which independently encoded copies of one waveform
+do and two takes do not — published as *word-level* segments. But it is timed
+against a re-edit: their copy drops the basmala and normalises every gap to
+200 ms, so our lead-in runs +4.2 s to +7.2 s depending on the surah, and the
+offset **drifts within a surah** — about 47 ms per ayah boundary, +4.08 s at
+t=30 s down to +0.20 s at t=930 s on Ya-Sin. A constant shift will not collect
+it. The two honest routes are to serve the file the timings belong to
+(`audio-cdn.tarteel.ai/quran/surah/minshawy/murattal/mp3/{001..114}.mp3`, which
+exposes ETag and Content-Range better than any source we have), or to keep only
+the within-ayah word offsets — those are exact for our audio, since the ayah
+content is identical — and recover the 113 gaps per surah by silence detection.
+The second is untested and a naive RMS pass found 930 candidate boundaries
+against 82 real ones, so it needs a proper gap model.
+
+Sudais, Shuraim and Al-Afasy have word-level data too, for recordings this app
+deliberately did not choose. Taking it means serving a second, different mushaf
+under the same sheikh's name.
+
+**The Taraweeh answer is now definite, not merely unfound.** QUL's newest
+mosque years are Makkah 1442 and Madinah 1442, and even those return
+`"segments":{}` — empty — as do 1441 for both. Nothing past 1442 exists at all.
+The app carries both mosques through 1447, so *every* year it holds beyond 1442
+has no upstream timing data of any kind, and forced alignment here is the only
+route that will ever exist for them.
+
 **What was checked (2026-08-22):**
 
 - QUL (`qul.tarteel.ai`) publishes **41 surah-by-surah recitations with

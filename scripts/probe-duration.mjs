@@ -45,16 +45,66 @@ function durationOf(buf, total) {
   return br ? { seconds: ((total - off) * 8) / br, exact: false } : null
 }
 
+const WINDOW = 262144
+
+const range = async (url, from, to) => {
+  const r = await fetch(url, { headers: { Range: `bytes=${from}-${to}` } })
+  if (!r.ok && r.status !== 206) throw new Error(`HTTP ${r.status} ${url}`)
+  const cr = r.headers.get('content-range')
+  return {
+    buf: Buffer.from(await r.arrayBuffer()),
+    total: cr ? Number(cr.split('/')[1]) : Number(r.headers.get('content-length') || 0),
+  }
+}
+
+/**
+ * Duration, following the tag rather than hoping it is short.
+ *
+ * The first window used to be the only one, and a file whose embedded cover art
+ * runs past it read as `unreadable` — not "no frames", but "the frames are
+ * further in than we looked". Ali Jaber's whole set on quranicaudio is like
+ * that: a 419 KB ID3 tag against a 256 KB window, so every surah of his
+ * measured as nothing at all. A duration probe that silently reports null is
+ * worse than one that fails, because null is what a genuinely bad file looks
+ * like too, and this one is used to decide whether a timing set describes the
+ * recording we serve.
+ *
+ * So when the tag says the audio starts beyond what was fetched, one more
+ * request is made from where the tag ends. Two requests at most, and only for
+ * the files that need it.
+ */
 export async function measure(url) {
-  const head = await fetch(url, { headers: { Range: 'bytes=0-262143' } })
-  if (!head.ok && head.status !== 206) throw new Error(`HTTP ${head.status} ${url}`)
-  const buf = Buffer.from(await head.arrayBuffer())
-  const cr = head.headers.get('content-range')
-  const total = cr ? Number(cr.split('/')[1]) : Number(head.headers.get('content-length') || 0)
+  const first = await range(url, 0, WINDOW - 1)
+  const { buf, total } = first
+
+  if (buf.slice(0, 3).toString('latin1') === 'ID3') {
+    const tag =
+      10 +
+      (((buf[6] & 0x7f) << 21) | ((buf[7] & 0x7f) << 14) | ((buf[8] & 0x7f) << 7) | (buf[9] & 0x7f))
+    if (tag >= buf.length && tag < total) {
+      const next = await range(url, tag, Math.min(tag + WINDOW - 1, total - 1))
+      // durationOf expects the tag at the front, so hand it a buffer that has
+      // one: ten bytes of header declaring a zero-length tag, then the audio.
+      const stub = Buffer.alloc(10)
+      stub.write('ID3', 0, 'latin1')
+      stub[3] = 3
+      return {
+        ...(durationOf(Buffer.concat([stub, next.buf]), total - tag + 10) ?? {
+          seconds: null,
+          exact: false,
+        }),
+        bytes: total,
+      }
+    }
+  }
+
   return { ...(durationOf(buf, total) ?? { seconds: null, exact: false }), bytes: total }
 }
 
-if (process.argv[1].endsWith('probe-duration.mjs')) {
+// argv[1] is undefined under `node -e` and `node --input-type=module`, where
+// this module is imported rather than run — and reading .endsWith off it threw
+// before any caller could use measure().
+if (process.argv[1]?.endsWith('probe-duration.mjs')) {
   const urls = process.argv.slice(2)
   for (const u of urls) {
     try {
