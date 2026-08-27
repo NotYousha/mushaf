@@ -268,22 +268,26 @@ Recorded so nobody re-derives it. See `src/mushaf/editions.ts`.
 
 ## Quran fonts
 
-Two faces from the **King Fahd Glorious Quran Printing Complex**, both hosted
-verbatim in `public/fonts/` and neither subsetted — their licence permits use,
-copying and distribution but forbids modification, and subsetting a font is
-modifying it. `scripts/fetch-mushaf-fonts.mjs` fetches each twice and compares
-before writing; `data/fonts.json` records the source URL, byte count, sha256
-and the full licence text read out of the font's own name table.
+The Quran text is set in **Amiri** and **Amiri Quran**, both under the SIL
+Open Font License.
 
-- **KFGQPC HAFS Uthmanic Script** (106,856 bytes) — the Uthmani mushaf. This
-  is the face our page layout was set in: the line breaks in
-  `data/mushaf-layout.json` are the Complex's, so this is the type they were
-  computed for. Its cmap is missing U+0622, which occurs in three tokens of
-  the mushaf; **Amiri Quran** (OFL) stands behind it in the font stack and a
-  browser resolves those three glyphs from it.
-- **KFGQPC Nastaleeq** (85,608 bytes) — the IndoPak mushaf.
+Two faces from the **King Fahd Glorious Quran Printing Complex** were fetched,
+shipped briefly and removed. Their provenance — source URL, byte count,
+sha256 and the full licence text read out of each font's own name table — is
+still in `data/fonts.json`, and `scripts/fetch-mushaf-fonts.mjs` will fetch
+them again. Neither was ever subsetted: their licence permits use, copying and
+distribution but forbids modification, and subsetting a font is modifying it.
 
-Amiri and Amiri Quran remain under the SIL Open Font License.
+- **KFGQPC HAFS Uthmanic Script** — the Complex's own Hafs face, and the one
+  our page layout was printed in. It is heavier and brighter than Amiri Quran
+  and it is *wrong for our text*: it expects the Complex's own encoding, not
+  the Unicode Uthmani we render, and draws U+06DF — the small high rounded
+  zero marking a silent letter — as a large filled circle on the baseline
+  instead of a small mark above the line. That character is in ءَامَنُوا۟,
+  كَفَرُوا۟, أُو۟لُوا۟ and hundreds more. Using it again means adopting the
+  QPC text as well, which is a different layout rather than a different
+  stylesheet.
+- **KFGQPC Nastaleeq** — fetched for the IndoPak edition, and removed with it.
 
 ## Quran division metadata
 

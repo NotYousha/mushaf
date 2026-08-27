@@ -62,18 +62,22 @@ describe('the mushaf editions', () => {
       }
     }
     /*
-     * IndoPak is the one people ask for, and its blocker used to be a font
-     * licence somebody had to write an email about — recorded here so it could
-     * not quietly vanish from the list of things we owed.
+     * IndoPak is the one people ask for, and the debt this guards has changed
+     * shape twice.
      *
-     * It did not vanish; it was paid. The permission-blocked face was routed
-     * around with KFGQPC Nastaleeq, whose own licence grants distribution
-     * provided the font is not modified, and IndoPak 15-line ships. So the
-     * guard moves with the debt: what must not quietly vanish now is the
-     * edition itself.
+     * It was blocked on a font licence somebody had to write an email about.
+     * That was paid: the permission-blocked face was routed around with
+     * KFGQPC Nastaleeq, whose own licence grants distribution provided the
+     * font is not modified, and the edition was built and shipped.
+     *
+     * Then it came out again, and not for a licensing reason. It paginates in
+     * 610 pages against the Madani's 604, and the index, the hifz board and
+     * the translation view all still speak in Madani page numbers. So the
+     * remaining work is ours rather than anyone else's, and the reason it
+     * carries is 'buildable' — the data and the font are both in hand.
      */
-    expect(EDITIONS.map((e) => e.id)).toContain('indopak-15')
-    expect(UNAVAILABLE.indopak.every((m) => m.reason !== 'needs-permission')).toBe(true)
+    expect(UNAVAILABLE.indopak.map((m) => m.name)).toContain('IndoPak 15-Line')
+    expect(UNAVAILABLE.indopak.every((m) => m.reason === 'buildable')).toBe(true)
   })
 
   it('gives the IndoPak family the word Para when it lands', () => {

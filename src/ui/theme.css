@@ -148,22 +148,30 @@
   --font-ar: 'Amiri', 'Traditional Arabic', serif;
   /* Uthmani text, with the Quranic marks Amiri proper does not carry. */
   /*
-   * The Uthmani page, in the face it was set in.
+   * The Uthmani text, in Amiri Quran.
    *
-   * KFGQPC HAFS Uthmanic Script is the King Fahd Complex's own, and our page
-   * layout is theirs — the line breaks in data/mushaf-layout.json come from
-   * their printed mushaf — so this is the type those breaks were computed
-   * for. Amiri Quran, which stood here, is a lighter and finer face: correct
-   * Quranic orthography but visibly thinner on a phone, which is most of why
-   * the page read as faint.
+   * KFGQPC HAFS Uthmanic Script was here for a few hours and is gone, and the
+   * reason is worth keeping: it is the King Fahd Complex's own face and it is
+   * heavier and brighter than this one, but it expects the Complex's own text
+   * encoding rather than the Unicode Uthmani we render. On our text it draws
+   * U+06DF — the small high rounded zero that marks a silent letter — as a
+   * large filled circle sitting on the baseline instead of a small mark above
+   * it. That character is in ءَامَنُوا۟, كَفَرُوا۟, أُو۟لُوا۟ and hundreds
+   * more, so the page came out with white blobs through the middle of the
+   * text.
    *
-   * Amiri Quran stays behind it, and not only as a fallback for a failed
-   * download. KFGQPC's cmap is missing U+0622 — alif with madda — which
-   * appears in three tokens of the mushaf. A browser resolves a font stack
-   * per glyph, so those three come from Amiri and everything else from
-   * KFGQPC, with no tofu and nothing special in the renderer.
+   * A font that renders the words beautifully and the marks wrongly is worse
+   * than a plainer one that renders both correctly, because the marks are not
+   * decoration — they are how the text is read. Amiri Quran sets every one of
+   * them where it belongs.
+   *
+   * If that face is ever wanted again it needs the QPC text to go with it,
+   * which is a different layout, not a different stylesheet. The font is
+   * re-fetchable with scripts/fetch-mushaf-fonts.mjs and its provenance is
+   * still recorded in data/fonts.json.
    */
-  --font-quran: 'KFGQPC HAFS Uthmanic Script', 'Amiri Quran', 'Amiri', serif;
+  --font-quran: 'Amiri Quran', 'Amiri', 'Traditional Arabic', serif;
+
   --font-ui: 'IBM Plex Sans Arabic', system-ui, -apple-system, sans-serif;
 
   /* Set per theme in themes.css, so form controls and scrollbars follow the
@@ -1821,11 +1829,11 @@ body {
    * about 1.53 ems of ink against Amiri's 1.93 — so the same page fits at 2.0
    * and the type grows by a quarter to fill what the leading gave back.
    *
-   * Not lower than this. Uthmani stacks marks well above and below the
-   * baseline, and below about 1.9 the rows begin to touch on the pages with
-   * the most vocalisation.
+   * Back to 2.5 with Amiri Quran, whose ink runs to nearly two ems once its
+   * marks are counted — 2.0 was measured against KFGQPC's more compact face
+   * and its rows touch under this one.
    */
-  line-height: 2;
+  line-height: 2.5;
   color: var(--ink-strong);
   white-space: nowrap;
 }
@@ -2302,7 +2310,14 @@ body {
   line-height: 1;
 }
 
-.tayah-ar {
+/*
+ * Selected through .tview-list, and for the same reason .mpage-lines .
+ * mushaf-line is: this is a <p> inside .panel, and `.panel p` sets a size and
+ * a leading at specificity (0,1,1) against the one class this had. So the
+ * ayah was rendering at the interface's small text size with prose leading —
+ * scripture set as a caption.
+ */
+.tview-list .tayah-ar {
   font-family: var(--font-quran);
   /* Scripture, sized against the page it comes from rather than against the
      interface scale — the same exemption the mushaf's own lines carry. */
@@ -2313,7 +2328,7 @@ body {
   margin: 0 0 0.6rem;
 }
 
-.tayah-tr {
+.tview-list .tayah-tr {
   font-size: var(--text-sm);
   line-height: 1.65;
   color: var(--ink);
@@ -2329,12 +2344,12 @@ body {
  * top right and needs the leading, or the descenders of one line sit on the
  * next.
  */
-.tayah-tr[lang='ur'] {
+.tview-list .tayah-tr[lang='ur'] {
   font-family: 'Noto Nastaliq Urdu', var(--font-ar);
   line-height: 2.4;
 }
 
-.tayah-tr[lang='ar'] {
+.tview-list .tayah-tr[lang='ar'] {
   font-family: var(--font-ar);
   line-height: 2;
 }

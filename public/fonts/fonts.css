@@ -160,55 +160,21 @@
    in theme.css says it is for. Latin now falls through. */
 
 /*
- * KFGQPC Nastaleeq, for the IndoPak mushaf.
+ * The two KFGQPC faces are gone, and this note is here so nobody re-adds them
+ * without knowing why they went.
  *
- * Hosted verbatim and never subsetted. Its licence grants the right to "Use,
- * Copy, Distribute" free of cost on the condition that the font is not
- * "Modified, Altered, Translated, Reverse Engineered, Decompiled,
- * Disassembled" — and subsetting a font is modifying it, so the whole 85 KB
- * ships even though a mushaf uses a fraction of it. `scripts/fetch-mushaf-
- * fonts.mjs` fetches it twice and compares, so a corrupted copy cannot land
- * silently; data/fonts.json records the hash and the licence text verbatim.
+ * KFGQPC HAFS Uthmanic Script is the King Fahd Complex's own Hafs face and it
+ * is heavier and brighter than Amiri Quran — but it expects the Complex's own
+ * text encoding, not the Unicode Uthmani this app renders. On our text it
+ * draws U+06DF, the small high rounded zero marking a silent letter, as a
+ * large filled circle on the baseline rather than a small mark above the
+ * line. That character is in ءَامَنُوا۟, كَفَرُوا۟, أُو۟لُوا۟ and hundreds
+ * more, so the page came out with white blobs through the middle of it.
  *
- * The obvious face for this script — QuranWBW's AlQuran IndoPak — forbids
- * distribution without written permission, and the one OFL alternative does
- * not contain the letters. This is the only face that is both complete and
- * ours to serve.
+ * KFGQPC Nastaleeq went with the IndoPak edition it was fetched for.
+ *
+ * Both are re-fetchable with scripts/fetch-mushaf-fonts.mjs, and
+ * data/fonts.json still holds their source URLs, hashes and licence text. The
+ * Uthmani one needs the QPC text to go with it, which is a different layout
+ * rather than a different stylesheet.
  */
-@font-face {
-  font-family: 'KFGQPC Nastaleeq';
-  src: url('./kfgqpc-nastaleeq.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  /* Swap, not block: the IndoPak page must appear immediately and reflow,
-     rather than holding a blank screen on a slow connection. */
-  font-display: swap;
-}
-
-/*
- * KFGQPC HAFS Uthmanic Script, for the Uthmani mushaf.
- *
- * The face the pages were set in. data/mushaf-layout.json is the King Fahd
- * Complex's own 604-page Madani mushaf, line break for line break, and this
- * is the Complex's own Hafs face (v2.2) that those breaks were drawn with.
- * Amiri Quran stood in for it and drew the Uthmani marks its own way.
- *
- * Hosted verbatim and never subsetted, on the same terms as the Nastaleeq
- * above: "Use, Copy, Distribute" free of cost, provided the font is not
- * modified. Fetched as WOFF2 rather than converted from the TTF beside it —
- * the two decompile to the same 1572 glyphs with identical outlines, so no
- * transform of ours stands between the Complex's font software and this
- * file. scripts/fetch-mushaf-fonts.mjs records the hash and the licence.
- *
- * It has no glyph for U+0622; the Uthmani text spells alef-madda as
- * U+0627 U+0653, which it does draw, in all but three of its 83,665 tokens.
- */
-@font-face {
-  font-family: 'KFGQPC HAFS Uthmanic Script';
-  src: url('./kfgqpc-hafs-uthmanic.woff2') format('woff2');
-  font-weight: 400;
-  font-style: normal;
-  /* Swap, not block: the page must appear and reflow rather than hold a
-     blank leaf on a slow connection. */
-  font-display: swap;
-}

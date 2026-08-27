@@ -63,11 +63,8 @@ describe('the reading tabs, held back', () => {
       'src/mushaf/divisions.ts',
       'src/mushaf/tajweed.ts',
       'data/mushaf-layout.json',
-      'data/layout-indopak-15.json',
       'data/divisions.json',
       'public/tajweed.json',
-      'public/fonts/kfgqpc-hafs-uthmanic.woff2',
-      'public/fonts/kfgqpc-nastaleeq.woff2',
     ]) {
       expect(existsSync(f), `${f} is held back, not gone`).toBe(true)
     }

@@ -37,15 +37,15 @@ export type Timings = {
 /**
  * The layouts, by edition.
  *
- * Each is two and a half megabytes and a reader opens one, so they are lazy
- * chunks keyed by name rather than a single bundled file. The Madani one
- * keeps the plain key it has always had.
+ * One today, and the map stays because the shape is the point: a layout is
+ * two and a half megabytes and a reader opens one, so they are lazy chunks
+ * keyed by name rather than a single bundled file. `loadLayout()` falls back
+ * to the Madani layout for any name it does not know, so an edition can name
+ * a layout that has not been built yet without stranding the reader.
  */
 const LAYOUTS: Record<string, () => Promise<Layout>> = {
   madani: () =>
     import('../../data/mushaf-layout.json').then((m) => m.default as unknown as Layout),
-  'indopak-15': () =>
-    import('../../data/layout-indopak-15.json').then((m) => m.default as unknown as Layout),
 }
 
 const layoutCache = new Map<string, Promise<Layout>>()
