@@ -116,7 +116,21 @@ const DIRECT = {
     `https://download.quranicaudio.com/quran/abdullaah_3awwaad_al-juhaynee/${pad(n)}.mp3`,
   lh: (n) => `https://server8.mp3quran.net/lhdan/${pad(n)}.mp3`,
   bd: (n) => `https://archive.org/download/Salah_Albudair_MP3_Quran/${pad(n)}.mp3`,
-  ws: (n) => `https://archive.org/download/Waleed-Al-Shamsan/${pad(n)}.mp3`,
+  /*
+   * Ash-Shamsan, re-pointed.
+   *
+   * The item this used to read, `Waleed-Al-Shamsan`, is not one publication.
+   * About twenty of its seventy-five files are low-bitrate *excerpt clips*
+   * from midad.com carrying plain surah names, and the length check did not
+   * catch all of them: the app was serving a 23-minute cut of Hud -- a
+   * forty-five-minute surah -- as surah 11, and a 24-second fragment as
+   * al-Fatihah.
+   *
+   * This item is one encode throughout and holds seventy-one complete surahs,
+   * fifteen of which the old one had only as excerpts. Uniformly padded, with
+   * none of the other item's per-file spelling.
+   */
+  ws: (n) => `https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/${pad(n)}.mp3`,
 }
 
 const pad = (n) => String(n).padStart(3, '0')
@@ -636,6 +650,26 @@ const SOURCES = {
    * whatever still does not belong.
    */
   qarafi: {
+    /*
+     * At-Tahrim reads 1.30x its neighbour At-Talaq where its word count implies
+     * 0.88x, so the length check threw it out. The file is nonetheless
+     * At-Tahrim, established three independent ways rather than assumed: a
+     * frame scan of the whole file shows one homogeneous encode segment end to
+     * end, 21,988 frames at 192 kbps, so it is not several surahs spliced;
+     * mp3quran's copy of the same bytes is tagged
+     * TIT2 "066 - At-Tahrim (The Prohibition) سورة التحريم"; and a DTW
+     * comparison of log-mel features against the other published copy of this
+     * mushaf scores At-Tahrim best at 2.13 with every other candidate surah in
+     * a 2.46-2.59 band.
+     *
+     * He reads it slowly, which this collection does elsewhere too -- it runs
+     * 1.19x to 2.33x Al-Juhany across the surahs, and 66 is merely the top of
+     * that spread. A shorter take of it exists on way2quran, and switching to
+     * it would mean a host that sends no ETag and no Last-Modified, so a
+     * download could not be resumed. Not worth it to make a number look
+     * tidier.
+     */
+    identityConfirmed: [66],
     route: 'qa',
     name: 'عبد الله القرافي',
     nameEn: 'Abdullah Al-Qarafi',

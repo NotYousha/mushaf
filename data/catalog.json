@@ -10365,7 +10365,7 @@
    "mushafEn": "Murattal mushaf — Hafs from Asim",
    "source": "https://mushaf-audio.mushaftarteel.workers.dev/qa/{surah}.mp3",
    "photo": "imam-qarafi.webp",
-   "released": 113,
+   "released": 114,
    "total": 114,
    "surahs": [
     {
@@ -10824,6 +10824,13 @@
      "verified": true
     },
     {
+     "surah": 66,
+     "url": "https://mushaf-audio.mushaftarteel.workers.dev/qa/66.mp3",
+     "fallbackUrl": null,
+     "bytes": 12665088,
+     "verified": true
+    },
+    {
      "surah": 67,
      "url": "https://mushaf-audio.mushaftarteel.workers.dev/qa/67.mp3",
      "fallbackUrl": null,
@@ -11169,434 +11176,434 @@
    "mushaf": "المصحف المرتل",
    "mushafEn": "Murattal mushaf",
    "note": "ما زال قيد التسجيل — تُضاف السور الجديدة تلقائيًا.",
-   "source": "https://archive.org/download/Waleed-Al-Shamsan/{surah}.mp3",
+   "source": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/{surah}.mp3",
    "photo": "imam-shamsan.webp",
    "released": 61,
    "total": 114,
    "surahs": [
     {
      "surah": 1,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/001.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/001.mp3",
      "fallbackUrl": null,
-     "bytes": 180041,
+     "bytes": 775417,
      "verified": true
     },
     {
      "surah": 8,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/008.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/008.mp3",
      "fallbackUrl": null,
      "bytes": 18454083,
      "verified": true
     },
     {
-     "surah": 11,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/011.mp3",
-     "fallbackUrl": null,
-     "bytes": 4235791,
-     "verified": true
-    },
-    {
      "surah": 17,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/017.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/017.mp3",
      "fallbackUrl": null,
      "bytes": 27556381,
      "verified": true
     },
     {
      "surah": 19,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/019.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/019.mp3",
      "fallbackUrl": null,
      "bytes": 15544648,
      "verified": true
     },
     {
      "surah": 20,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/020.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/020.mp3",
      "fallbackUrl": null,
      "bytes": 21556535,
      "verified": true
     },
     {
      "surah": 24,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/024.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/024.mp3",
      "fallbackUrl": null,
      "bytes": 19408097,
      "verified": true
     },
     {
      "surah": 25,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/025.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/025.mp3",
      "fallbackUrl": null,
      "bytes": 14202581,
      "verified": true
     },
     {
+     "surah": 26,
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/026.mp3",
+     "fallbackUrl": null,
+     "bytes": 18256809,
+     "verified": true
+    },
+    {
      "surah": 29,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/029.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/029.mp3",
      "fallbackUrl": null,
      "bytes": 21632183,
      "verified": true
     },
     {
      "surah": 30,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/030.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/030.mp3",
      "fallbackUrl": null,
      "bytes": 13932162,
      "verified": true
     },
     {
      "surah": 31,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/031.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/031.mp3",
      "fallbackUrl": null,
      "bytes": 11853291,
      "verified": true
     },
     {
      "surah": 32,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/032.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/032.mp3",
      "fallbackUrl": null,
-     "bytes": 2028953,
+     "bytes": 5341878,
      "verified": true
     },
     {
      "surah": 33,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/033.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/033.mp3",
      "fallbackUrl": null,
      "bytes": 21165823,
      "verified": true
     },
     {
      "surah": 35,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/035.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/035.mp3",
      "fallbackUrl": null,
      "bytes": 12367596,
      "verified": true
     },
     {
      "surah": 36,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/036.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/036.mp3",
      "fallbackUrl": null,
      "bytes": 10524126,
      "verified": true
     },
     {
+     "surah": 37,
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/037.mp3",
+     "fallbackUrl": null,
+     "bytes": 14600526,
+     "verified": true
+    },
+    {
      "surah": 41,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/041.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/041.mp3",
      "fallbackUrl": null,
      "bytes": 12075173,
      "verified": true
     },
     {
      "surah": 42,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/042.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/042.mp3",
      "fallbackUrl": null,
      "bytes": 10566711,
      "verified": true
     },
     {
-     "surah": 44,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/044.mp3",
+     "surah": 43,
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/043.mp3",
      "fallbackUrl": null,
-     "bytes": 1878881,
+     "bytes": 11921902,
+     "verified": true
+    },
+    {
+     "surah": 44,
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/044.mp3",
+     "fallbackUrl": null,
+     "bytes": 1879009,
      "verified": true
     },
     {
      "surah": 45,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/045.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/045.mp3",
      "fallbackUrl": null,
-     "bytes": 2500073,
-     "verified": true
-    },
-    {
-     "surah": 47,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/047.mp3",
-     "fallbackUrl": null,
-     "bytes": 4327769,
+     "bytes": 6597398,
      "verified": true
     },
     {
      "surah": 48,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/048.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/048.mp3",
      "fallbackUrl": null,
      "bytes": 8697660,
      "verified": true
     },
     {
      "surah": 50,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/050.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/050.mp3",
      "fallbackUrl": null,
      "bytes": 7337128,
      "verified": true
     },
     {
      "surah": 52,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/052.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/052.mp3",
      "fallbackUrl": null,
      "bytes": 4926378,
      "verified": true
     },
     {
      "surah": 53,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/053.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/053.mp3",
      "fallbackUrl": null,
      "bytes": 5871384,
      "verified": true
     },
     {
      "surah": 54,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/054.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/054.mp3",
      "fallbackUrl": null,
      "bytes": 5399540,
      "verified": true
     },
     {
      "surah": 55,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/055.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/055.mp3",
      "fallbackUrl": null,
-     "bytes": 2788829,
+     "bytes": 9630127,
      "verified": true
     },
     {
      "surah": 56,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/056.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/056.mp3",
      "fallbackUrl": null,
-     "bytes": 2617541,
+     "bytes": 9370973,
      "verified": true
     },
     {
      "surah": 57,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/057.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/057.mp3",
      "fallbackUrl": null,
-     "bytes": 3208157,
+     "bytes": 8304776,
      "verified": true
     },
     {
      "surah": 58,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/058.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/058.mp3",
      "fallbackUrl": null,
      "bytes": 7799076,
      "verified": true
     },
     {
      "surah": 59,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/059.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/059.mp3",
      "fallbackUrl": null,
      "bytes": 16507997,
      "verified": true
     },
     {
      "surah": 60,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/060.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/060.mp3",
      "fallbackUrl": null,
      "bytes": 13286587,
      "verified": true
     },
     {
      "surah": 62,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/062.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/062.mp3",
      "fallbackUrl": null,
-     "bytes": 946781,
+     "bytes": 2455436,
      "verified": true
     },
     {
      "surah": 63,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/063.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/063.mp3",
      "fallbackUrl": null,
-     "bytes": 1223837,
+     "bytes": 4474837,
      "verified": true
     },
     {
      "surah": 64,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/064.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/064.mp3",
      "fallbackUrl": null,
-     "bytes": 1396061,
+     "bytes": 5325387,
      "verified": true
     },
     {
      "surah": 65,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/065.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/065.mp3",
      "fallbackUrl": null,
-     "bytes": 1743473,
+     "bytes": 6275086,
      "verified": true
     },
     {
      "surah": 66,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/066.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/066.mp3",
      "fallbackUrl": null,
-     "bytes": 1633493,
+     "bytes": 5756209,
      "verified": true
     },
     {
      "surah": 67,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/067.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/067.mp3",
      "fallbackUrl": null,
      "bytes": 6380069,
      "verified": true
     },
     {
      "surah": 68,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/068.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/068.mp3",
      "fallbackUrl": null,
      "bytes": 4802069,
      "verified": true
     },
     {
      "surah": 70,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/070.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/070.mp3",
      "fallbackUrl": null,
      "bytes": 3699148,
      "verified": true
     },
     {
      "surah": 76,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/076.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/076.mp3",
      "fallbackUrl": null,
      "bytes": 4221724,
      "verified": true
     },
     {
-     "surah": 78,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/078.mp3",
-     "fallbackUrl": null,
-     "bytes": 818689,
-     "verified": true
-    },
-    {
      "surah": 81,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/081.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/081.mp3",
      "fallbackUrl": null,
      "bytes": 1789253,
      "verified": true
     },
     {
      "surah": 82,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/082.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/082.mp3",
      "fallbackUrl": null,
      "bytes": 1524169,
      "verified": true
     },
     {
      "surah": 94,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/094.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/094.mp3",
      "fallbackUrl": null,
      "bytes": 2006906,
      "verified": true
     },
     {
      "surah": 96,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/096.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/096.mp3",
      "fallbackUrl": null,
      "bytes": 1158692,
      "verified": true
     },
     {
      "surah": 97,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/097.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/097.mp3",
      "fallbackUrl": null,
      "bytes": 1926444,
      "verified": true
     },
     {
      "surah": 98,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/098.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/098.mp3",
      "fallbackUrl": null,
      "bytes": 4420624,
      "verified": true
     },
     {
      "surah": 99,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/099.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/099.mp3",
      "fallbackUrl": null,
      "bytes": 2252461,
      "verified": true
     },
     {
      "surah": 102,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/102.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/102.mp3",
      "fallbackUrl": null,
      "bytes": 2101995,
      "verified": true
     },
     {
      "surah": 103,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/103.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/103.mp3",
      "fallbackUrl": null,
      "bytes": 887816,
      "verified": true
     },
     {
      "surah": 104,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/104.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/104.mp3",
      "fallbackUrl": null,
      "bytes": 2659969,
      "verified": true
     },
     {
      "surah": 105,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/105.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/105.mp3",
      "fallbackUrl": null,
      "bytes": 2108255,
      "verified": true
     },
     {
      "surah": 106,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/106.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/106.mp3",
      "fallbackUrl": null,
      "bytes": 1678804,
      "verified": true
     },
     {
      "surah": 107,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/107.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/107.mp3",
      "fallbackUrl": null,
      "bytes": 2051834,
      "verified": true
     },
     {
      "surah": 108,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/108.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/108.mp3",
      "fallbackUrl": null,
      "bytes": 970369,
      "verified": true
     },
     {
      "surah": 109,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/109.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/109.mp3",
      "fallbackUrl": null,
      "bytes": 2091544,
      "verified": true
     },
     {
      "surah": 110,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/110.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/110.mp3",
      "fallbackUrl": null,
      "bytes": 1295326,
      "verified": true
     },
     {
      "surah": 111,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/111.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/111.mp3",
      "fallbackUrl": null,
      "bytes": 1739410,
      "verified": true
     },
     {
      "surah": 112,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/112.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/112.mp3",
      "fallbackUrl": null,
      "bytes": 830350,
      "verified": true
     },
     {
      "surah": 113,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/113.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/113.mp3",
      "fallbackUrl": null,
      "bytes": 1490724,
      "verified": true
     },
     {
      "surah": 114,
-     "url": "https://archive.org/download/Waleed-Al-Shamsan/114.mp3",
+     "url": "https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/114.mp3",
      "fallbackUrl": null,
      "bytes": 1862704,
      "verified": true

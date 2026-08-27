@@ -427,13 +427,25 @@ const ARCHIVE_MUSHAFS = {
     name: 'Saud Ash-Shuraim — from the Grand Mosque',
   },
   /*
-   * Ash-Shamsan's mushaf is not finished. The Saudi Center has announced it
-   * and is publishing it a surah at a time, so this holds the seventy-odd that
-   * have aired — al-Baqarah, Aal-Imran and al-Kahf are not yet among them. The
-   * floor says so, and a gap then reads as "not recorded yet".
+   * Ash-Shamsan's mushaf is not finished, and the Saudi Center has nothing to
+   * do with it — that was this comment's claim and it is wrong. Neither itqan
+   * host mentions him, and his recordings come from midad.com and mp3quran,
+   * which reports a total of seventy-one. Al-Baqarah, Aal-Imran and al-Kahf
+   * are genuinely unpublished as full surahs, so a gap here still reads as
+   * "not recorded yet" — the floor is right even though the attribution was
+   * not.
    */
   ws: {
-    item: 'Waleed-Al-Shamsan',
+    /*
+     * Not `Waleed-Al-Shamsan`, which is what this read and which is not one
+     * publication: about twenty of its files are low-bitrate excerpt clips
+     * from midad.com under plain surah names, and enough of them cleared the
+     * catalog's length check that the app served a 23-minute cut of Hud as
+     * surah 11 and a 24-second fragment as al-Fatihah. This item is one encode
+     * throughout, and the fifteen surahs the other had only as excerpts are
+     * complete in it.
+     */
+    item: 'Alwaleed-Alshamsan-Hafs-An-Assem',
     name: 'Al-Waleed Ash-Shamsan — still being recorded',
     min: 60,
   },
