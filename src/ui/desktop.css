@@ -44,6 +44,31 @@
    no way to scroll back to it.
    --------------------------------------------------------------------- */
 @media (max-height: 30rem) {
+  /*
+   * The leaf, before anything else on this screen.
+   *
+   * .mpages is a fixed min(64dvh, 34rem), which at 320px of height is 205px;
+   * the running head and folio take about seventy of it, and fifteen lines
+   * need roughly two hundred. MushafView's --squeeze floors at 0.4 rather
+   * than shrinking without limit, so the block renders larger than the box
+   * and .mpage-body's overflow: hidden cuts the first and last lines off.
+   * There is no scrollbar to get them back -- the page is deliberately not
+   * scrollable -- so the app silently withheld two of fifteen lines of Quran
+   * on a rotation the reader performs precisely to see more of the page.
+   *
+   * The furniture goes and the type does not. The head says the juz and the
+   * surah, both of which the chrome above already says; the folio is a page
+   * number. Neither is worth a line of the mushaf.
+   */
+  .mpage-head,
+  .mpage-foot {
+    display: none;
+  }
+
+  .mushaf:not(.is-immersive) .mpages {
+    height: 88dvh;
+  }
+
   .player {
     max-height: 100dvh;
     overflow-y: auto;
@@ -358,7 +383,13 @@
    * did. Past this width the page stops widening and centres instead, so
    * a line of Uthmani never runs further than an eye can track.
    */
-  .mushaf-page,
+  /*
+   * .mpage, not .mushaf-page -- that class is rendered by nothing and has not
+   * been for some time, so this cap silently stopped applying and the leaf ran
+   * to whatever width .sheet allowed. An iPad in portrait was giving it 672px
+   * of measure, and --fit grows the type to fill what it is given.
+   */
+  .mpage,
   .paged-mushaf {
     max-width: 34rem;
     margin-inline: auto;

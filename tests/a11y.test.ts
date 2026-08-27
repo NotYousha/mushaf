@@ -19,7 +19,9 @@ describe('screen readers', () => {
     // Each of these renders Arabic regardless of the interface language.
     const places: [string, string][] = [
       ['src/ui/SurahList.tsx', 'name-ar'],
-      ['src/ui/MushafView.tsx', 'surah-band-name'],
+      // The surah band moved out to MushafPage when the leaf became its own
+      // component; it still marks itself lang="ar", which is what this asks.
+      ['src/ui/MushafPage.tsx', 'surah-band-name'],
       ['src/ui/FavouritesPanel.tsx', 'fav-ar'],
       ['src/ui/ImamPanel.tsx', 'imam-r-ar'],
       ['src/App.tsx', 'surah-name'],

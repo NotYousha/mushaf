@@ -712,7 +712,7 @@ body,
 .row,
 .numeral,
 .chip,
-.mushaf-page {
+.mslot {
   transition:
     background-color 320ms var(--ease-out, ease),
     color 320ms var(--ease-out, ease),
@@ -728,7 +728,7 @@ body,
   .row,
   .numeral,
   .chip,
-  .mushaf-page {
+  .mslot {
     transition: none;
   }
 }

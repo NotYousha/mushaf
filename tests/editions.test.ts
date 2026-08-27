@@ -61,10 +61,19 @@ describe('the mushaf editions', () => {
         expect(['no-source', 'needs-permission', 'buildable']).toContain(m.reason)
       }
     }
-    // IndoPak is the one people ask for, and the blocker is a font licence
-    // that somebody has to write an email about. It must not quietly vanish
-    // from the list of things we owe.
-    expect(UNAVAILABLE.indopak.map((m) => m.reason)).toContain('needs-permission')
+    /*
+     * IndoPak is the one people ask for, and its blocker used to be a font
+     * licence somebody had to write an email about — recorded here so it could
+     * not quietly vanish from the list of things we owed.
+     *
+     * It did not vanish; it was paid. The permission-blocked face was routed
+     * around with KFGQPC Nastaleeq, whose own licence grants distribution
+     * provided the font is not modified, and IndoPak 15-line ships. So the
+     * guard moves with the debt: what must not quietly vanish now is the
+     * edition itself.
+     */
+    expect(EDITIONS.map((e) => e.id)).toContain('indopak-15')
+    expect(UNAVAILABLE.indopak.every((m) => m.reason !== 'needs-permission')).toBe(true)
   })
 
   it('gives the IndoPak family the word Para when it lands', () => {

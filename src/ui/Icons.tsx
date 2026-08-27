@@ -263,3 +263,24 @@ export const Check = ({ size }: P) => (
     <path d="m5 12.5 4.5 4.5L19 7" />
   </svg>
 )
+
+/** A ribbon, for a page kept. Filled once it is. */
+export const Bookmark = ({ size, filled }: P & { filled?: boolean }) => (
+  <svg
+    {...s(size)}
+    stroke="currentColor"
+    strokeWidth="1.8"
+    strokeLinejoin="round"
+    fill={filled ? 'currentColor' : 'none'}
+  >
+    <path d="M6.5 3.5h11a1 1 0 0 1 1 1v15.6a.6.6 0 0 1-.94.5L12 16.6l-5.56 4a.6.6 0 0 1-.94-.5V4.5a1 1 0 0 1 1-1Z" />
+  </svg>
+)
+
+/** Translation: an alif beside a Latin A, with the rule between them. */
+export const Translate = ({ size }: P) => (
+  <svg {...s(size)} stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 6.5h7M7.5 4.5v2M9.2 6.5c0 3.4-2.2 6.2-5.2 7.4M6 10.6c1 1.7 2.6 3 4.4 3.6" />
+    <path d="m13 20 3.6-9 3.6 9M14.4 17.2h4.4" />
+  </svg>
+)

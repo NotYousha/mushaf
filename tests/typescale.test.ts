@@ -26,7 +26,6 @@ const EXEMPT = new Set([
   '.ayah',
   '.ayah-num',
   '.ayah-mark',
-  '.mushaf-page',
   '.mushaf-line',
   '.mushaf-basmala',
   // The ayah in the translation view. Scripture again, and sized against the
@@ -37,6 +36,15 @@ const EXEMPT = new Set([
   // scripture, sized against the page it is a picture of — the card has to
   // fit a real line of the real font into eight rems.
   '.pp-line',
+  /*
+   * The leaf itself, whose font-size is the root the whole page scales from:
+   * calc(--fit * --zoom * 1rem), fitted to the measure by MushafView rather
+   * than chosen from a scale. This exemption used to be spelled
+   * `.mushaf-page`, which nothing has rendered for some time — the class was
+   * renamed and the list was not, so the leaf lost its exemption and the cap
+   * on its measure in one go.
+   */
+  '.mpages',
   // The fork drill, which sets the Quran in its own measure.
   '.fork-text',
   '.fork-cue',

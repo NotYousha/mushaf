@@ -1707,8 +1707,18 @@ body {
 .seg button {
   font: inherit;
   font-size: var(--text-xs);
-  padding: 0.45rem 1.1rem;
-  border-radius: 999px;
+  /*
+   * 44px, the floor .round above already documents and explains. This was
+   * 0.45rem of padding on 12.8px text -- about 32px, and nearer 36 in Urdu.
+   * A tablist should not be smaller than the finger switching it.
+   */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-block-size: 2.75rem;
+  padding-block: 0;
+  padding-inline: var(--space-3);
+  border-radius: var(--radius-pill);
   border: 0;
   background: none;
   color: var(--ink-soft);
@@ -1734,27 +1744,21 @@ body {
   padding: 0.5rem 0 1rem;
 }
 
-/* The page itself: a printed leaf, framed in gold the way a Madani mushaf is,
-   on a warmer ground than the surrounding card so it reads as paper. */
-.mushaf-page {
+/*
+ * The leaf's ground.
+ *
+ * No frame any more. It had a gold border and an inset rule, which read as
+ * paper inside a card — and once the leaf became the whole screen there was
+ * no card for it to sit inside, so the frame was a box drawn around the
+ * edge of the display. A printed mushaf has margins, not a box.
+ */
+.mslot {
   background: var(--page);
-  border: 1px solid var(--accent);
-  border-radius: 10px;
-  padding: 1.1rem 0.5rem;
-  direction: rtl;
-  box-shadow:
-    inset 0 0 0 1px var(--page),
-    inset 0 0 0 4px var(--accent-line),
-    0 1px 10px rgb(var(--shadow-rgb) / 0.07);
-  /* --fit is measured once per page so the widest line just fits; every line
-     then shares one size, as they do in print. --zoom is the reader's own
-     choice on top of that. */
-  font-size: calc(var(--fit, 1) * var(--zoom, 1) * 1rem);
 }
 
 /* Past the printed size a line cannot fit its measure, so it wraps. The page
    stops being fifteen lines — that is the trade for text you can read. */
-.mushaf-page.is-zoomed .mushaf-line {
+.mslot.is-zoomed .mushaf-line {
   flex-wrap: wrap;
   justify-content: center;
   white-space: normal;
@@ -1768,12 +1772,16 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  /* A floor under the word spacing, matching what the fit measurement sets
-     aside, so a line that fills its measure never runs its words together. */
-  gap: 0.2em;
+  /* The floor under the word spacing, and it must equal MIN_GAP_EM in
+     MushafView — what is measured has to be what is drawn, or the line is
+     sized for one spacing and set with another. 0.2em against a measurement
+     assuming less is part of why the words drifted apart. */
+  gap: 0.12em;
   margin: 0;
   padding: 0.1rem 0;
-  font-family: var(--font-quran);
+  /* The edition's own face where it has one — IndoPak is a different script,
+     not a restyling — and the Uthmani face otherwise. */
+  font-family: var(--font-page, var(--font-quran));
   font-size: 1em;
   /* Uthmani text stacks marks well above and below the baseline, so it needs
      far more leading than ordinary Arabic or the rows collide. */
@@ -1787,6 +1795,12 @@ body {
 .mushaf-line.is-short {
   justify-content: center;
   gap: 0.5em;
+}
+
+/* Centred within whatever max-width the fit measurement capped it to, so a
+   short line keeps its words together and gives the slack to the margins. */
+.mushaf-line {
+  margin-inline: auto;
 }
 
 .mw {
@@ -1826,19 +1840,32 @@ body {
 
 /* The ayah number, set in a rosette as a printed mushaf does, rather than
    as a bare digit sitting in the line of text. */
+/*
+ * The rosette, sized to its number rather than to one digit.
+ *
+ * It was a fixed 1.5em square, which fits ١ and ٢ and clips ١٩٥ — and the
+ * three-digit numbers are most of Al-Baqarah, An-Nisa and Al-A'raf, so the
+ * fault was on the pages people read most. Now it grows: a circle at one or
+ * two digits, a short pill at three, which is what a printed mushaf does with
+ * the same problem.
+ */
 .ayah-mark {
   display: inline-grid;
   place-items: center;
-  width: 1.5em;
+  min-width: 1.5em;
   height: 1.5em;
+  padding: 0 0.22em;
+  box-sizing: border-box;
   flex: none;
   margin: 0 0.12em;
   font-family: var(--font-ar);
   font-size: 0.6em;
   line-height: 1;
+  /* The numerals must not be broken across the rosette's edge. */
+  white-space: nowrap;
   color: var(--gold);
   border: 1px solid var(--accent);
-  border-radius: 50%;
+  border-radius: 999px;
   background:
     radial-gradient(circle at 50% 50%, var(--page) 58%, var(--tile) 100%);
   box-shadow: 0 0 0 1.5px var(--page), 0 0 0 2.5px var(--accent-line);
@@ -1964,22 +1991,22 @@ body {
  * so the shape of the page — which is part of what a hafiz has memorised —
  * survives being covered.
  */
-.mushaf-page.veil-faded .mw {
+.mslot.veil-faded .mw {
   color: color-mix(in srgb, var(--ink-strong) 22%, transparent);
 }
 
-.mushaf-page.veil-firsts .mw:not(.is-lead) {
+.mslot.veil-firsts .mw:not(.is-lead) {
   color: transparent;
 }
 
-.mushaf-page.veil-blank .mw {
+.mslot.veil-blank .mw {
   color: transparent;
 }
 
 /* The rosettes stay through the faded and first-word levels: an ayah count is
    scaffolding, not the text you are trying to recall. A hidden page takes
    them too. */
-.mushaf-page.veil-blank .ayah-mark {
+.mslot.veil-blank .ayah-mark {
   color: transparent;
   border-color: var(--accent-line);
   background: none;
@@ -1987,21 +2014,21 @@ body {
 }
 
 /* Press and hold lifts the veil entirely, whatever level it was at. */
-.mushaf-page.is-peeking .mw,
-.mushaf-page.is-peeking .ayah-mark {
+.mslot.is-peeking .mw,
+.mslot.is-peeking .ayah-mark {
   color: var(--ink-strong);
 }
 
-.mushaf-page.is-peeking .ayah-mark {
+.mslot.is-peeking .ayah-mark {
   color: var(--gold);
   border-color: var(--accent);
   background: radial-gradient(circle at 50% 50%, var(--page) 58%, var(--tile) 100%);
 }
 
 /* A veiled page must not offer to select the text it is hiding. */
-.mushaf-page.veil-faded,
-.mushaf-page.veil-firsts,
-.mushaf-page.veil-blank {
+.mslot.veil-faded,
+.mslot.veil-firsts,
+.mslot.veil-blank {
   user-select: none;
   -webkit-user-select: none;
   cursor: pointer;
@@ -2413,20 +2440,145 @@ body {
   color: var(--muted);
 }
 
+/* ============ the mushaf as a strip of leaves ============ */
+
+/*
+ * Pages turn sideways, one snap point each.
+ *
+ * A mushaf is turned, not scrolled: the leaf you are on either fills the
+ * screen or it is the wrong size. So the strip scrolls horizontally and every
+ * leaf snaps, and nothing inside a leaf ever scrolls at all — which the slot
+ * enforces with overflow, and which the squeeze below makes survivable.
+ */
+.mpages {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  /* Set by the fit measurement; every leaf shares it, as print does. */
+  font-size: calc(var(--fit, 1) * var(--zoom, 1) * 1rem);
+}
+
+.mpages::-webkit-scrollbar {
+  display: none;
+}
+
+.mslot {
+  flex: 0 0 100%;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  overflow: hidden;
+  scroll-snap-align: center;
+  scroll-snap-stop: always;
+}
+
+/*
+ * The gutter between leaves, ruled as a bound mushaf rules it.
+ *
+ * A double line where an even page gives way to an odd one, a single line
+ * where an odd gives way to an even — the difference between turning a leaf
+ * and crossing the fold of the spread already open. A reader who knows the
+ * book reads the thicker rule as "a leaf turned".
+ *
+ * nth-child is one-based, so an odd child is an odd page.
+ */
+.mslot:nth-child(odd) {
+  border-inline-end: 1px solid var(--accent-line);
+}
+
+.mslot:nth-child(even) {
+  border-inline-end: 3px double var(--accent-line);
+}
+
+.mpage {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 0 0.7rem;
+  direction: rtl;
+}
+
+/* The running heads: the interface face and the muted ink, because they are
+   not scripture — a mushaf sets its margins in a plainer, smaller hand than
+   the text for the same reason. */
+.mpage-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  flex: none;
+  direction: ltr;
+  padding: calc(0.5rem + env(safe-area-inset-top)) 0.3rem 0.2rem;
+  font-family: var(--font-name);
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+
+.mpage-surah {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+
+.mpage-surah-ar {
+  font-family: var(--font-ar);
+  color: var(--ink);
+}
+
+/*
+ * The leaf's text box: fixed, and never scrolled.
+ *
+ * The lines inside are sized to fill the measure, which is what gives a
+ * mushaf its even spacing, and the block is then scaled as one to fit this
+ * box. Scaling rather than resizing is the point — a transform takes the word
+ * gaps down in the same proportion as the letters, where a smaller font size
+ * leaves the gaps to be justified out again, which is exactly how they came
+ * to be too wide.
+ */
+.mpage-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+.mpage-lines {
+  width: 100%;
+  transform: scale(var(--squeeze, 1));
+  transform-origin: center center;
+}
+
+.mpage-foot {
+  flex: none;
+  direction: ltr;
+  text-align: center;
+  padding: 0.2rem 0 calc(0.5rem + env(safe-area-inset-bottom));
+  font-family: var(--font-ar);
+  font-size: var(--text-sm);
+  color: var(--muted);
+}
+
 /* ============ the mushaf, full screen ============ */
 
 /*
- * Everything between the page and the edge of the screen, taken away.
+ * The app's furniture comes off and the strip takes the screen.
  *
- * The complaint this answers was that the page was small and the logo was on
- * top of it, and those were one fault: the mushaf rendered inside the shared
- * card, so it paid for a header carrying the mark and the wordmark, a dock,
- * the card's own margin and radius, and the page's gold frame — about a
- * quarter of a phone screen, with fifteen lines sized into what was left.
- *
- * The app keeps its scroll container and its safe-area padding. Only the
- * furniture goes.
+ * The scroller behind it stops scrolling too. A leaf sized to fit exactly and
+ * a page that can still be dragged up and down are contradictory, and the
+ * drag was the one that won.
  */
+.app.is-immersive .scroll {
+  overflow: hidden;
+  padding-bottom: 0;
+}
+
 .app.is-immersive .sheet {
   margin: 0;
   border-radius: 0;
@@ -2446,134 +2598,141 @@ body {
 .mushaf.is-immersive {
   display: flex;
   flex-direction: column;
-  /*
-   * A definite height, not `100%`.
-   *
-   * A percentage resolves against a parent that has no height of its own —
-   * the scroller sizes to its content — so it computed to nothing, the page
-   * did not stretch, and a short page like the opening of Al-Baqarah sat
-   * jammed against the top of an otherwise empty screen. The viewport minus
-   * the insets is the real figure, and it is the one the fit measurement is
-   * already working from.
-   */
-  min-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
   padding: 0;
 }
 
-/* The leaf itself: no frame, no rounding, no inset border. A printed page
-   has margins, not a box drawn round it. */
-.mushaf.is-immersive .mushaf-page {
-  flex: 1;
-  border: 0;
-  border-radius: 0;
-  box-shadow: none;
-  padding: 0.35rem 0.75rem;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
+/* Inside the app the strip still needs a definite height to size a leaf
+   against, but a smaller one, since it is sharing the screen. */
+.mushaf:not(.is-immersive) .mpages {
+  height: min(64dvh, 34rem);
 }
 
 /*
- * The printed margins.
+ * Two floating bars, away until the page is tapped.
  *
- * Set in the interface face rather than the Quran face, and in the muted
- * ink, because they are not scripture — a mushaf sets its running heads in a
- * plainer, smaller hand than the text for the same reason.
+ * Glass over the leaf rather than a strip beside it, because the leaf is the
+ * whole screen and anything taking room from it would be re-taking what full
+ * screen just gave back. They fade rather than move the page: a mushaf that
+ * jumps when you touch it loses your line.
  */
-.mushaf-margin {
-  /*
-   * Printed on the page, not laid over it.
-   *
-   * These are aria-hidden ornament, and they were taking the taps meant for
-   * the page underneath — near the foot of the screen a tap reached the page
-   * number instead of the words, so it neither sought to a word nor brought
-   * the controls back. Nothing here is a target.
-   */
-  pointer-events: none;
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 1rem;
-  flex: none;
-  padding: 0.55rem 1.1rem 0.15rem;
-  font-family: var(--font-name);
-  font-size: var(--text-sm);
-  color: var(--muted);
-  /* The juz belongs on the reading-start side in either direction, and the
-     surah opposite it, so this follows the interface rather than the page. */
-  direction: inherit;
-}
-
-.mushaf-margin.bottom {
-  justify-content: center;
-  padding: 0.15rem 1.1rem calc(0.5rem + env(safe-area-inset-bottom));
-}
-
-.margin-surah {
-  display: flex;
-  align-items: baseline;
-  gap: 0.45rem;
-}
-
-/*
- * The surah's own name, in its own face.
- *
- * No size of its own. Arabic does set smaller than Latin at the same nominal
- * size and the temptation to nudge it is real, but this is a running head,
- * not scripture — the type scale covers it, and a one-off here is how the app
- * ended up with thirty-six font sizes the first time.
- */
-.margin-surah-ar {
-  font-family: var(--font-ar);
-  color: var(--ink);
-}
-
-.margin-juz,
-.margin-surah-en {
-  color: var(--muted);
-}
-
-.margin-page {
-  font-variant-numeric: tabular-nums;
-  color: var(--muted);
-}
-
-/*
- * The controls, away until asked for.
- *
- * A tap on the page brings them back — anywhere that is not a word, since a
- * word already means "seek here". They float over the page rather than
- * taking room from it, so the type size does not jump when they appear.
- */
-.mushaf.is-immersive .mushaf-bar {
+.mchrome {
   position: fixed;
   inset-inline: 0;
-  bottom: calc(1rem + env(safe-area-inset-bottom));
   z-index: 45;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   width: fit-content;
   max-width: calc(100% - 1.5rem);
   margin: 0 auto;
-  padding: 0.4rem 0.6rem;
+  padding: 0.4rem 0.5rem;
   border-radius: 999px;
   background: var(--card);
   box-shadow: var(--shadow-md);
   opacity: 0;
-  transform: translateY(0.6rem);
+  transform: translateY(-0.5rem);
   pointer-events: none;
   transition: opacity 160ms ease, transform 160ms ease;
 }
 
-.mushaf.is-immersive.show-chrome .mushaf-bar {
+.mchrome.top {
+  top: calc(0.6rem + env(safe-area-inset-top));
+}
+
+.mchrome.bottom {
+  top: auto;
+  bottom: calc(0.9rem + env(safe-area-inset-bottom));
+  transform: translateY(0.5rem);
+  min-width: min(22rem, calc(100% - 1.5rem));
+}
+
+.mushaf.show-chrome .mchrome {
   opacity: 1;
   transform: none;
   pointer-events: auto;
 }
 
-/* Notes below the page are the app talking, not the mushaf. Full screen is
-   the one place the page should be alone. */
-.mushaf.is-immersive .mushaf-note {
-  display: none;
+.mchrome-btn,
+.mchrome-play {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: none;
+  border: 0;
+  border-radius: 50%;
+  background: var(--tile);
+  color: var(--ink);
+  cursor: pointer;
 }
+
+.mchrome-btn.on {
+  color: var(--gold);
+}
+
+.mchrome-play {
+  background: linear-gradient(160deg, var(--tile-active-a), var(--tile-active-b));
+  color: var(--tile-active-ink);
+}
+
+.mchrome-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.05rem;
+  padding: 0 0.4rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.mchrome-surah {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  /*
+   * It wraps rather than running on.
+   *
+   * Two names and three 40px buttons do not fit across a 320px phone: the
+   * fixed furniture takes about 160px of a 296px pill, and the title runs
+   * past what is left. With nowrap and nothing clipping it, the name painted
+   * outside the glass and across the bookmark and index buttons.
+   *
+   * Clipping it is not an option -- see the padding-block trick that
+   * tests/clipping.test.ts enforces. Vocalised Arabic loses its marks to an
+   * ellipsis, so the pill grows a line instead.
+   */
+  flex-wrap: wrap;
+  min-inline-size: 0;
+  gap: 0.4rem;
+  font-family: var(--font-name);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--ink-strong);
+}
+
+.mchrome-place {
+  font-size: var(--text-xs);
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.mchrome-reciter {
+  flex: 1;
+  text-align: center;
+  font-size: var(--text-sm);
+  color: var(--ink-strong);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mchrome {
+    transition: none;
+  }
+}
+
 
 @media (prefers-reduced-motion: reduce) {
   .mushaf.is-immersive .mushaf-bar {
@@ -4594,27 +4753,7 @@ body {
   opacity: 0.4;
 }
 
-/*
- * The reading switch: mushaf or translation, and the index.
- *
- * Above the text rather than in the app header, because it acts on the text
- * and the header is shared with five other screens.
- */
-.reading-switch {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.6rem;
-  margin-bottom: 0.5rem;
-}
 
-.reading-switch .seg {
-  flex: 1;
-}
-
-.reading-switch .seg button {
-  flex: 1;
-}
 
 /* ============ tajweed ============ */
 
@@ -4719,6 +4858,14 @@ body {
 
 .picker-seg button {
   flex: 1;
+  /*
+   * Three edition names across 320px. Without this each tab claims its
+   * min-content width -- "IndoPak" is about 49px before padding -- and the
+   * row runs past the card, where .sheet's overflow: hidden eats the third
+   * label. `flex: 1` alone does not shrink below min-content.
+   */
+  min-inline-size: 0;
+  padding-inline: var(--space-2);
 }
 
 .picker-list {

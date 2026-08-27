@@ -37,15 +37,23 @@ describe('interface direction', () => {
    */
   it('keeps pinned directions to the deliberate islands', () => {
     const pinned = css.match(/^\s*direction:\s*(rtl|ltr);/gm) ?? []
-    // 18: the fourteen scripture and numeral islands; .controls-aux, pinned
+    // 21: the fourteen scripture and numeral islands; .controls-aux, pinned
     // for the same reason .controls is, since a transport reads left to right
-    // in every language like a video scrubber; and the lock-screen diagnostic,
+    // in every language like a video scrubber; the lock-screen diagnostic,
     // whose values are raw browser state rather than anything written in the
-    // reader's language.
-    expect(pinned.length).toBeLessThanOrEqual(18)
+    // reader's language; and the three the printed leaf brought with it,
+    // below.
+    expect(pinned.length).toBeLessThanOrEqual(21)
     // The seventeenth is .meter, pinned so the storage bar fills the same
     // way as the transport bar. Its own `margin-inline-end: auto` did nothing:
     // a sized block with a zero start margin already sits at the inline start.
+    //
+    // The nineteenth, twentieth and twenty-first arrived with the printed
+    // leaf. .mpage is rtl because a page of the mushaf is Arabic whatever
+    // language the interface is in — the same reason as every other scripture
+    // island. .mpage-head and .mpage-foot are ltr because they are not
+    // scripture at all: the running head is a juz and hizb number and the
+    // foot is a folio, and a page number reads left to right in Arabic too.
     //
     // The eighteenth is .picker-preview, the thumbnail on a Choose Mushaf
     // card. It draws two real lines of the mushaf, so it is scripture like

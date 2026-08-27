@@ -17,6 +17,8 @@ Runs on CPU. The model is 94M parameters, which is slow but not impossibly
 so, and the result is cached, so the cost is paid once per recording.
 """
 
+import os
+
 import numpy as np
 import torch
 import torchaudio
@@ -24,6 +26,15 @@ import soundfile as sf
 
 MODEL = 'HamzaSidhu786/wav2vec2-base-word-by-word-quran-asr'
 SR = 16000
+# Dynamic int8 quantisation of the Linear layers. Measured on this project's
+# reference machine (Ryzen 3 3250U, 2 cores, no CUDA) against Barhaji's known
+# word timings: 1.27 s of wall clock per second of audio in fp32 against
+# 0.94 s/s in int8, a 1.35x speedup, with the accuracy unchanged — median word
+# error 50 ms against 52 ms, p90 159 ms in both, 92% of words within 300 ms.
+# The weights are only ever used to argmax a path through a trellis, so the
+# quantisation noise is far below the resolution the timings are read at.
+# Set ALIGN_FP32=1 to turn it off.
+INT8 = os.environ.get('ALIGN_FP32') != '1'
 # Long files are run in windows: emissions are local to their frames, so
 # windowing and concatenating gives the same answer as one pass, with bounded
 # memory. The overlap is discarded from both sides and only exists so no word
@@ -40,6 +51,12 @@ def load_model():
 
         proc = AutoProcessor.from_pretrained(MODEL)
         model = AutoModelForCTC.from_pretrained(MODEL).eval()
+        if INT8:
+            model = torch.ao.quantization.quantize_dynamic(
+                model, {torch.nn.Linear}, dtype=torch.qint8
+            )
+        # Two physical cores, four threads. Four measured faster than two
+        # (0.94 s/s against 1.15 s/s), so take whatever torch defaults to.
         torch.set_num_threads(max(1, torch.get_num_threads()))
         _cache['m'] = (proc, model)
     return _cache['m']

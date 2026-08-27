@@ -158,3 +158,29 @@
    Urdu interface — clocks, byte counts, years — so IBM Plex was
    unreachable behind it, which is the opposite of what the font stack
    in theme.css says it is for. Latin now falls through. */
+
+/*
+ * KFGQPC Nastaleeq, for the IndoPak mushaf.
+ *
+ * Hosted verbatim and never subsetted. Its licence grants the right to "Use,
+ * Copy, Distribute" free of cost on the condition that the font is not
+ * "Modified, Altered, Translated, Reverse Engineered, Decompiled,
+ * Disassembled" — and subsetting a font is modifying it, so the whole 85 KB
+ * ships even though a mushaf uses a fraction of it. `scripts/fetch-mushaf-
+ * fonts.mjs` fetches it twice and compares, so a corrupted copy cannot land
+ * silently; data/fonts.json records the hash and the licence text verbatim.
+ *
+ * The obvious face for this script — QuranWBW's AlQuran IndoPak — forbids
+ * distribution without written permission, and the one OFL alternative does
+ * not contain the letters. This is the only face that is both complete and
+ * ours to serve.
+ */
+@font-face {
+  font-family: 'KFGQPC Nastaleeq';
+  src: url('./kfgqpc-nastaleeq.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  /* Swap, not block: the IndoPak page must appear immediately and reflow,
+     rather than holding a blank screen on a slow connection. */
+  font-display: swap;
+}

@@ -59,6 +59,26 @@ def align_surah(path, surah, words):
     return out
 
 
+def check(result, surah, words):
+    """
+    Refuse a surah that came out obviously wrong.
+
+    A part file is written once and never recomputed, so anything let through
+    here is permanent. These are cheap structural checks — the accuracy of the
+    aligner itself is measured separately by `eval_ctc.py`.
+    """
+    want = len(words[surah])
+    if len(result) != want:
+        raise ValueError(f'{len(result)} ayahs, expected {want}')
+    flat = [t for _, v in sorted(result.items(), key=lambda kv: int(kv[0])) for t in v]
+    if not flat:
+        raise ValueError('no word times')
+    if any(b < a for a, b in zip(flat, flat[1:])):
+        raise ValueError('times are not monotonic')
+    if flat[-1] <= 0:
+        raise ValueError('every word landed at zero — the alignment collapsed')
+
+
 def catalog_surahs(reciter):
     cat = json.load(io.open('data/catalog.json', encoding='utf-8'))
     for r in cat['reciters']:
@@ -85,6 +105,7 @@ def main():
         try:
             path = fetch(route, surah)
             result = align_surah(path, surah, words)
+            check(result, surah, words)
         except Exception as e:  # noqa: BLE001
             print(f'  {surah}: FAILED {e}', flush=True)
             continue
@@ -99,6 +120,16 @@ def main():
         data = json.load(io.open(os.path.join(part_dir, name), encoding='utf-8'))
         surahs[str(n)] = [[int(a), v] for a, v in sorted(data.items(), key=lambda kv: int(kv[0]))]
 
+    # An empty file is worse than no file: the app reads it, finds a timings
+    # source for the reciter, and then highlights nothing. That is exactly the
+    # bug this project already shipped once, from a run that failed on every
+    # surah and still wrote its result. Refuse instead.
+    if not surahs:
+        raise SystemExit(
+            f'nothing aligned for {reciter} — refusing to write an empty '
+            f'data/timings-{reciter}.json'
+        )
+
     out = f'data/timings-{reciter}.json'
     json.dump(
         {
@@ -110,7 +141,10 @@ def main():
         ensure_ascii=False,
     )
     size = os.path.getsize(out)
+    missing = sorted(set(range(1, 115)) - {int(k) for k in surahs})
     print(f'wrote {out}: {len(surahs)} surahs, {size / 1024:.0f} KB')
+    if missing:
+        print(f'  still missing {len(missing)}: {missing}')
 
 
 if __name__ == '__main__':

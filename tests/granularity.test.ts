@@ -36,13 +36,34 @@ describe('timing granularity', () => {
     expect(timingGranularity('budair', 114)).toBe('ayah')
   })
 
-  it('reports the word-timed reciter as word-timed', async () => {
-    await loadTimings('burhaji-nabawi')
-    expect(timingGranularity('burhaji-nabawi', 1)).toBe('word')
-  })
+  /*
+   * Fifteen seconds, because the assertion is not what takes the time.
+   * timings-burhaji-nabawi.json is 614 KB and vite transforms it on first
+   * import, which lands at five and a half seconds here — over vitest's
+   * five-second default, so this passed alone and failed in a full run. The
+   * same shape as the loop that was collected rather than asserted below.
+   */
+  it(
+    'reports the word-timed reciter as word-timed',
+    async () => {
+      await loadTimings('burhaji-nabawi')
+      expect(timingGranularity('burhaji-nabawi', 1)).toBe('word')
+    },
+    15_000,
+  )
 
-  it('reports nothing for a reciter with no timings at all', async () => {
+  /*
+   * Al-Dosari is no longer the example of a reciter with nothing — he has the
+   * last juz now. He is the better example of the rule underneath: a reciter
+   * can be word-timed and still have nothing to say about al-Fatihah, so the
+   * question has to be asked per surah. 'nobody' is the empty case.
+   */
+  it('reports nothing where there is nothing, per surah', async () => {
     await loadTimings('dosari')
+    // The whole of juz 30 is aligned now, so the boundary is at its edge.
+    expect(timingGranularity('dosari', 78)).toBe('word')
+    expect(timingGranularity('dosari', 114)).toBe('word')
+    expect(timingGranularity('dosari', 77)).toBe(null)
     expect(timingGranularity('dosari', 1)).toBe(null)
     expect(timingGranularity('nobody', 1)).toBe(null)
     expect(timingGranularity('burhaji-nabawi', null)).toBe(null)
@@ -71,8 +92,8 @@ describe('timing granularity', () => {
   })
 
   it('still offers verse starts for a verse-timed recitation', async () => {
-    await loadTimings('jaber')
-    const starts = ayahStartsFor('jaber', 1)
+    await loadTimings('juhany-hafs')
+    const starts = ayahStartsFor('juhany-hafs', 1)
     expect(starts).toHaveLength(7)
     // Monotonic: an ayah never begins before the one before it.
     for (let i = 1; i < starts!.length; i++) {
@@ -131,15 +152,22 @@ describe('the shipped timing files', () => {
      * every bad ayah instead of dying on the first.
      */
     const wrong: string[] = []
-    for (const id of ['budair', 'jaber', 'juhany-hafs']) {
+    for (const id of ['budair', 'juhany-hafs']) {
       const file = `data/timings-${id}.json`
       expect(existsSync(file), file).toBe(true)
       const t = read(file)
       expect(t.granularity, id).toBe('ayah')
-      // Provenance is not optional for these: a timing file belongs to a
-      // recording, and the only reason these three are here is that their
-      // audio was checked against the source the timings came from.
-      expect(t.source, id).toMatch(/identical|agrees|within/i)
+      /*
+       * Provenance is not optional, and it must name a comparison made on
+       * every surah rather than a sample.
+       *
+       * Ali Jaber shipped on "within a second across surahs 94, 103, 108,
+       * 110 and 112". That was true, and it meant nothing: measured across
+       * all 114, seventy-three differ by more than a second and his
+       * Al-Baqarah is twenty-seven minutes from ours. Short surahs are where
+       * two takes by one reciter agree.
+       */
+      expect(t.source, id).toMatch(/every surah|per surah|byte-identical/i)
       for (const [surah, verses] of Object.entries(t.surahs)) {
         for (const [ayah, starts] of verses) {
           if (starts.length !== 1) wrong.push(`${id} ${surah}:${ayah} has ${starts.length}`)
@@ -158,7 +186,7 @@ describe('the shipped timing files', () => {
       counts.set(s, (counts.get(s) ?? 0) + 1)
     }
     const short: string[] = []
-    for (const id of ['budair', 'jaber', 'juhany-hafs']) {
+    for (const id of ['budair', 'juhany-hafs']) {
       const t = read(`data/timings-${id}.json`)
       for (const [surah, verses] of Object.entries(t.surahs)) {
         const want = counts.get(Number(surah))
@@ -179,7 +207,31 @@ describe('the shipped timing files', () => {
      * provenance needs writing down before it ships.
      */
     const src = readFileSync('src/mushaf/data.ts', 'utf8')
-    const registry = src.slice(src.indexOf('const TIMED'), src.indexOf('Al-Dosari is deliberately'))
-    expect(registry).not.toMatch(/makkah|madinah|haram|nabawi-\d|taraweeh/i)
+    /*
+     * Delimited by the object's own closing brace, not by a phrase in a
+     * comment inside it. This read to `indexOf('Al-Dosari is deliberately')`,
+     * which stopped existing the day Al-Dosari was registered and his comment
+     * rewritten — indexOf returned -1, the slice ran to the end of the file,
+     * and the test matched the very paragraph further down that explains why
+     * no Taraweeh set is listed. It failed on documentation again, one level
+     * out from the last time.
+     */
+    const start = src.indexOf('const TIMED')
+    const registry = src.slice(start, src.indexOf('\n}', start))
+    /*
+     * The keys, not the prose.
+     *
+     * This used to match the whole slice, comments included — and then the
+     * comment explaining *why* no Taraweeh set is listed said "Taraweeh",
+     * "Makkah" and "Madinah", and the test matched its own explanation. A
+     * test that fails when you document it teaches people not to document.
+     */
+    const ids = [...registry.matchAll(/^\s{2}'?([\w-]+)'?:\s*\{/gm)].map((m) => m[1])
+    expect(ids.length).toBeGreaterThan(0)
+    for (const id of ids) {
+      expect(id, `${id} is in the registry`).not.toMatch(
+        /makkah|madinah|haram|taraweeh/i,
+      )
+    }
   })
 })

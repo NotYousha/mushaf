@@ -19,10 +19,19 @@ import {
   type Timings,
 } from '../mushaf/data'
 import { juzOfPage, surahOfPage, type UnitWord } from '../mushaf/divisions'
-import { loadTajweed, runs, type Span, type Tajweed } from '../mushaf/tajweed'
+import { MushafPage } from './MushafPage'
+import { loadTajweed, type Tajweed } from '../mushaf/tajweed'
 import surahMeta from '../../data/surahs.json'
 import { getPref, setPref } from '../db/prefs'
-import { Collapse, Expand, Library } from './Icons'
+import {
+  ArrowBack,
+  Bookmark,
+  Expand,
+  Library,
+  More,
+  Pause,
+  Play,
+} from './Icons'
 
 type Props = {
   surah: number | null
@@ -69,6 +78,34 @@ type Props = {
   unitWord?: UnitWord
   /** Colour the letters by tajweed rule — the Tajweed mushaf. */
   tajweed?: boolean
+  /**
+   * Which page layout to draw, when it is not the bundled Madani one.
+   *
+   * An IndoPak mushaf is a different set of pages, not a restyling of these:
+   * 610 of them, broken in different places. So the edition chooses the
+   * layout file, and everything downstream keys off `surah:ayah:word`, which
+   * is identical across all of them.
+   */
+  layoutName?: string
+  /** A face this edition needs, applied to its words only. */
+  fontFamily?: string
+  /** Leave the reader. Drawn in the full-screen bar, where nothing else is. */
+  onBack?: () => void
+  /** Whether this page is one the reader has kept. */
+  bookmarked?: boolean
+  onBookmark?: (page: number) => void
+  /**
+   * What is playing, for the bar at the foot of a full-screen page.
+   *
+   * Absent means nothing is, and the bar is not drawn — an empty transport
+   * over a page somebody is reading in silence is furniture.
+   */
+  nowPlaying?: {
+    reciter: string
+    playing: boolean
+    onToggle: () => void
+    onOpen: () => void
+  } | null
 }
 
 /**
@@ -79,6 +116,28 @@ type Props = {
  * the trade, and worth it on a small screen.
  */
 const ZOOMS = [1, 1.2, 1.45, 1.75, 2.1]
+
+/**
+ * The tightest a line's words may be set, as a fraction of the type size.
+ *
+ * A mushaf justifies every line to the same measure, so the gaps are never
+ * identical — but they are close, and they are small. This is the floor the
+ * fit measurement reserves, and the same number is the `gap` on the line in
+ * CSS, so what is measured is what is drawn. It was 0.2em, which on a line of
+ * nine words left the words visibly adrift once the type was sized by height;
+ * the sizing is fixed above, and this is the belt to that pair of braces.
+ */
+const MIN_GAP_EM = 0.12
+
+/**
+ * The widest a word gap may open before the line stops justifying.
+ *
+ * Beyond this the line is centred instead, because a line thirty per cent
+ * under the measure would otherwise put a finger's width between every pair
+ * of words. Print solves this with kashida — stretching the letters — which
+ * is not available to us without altering the text.
+ */
+const MAX_GAP_EM = 0.3
 
 /**
  * The veil: the page is taken away a layer at a time.
@@ -98,87 +157,14 @@ const arabicNumber = (n: number) =>
     .map((d) => AR_DIGITS[Number(d)] ?? d)
     .join('')
 
-/**
- * Whether a surah is printed with the basmala above it.
- *
- * Two exceptions, and they are exceptions for opposite reasons. At-Tawbah is
- * the one surah of the Quran that opens without it. Al-Fatiha opens with it
- * as ayah 1 — it is already in the text on the line below, and printing it
- * here would set it twice.
- */
-export const showsBasmala = (surah: number) => surah !== 1 && surah !== 9
+/** Re-exported: it moved to MushafPage, which is what prints it. */
+export { showsBasmala } from './MushafPage'
 
 const NAMES = new Map((surahMeta as { surah: number; name: string }[]).map((m) => [m.surah, m.name]))
 /** The transliterated name, for the margin in a language that is not Arabic. */
 const EN_NAMES = new Map(
   (surahMeta as { surah: number; nameEn: string }[]).map((m) => [m.surah, m.nameEn]),
 )
-
-/**
- * One word of the page.
- *
- * Memoised because the highlight moves several times a second while audio
- * plays, and without this every word on the page — about a hundred and fifty
- * of them — was reconciled on each move to change the class on two.
- */
-const MushafWord = memo(function MushafWord({
-  text,
-  wordKey,
-  active,
-  inAyah,
-  lead,
-  spans,
-  onSeek,
-}: {
-  text: string
-  wordKey: string | undefined
-  active: boolean
-  /** This word belongs to the ayah being recited, whether or not it is the
-   *  word being recited. */
-  inAyah: boolean
-  lead: boolean
-  /** Tajweed rules falling inside this word, on a tajweed mushaf. */
-  spans?: Span[]
-  onSeek?: (key: string) => void
-}) {
-  if (!wordKey) {
-    return (
-      <span className={`ayah-mark${inAyah ? ' in-ayah' : ''}`} aria-hidden="true">
-        {text}
-      </span>
-    )
-  }
-  return (
-    <span
-      className={`mw${active ? ' is-now' : ''}${inAyah ? ' in-ayah' : ''}${
-        onSeek ? ' tap' : ''
-      }${lead ? ' is-lead' : ''}`}
-      onClick={onSeek ? () => onSeek(wordKey) : undefined}
-    >
-      {/*
-          Coloured inside, whole outside.
-
-          The rules colour letters, not words, so the word is cut into runs —
-          but it stays one element, which is what keeps the highlight, the
-          tap target, the Veil and the fit measurement working unchanged. A
-          word with no rules in it is rendered as bare text, with no wrapper
-          at all: about a third of the Quran's words carry no colour and they
-          should not each cost a span.
-      */}
-      {spans?.length
-        ? runs(text, spans).map((r, i) =>
-            r.rule ? (
-              <span key={i} className={`tj tj-${r.rule}`}>
-                {r.text}
-              </span>
-            ) : (
-              r.text
-            ),
-          )
-        : text}
-    </span>
-  )
-})
 
 export { ayahStartsFor } from '../mushaf/data'
 
@@ -202,6 +188,12 @@ export function MushafView({
   onPageChange,
   unitWord = 'juz',
   tajweed = false,
+  layoutName,
+  fontFamily,
+  onBack,
+  bookmarked = false,
+  onBookmark,
+  nowPlaying,
 }: Props) {
   const [layout, setLayout] = useState<Layout | null>(null)
   const [timings, setTimings] = useState<Timings | null>(null)
@@ -226,8 +218,17 @@ export function MushafView({
   const [chrome, setChrome] = useState(false)
   const immersiveRef = useRef(false)
   immersiveRef.current = immersive
-  /** Where a horizontal drag on the page began, for turning pages by swipe. */
+  /** Where a drag on the strip began, to tell a tap from a page turn. */
   const swipe = useRef<{ x: number; y: number } | null>(null)
+  /**
+   * Suppresses the scroll handler while we are the ones scrolling.
+   *
+   * Turning to a page sets scrollLeft, which fires the same scroll event a
+   * finger does — so without this a programmatic turn read its own motion
+   * back as the reader turning the page, and cleared the `manual` flag that
+   * had just been set.
+   */
+  const scrolling = useRef(0)
   /**
    * The tajweed rules, once fetched.
    *
@@ -250,6 +251,37 @@ export function MushafView({
 
   useEffect(() => {
     void getPref<number>('mushafZoom', 0).then((z) => setZoomIdx(Math.min(ZOOMS.length - 1, Math.max(0, z))))
+  }, [])
+
+  /**
+   * Put a leaf under the reader, without animating six hundred of them past.
+   *
+   * `scrollLeft` is negative in a right-to-left scroller — the spec settled
+   * on 0 at the start and negative towards the end, and every browser
+   * shipping today does that — so the offset is negated. Read back with
+   * Math.abs, which is correct either way.
+   */
+  const scrollToPage = useCallback((index: number, smooth = false) => {
+    const el = pageRef.current
+    if (!el) return
+    const w = el.clientWidth
+    if (!w) return
+    scrolling.current = performance.now()
+    el.scrollTo({ left: -index * w, behavior: smooth ? 'smooth' : 'auto' })
+  }, [])
+
+  /** Which leaf the strip has come to rest on. */
+  const onStripScroll = useCallback(() => {
+    const el = pageRef.current
+    if (!el || !el.clientWidth) return
+    // Our own scrolling, not the reader's.
+    if (performance.now() - scrolling.current < 400) return
+    const at = Math.round(Math.abs(el.scrollLeft) / el.clientWidth)
+    setPage((prev) => {
+      if (at === prev) return prev
+      setManual(true)
+      return at
+    })
   }, [])
 
   /**
@@ -287,7 +319,7 @@ export function MushafView({
   useEffect(() => {
     let alive = true
     setLoading(true)
-    Promise.all([loadLayout(), loadTimings(reciterId)]).then(([l, ti]) => {
+    Promise.all([loadLayout(layoutName), loadTimings(reciterId)]).then(([l, ti]) => {
       if (!alive) return
       setLayout(l)
       setTimings(ti)
@@ -296,7 +328,7 @@ export function MushafView({
     return () => {
       alive = false
     }
-  }, [reciterId])
+  }, [reciterId, layoutName])
 
   /** Every word of this surah in order, with the time it begins. Empty for a
    *  verse-timed recitation, which has no word positions to offer. */
@@ -482,14 +514,40 @@ export function MushafView({
     if (!manual && surahFirstPage !== null && !followKey) setPage(surahFirstPage)
   }, [surahFirstPage, manual, followKey])
 
+  /*
+   * Keep the strip on the leaf that `page` names.
+   *
+   * turn() scrolls as well as setting, but the three effects above only set —
+   * following the recitation across a page, opening a surah that does not
+   * begin on page 1, and arriving from the index. Only slots within one of
+   * `page` render any words, so the scroller stayed parked on a slot that had
+   * just been emptied and the reader got a blank leaf.
+   *
+   * Guarded on being out of step rather than scrolling unconditionally: when
+   * the reader swipes, onStripScroll sets `page` to where the strip already
+   * is, and scrolling again would arm that handler's 400ms deaf period for no
+   * reason and swallow a quick second swipe.
+   */
+  useEffect(() => {
+    const el = pageRef.current
+    if (!el || !el.clientWidth) return
+    const at = Math.round(Math.abs(el.scrollLeft) / el.clientWidth)
+    if (at !== page) scrollToPage(page)
+  }, [page, scrollToPage])
+
   // Arriving from the hifz board. This counts as turning the page by hand, so
   // playback does not immediately drag the view back to where the audio is.
   useEffect(() => {
-    if (!gotoPage) return
+    if (!gotoPage || !layout) return
     setManual(true)
-    setPage(Math.max(0, Math.min(603, gotoPage - 1)))
+    // The layout's own length, not 604: scripts/build-alt-layouts.mjs builds a
+    // 610-page IndoPak and a 548-page 16-line, and a fixed ceiling would clamp
+    // the one and strand the last six pages of the other. Waiting for the
+    // layout is not a delay either -- there is nothing to show a page of until
+    // it arrives.
+    setPage(Math.max(0, Math.min(layout.pages.length - 1, gotoPage - 1)))
     onWentToPage?.()
-  }, [gotoPage, onWentToPage])
+  }, [gotoPage, onWentToPage, layout])
 
   // The page is owned here, but the index outside needs to know which one it
   // is to mark the reader's place, and the page is turned from four
@@ -508,69 +566,106 @@ export function MushafView({
   }, [activeKey])
 
   /**
-   * Size the page so its widest line just fits.
+   * Size the type to fill the measure, then shrink the block to fit the leaf.
    *
-   * A mushaf line is set to a fixed measure, and all fifteen share one type
-   * size — so the page needs a single scale, taken from the line that needs
-   * the most room. Without this the long lines run off the side of a phone,
-   * which is most of why the page was unreadable.
+   * Two steps, and the order is the whole point. Sizing by height first — set
+   * the type small enough that fifteen lines fit, then justify each line edge
+   * to edge — is what flung the words apart: whatever width the line did not
+   * need went into the gaps, and a mushaf's spacing is even and tight. So the
+   * type is sized by *width*, from the line that needs the most room, which
+   * is what makes the words sit as they do in print. Only then is the whole
+   * block scaled down as one if fifteen lines are still too tall, and the
+   * gaps shrink with the letters rather than instead of them.
    */
   const fitPage = useCallback(() => {
-    const el = pageRef.current
-    if (!el) return
-    // clientWidth counts the page's own padding, which the text may not use.
-    // Measuring against it lets every line run a few millimetres past the
-    // frame — which is exactly what it looked like.
-    const cs = getComputedStyle(el)
-    const avail =
-      el.clientWidth - parseFloat(cs.paddingInlineStart) - parseFloat(cs.paddingInlineEnd) - 1
-    if (avail <= 0) return
-    // Measure at a known size, then scale, so the result does not depend on
-    // whatever scale the previous page happened to land on.
-    el.style.setProperty('--fit', '1')
-    el.style.setProperty('--zoom', '1')
+    /*
+     * The leaf being read, named — not the first one in the DOM.
+     *
+     * The strip renders three leaves at a time, so `querySelector('.mpage')`
+     * returns whichever of them comes first, which is the *previous* page
+     * everywhere but the very start of the mushaf. The type was therefore
+     * being sized to a page the reader was not looking at, and a page whose
+     * longest line is shorter gives a size at which every line on the real
+     * page has slack to spread into — which is most of why the words sat so
+     * far apart.
+     */
+    const leaf = pageRef.current?.querySelector<HTMLElement>(
+      `.mpage[data-page="${pageRef.current.dataset.at}"]`,
+    )
+    const body = leaf?.querySelector<HTMLElement>('.mpage-body')
+    const block = leaf?.querySelector<HTMLElement>('.mpage-lines')
+    if (!leaf || !body || !block) return
+
+    const host = pageRef.current!
+    // Measure at a known size, so the answer does not depend on whatever
+    // scale the previous page happened to land on.
+    host.style.setProperty('--fit', '1')
+    host.style.setProperty('--zoom', '1')
+    host.style.setProperty('--squeeze', '1')
+
+    const cs = getComputedStyle(block)
     const base = parseFloat(cs.fontSize) || 16
+    const avail = block.clientWidth - 1
+    if (avail <= 0) return
+
     // The lines are justified, so a line that fits reports the container's
     // width rather than its own. The natural width has to be added up from
     // the words themselves, plus the tightest spacing they may be set at.
     let widest = 0
-    for (const line of Array.from(el.querySelectorAll('.mushaf-line'))) {
+    for (const line of Array.from(block.querySelectorAll('.mushaf-line'))) {
       const words = Array.from(line.children)
       let w = 0
       for (const word of words) w += word.getBoundingClientRect().width
-      w += Math.max(0, words.length - 1) * base * 0.2
+      w += Math.max(0, words.length - 1) * base * MIN_GAP_EM
       widest = Math.max(widest, w)
     }
     if (!widest) return
-    /*
-     * A page has to fit the screen in both directions. Width alone is the
-     * obvious constraint and the only one that matters in portrait, but turn
-     * the phone on its side and width becomes plentiful while height nearly
-     * vanishes — measuring width only, the type scaled *up* and pushed
-     * fifteen lines a long way past the bottom of the screen.
-     */
-    const lines = el.querySelectorAll('.mushaf-line').length || 15
-    const viewport = window.innerHeight || 800
-    /*
-     * What is left after the dock and the page's own chrome.
-     *
-     * Full screen is most of why the page was too small to read. The app
-     * header carrying the logo and wordmark, the dock, the card's padding
-     * and the page's own frame together took a hundred and ninety pixels
-     * off the height budget — on a phone that is nearly a quarter of the
-     * screen, and fifteen lines were being sized into what was left. With
-     * the chrome gone the page keeps everything but its two printed
-     * margins, and the type grows to match.
-     */
-    const budget = Math.max(160, viewport - (immersiveRef.current ? 84 : 190))
-    // Each line occupies its line-height, which is 2.5em of the page's size.
-    const byHeight = budget / (lines * 2.5 * base)
 
-    // Clamped: never so small it cannot be read, never larger than a page of
-    // print would be on this width.
-    const fit = Math.max(0.62, Math.min(1.9, byHeight, (avail / widest) * 0.995))
-    el.style.setProperty('--fit', String(fit))
-    el.style.setProperty('--zoom', String(ZOOMS[zoomRef.current]))
+    // Never so small it cannot be read, never wider than the measure.
+    const fit = Math.max(0.62, Math.min(2.4, (avail / widest) * 0.998))
+    host.style.setProperty('--fit', String(fit))
+    host.style.setProperty('--zoom', String(ZOOMS[zoomRef.current]))
+
+    /*
+     * Cap how far a short line may spread.
+     *
+     * Every line is justified to the same measure, and the type is sized so
+     * the *longest* one fills it — which means a line that happens to be
+     * short has all the difference to give away, and space-between gives it
+     * to the word gaps. On a line thirty per cent under the measure that is
+     * a finger's width between every pair of words.
+     *
+     * A printed mushaf has the same problem and solves it with kashida,
+     * stretching the letters themselves. We cannot: the text is Unicode and
+     * the elongation would have to be inserted into scripture. So the line
+     * is allowed to justify only up to a sane gap and is then centred, which
+     * leaves a little air at the margins on the shortest lines and keeps the
+     * words together — much the lesser of the two wrongs.
+     */
+    const capped = base * fit * MAX_GAP_EM
+    for (const line of Array.from(block.querySelectorAll<HTMLElement>('.mushaf-line'))) {
+      const words = Array.from(line.children)
+      let natural = 0
+      for (const word of words) natural += word.getBoundingClientRect().width
+      // Measured before the fit is applied on this pass, so scale it up.
+      const at = (natural / base) * base * fit
+      line.style.maxWidth = `${Math.round(at + Math.max(0, words.length - 1) * capped)}px`
+    }
+
+    /*
+     * Now the height. The leaf is a fixed box; the block inside it is
+     * whatever fifteen lines come to. Scaling rather than resizing is what
+     * keeps the spacing: a transform takes the gaps down in the same
+     * proportion as the letters, where a smaller font size would have left
+     * the gaps to be re-justified and spread out again.
+     */
+    body.style.removeProperty('height')
+    const room = body.clientHeight
+    const tall = block.scrollHeight
+    host.style.setProperty(
+      '--squeeze',
+      String(room > 0 && tall > room ? Math.max(0.4, room / tall) : 1),
+    )
   }, [])
 
   useLayoutEffect(() => {
@@ -621,7 +716,6 @@ export function MushafView({
   if (loading) return <p className="empty">{t.loading}</p>
   if (!layout) return <p className="empty">{t.noResults}</p>
 
-  const lines = layout.pages[page] ?? []
   const lastPage = layout.pages.length - 1
 
   /** Turn the page by hand, which stops playback dragging the view back. */
@@ -630,71 +724,97 @@ export function MushafView({
     if (next === page) return
     setManual(true)
     setPage(next)
+    scrollToPage(next)
   }
 
-  // The margins name the reader's place the way the printed page does: the
-  // juz in one corner, the surah in the other, the page number at the foot.
-  const printed = page + 1
-  const marginSurah = surahOfPage(printed)
-  const marginJuz = juzOfPage(printed)
-
-
-  // The line Talqeen is on, marked so you can see where to pick up — and,
-  // while it is your turn, veiled, because reading it back defeats the point.
+  // The line Talqeen is on, marked so you can see where to pick up.
   const drillLine = activeLine?.page === page ? activeLine.line : null
 
-  /** The surah that begins on a given line, if one does. */
-  const opensWith = (line: (typeof lines)[number]) => {
-    for (const w of line.w) {
-      const key = w[1]
-      if (!key) continue
-      const [sn, ayah, word] = key.split(':').map(Number)
-      // A surah's very first word is where its heading belongs.
-      if (ayah === 1 && word === 1) return sn
-    }
-    return null
-  }
+  /*
+   * Which leaves are actually drawn.
+   *
+   * The strip is six hundred and four slots wide so the snap points and the
+   * scroll length are honest, but only the leaf in view and its two
+   * neighbours carry any words. Fifteen justified lines is about a hundred
+   * and fifty elements; six hundred pages of them is ninety thousand, and a
+   * phone will not do that.
+   */
+  const near = (p: number) => Math.abs(p - page) <= 1
+  const here = page + 1
 
   return (
     <div
       className={`mushaf${yourTurn ? ' your-turn' : ''}${
         immersive ? ' is-immersive' : ''
       }${immersive && chrome ? ' show-chrome' : ''}`}
+      style={fontFamily ? ({ '--font-page': fontFamily } as React.CSSProperties) : undefined}
     >
       {/*
-          The margins of the printed page.
+          The controls, over the page rather than beside it.
 
-          Only in full screen, and for the reason the printed mushaf has them:
-          with the app's own header gone there is nothing else on the screen
-          saying which juz this is or which surah. Inside the app they would
-          be a second copy of what the header above already says.
+          Away by default — the page is the point — and a tap anywhere that is
+          not a word brings them back. Two bars, because the two things a
+          reader reaches for sit at opposite ends of the job: where am I and
+          how do I leave, at the top; what is playing, at the foot.
       */}
       {immersive && (
-        <div className="mushaf-margin top" aria-hidden="true">
-          <span className="margin-juz">
-            {(unitWord === 'para' ? t.paraN : t.juzN)(digits(lang, marginJuz))}
-          </span>
-          <span className="margin-surah">
-            {lang !== 'ar' && (
-              <span className="margin-surah-en">{EN_NAMES.get(marginSurah)}</span>
-            )}
-            <span className="margin-surah-ar" lang="ar">
-              {NAMES.get(marginSurah)}
+        <div className="mchrome top glass" role="toolbar">
+          {onBack && (
+            <button type="button" className="mchrome-btn" onClick={onBack} aria-label={t.back}>
+              <ArrowBack size={20} />
+            </button>
+          )}
+          <div className="mchrome-title">
+            <span className="mchrome-surah">
+              {lang !== 'ar' && <span>{EN_NAMES.get(surahOfPage(here))}</span>}
+              <span lang="ar">{NAMES.get(surahOfPage(here))}</span>
             </span>
-          </span>
+            <span className="mchrome-place">
+              {t.pageN(digits(lang, here))}
+              {', '}
+              {(unitWord === 'para' ? t.paraN : t.juzN)(digits(lang, juzOfPage(here)))}
+            </span>
+          </div>
+          {onBookmark && (
+            <button
+              type="button"
+              className={`mchrome-btn${bookmarked ? ' on' : ''}`}
+              aria-pressed={bookmarked}
+              onClick={() => onBookmark(here)}
+              aria-label={t.bookmark}
+            >
+              <Bookmark size={20} filled={bookmarked} />
+            </button>
+          )}
+          {onOpenIndex && (
+            <button
+              type="button"
+              className="mchrome-btn"
+              onClick={onOpenIndex}
+              aria-label={t.mushafIndex}
+            >
+              <More size={20} />
+            </button>
+          )}
         </div>
       )}
 
+      {/*
+          The leaves, side by side.
+
+          Right to left, one snap point each, because that is how a mushaf is
+          turned. The strip scrolls; the leaf inside it never does — a page
+          that scrolls is not a page.
+      */}
       <div
-        lang="ar"
-        // Hidden from assistive technology in favour of the ayah-by-ayah
-        // reading below: the words here are laid out for the eye and the
-        // finger, and none of them is a control.
-        aria-hidden="true"
-        className={`mushaf-page${zoomIdx > 0 ? ' is-zoomed' : ''}${
-          veil === 'off' ? '' : ` veil-${veil}`
-        }${peeking ? ' is-peeking' : ''}`}
+        className="mpages"
         ref={pageRef}
+        /* Which leaf the fit measurement should read. A data attribute rather
+           than a ref, because the measurement runs from a callback that must
+           not be re-created every time the page turns. */
+        data-at={here}
+        dir="rtl"
+        onScroll={onStripScroll}
         onPointerDown={(e) => {
           swipe.current = { x: e.clientX, y: e.clientY }
           startPeek()
@@ -703,27 +823,12 @@ export function MushafView({
           endPeek()
           const from = swipe.current
           swipe.current = null
-          if (!from) return
-          const dx = e.clientX - from.x
-          const dy = e.clientY - from.y
-          /*
-           * A swipe turns the page; a tap brings the controls back.
-           *
-           * Right-to-left, so dragging the page to the right pulls the next
-           * one in, the way turning a leaf of a mushaf does. The threshold
-           * is generous and the vertical guard is strict, because the page
-           * scrolls under a finger too and a scroll must never turn it.
-           */
-          if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5) {
-            turn(dx > 0 ? 1 : -1)
-            return
-          }
-          // A tap on a word seeks; a tap on the page itself is for the
-          // controls, and only in full screen where they are hidden.
+          if (!from || !immersive) return
+          // A tap, not a drag, and not on a word — a word already means
+          // "seek here". Anything else is a request for the controls.
           if (
-            immersive &&
-            Math.abs(dx) < 10 &&
-            Math.abs(dy) < 10 &&
+            Math.abs(e.clientX - from.x) < 10 &&
+            Math.abs(e.clientY - from.y) < 10 &&
             !(e.target as HTMLElement).closest('.mw')
           ) {
             setChrome((c) => !c)
@@ -733,81 +838,43 @@ export function MushafView({
           swipe.current = null
           endPeek()
         }}
-        onPointerLeave={() => {
-          swipe.current = null
-          endPeek()
-        }}
         // Two fingers means "I stumbled here" — the whole input, deliberately.
-        // Anything cleverer would need to listen to the reciter, which this
-        // app will not do.
         onTouchStart={(e) => {
           if (e.touches.length < 2) return
-          // The first finger already started a peek; two fingers means this
-          // was a stumble mark all along.
           cancelPeek()
-          if (e.touches.length === 2 && activeKey) onStumble?.(activeKey, page + 1)
+          if (e.touches.length === 2 && activeKey) onStumble?.(activeKey, here)
         }}
       >
-        {lines.map((line) => {
-          const opens = opensWith(line)
-          return (
-        <div className="mushaf-row" key={line.n}>
-          {opens !== null && (
-            <span className="surah-band">
-              <span className="surah-band-name" lang="ar">
-                سُورَةُ {NAMES.get(opens)}
-              </span>
-            </span>
-          )}
-          {/*
-              At-Tawbah is the one surah that opens without it, and Al-Fatiha
-              is the one where it is ayah 1 and already on the line below —
-              printing it here would set it twice.
-
-              It carries no word keys, so word-following, the Veil and the
-              fork drill all pass over it exactly as they pass over the
-              heading. It is on the page because it is on the page.
-          */}
-          {opens !== null && showsBasmala(opens) && basmala && (
-            <p className="mushaf-basmala" lang="ar">
-              {basmala}
-            </p>
-          )}
-          <p
-            className={`mushaf-line${line.n === drillLine ? ' is-drill' : ''}${
-              line.w.length <= 3 ? ' is-short' : ''
-            }`}
+        {layout.pages.map((_, i) => (
+          <div
+            key={i}
+            className={`mslot${veil === 'off' ? '' : ` veil-${veil}`}${
+              peeking ? ' is-peeking' : ''
+            }${zoomIdx > 0 ? ' is-zoomed' : ''}`}
+            // Hidden from assistive technology in favour of the ayah-by-ayah
+            // reading below: these words are laid out for the eye and the
+            // finger, and none of them is a control.
+            aria-hidden="true"
           >
-            {line.w.map((w, i) => {
-              // The rosette belongs to the ayah it closes, and the layout
-              // gives it no key — so it takes its shading from the word
-              // before it, or the ayah's last word would sit inside the
-              // highlight with its own number left outside.
-              const key = w[1] ?? line.w[i - 1]?.[1]
-              const ayah = key ? Number(key.split(':')[1]) : null
-              return (
-                <MushafWord
-                  key={`${line.n}-${i}`}
-                  text={w[0]}
-                  wordKey={w[1]}
-                  // A line can open with an ayah rosette, so "first word" is
-                  // not the same as first child.
-                  lead={i === line.w.findIndex((x) => x[1])}
-                  active={w[1] !== undefined && w[1] === activeKey}
-                  inAyah={
-                    activeAyah !== null &&
-                    ayah === activeAyah &&
-                    key?.startsWith(`${surah}:`) === true
-                  }
-                  spans={w[1] ? rules?.[w[1]] : undefined}
-                  onSeek={onSeek ? jumpTo : undefined}
-                />
-              )
-            })}
-          </p>
-        </div>
-          )
-        })}
+            {near(i) && (
+              <MushafPage
+                layout={layout}
+                page={i + 1}
+                lang={lang}
+                t={t}
+                unitWord={unitWord}
+                basmala={basmala}
+                activeKey={activeKey}
+                activeSurah={surah}
+                activeAyah={activeAyah}
+                rules={rules}
+                drillLine={i === page ? drillLine : null}
+                margins={immersive}
+                onSeek={onSeek ? jumpTo : undefined}
+              />
+            )}
+          </div>
+        ))}
       </div>
 
       {/*
@@ -825,98 +892,93 @@ export function MushafView({
         </div>
       )}
 
-      {/* The foot of the printed page: its number, and nothing else. */}
-      {immersive && (
-        <div className="mushaf-margin bottom" aria-hidden="true">
-          <span className="margin-page">{digits(lang, printed)}</span>
+      {/* What is playing, at the foot, in full screen only. */}
+      {immersive && nowPlaying && (
+        <div className="mchrome bottom glass">
+          <button
+            type="button"
+            className="mchrome-play"
+            onClick={nowPlaying.onToggle}
+            aria-label={nowPlaying.playing ? t.pause : t.play}
+          >
+            {nowPlaying.playing ? <Pause size={22} /> : <Play size={22} />}
+          </button>
+          <span className="mchrome-reciter">{nowPlaying.reciter}</span>
+          <button
+            type="button"
+            className="mchrome-btn"
+            onClick={nowPlaying.onOpen}
+            aria-label={t.tabQuran}
+          >
+            <More size={20} />
+          </button>
         </div>
       )}
 
-      <div className="mushaf-bar">
-        <button className="btn" onClick={() => turn(1)} disabled={page >= lastPage}>
-          ‹
-        </button>
-        <span className="mushaf-num">{arabicNumber(page + 1)}</span>
-        <button className="btn" onClick={() => turn(-1)} disabled={page <= 0}>
-          ›
-        </button>
-
-        {/*
-            The index.
-
-            Six hundred and four pages and two buttons that move one at a
-            time. Everything else here adjusts how the page looks; this is
-            the only control that answers "take me somewhere".
-        */}
-        {onOpenIndex && (
-          <button className="btn" aria-label={t.mushafIndex} onClick={onOpenIndex}>
-            <Library size={18} />
+      {!immersive && (
+        <div className="mushaf-bar">
+          <button className="btn" onClick={() => turn(1)} disabled={page >= lastPage}>
+            &lsaquo;
           </button>
-        )}
+          <span className="mushaf-num">{arabicNumber(here)}</span>
+          <button className="btn" onClick={() => turn(-1)} disabled={page <= 0}>
+            &rsaquo;
+          </button>
 
-        {/*
-            Full screen.
+          {onOpenIndex && (
+            <button className="btn" aria-label={t.mushafIndex} onClick={onOpenIndex}>
+              <Library size={18} />
+            </button>
+          )}
 
-            Placed on the page's own bar rather than in the app's header,
-            because the header is the first thing it takes away — a control
-            that removes itself is a control you cannot use again.
-        */}
-        {onImmersive && (
+          {onImmersive && (
+            <button
+              className="btn full-btn"
+              aria-label={t.fullScreen}
+              onClick={() => {
+                setChrome(false)
+                onImmersive(true)
+              }}
+            >
+              <Expand size={18} />
+            </button>
+          )}
+
           <button
-            className={`btn full-btn${immersive ? ' on' : ''}`}
-            aria-pressed={immersive}
-            aria-label={immersive ? t.exitFullScreen : t.fullScreen}
-            onClick={() => {
-              setChrome(false)
-              onImmersive(!immersive)
-            }}
+            className={`btn veil-btn${veil === 'off' ? '' : ' on'}`}
+            onClick={() => setVeil(VEILS[(VEILS.indexOf(veil) + 1) % VEILS.length])}
+            aria-label={t.veil}
           >
-            {immersive ? <Collapse size={18} /> : <Expand size={18} />}
+            {t.veilName[veil]}
           </button>
-        )}
 
-        <button
-          className={`btn veil-btn${veil === 'off' ? '' : ' on'}`}
-          onClick={() => setVeil(VEILS[(VEILS.indexOf(veil) + 1) % VEILS.length])}
-          aria-label={t.veil}
-        >
-          {t.veilName[veil]}
-        </button>
+          <span className="text-size">
+            <button
+              className="btn size"
+              aria-label={t.textSmaller}
+              onClick={() => changeZoom(-1)}
+              disabled={zoomIdx <= 0}
+            >
+              ا
+            </button>
+            <button
+              className="btn size big"
+              aria-label={t.textLarger}
+              onClick={() => changeZoom(1)}
+              disabled={zoomIdx >= ZOOMS.length - 1}
+            >
+              ا
+            </button>
+          </span>
+        </div>
+      )}
 
-        <span className="text-size">
-          <button
-            className="btn size"
-            aria-label={t.textSmaller}
-            onClick={() => changeZoom(-1)}
-            disabled={zoomIdx <= 0}
-          >
-            ا
-          </button>
-          <button
-            className="btn size big"
-            aria-label={t.textLarger}
-            onClick={() => changeZoom(1)}
-            disabled={zoomIdx >= ZOOMS.length - 1}
-          >
-            ا
-          </button>
-        </span>
-      </div>
-
-      {zoomIdx > 0 && <p className="mushaf-note">{t.zoomedNote}</p>}
-
-      {/*
-          What the page can and cannot follow, said plainly.
-
-          Coverage is per surah — a reciter can be timed for one and not the
-          next — so this asks about the surah on screen. Three answers, not
-          two: following the word, following the verse, or following nothing.
-          Verse-following is a real thing the page is doing and saying so is
-          not an apology; claiming word-following while shading a verse would
-          be the actual failure.
-      */}
-      {granularity === 'ayah' && <p className="mushaf-note">{t.ayahTimingsOnly}</p>}
-      {granularity === null && <p className="mushaf-note">{t.noTimings}</p>}
+      {/* What the page can and cannot follow, said plainly — three answers,
+          not two. Never in full screen, where the page is alone. */}
+      {!immersive && granularity === 'ayah' && (
+        <p className="mushaf-note">{t.ayahTimingsOnly}</p>
+      )}
+      {!immersive && granularity === null && <p className="mushaf-note">{t.noTimings}</p>}
     </div>
   )
 }

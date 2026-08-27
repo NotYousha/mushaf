@@ -67,6 +67,15 @@ export type Edition = {
   unitWord: 'juz' | 'para'
   /** Pages, where an edition does not paginate as the Madani mushaf does. */
   pages: number
+  /**
+   * The layout file, when it is not the bundled Madani one.
+   *
+   * Lazy, like the Madani layout, and for the same reason: two and a half
+   * megabytes each, and a reader opens one of them.
+   */
+  layout?: 'indopak-15'
+  /** A face this edition needs that the app does not otherwise load. */
+  font?: { family: string; file: string }
 }
 
 export const EDITIONS: Edition[] = [
@@ -103,6 +112,25 @@ export const EDITIONS: Edition[] = [
     tajweed: true,
     unitWord: 'juz',
     pages: 604,
+  },
+  {
+    id: 'indopak-15',
+    family: 'indopak',
+    name: 'IndoPak 15-Line',
+    nameAr: 'المصحف الهندي الباكستاني، ١٥ سطرًا',
+    description:
+      'The Naskh script read across South Asia, fifteen lines to the page. ' +
+      'Six hundred and ten pages, not six hundred and four — an IndoPak ' +
+      'mushaf paginates differently, and its page numbers are its own. Live ' +
+      'text, so the recitation can still be followed word by word.',
+    descriptionAr:
+      'الرسم الهندي الباكستاني المقروء في جنوب آسيا، خمسة عشر سطرًا في ' +
+      'الصفحة. ٦١٠ صفحات لا ٦٠٤، فترقيم صفحاته خاص به.',
+    kind: 'text',
+    unitWord: 'para',
+    pages: 610,
+    layout: 'indopak-15',
+    font: { family: 'KFGQPC Nastaleeq', file: 'kfgqpc-nastaleeq.woff2' },
   },
 ]
 
@@ -142,21 +170,21 @@ export const FAMILIES: EditionFamily[] = ['uthmani', 'tajweed', 'indopak']
  * the cost to the reader is that those editions cannot be searched or read
  * aloud, because every glyph is a private-use codepoint.
  *
- * **IndoPak 15-line** is the one people will ask for, the data is free, and
- * the font is the blocker. quran.com's mushaf 6 gives the whole layout as
- * ordinary Unicode — searchable, highlightable, everything. The only face
- * that renders it correctly is QuranWBW's AlQuran IndoPak, whose embedded
- * licence reads "NOT FOR SALE, NOT FOR MODIFICATION, NOT FOR DISTRIBUTION OR
- * NOT FOR DEVELOPMENT WITHOUT WRITTEN NOTICE BY QURANWBW.COM". The OFL
- * alternative does not cover the codepoints. **Someone has to email
- * quranwbw@gmail.com.** Until then the tab says so.
+ * **IndoPak 15-line** ships, and the way round its font problem is worth
+ * recording. The obvious face — QuranWBW's AlQuran IndoPak — forbids
+ * distribution without written permission, and the OFL alternative does not
+ * cover the letters. The route taken instead is quran.com's `text_indopak`
+ * field set in **KFGQPC Nastaleeq**, whose own licence grants the right to
+ * "Use, Copy, Distribute" free of cost provided the font is not modified —
+ * so it is hosted verbatim and never subsetted. The cost is 1.76% of words
+ * losing a decorative mark the face cannot draw; no letter is affected, and
+ * the build refuses to write if that fraction passes 3% or if a single
+ * remaining codepoint is outside the font.
  *
- * And when IndoPak does land it brings a real integration cost, not just a
- * font: it paginates in **610** pages, not 604. Page 3 of an IndoPak mushaf
- * is 2:5–2:15 where page 3 of the Madani is 2:6–2:16. Every page number in
- * the app — the index, the hifz board, the translation view's header — is
- * currently a Madani page number, and all of them would have to become
- * edition-scoped.
+ * It paginates in **610** pages, not 604, which is why `pages` is on this
+ * type at all. Page 3 of an IndoPak mushaf is 2:5–2:15 where page 3 of the
+ * Madani is 2:6–2:16, so a page number only means something alongside the
+ * edition it came from.
  */
 export const UNAVAILABLE: Record<
   EditionFamily,
@@ -169,5 +197,5 @@ export const UNAVAILABLE: Record<
     { name: 'Madani Mushaf (1439)', reason: 'no-source' },
   ],
   tajweed: [],
-  indopak: [{ name: 'IndoPak 15-Line', reason: 'needs-permission' }],
+  indopak: [{ name: 'IndoPak 16-Line (Taj)', reason: 'buildable' }],
 }

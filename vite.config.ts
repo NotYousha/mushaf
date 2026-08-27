@@ -123,6 +123,10 @@ export default defineConfig({
         // fetched when the Mushaf tab is first opened and cached at runtime.
         globIgnores: [
           '**/mushaf-layout-*.js',
+          // The alternate editions' layouts, for the same reason: 2.6 MB
+          // each, and a reader opens one. Precaching them would put the
+          // IndoPak mushaf on the phone of somebody reading the Madani.
+          '**/layout-*.js',
           '**/timings-*.js',
           '**/forks-*.js',
           // Installer artwork. The OS fetches these when the app is added to
@@ -135,7 +139,7 @@ export default defineConfig({
         ],
         runtimeCaching: [
           {
-            urlPattern: /\/assets\/(mushaf-layout|timings|forks)-[\w-]+\.js$/,
+            urlPattern: /\/assets\/(mushaf-layout|layout|timings|forks)-[\w-]+\.js$/,
             handler: 'CacheFirst',
             options: {
               cacheName: 'mushaf-data',

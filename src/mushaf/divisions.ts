@@ -112,3 +112,65 @@ export const pageOfDivision = (d: Division): number => d.page
  * division is identical; only the word changes.
  */
 export type UnitWord = 'juz' | 'para'
+
+/**
+ * Which quarter of its hizb a page falls in, 1–4.
+ *
+ * A printed mushaf marks the quarters rather than numbering them: the reader
+ * is told they are a quarter, a half or three quarters of the way through
+ * hizb 8, never that they are in rub' 31 of 240. Nobody says "quarter one
+ * hundred and sixty-three".
+ */
+export const rubInHizb = (page: number): number => {
+  const hizb = hizbOfPage(page)
+  const quarters = rubsOfHizb(hizb)
+  let found = 1
+  for (let i = 0; i < quarters.length; i++) {
+    if (quarters[i].page <= page) found = i + 1
+  }
+  return found
+}
+
+/**
+ * "Juz' 4, ½ Hizb 8" — where you are, as a mushaf's margin says it.
+ *
+ * The fraction is what has *elapsed*, so the first quarter carries no mark at
+ * all: you are at the start of hizb 8, not a quarter into it.
+ */
+export const FRACTIONS = ['', '¼', '½', '¾'] as const
+
+
+/**
+ * Which juz, hizb and quarter a *verse* falls in.
+ *
+ * By verse rather than by page, because a page number only means something
+ * alongside the edition it came from: an IndoPak mushaf runs to 610 pages and
+ * its page 3 is 2:5–2:15 where the Madani's is 2:6–2:16. The divisions
+ * themselves are divisions of the text and are the same in every edition, so
+ * asking about the ayah gives the right answer for all of them.
+ */
+const before = (key: string, start: string) => {
+  const [s1, a1] = key.split(':').map(Number)
+  const [s2, a2] = start.split(':').map(Number)
+  return s2 < s1 || (s2 === s1 && a2 <= a1)
+}
+
+const lastCovering = <T extends Division>(list: T[], key: string): T => {
+  let found = list[0]
+  for (const d of list) if (before(key, d.start)) found = d
+  return found
+}
+
+export const juzOfVerse = (key: string): number => lastCovering(data.juz, key).n
+export const hizbOfVerse = (key: string): number => lastCovering(data.hizb, key).n
+
+/** Which quarter of its hizb a verse falls in, 1–4. */
+export const rubInHizbOfVerse = (key: string): number => {
+  const hizb = hizbOfVerse(key)
+  const quarters = rubsOfHizb(hizb)
+  let found = 1
+  for (let i = 0; i < quarters.length; i++) {
+    if (before(key, quarters[i].start)) found = i + 1
+  }
+  return found
+}

@@ -34,17 +34,30 @@ export type Timings = {
   surahs: Record<string, [number, number[]][]>
 }
 
-let layoutPromise: Promise<Layout> | null = null
+/**
+ * The layouts, by edition.
+ *
+ * Each is two and a half megabytes and a reader opens one, so they are lazy
+ * chunks keyed by name rather than a single bundled file. The Madani one
+ * keeps the plain key it has always had.
+ */
+const LAYOUTS: Record<string, () => Promise<Layout>> = {
+  madani: () =>
+    import('../../data/mushaf-layout.json').then((m) => m.default as unknown as Layout),
+  'indopak-15': () =>
+    import('../../data/layout-indopak-15.json').then((m) => m.default as unknown as Layout),
+}
+
+const layoutCache = new Map<string, Promise<Layout>>()
 const timingCache = new Map<string, Promise<Timings | null>>()
 /** Resolved timings, once loaded, so other parts of the app can step by ayah
  *  without forcing the download themselves. */
 const loadedTimings = new Map<string, Timings>()
 
-export const loadLayout = () => {
-  layoutPromise ??= import('../../data/mushaf-layout.json').then(
-    (m) => m.default as unknown as Layout,
-  )
-  return layoutPromise
+export const loadLayout = (which = 'madani') => {
+  const key = which in LAYOUTS ? which : 'madani'
+  if (!layoutCache.has(key)) layoutCache.set(key, LAYOUTS[key]())
+  return layoutCache.get(key)!
 }
 
 /**
@@ -73,20 +86,27 @@ const TIMED: Record<string, { granularity: Granularity; load: () => Promise<Timi
    * As-Sudais and 26 in the one that was timed: the same sheikh, a different
    * take, and the timings would point confidently at the wrong word.
    *
-   * Each of these was checked against its source before being listed —
-   * md5-identical for Al-Juhany, frame-identical for Al-Budair, and within a
-   * second across five surahs for Ali Jaber. The provenance is written into
-   * each file's `source` field.
+   * Both survivors were checked file against file, every surah: our copy and
+   * the source's differ in length by 0.00 s across all 113 kept. That exact
+   * zero is the signature of the same recording, and nothing weaker will do.
+   *
+   * Ali Jaber was here and has been removed, which is the whole lesson. He
+   * was admitted on "within a second across five short surahs" — and on the
+   * five short surahs it was true. Measured across all 114, seventy-three
+   * differ by more than a second and Al-Baqarah differs by twenty-seven
+   * minutes: two performances by one sheikh, not one recording. The timing
+   * file's last verse of Al-Baqarah began 7,786 s into a recording of ours
+   * that ends at 6,228, so the last quarter of the longest surah in the
+   * Quran could never have highlighted at all.
+   *
+   * A sample of short surahs is not a match. Short surahs are where two
+   * takes by the same reciter agree; the length of Al-Baqarah is where they
+   * do not.
    */
   budair: {
     granularity: 'ayah',
     load: () =>
       import('../../data/timings-budair.json').then((m) => m.default as unknown as Timings),
-  },
-  jaber: {
-    granularity: 'ayah',
-    load: () =>
-      import('../../data/timings-jaber.json').then((m) => m.default as unknown as Timings),
   },
   'juhany-hafs': {
     granularity: 'ayah',
@@ -96,14 +116,24 @@ const TIMED: Record<string, { granularity: Granularity; load: () => Promise<Timi
       ),
   },
   /**
-   * Al-Dosari is deliberately absent.
+   * Al-Dosari, back — the file has something in it now.
    *
-   * data/timings-dosari.json exists but its `surahs` object is empty — the
-   * alignment was started and never finished. Listing him here made the app
-   * claim word timings for the reciter it opens with, so a first-time
-   * listener met three features that each failed on contact. Put him back the
-   * day the file has something in it, and not before.
+   * He was deliberately absent while data/timings-dosari.json held an empty
+   * `surahs` object: listing him then made the app claim word timings for the
+   * reciter it opens with, so a first-time listener met three features that
+   * each failed on contact. The note here said to put him back the day the
+   * file had something in it, and that day has come — thirty-six surahs of
+   * the last juz, aligned here against the Uthmani text, none of them empty.
+   *
+   * Coverage is partial and stays partial, which is fine: surahTimed answers
+   * per surah, so al-Fatihah simply reports no word timing while an-Naba
+   * reports one. Registration was never the thing that had to be complete.
    */
+  dosari: {
+    granularity: 'word',
+    load: () =>
+      import('../../data/timings-dosari.json').then((m) => m.default as unknown as Timings),
+  },
 }
 
 /**

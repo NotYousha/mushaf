@@ -1,0 +1,22 @@
+{
+  "note": "Written by scripts/fetch-mushaf-fonts.mjs. Every licence field is copied verbatim from the font name table (nameID 0, 13, 14) — do not edit or paraphrase them. These fonts are hosted unmodified and unsubsetted because their licences forbid modification.",
+  "fonts": [
+    {
+      "id": "kfgqpc-nastaleeq",
+      "file": "public/fonts/kfgqpc-nastaleeq.woff2",
+      "source": "https://static-cdn.tarteel.ai/qul/fonts/nastaleeq/KFGQPCNastaleeq-Regular.woff2",
+      "bytes": 85608,
+      "sha256": "7a3932a3bfa5e291e9a5ca5e78a253a1fc3b455efa42d85579e1c887172b99be",
+      "subsetted": false,
+      "family": "KFGQPC Nastaleeq",
+      "fontVersion": "Version 0.10",
+      "cmapCodepoints": 411,
+      "usedBy": [
+        "indopak-15"
+      ],
+      "copyright": "The digitally signed machine readable Typeface(Font) licensed to you is copyrighted, (2010), King Fahd Glorious Quran Printing Complex.\r\nISBN: 978-603-8187-36-4, Accession No. 1438/1338\r\nAll rights reserved. This Font is the property of King Fahd Glorious Quran Printing Complex, and may not be reproduced, modified without the express written approval of King Fahd Glorious Quran Printing Complex.",
+      "licence": "ELECTRONIC END-USER LICENSE AGREEMENT\r\n\r\nBy installing this Font You accept all the terms and conditions of this Agreement.\r\n\r\nCopyright (c) 2010 by King Fahd Glorious Quran Printing Complex (KFGQPC), AlMadinah AlMunawarrah, Kingdom of Saudi Arabia. All Rights Reserved. KFGQPC retains full title and ownership of this Typeface both as artwork and font software. This Agreement does not grant you any intellectual property rights in the Font.\r\n\r\nPermission is hereby granted, Free of Cost, to any person obtaining a copy of this Font accompanying this license, the rights to Use, Copy, Distribute, subject to the following conditions:\r\n\r\n1.    The Font Software cannot be Sold, Modified, Altered, Translated, Reverse Engineered, Decompiled, Disassembled, Reproduced or Attempted to discover the Source Code of this Font in no means.\r\n\r\n2.    The Font Software is provided \"AS IS\", and KFGQPC makes no warranties as to its use or performance, fitness for a particular purpose. KFGQPC does not and cannot warrant the performance or results you may obtain by using the Font. In no event shall KFGQPC be liable for any Claims, Damages or other Liability, including any Damages, arising from, out of the use or inability to use the Font or from other dealings in the Font.",
+      "licenceUrl": null
+    }
+  ]
+}

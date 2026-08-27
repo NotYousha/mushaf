@@ -16,3 +16,4 @@ tsconfig.tsbuildinfo
 *.jks
 *.aab
 *.apk
+__pycache__/

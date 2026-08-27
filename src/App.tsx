@@ -49,7 +49,6 @@ import { MushafIndex } from './ui/MushafIndex'
 import { MushafPicker } from './ui/MushafPicker'
 import { editionById } from './mushaf/editions'
 import { TranslationView } from './ui/TranslationView'
-import { ReadingSwitch } from './ui/ReadingSwitch'
 import { defaultFor, translationById } from './mushaf/translations'
 import { HifzBoard } from './ui/HifzBoard'
 import { ForkDrill } from './ui/ForkDrill'
@@ -82,6 +81,7 @@ import {
   More,
   Heart,
   Broadcast,
+  Translate,
   Talqeen as TalqeenIcon,
   Stumble,
   Chevron,
@@ -133,7 +133,7 @@ import './ui/desktop.css'
 import './ui/home.css'
 import './ui/onboarding.css'
 
-type Tab = 'home' | 'quran' | 'library' | 'text' | 'hifz' | 'more'
+type Tab = 'home' | 'quran' | 'library' | 'text' | 'translation' | 'hifz' | 'more'
 
 /**
  * A square portrait needs no framing, and stating that beats leaving it out.
@@ -852,9 +852,37 @@ export default function App() {
    * screen once reads full screen — but only ever applied on the mushaf, so
    * the rest of the app can never be left with no way out of it.
    */
-  const [fullPage, setFullPage] = useState(false)
+  /*
+   * Full screen is the default, not a mode you find.
+   *
+   * The mushaf is the one screen whose entire job is the page; opening it
+   * inside the app's chrome and asking the reader to discover a button that
+   * takes the chrome away had it backwards. The way out is a tap and then the
+   * back arrow, which is one more tap than leaving any other screen and one
+   * fewer than finding full screen used to be.
+   */
+  const [fullPage, setFullPage] = useState(true)
   useEffect(() => {
-    void getPref<boolean>('mushafFullPage', false).then(setFullPage)
+    void getPref<boolean>('mushafFullPage', true).then(setFullPage)
+  }, [])
+
+  /**
+   * Pages the reader has kept.
+   *
+   * Page numbers, not ayah keys: what a reader marks in a mushaf is the leaf
+   * they stopped on, and the ribbon in a printed one does not know which
+   * verse you were at either.
+   */
+  const [marks, setMarks] = useState<number[]>([])
+  useEffect(() => {
+    void getPref<number[]>('pageBookmarks', []).then(setMarks)
+  }, [])
+  const toggleMark = useCallback((page: number) => {
+    setMarks((prev) => {
+      const next = prev.includes(page) ? prev.filter((n) => n !== page) : [...prev, page].sort((a, b) => a - b)
+      void setPref('pageBookmarks', next)
+      return next
+    })
   }, [])
 
   /** The index, open over the page rather than beside it. */
@@ -878,10 +906,8 @@ export default function App() {
    * choice made on the screen, remembered because most people want the same
    * one every time.
    */
-  const [reading, setReading] = useState<'mushaf' | 'translation'>('mushaf')
   const [translationId, setTranslationId] = useState<string>(() => defaultFor(lang))
   useEffect(() => {
-    void getPref<'mushaf' | 'translation'>('readingMode', 'mushaf').then(setReading)
     // Falls back to the default for the interface language, so a reader who
     // has never chosen still gets a translation they can read rather than
     // the first one in the list.
@@ -1631,6 +1657,20 @@ export default function App() {
     [reciterId, verdicts],
   )
 
+  /**
+   * Seek, with an identity that does not change.
+   *
+   * This was an inline arrow at both call sites, and it quietly undid the
+   * memoisation the mushaf depends on. MushafPage and MushafWord are memo'd
+   * precisely so a hundred and fifty words are not reconciled on every audio
+   * tick — but App re-renders on every `time` update, a fresh closure meant
+   * MushafView's jumpTo changed identity each time, and every word on all
+   * three near leaves re-rendered anyway.
+   *
+   * The engine is a ref, so there is nothing to depend on.
+   */
+  const seekSeconds = useCallback((sec: number) => engine.current?.seek(sec), [])
+
   const startSurah = useCallback((n: number) => void playSurah(n), [playSurah])
 
   const startDownload = useCallback(
@@ -1653,6 +1693,20 @@ export default function App() {
       { id: 'home', label: t.tabHome, icon: <HomeIcon size={21} />, onSelect: () => pickTab('home') },
       { id: 'quran', label: t.tabQuran, icon: <QuranMark size={21} />, onSelect: () => pickTab('quran') },
       { id: 'text', label: t.tabText, icon: <Broadcast size={21} />, onSelect: openText },
+      /*
+       * Translation is a destination, not a view of the mushaf.
+       *
+       * It used to be a switch above the page, which made it look like a way
+       * of reading the mushaf differently. It is not: the page is a facsimile
+       * and this is a document, and someone who wants the meaning of an ayah
+       * is not part-way through reading a leaf — they came for this.
+       */
+      {
+        id: 'translation',
+        label: t.translationTab,
+        icon: <Translate size={21} />,
+        onSelect: () => pickTab('translation'),
+      },
       { id: 'hifz', label: t.tabHifz, icon: <Heart size={21} />, onSelect: () => pickTab('hifz') },
       { id: 'more', label: t.tabMore, icon: <More size={21} />, onSelect: () => setTab('more') },
     ],
@@ -2153,48 +2207,7 @@ export default function App() {
                 />
               ) : !currentView ? (
                 <p className="empty">{t.pickSurahForText}</p>
-              ) : reading === 'translation' ? (
-                <>
-                  <ReadingSwitch
-                    t={t}
-                    reading={reading}
-                    onChange={(r) => {
-                      setReading(r)
-                      void setPref('readingMode', r)
-                    }}
-                    onOpenIndex={() => setIndexOpen(true)}
-                  />
-                  <TranslationView
-                    surah={currentView.surah}
-                    lang={lang}
-                    t={t}
-                    time={time}
-                    reciterId={reciterId}
-                    translationId={translationId}
-                    onChooseTranslation={(id) => {
-                      setTranslationId(id)
-                      void setPref('translationId', id)
-                    }}
-                    onSeek={(sec) => engine.current!.seek(sec)}
-                    unitWord={chosenEdition.unitWord}
-                  />
-                </>
               ) : (
-                <>
-                  {/* Off the page in full screen: the switch is app chrome,
-                      and full screen is the page alone. It comes back with
-                      the rest of the controls on a tap. */}
-                  {!immersive && (
-                    <ReadingSwitch
-                      t={t}
-                      reading={reading}
-                      onChange={(r) => {
-                        setReading(r)
-                        void setPref('readingMode', r)
-                      }}
-                      onOpenIndex={() => setIndexOpen(true)}
-                    />
-                  )}
                 <MushafView
                   surah={currentView.surah}
                   lang={lang}
@@ -2206,11 +2219,34 @@ export default function App() {
                     setFullPage(on)
                     void setPref('mushafFullPage', on)
                   }}
+                  /* The way out of a screen that has taken the app's own
+                     chrome away. Back to wherever the reader came from, and
+                     to the home screen if they opened straight into it. */
+                  onBack={() => {
+                    if (cameFrom) goBack()
+                    else pickTab('home')
+                  }}
+                  bookmarked={marks.includes(atPage)}
+                  onBookmark={toggleMark}
+                  nowPlaying={
+                    reciter && currentView
+                      ? {
+                          reciter: isArabicScript(lang)
+                            ? artistFor(currentView, reciter)
+                            : artistForEn(currentView, reciter),
+                          playing,
+                          onToggle: toggle,
+                          onOpen: () => pickTab('quran'),
+                        }
+                      : null
+                  }
                   onOpenIndex={() => setIndexOpen(true)}
                   onPageChange={setAtPage}
                   unitWord={chosenEdition.unitWord}
                   tajweed={chosenEdition.tajweed ?? false}
-                  onSeek={(sec) => engine.current!.seek(sec)}
+                  layoutName={chosenEdition.layout}
+                  fontFamily={chosenEdition.font?.family}
+                  onSeek={seekSeconds}
                   activeLine={drill?.segment ?? null}
                   yourTurn={drill?.phase === 'echo'}
                   riwayah={riwayahLabel(reciter, lang)}
@@ -2219,7 +2255,37 @@ export default function App() {
                   onPeek={(pg, ms) => void addPeek(pg, ms, Date.now())}
                   onStumble={(key, pg) => void markStumble(key, pg)}
                 />
-                </>
+              )}
+            </div>
+          )}
+
+          {/*
+              Translation, on its own tab.
+
+              It shares nothing with the mushaf but the text: no page, no
+              fifteen lines, no leaf to turn. Giving it a tab rather than a
+              switch above the page is what stops it pretending to be a way
+              of reading the mushaf.
+          */}
+          {tab === 'translation' && (
+            <div className="panel">
+              {!currentView ? (
+                <p className="empty">{t.pickSurahForText}</p>
+              ) : (
+                <TranslationView
+                  surah={currentView.surah}
+                  lang={lang}
+                  t={t}
+                  time={time}
+                  reciterId={reciterId}
+                  translationId={translationId}
+                  onChooseTranslation={(id) => {
+                    setTranslationId(id)
+                    void setPref('translationId', id)
+                  }}
+                  onSeek={seekSeconds}
+                  unitWord={chosenEdition.unitWord}
+                />
               )}
             </div>
           )}

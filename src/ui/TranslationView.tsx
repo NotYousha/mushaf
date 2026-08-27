@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Lang, Strings } from '../i18n'
-import { digits } from '../i18n/script'
+import { digits, toArabicDigits } from '../i18n/script'
 import {
   ayahsOfSurah,
   ayahStartsFor,
@@ -253,8 +253,20 @@ export function TranslationView({
                 )}
               </div>
 
+              {/*
+                  The ayah closes with its rosette, as it does on the page.
+                  `ayahsOfSurah` returns only the words — the layout keeps the
+                  numeral as a separate keyless token and that token is
+                  dropped when the ayah is reassembled — so without this the
+                  verses ran into one another with nothing between them.
+
+                  Always Arabic-Indic, whatever the interface language: this
+                  is the number printed inside a mushaf's rosette, not a
+                  figure in the reader's own numerals like the page count.
+              */}
               <p className="tayah-ar" lang="ar" dir="rtl">
-                {a.text}
+                {a.text}{' '}
+                <span className="ayah-mark">{toArabicDigits(a.ayah)}</span>
               </p>
 
               {/*

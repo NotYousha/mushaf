@@ -11,12 +11,26 @@ import burhaji from '../data/timings-burhaji-nabawi.json'
  * far as trying before failing, on first contact, for every new listener. The
  * Fork Drill even offered a retry gated on the same check that had just
  * failed, so it could never succeed.
+ *
+ * He now has the last juz, which makes him a better demonstration of the same
+ * rule than the empty stub was: timed somewhere is not timed everywhere, and
+ * every surface has to ask per surah.
  */
 describe('who the app can actually follow word by word', () => {
-  it('does not claim timings for a reciter whose file is empty', () => {
-    expect(Object.keys(dosari.surahs), 'the stub is still empty').toHaveLength(0)
-    expect(hasTimings('dosari')).toBe(false)
-    expect(timedReciters()).not.toContain('dosari')
+  it('registers no surah it does not actually have timings for', () => {
+    const surahs = dosari.surahs as Record<string, unknown[]>
+    const listed = Object.keys(surahs)
+    expect(listed.length, 'he has timings now; this guard moved on with him')
+      .toBeGreaterThan(0)
+    /*
+     * An entry that exists and is empty is the original bug wearing a surah
+     * number: the app would offer to follow it and then find nothing.
+     */
+    for (const n of listed) {
+      expect(surahs[n], `surah ${n} is registered but empty`).not.toHaveLength(0)
+    }
+    expect(hasTimings('dosari')).toBe(true)
+    expect(timedReciters()).toContain('dosari')
   })
 
   it('still claims them for the reciter who has them', () => {
