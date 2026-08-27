@@ -156,3 +156,49 @@ partial, which is what the granularity function is for.
 6. Timing granularity, and whatever timing data can actually be sourced.
 
 Each phase ships built, tested and committed before the next begins.
+
+---
+
+## What shipped, 2026-08-27
+
+All five, on branch `reading-surfaces`. 47 test files, 523 tests, build clean,
+and every screen walked in Chromium at a 412×915 phone viewport.
+
+| # | Asked for | Shipped |
+|---|---|---|
+| 1 | Full-screen 15-line mushaf with juz, surah, page | Yes. Line type 18.9px → 22.2px, measured on page 3. |
+| 2 | Choose Mushaf, Uthmani / Tajweed / IndoPak | Screen yes, two editions. See below. |
+| 3 | Juz headings, hizb picker, Para for IndoPak | Yes — juz, hizb and rub' quarters. |
+| 4 | Verse with translation underneath | Yes, six translations. Not Khattab — see below. |
+| 5 | Word-by-word following for every reciter | Word for one, verse for four. See below. |
+
+### Where reality differed from the brief
+
+**Only two editions, not seven.** The mushaf already shipped *is* the 1405 AH
+Madinah edition — its line breaks match KFGQPC V1 exactly — so that card was a
+labelling job. Tajweed ships as rules computed onto that same text. 1421 AH
+and 1441 are obtainable and unbuilt; 1439 and 1440 have no public source at
+all; IndoPak is blocked on a font licence, not on data. `src/mushaf/editions.ts`
+records each case.
+
+**Not Khattab's Clear Quran.** Furqaan Institute holds an exclusive licence.
+Talal Itani's translation of the same name ships instead, alongside Saheeh
+International.
+
+**Word-by-word for one reciter, verse-by-verse for four.** The blocker is not
+effort: a timing file belongs to a *recording*, not to a reciter, and almost
+none of our audio is the take the published timings were made against. Three
+reciters passed an audio-identity check and gained verse following. No
+Taraweeh recording has timings from any source, and only our own forced
+alignment will ever change that.
+
+### Left owing
+
+- Email **quranwbw@gmail.com** for the IndoPak font. Then edition-scope every
+  page number, because IndoPak paginates in 610 pages.
+- Email **Furqaan Institute** if Khattab's translation is wanted.
+- Build 1421 AH and 1441, if per-page glyph fonts are worth losing search and
+  screen-reader support for.
+- Forced-align the Saudi Center reciters and the Taraweeh archives — with MFA
+  rather than wav2vec2, or on a rented GPU.
+- **The app cannot be sold** while the Tanzil translations are in it.
