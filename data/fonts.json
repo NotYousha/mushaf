@@ -1,6 +1,148 @@
 {
-  "note": "Written by scripts/fetch-mushaf-fonts.mjs. Every licence field is copied verbatim from the font name table (nameID 0, 13, 14) — do not edit or paraphrase them. These fonts are hosted unmodified and unsubsetted because their licences forbid modification.",
+  "note": "Written by scripts/fetch-mushaf-fonts.mjs. Every licence field is copied verbatim from the font name table (nameID 0, 13, 14) — do not edit or paraphrase them. These fonts are hosted unmodified and unsubsetted because their licences forbid modification. `coverage` is checked against the layout the face renders; `measured` comes from scripts/measure-mushaf-face.py, which shapes real lines with HarfBuzz.",
   "fonts": [
+    {
+      "id": "kfgqpc-hafs-uthmanic",
+      "file": "public/fonts/kfgqpc-hafs-uthmanic.woff2",
+      "source": "https://static-cdn.tarteel.ai/qul/fonts/UthmanicHafs_V22.woff2",
+      "bytes": 106856,
+      "sha256": "d7ae6b285ca600cffb83751cdda44947b7be47414a598689e1f152a01ba0292a",
+      "subsetted": false,
+      "family": "KFGQPC HAFS Uthmanic Script",
+      "fontVersion": "Version 2.2",
+      "cmapCodepoints": 608,
+      "usedBy": [
+        "uthmani"
+      ],
+      "coverage": {
+        "layout": "data/mushaf-layout.json",
+        "required": 80,
+        "covered": 79,
+        "exempt": [
+          "U+0020",
+          "U+200F"
+        ],
+        "missing": [
+          {
+            "codepoint": "U+0622",
+            "tokens": 3
+          }
+        ]
+      },
+      "measured": {
+        "face": {
+          "family": "KFGQPC HAFS Uthmanic Script",
+          "unitsPerEm": 2048,
+          "cmapCodepoints": 608,
+          "shaping": {
+            "GSUB": {
+              "scripts": [
+                "arab"
+              ],
+              "features": [
+                "calt",
+                "fina",
+                "init",
+                "liga",
+                "medi",
+                "rlig"
+              ]
+            },
+            "GPOS": {
+              "scripts": [
+                "arab"
+              ],
+              "features": [
+                "curs",
+                "kern",
+                "mark",
+                "mkmk"
+              ]
+            },
+            "GDEF": true
+          }
+        },
+        "reference": {
+          "family": "Amiri Quran",
+          "unitsPerEm": 1000,
+          "cmapCodepoints": 128,
+          "shaping": {
+            "GSUB": {
+              "scripts": [
+                "DFLT",
+                "arab",
+                "latn"
+              ],
+              "features": [
+                "ccmp",
+                "fina",
+                "init",
+                "locl",
+                "medi",
+                "rlig"
+              ]
+            },
+            "GPOS": {
+              "scripts": [
+                "DFLT",
+                "arab",
+                "latn"
+              ],
+              "features": [
+                "curs",
+                "kern",
+                "mark",
+                "mkmk"
+              ]
+            },
+            "GDEF": true
+          }
+        },
+        "linesMeasured": 8820,
+        "widthRatio": {
+          "mean": 0.98,
+          "median": 0.9741,
+          "min": 0.8693,
+          "p05": 0.9194,
+          "p95": 1.0611,
+          "max": 1.2278,
+          "longestLines": 0.958
+        },
+        "verticalInkEm": {
+          "face": 1.5316,
+          "reference": 1.9334,
+          "faceWorst": 1.7612,
+          "referenceWorst": 2.7629
+        },
+        "verticalInkRatio": 1.2623,
+        "widthRatioAtEqualVerticalInk": 1.2371,
+        "stretchNeeded": {
+          "face": {
+            "lines": 8820,
+            "mean": 1.1568,
+            "median": 1.1406,
+            "p90": 1.3037,
+            "p99": 1.4822,
+            "max": 3.0266,
+            "linesAtCap": 529,
+            "shareAtCap": 0.06
+          },
+          "reference": {
+            "lines": 8820,
+            "mean": 1.1514,
+            "median": 1.1361,
+            "p90": 1.2946,
+            "p99": 1.4808,
+            "max": 2.9119,
+            "linesAtCap": 528,
+            "shareAtCap": 0.0599
+          }
+        }
+      },
+      "copyright": "The digitally signed machine readable Typeface(Font) licensed to you is copyrighted, (2010), King Fahd Glorious Quran Printing Complex.\r\nISBN: 978-603-8010-15-0, Accession No. 1430/7278\r\nAll rights reserved. This Font is the property of King Fahd Glorious Quran Printing Complex, and may not be reproduced, modified without the express written approval of King Fahd Glorious Quran Printing Complex.",
+      "licence": "ELECTRONIC END-USER LICENSE AGREEMENT\r\n\r\nBy installing this Font You accept all the terms and conditions of this Agreement.\r\n\r\nCopyright (c) 2010 by King Fahd Glorious Quran Printing Complex (KFGQPC), AlMadinah AlMunawarrah, Kingdom of Saudi Arabia. All Rights Reserved. KFGQPC retains full title and ownership of this Typeface both as artwork and font software. This Agreement does not grant you any intellectual property rights in the Font.\r\n\r\nPermission is hereby granted, Free of Cost, to any person obtaining a copy of this Font accompanying this license, the rights to Use, Copy, Distribute, subject to the following conditions:\r\n\r\n1.    The Font Software cannot be Sold, Modified, Altered, Translated, Reverse Engineered, Decompiled, Disassembled, Reproduced or Attempted to discover the Source Code of this Font in no means.\r\n\r\n2.    The Font Software is provided \"AS IS\", and KFGQPC makes no warranties as to its use or performance, fitness for a particular purpose. KFGQPC does not and cannot warrant the performance or results you may obtain by using the Font. In no event shall KFGQPC be liable for any Claims, Damages or other Liability, including any Damages, arising from, out of the use or inability to use the Font or from other dealings in the Font.",
+      "licenceUrl": null
+    },
     {
       "id": "kfgqpc-nastaleeq",
       "file": "public/fonts/kfgqpc-nastaleeq.woff2",

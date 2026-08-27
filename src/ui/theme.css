@@ -147,7 +147,23 @@
 
   --font-ar: 'Amiri', 'Traditional Arabic', serif;
   /* Uthmani text, with the Quranic marks Amiri proper does not carry. */
-  --font-quran: 'Amiri Quran', 'Amiri', 'Traditional Arabic', serif;
+  /*
+   * The Uthmani page, in the face it was set in.
+   *
+   * KFGQPC HAFS Uthmanic Script is the King Fahd Complex's own, and our page
+   * layout is theirs — the line breaks in data/mushaf-layout.json come from
+   * their printed mushaf — so this is the type those breaks were computed
+   * for. Amiri Quran, which stood here, is a lighter and finer face: correct
+   * Quranic orthography but visibly thinner on a phone, which is most of why
+   * the page read as faint.
+   *
+   * Amiri Quran stays behind it, and not only as a fallback for a failed
+   * download. KFGQPC's cmap is missing U+0622 — alif with madda — which
+   * appears in three tokens of the mushaf. A browser resolves a font stack
+   * per glyph, so those three come from Amiri and everything else from
+   * KFGQPC, with no tofu and nothing special in the renderer.
+   */
+  --font-quran: 'KFGQPC HAFS Uthmanic Script', 'Amiri Quran', 'Amiri', serif;
   --font-ui: 'IBM Plex Sans Arabic', system-ui, -apple-system, sans-serif;
 
   /* Set per theme in themes.css, so form controls and scrollbars follow the
@@ -1758,17 +1774,29 @@ body {
 
 /* Past the printed size a line cannot fit its measure, so it wraps. The page
    stops being fifteen lines — that is the trade for text you can read. */
-.mslot.is-zoomed .mushaf-line {
+.mslot.is-zoomed .mpage-lines .mushaf-line {
   flex-wrap: wrap;
   justify-content: center;
   white-space: normal;
   row-gap: 0;
 }
 
-/* Each line of the printed page is one line here: the break positions come
-   from the Madani layout, so the page reads as it does in print.
-   Justified edge to edge, because a mushaf line always fills its measure. */
-.mushaf-line {
+/*
+ * Each line of the printed page is one line here: the break positions come
+ * from the Madani layout, so the page reads as it does in print. Justified
+ * edge to edge, because a mushaf line always fills its measure.
+ *
+ * Selected through .mpage-lines, and that is load-bearing rather than tidy.
+ * A mushaf line is a <p> inside .panel, and `.panel p` sets a size and a
+ * leading of its own at specificity (0,1,1) — one class and one element,
+ * against the single class this rule used to have. So it won, silently: the
+ * whole fit measurement was computing a size, writing it to the strip, and
+ * being overridden at the last element in the chain. Every page of the Quran
+ * has been rendering at a flat 16px with prose leading, which is most of why
+ * the text looked small and thin, and why widening the letters to fill the
+ * measure made it look stretched — it was 16px type pulled sideways.
+ */
+.mpage-lines .mushaf-line {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
@@ -1783,16 +1811,28 @@ body {
      not a restyling — and the Uthmani face otherwise. */
   font-family: var(--font-page, var(--font-quran));
   font-size: 1em;
-  /* Uthmani text stacks marks well above and below the baseline, so it needs
-     far more leading than ordinary Arabic or the rows collide. */
-  line-height: 2.5;
+  /*
+   * Leading, and it is the constraint that sets how big the page can be.
+   *
+   * Fifteen lines have to fit the leaf's height, so line-height times fifteen
+   * is the whole budget: every tenth of leading given away is type the reader
+   * does not get. It was 2.5, sized for Amiri Quran, whose ink runs to nearly
+   * two ems once its marks are counted. KFGQPC's is a more compact face —
+   * about 1.53 ems of ink against Amiri's 1.93 — so the same page fits at 2.0
+   * and the type grows by a quarter to fill what the leading gave back.
+   *
+   * Not lower than this. Uthmani stacks marks well above and below the
+   * baseline, and below about 1.9 the rows begin to touch on the pages with
+   * the most vocalisation.
+   */
+  line-height: 2;
   color: var(--ink-strong);
   white-space: nowrap;
 }
 
 /* A line with only a word or two — the end of a surah — should not have its
    words flung to opposite edges. */
-.mushaf-line.is-short {
+.mpage-lines .mushaf-line.is-short {
   justify-content: center;
   gap: 0.5em;
 }
@@ -1916,7 +1956,7 @@ body {
 /* ============ Talqeen Mode ============ */
 
 /* The line being drilled, so you can see where to pick up. */
-.mushaf-line.is-drill {
+.mpage-lines .mushaf-line.is-drill {
   background: var(--tile);
   border-radius: 10px;
   box-shadow: 0 0 0 1px var(--accent-line);
@@ -4284,10 +4324,19 @@ body {
 
 /* The basmala above a surah: centred on its own line, as the mushaf prints
    it, and never justified — it is one short line, not a measure to fill. */
-.mushaf-basmala {
+/*
+ * Sized in `em`, so it scales with the page rather than against it.
+ *
+ * It was 1.5rem — a fixed size on a page whose every other line is sized by
+ * the fit measurement, so the basmala grew and shrank relative to the text it
+ * sits above as the reader moved between pages. Selected through
+ * .mpage-lines for the same reason the line is: `.panel p` outranks a single
+ * class and was setting prose leading on it.
+ */
+.mpage-lines .mushaf-basmala {
   margin: 0.15rem 0 0.35rem;
-  font-family: var(--font-quran);
-  font-size: 1.5rem;
+  font-family: var(--font-page, var(--font-quran));
+  font-size: 0.92em;
   line-height: 1.9;
   text-align: center;
   color: var(--ink);

@@ -184,3 +184,31 @@
      rather than holding a blank screen on a slow connection. */
   font-display: swap;
 }
+
+/*
+ * KFGQPC HAFS Uthmanic Script, for the Uthmani mushaf.
+ *
+ * The face the pages were set in. data/mushaf-layout.json is the King Fahd
+ * Complex's own 604-page Madani mushaf, line break for line break, and this
+ * is the Complex's own Hafs face (v2.2) that those breaks were drawn with.
+ * Amiri Quran stood in for it and drew the Uthmani marks its own way.
+ *
+ * Hosted verbatim and never subsetted, on the same terms as the Nastaleeq
+ * above: "Use, Copy, Distribute" free of cost, provided the font is not
+ * modified. Fetched as WOFF2 rather than converted from the TTF beside it —
+ * the two decompile to the same 1572 glyphs with identical outlines, so no
+ * transform of ours stands between the Complex's font software and this
+ * file. scripts/fetch-mushaf-fonts.mjs records the hash and the licence.
+ *
+ * It has no glyph for U+0622; the Uthmani text spells alef-madda as
+ * U+0627 U+0653, which it does draw, in all but three of its 83,665 tokens.
+ */
+@font-face {
+  font-family: 'KFGQPC HAFS Uthmanic Script';
+  src: url('./kfgqpc-hafs-uthmanic.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  /* Swap, not block: the page must appear and reflow rather than hold a
+     blank leaf on a slow connection. */
+  font-display: swap;
+}

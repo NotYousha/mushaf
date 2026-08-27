@@ -266,6 +266,25 @@ Recorded so nobody re-derives it. See `src/mushaf/editions.ts`.
   that IndoPak paginates in 610 pages, so every page number in the app would
   have to become edition-scoped.
 
+## Quran fonts
+
+Two faces from the **King Fahd Glorious Quran Printing Complex**, both hosted
+verbatim in `public/fonts/` and neither subsetted — their licence permits use,
+copying and distribution but forbids modification, and subsetting a font is
+modifying it. `scripts/fetch-mushaf-fonts.mjs` fetches each twice and compares
+before writing; `data/fonts.json` records the source URL, byte count, sha256
+and the full licence text read out of the font's own name table.
+
+- **KFGQPC HAFS Uthmanic Script** (106,856 bytes) — the Uthmani mushaf. This
+  is the face our page layout was set in: the line breaks in
+  `data/mushaf-layout.json` are the Complex's, so this is the type they were
+  computed for. Its cmap is missing U+0622, which occurs in three tokens of
+  the mushaf; **Amiri Quran** (OFL) stands behind it in the font stack and a
+  browser resolves those three glyphs from it.
+- **KFGQPC Nastaleeq** (85,608 bytes) — the IndoPak mushaf.
+
+Amiri and Amiri Quran remain under the SIL Open Font License.
+
 ## Quran division metadata
 
 Juz, hizb and rub' al-hizb boundaries in `data/divisions.json` are derived
