@@ -136,6 +136,28 @@ import './ui/onboarding.css'
 type Tab = 'home' | 'quran' | 'library' | 'text' | 'translation' | 'hifz' | 'more'
 
 /**
+ * The Mushaf and Hifz tabs, held back.
+ *
+ * Both are finished enough to use and not finished enough to ship: the
+ * reading page has a font, a layout and a horizontal pager that want more
+ * time on real devices, and the Hifz board is built on top of it. Rather than
+ * delete them and lose the thread, they are unreachable — no dock entry, no
+ * route — while every component, layout, font, timing file and test stays in
+ * place and keeps being compiled and checked on each commit.
+ *
+ * Turn this to true and both come back exactly as they were. That is the
+ * whole of the change; there is no second switch anywhere else.
+ *
+ * Typed rather than inferred: as a bare `false` the compiler narrows it to
+ * the literal type, decides the other branch is unreachable, and stops
+ * type-checking the very code this is meant to keep alive.
+ *
+ * The full state of the work is also on the `mushaf-reader` branch, at the
+ * commit that shipped the KFGQPC face.
+ */
+const READING_TABS: boolean = false
+
+/**
  * A square portrait needs no framing, and stating that beats leaving it out.
  *
  * The stylesheet's default is Al-Dosari's uncropped photograph at 160% and
@@ -839,6 +861,7 @@ export default function App() {
   const [gotoPage, setGotoPage] = useState<number | null>(null)
 
   const openMushafAtPage = (page: number) => {
+    if (!READING_TABS) return
     setGotoPage(page)
     setTab('text')
   }
@@ -1357,7 +1380,10 @@ export default function App() {
     return searchSurahs(surahs, q)
   }, [surahs, query])
 
-  const openText = () => setTab('text')
+  const openText = () => {
+    if (!READING_TABS) return
+    setTab('text')
+  }
 
   /**
    * The portraits for the home screen, resolved once here.
@@ -1692,7 +1718,9 @@ export default function App() {
        */
       { id: 'home', label: t.tabHome, icon: <HomeIcon size={21} />, onSelect: () => pickTab('home') },
       { id: 'quran', label: t.tabQuran, icon: <QuranMark size={21} />, onSelect: () => pickTab('quran') },
-      { id: 'text', label: t.tabText, icon: <Broadcast size={21} />, onSelect: openText },
+      ...(READING_TABS
+        ? [{ id: 'text', label: t.tabText, icon: <Broadcast size={21} />, onSelect: openText }]
+        : []),
       /*
        * Translation is a destination, not a view of the mushaf.
        *
@@ -1707,7 +1735,16 @@ export default function App() {
         icon: <Translate size={21} />,
         onSelect: () => pickTab('translation'),
       },
-      { id: 'hifz', label: t.tabHifz, icon: <Heart size={21} />, onSelect: () => pickTab('hifz') },
+      ...(READING_TABS
+        ? [
+            {
+              id: 'hifz',
+              label: t.tabHifz,
+              icon: <Heart size={21} />,
+              onSelect: () => pickTab('hifz'),
+            },
+          ]
+        : []),
       { id: 'more', label: t.tabMore, icon: <More size={21} />, onSelect: () => setTab('more') },
     ],
     [t, openText],
@@ -2167,7 +2204,7 @@ export default function App() {
             </div>
           )}
 
-          {tab === 'text' && (
+          {READING_TABS && tab === 'text' && (
             <div className="panel">
               {/*
                   The index replaces the page rather than sliding over it.
@@ -2290,7 +2327,7 @@ export default function App() {
             </div>
           )}
 
-          {tab === 'hifz' && (
+          {READING_TABS && tab === 'hifz' && (
             <div className="panel">
               <HifzBoard t={t} lang={lang} onOpenPage={(p) => openMushafAtPage(p)} />
               <h3 className="hifz-h">{t.forkDrill}</h3>
