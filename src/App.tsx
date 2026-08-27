@@ -116,6 +116,8 @@ import {
 } from './catalog/segments'
 import { digits, inScript, isArabicScript, isLatinText } from './i18n/script'
 import { Splash } from './ui/Splash'
+import { Onboarding } from './ui/Onboarding'
+import { defaultEdition } from './ui/editions'
 import { BUILD, holdUpdatesWhile } from './pwa'
 import './ui/theme.css'
 import './ui/themes.css'
@@ -123,6 +125,7 @@ import './ui/glass.css'
 import './ui/motion.css'
 import './ui/desktop.css'
 import './ui/home.css'
+import './ui/onboarding.css'
 
 type Tab = 'home' | 'quran' | 'library' | 'text' | 'hifz' | 'more'
 
@@ -267,6 +270,32 @@ export default function App() {
    */
   const [theme, setTheme] = useState<ThemeId>(() => bootPreference().theme)
   const [appearance, setAppearance] = useState<Mode>(() => bootPreference().mode)
+
+  /*
+   * Whether the three first-run questions have been answered.
+   *
+   * Undefined while IndexedDB is still being read, and the flow is not drawn
+   * until it is known — showing it for a frame to somebody who answered it
+   * months ago would be worse than showing it a moment late.
+   */
+  const [onboarded, setOnboarded] = useState<boolean | undefined>(undefined)
+  const [edition, setEdition] = useState<string>(() => defaultEdition())
+
+  useEffect(() => {
+    let alive = true
+    void (async () => {
+      const [done, saved] = await Promise.all([
+        getPref('onboarded', false),
+        getPref('mushafEdition', defaultEdition()),
+      ])
+      if (!alive) return
+      setOnboarded(done)
+      setEdition(saved)
+    })()
+    return () => {
+      alive = false
+    }
+  }, [])
 
   /**
    * Where the last session stopped, until it is used once.
@@ -1546,6 +1575,40 @@ export default function App() {
   return (
     <div className="app" dir={t.dir}>
       <Splash lang={lang} />
+
+      {/*
+          The three first-run questions, over everything, once.
+
+          Drawn only once `onboarded` is known, so somebody who answered it
+          long ago never sees it flash. Each answer is applied as it is made
+          rather than at the end — the language step rewrites the flow's own
+          words, and the theme step is only meaningful if you can see it.
+      */}
+      {onboarded === false && (
+        <Onboarding
+          lang={lang}
+          theme={theme}
+          mode={appearance}
+          edition={edition}
+          onLang={(l) => void changeLang(l)}
+          onTheme={(id) => {
+            setTheme(id)
+            void setPref('theme', id)
+          }}
+          onMode={(m) => {
+            setAppearance(m)
+            void setPref('appearance', m)
+          }}
+          onEdition={(id) => {
+            setEdition(id)
+            void setPref('mushafEdition', id)
+          }}
+          onDone={() => {
+            setOnboarded(true)
+            void setPref('onboarded', true)
+          }}
+        />
+      )}
       <div className="sheet">
         {/* The home screen carries its own header — logo, wordmark, search —
             so the shared one, which is a player header, stands down there. */}
@@ -2007,6 +2070,19 @@ export default function App() {
           {tab === 'more' && (
             <div className="panel">
               <h2>{t.settings}</h2>
+
+              {/* A way back to the first-run questions. Nothing chosen there
+                  is permanent, and this is where somebody would look. */}
+              <button
+                type="button"
+                className="btn"
+                onClick={() => {
+                  setOnboarded(false)
+                  void setPref('onboarded', false)
+                }}
+              >
+                {t.obWelcome}
+              </button>
               <LangPicker
                 lang={lang}
                 label={t.language}

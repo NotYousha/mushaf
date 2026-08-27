@@ -45,6 +45,8 @@ type Stamped = {
 function boot(opts: {
   store?: Record<string, string> | 'throws'
   prefersDark?: boolean | 'throws'
+  /** What the phone reports, since that is now the first-run default. */
+  deviceLang?: string | 'throws'
 } = {}): Stamped {
   const stamped: Stamped = { theme: null, mode: null, lang: null, dir: null }
   const localStorage = {
@@ -69,7 +71,20 @@ function boot(opts: {
       },
     },
   }
-  new Function('localStorage', 'window', 'document', inlineScripts[0][1])(localStorage, win, doc)
+  const navigator = {
+    get language() {
+      if (opts.deviceLang === 'throws') throw new TypeError('no navigator')
+      return opts.deviceLang ?? 'en-GB'
+    },
+    languages: undefined as string[] | undefined,
+  }
+  new Function(
+    'localStorage',
+    'window',
+    'document',
+    'navigator',
+    inlineScripts[0][1],
+  )(localStorage, win, doc, navigator)
   return stamped
 }
 
@@ -123,13 +138,54 @@ describe('theme boot script', () => {
     })
   })
 
-  it('falls back to the default language, never to nothing', () => {
-    for (const store of [undefined, { 'mushaf:lang': 'klingon' }, { 'mushaf:lang': '' }]) {
-      const out = boot({ store })
-      expect(out.lang, JSON.stringify(store)).toBe(DEFAULT_LANG)
-      expect(out.dir, JSON.stringify(store)).toBe('rtl')
+  /**
+   * With nothing stored, the phone decides — and English catches the rest.
+   *
+   * This asserted a fall back to DEFAULT_LANG, which is Arabic, and that was
+   * right while Arabic was the only sensible guess. It is not any more: the app
+   * ships on Play in five languages, and an English or French reader opening it
+   * for the first time was given an Arabic right-to-left interface to find the
+   * language picker in. So a first run now follows the device, and only falls
+   * to English when the device speaks something the app does not.
+   *
+   * Whatever this script decides, deviceLang() in src/i18n/index.ts must decide
+   * identically — see the drift test below. If they disagree the interface
+   * changes direction a moment after mount, which is the whole thing this
+   * script exists to prevent.
+   */
+  it('follows the phone on a first run, and lands on English otherwise', () => {
+    // A language the app speaks, with and without a region tag.
+    expect(boot({ deviceLang: 'ar' })).toMatchObject({ lang: 'ar', dir: 'rtl' })
+    expect(boot({ deviceLang: 'ar-SA' })).toMatchObject({ lang: 'ar', dir: 'rtl' })
+    expect(boot({ deviceLang: 'UR-pk' })).toMatchObject({ lang: 'ur', dir: 'rtl' })
+    expect(boot({ deviceLang: 'fr-CA' })).toMatchObject({ lang: 'fr', dir: 'ltr' })
+
+    // One it does not, and the degenerate cases.
+    for (const deviceLang of ['de-DE', 'klingon', '', 'throws' as const]) {
+      expect(boot({ deviceLang }), String(deviceLang)).toMatchObject({
+        lang: 'en',
+        dir: 'ltr',
+      })
     }
-    expect(boot({ store: 'throws' })).toMatchObject({ lang: DEFAULT_LANG, dir: 'rtl' })
+  })
+
+  // A stored choice always wins over the phone: it is the reader saying so.
+  it('prefers a stored language over the phone', () => {
+    expect(boot({ store: { 'mushaf:lang': 'hi' }, deviceLang: 'ar-SA' })).toMatchObject({
+      lang: 'hi',
+      dir: 'ltr',
+    })
+    // Unreadable or nonsense storage falls through to the phone, not to nothing.
+    for (const store of [{ 'mushaf:lang': 'klingon' }, { 'mushaf:lang': '' }]) {
+      expect(boot({ store, deviceLang: 'ar' }), JSON.stringify(store)).toMatchObject({
+        lang: 'ar',
+        dir: 'rtl',
+      })
+    }
+    expect(boot({ store: 'throws', deviceLang: 'fr' })).toMatchObject({
+      lang: 'fr',
+      dir: 'ltr',
+    })
   })
 
   /*

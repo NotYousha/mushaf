@@ -157,6 +157,23 @@ export const hi: Strings = {
 
   settings: 'सेटिंग्स',
   language: 'भाषा',
+
+  /* The first-run flow: language, then appearance, then the mushaf. */
+  obWelcome: 'स्वागत है',
+  obWelcomeSub: 'तीन छोटे चुनाव, फिर मुसहफ़।',
+  obLangTitle: 'अपनी भाषा चुनें',
+  obLangSub: 'इसे बाद में सेटिंग्स में बदल सकते हैं।',
+  obThemeTitle: 'हल्का या गहरा?',
+  obThemeSub: 'जो आपकी आँखों को आसान लगे।',
+  obLight: 'हल्का',
+  obDark: 'गहरा',
+  obSystem: 'डिवाइस के अनुसार',
+  obPalette: 'रंग',
+  obMushafTitle: 'कौन सा मुसहफ़?',
+  obMushafSub: 'जिस लिपि में पृष्ठ छपे हैं।',
+  obNext: 'आगे',
+  obBack: 'पीछे',
+  obDone: 'पढ़ना शुरू करें',
   arabic: 'العربية',
   english: 'English',
   reciters: 'क़ारी',

@@ -173,6 +173,23 @@ export const en = {
 
   settings: 'Settings',
   language: 'Language',
+
+  /* The first-run flow: language, then appearance, then the mushaf. */
+  obWelcome: 'Welcome',
+  obWelcomeSub: 'Three quick choices, then the mushaf.',
+  obLangTitle: 'Choose your language',
+  obLangSub: 'You can change this later in Settings.',
+  obThemeTitle: 'Light or dark?',
+  obThemeSub: 'Pick what is easy on your eyes.',
+  obLight: 'Light',
+  obDark: 'Dark',
+  obSystem: 'Match my device',
+  obPalette: 'Colour',
+  obMushafTitle: 'Which mushaf?',
+  obMushafSub: 'The script the pages are set in.',
+  obNext: 'Next',
+  obBack: 'Back',
+  obDone: 'Start reading',
   arabic: 'العربية',
   english: 'English',
   reciters: 'Reciters',

@@ -157,6 +157,23 @@ export const ur: Strings = {
 
   settings: 'ترتیبات',
   language: 'زبان',
+
+  /* The first-run flow: language, then appearance, then the mushaf. */
+  obWelcome: 'خوش آمدید',
+  obWelcomeSub: 'تین مختصر انتخاب، پھر مصحف۔',
+  obLangTitle: 'اپنی زبان منتخب کریں',
+  obLangSub: 'اسے بعد میں سیٹنگز سے بدل سکتے ہیں۔',
+  obThemeTitle: 'روشن یا گہرا؟',
+  obThemeSub: 'جو آپ کی آنکھوں کو آسان لگے۔',
+  obLight: 'روشن',
+  obDark: 'گہرا',
+  obSystem: 'ڈیوائس کے مطابق',
+  obPalette: 'رنگ',
+  obMushafTitle: 'کون سا مصحف؟',
+  obMushafSub: 'جس رسم الخط میں صفحات ہیں۔',
+  obNext: 'آگے',
+  obBack: 'پیچھے',
+  obDone: 'پڑھنا شروع کریں',
   arabic: 'العربية',
   english: 'English',
   reciters: 'قراء',

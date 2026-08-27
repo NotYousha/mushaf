@@ -1,0 +1,316 @@
+/* =====================================================================
+   The first-run flow
+   ---------------------------------------------------------------------
+   Its own file rather than a block in theme.css: it is shown once, it
+   shares no selector with anything else, and keeping it separate means
+   this work and the mushaf-editions work were not editing the same
+   file at the same time.
+
+   Everything is drawn from the theme's own tokens, so the screen is
+   already in whichever palette is being chosen on step two — which is
+   the point of that step.
+
+   Touch rules follow the rest of the app: nothing is revealed on hover,
+   every control states its own :active because
+   -webkit-tap-highlight-color is transparent globally, and no target is
+   smaller than a finger.
+   ===================================================================== */
+
+.ob {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  padding: max(1rem, env(safe-area-inset-top)) 1rem
+    max(1rem, env(safe-area-inset-bottom));
+  background: var(--bg);
+  /* Above the dock and the player, and opaque: this is the whole screen
+     until it is answered, not a sheet over a working app. */
+  overflow-y: auto;
+}
+
+.ob-sheet {
+  inline-size: 100%;
+  max-inline-size: 26rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* ---------- head ---------- */
+
+.ob-kicker {
+  margin: 0 0 0.35rem;
+  font-size: var(--text-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+/* Not tracked or uppercased when it is Arabic — see the wordmark's note in
+   home.css. The kicker is the one line here that is ever Latin-only. */
+.ob[dir='rtl'] .ob-kicker {
+  letter-spacing: normal;
+  text-transform: none;
+}
+
+.ob-title {
+  margin: 0 0 0.3rem;
+  font-family: var(--font-name);
+  font-size: var(--text-xl);
+  line-height: 1.3;
+  color: var(--ink-strong);
+}
+
+.ob-sub {
+  margin: 0;
+  font-size: var(--text-xs);
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+/* ---------- body ---------- */
+
+.ob-body {
+  min-block-size: 17rem;
+}
+
+.ob-options {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.ob-option {
+  inline-size: 100%;
+  min-block-size: 52px;
+  padding: 0.7rem 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  border: 1px solid var(--accent-line);
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  font-family: var(--font-name);
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+  text-align: start;
+  touch-action: manipulation;
+}
+
+.ob-option:active {
+  background: var(--card-2);
+}
+
+/* Chosen state carries the accent as a ring and the ink as weight, so it
+   reads as chosen without colour alone doing the work. */
+.ob-option.is-on {
+  border-color: var(--accent-deep);
+  box-shadow: 0 0 0 1px var(--accent-deep) inset;
+  color: var(--ink-strong);
+}
+
+.ob-tall {
+  min-block-size: 62px;
+}
+
+.ob-option-name {
+  font-size: var(--text-sm);
+}
+
+.ob-option-note {
+  font-size: 0.72rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+/* ---------- light / dark ---------- */
+
+.ob-modes {
+  list-style: none;
+  margin: 0 0 1.1rem;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.4rem;
+}
+
+.ob-mode {
+  inline-size: 100%;
+  min-block-size: 48px;
+  padding: 0.5rem 0.3rem;
+  border: 1px solid var(--accent-line);
+  border-radius: var(--radius-xs);
+  background: var(--card);
+  font-family: inherit;
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  touch-action: manipulation;
+}
+
+.ob-mode:active {
+  background: var(--card-2);
+}
+
+.ob-mode.is-on {
+  border-color: var(--accent-deep);
+  box-shadow: 0 0 0 1px var(--accent-deep) inset;
+  color: var(--ink-strong);
+}
+
+.ob-label {
+  margin: 0 0 0.5rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+/* ---------- palettes ---------- */
+
+.ob-swatches {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(6.2rem, 1fr));
+  gap: 0.45rem;
+}
+
+.ob-swatch {
+  inline-size: 100%;
+  min-block-size: 60px;
+  padding: 0.45rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 1px solid var(--accent-line);
+  border-radius: var(--radius-xs);
+  background: var(--card);
+  font-family: var(--font-name);
+  font-size: 0.75rem;
+  color: var(--ink-soft);
+  text-align: start;
+  touch-action: manipulation;
+}
+
+.ob-swatch:active {
+  background: var(--card-2);
+}
+
+.ob-swatch.is-on {
+  border-color: var(--accent-deep);
+  box-shadow: 0 0 0 1px var(--accent-deep) inset;
+  color: var(--ink-strong);
+}
+
+/* The palette itself: its ground as the tile, its accent as the ring, and
+   accent and ink as two bars inside. Enough to tell eight apart. */
+.ob-chip {
+  flex: none;
+  inline-size: 1.7rem;
+  block-size: 1.7rem;
+  border-radius: var(--radius-xs);
+  border: 1px solid;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  padding: 0 3px;
+  overflow: hidden;
+}
+
+.ob-chip span {
+  display: block;
+  block-size: 3px;
+  border-radius: 2px;
+}
+
+.ob-swatch-name {
+  min-inline-size: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------- foot ---------- */
+
+.ob-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.ob-dots {
+  display: inline-flex;
+  gap: 0.3rem;
+}
+
+.ob-dots span {
+  inline-size: 6px;
+  block-size: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--accent-line);
+}
+
+.ob-dots span.is-on {
+  background: var(--gold);
+}
+
+.ob-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.ob-back {
+  min-block-size: 48px;
+  padding: 0.5rem 0.7rem;
+  border: 0;
+  background: none;
+  font-family: inherit;
+  font-size: 0.8rem;
+  color: var(--muted);
+  touch-action: manipulation;
+}
+
+.ob-back:active {
+  opacity: 0.6;
+}
+
+/* The one filled button on the screen, as the resume card's is on home. */
+.ob-next {
+  min-block-size: 48px;
+  padding: 0.6rem 1.3rem;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(160deg, var(--tile-active-a), var(--tile-active-b));
+  font-family: var(--font-name);
+  font-size: 0.9rem;
+  color: var(--tile-active-ink);
+  box-shadow: var(--shadow-sm);
+  touch-action: manipulation;
+}
+
+.ob-next:active {
+  transform: translateY(1px);
+}
+
+.ob-back:focus-visible,
+.ob-next:focus-visible,
+.ob-option:focus-visible,
+.ob-mode:focus-visible,
+.ob-swatch:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ob-next:active {
+    transform: none;
+  }
+}

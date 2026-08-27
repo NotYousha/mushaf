@@ -160,6 +160,23 @@ export const ar: Strings = {
 
   settings: 'الإعدادات',
   language: 'اللغة',
+
+  /* The first-run flow: language, then appearance, then the mushaf. */
+  obWelcome: 'أهلًا بك',
+  obWelcomeSub: 'ثلاثة اختيارات سريعة، ثم المصحف.',
+  obLangTitle: 'اختر لغتك',
+  obLangSub: 'يمكنك تغييرها لاحقًا من الإعدادات.',
+  obThemeTitle: 'فاتح أم غامق؟',
+  obThemeSub: 'اختر ما يرتاح له نظرك.',
+  obLight: 'فاتح',
+  obDark: 'غامق',
+  obSystem: 'حسب الجهاز',
+  obPalette: 'اللون',
+  obMushafTitle: 'أي مصحف؟',
+  obMushafSub: 'الخط الذي تُطبع به الصفحات.',
+  obNext: 'التالي',
+  obBack: 'السابق',
+  obDone: 'ابدأ القراءة',
   arabic: 'العربية',
   english: 'English',
   reciters: 'القُرّاء',

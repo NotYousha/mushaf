@@ -60,13 +60,37 @@ export const dirOf = (lang: Lang): 'ltr' | 'rtl' =>
  * The same trick theme and mode have had all along; lang was simply never
  * given it.
  */
+/**
+ * The language to start in when the reader has never chosen one.
+ *
+ * The phone's own, if the app speaks it; English otherwise. DEFAULT_LANG is
+ * Arabic and stays that way — it is the language of the mushaf and of the
+ * app's own name — but it is the wrong thing to hand somebody on a first run,
+ * because an English or French reader was being given a right-to-left Arabic
+ * interface and asked to find the language picker inside it.
+ *
+ * The inline boot script in index.html computes this too, before the bundle
+ * loads, and the two have to agree exactly or the interface changes direction
+ * a moment after mount. tests/themeboot.test.ts holds them together.
+ */
+export function deviceLang(): Lang {
+  try {
+    const nav = navigator.languages?.[0] ?? navigator.language ?? ''
+    // 'ar-SA' and 'AR' both mean Arabic; the region and the case are noise.
+    const base = String(nav).toLowerCase().split('-')[0]
+    return isLang(base) ? base : 'en'
+  } catch {
+    return 'en'
+  }
+}
+
 export function bootLang(): Lang {
   try {
     const v = localStorage.getItem(LANG_KEY)
-    return isLang(v) ? v : DEFAULT_LANG
+    return isLang(v) ? v : deviceLang()
   } catch {
-    // Site data blocked. The boot script fell back to the same default, so the
-    // two still agree and nothing moves after mount.
-    return DEFAULT_LANG
+    // Site data blocked. The boot script fell back the same way, so the two
+    // still agree and nothing moves after mount.
+    return deviceLang()
   }
 }

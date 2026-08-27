@@ -35,7 +35,7 @@
     <meta
       http-equiv="Content-Security-Policy"
       content="default-src 'self';
-               script-src 'self' 'sha256-t6PmvZkam6I8UddHy8NW6tb76xumByjq/lsqLc71wHY=';
+               script-src 'self' 'sha256-4Vfi22ecJq6jR1mn46Yu7RTqQ8Z9wJgNsGXJNMg/uKc=';
                style-src 'self' 'unsafe-inline';
                font-src 'self';
                img-src 'self' data: blob:;
@@ -116,7 +116,19 @@
         var DIRS = { ar: 'rtl', en: 'ltr', ur: 'rtl', hi: 'ltr', fr: 'ltr' }
         var theme = 'isha'
         var mode = 'system'
-        var lang = 'ar'
+        // No stored language yet means a first run, and the phone's own
+        // language is the best guess available — English if it is not one the
+        // app speaks. Arabic stays the default for an Arabic phone. This has
+        // to agree exactly with deviceLang() in src/i18n/index.ts, or the
+        // interface changes direction a moment after mount.
+        var lang = 'en'
+        try {
+          var nav = (navigator.languages && navigator.languages[0]) || navigator.language || ''
+          var base = String(nav).toLowerCase().split('-')[0]
+          if (DIRS[base]) lang = base
+        } catch (e) {
+          /* No navigator.language. 'en' stands. */
+        }
         try {
           var t = localStorage.getItem('mushaf:theme')
           var m = localStorage.getItem('mushaf:mode')

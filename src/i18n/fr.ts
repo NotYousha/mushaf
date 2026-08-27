@@ -157,6 +157,23 @@ export const fr: Strings = {
 
   settings: 'Paramètres',
   language: 'Langue',
+
+  /* The first-run flow: language, then appearance, then the mushaf. */
+  obWelcome: 'Bienvenue',
+  obWelcomeSub: 'Trois choix rapides, puis le mushaf.',
+  obLangTitle: 'Choisissez votre langue',
+  obLangSub: 'Modifiable plus tard dans les Réglages.',
+  obThemeTitle: 'Clair ou sombre ?',
+  obThemeSub: 'Ce qui repose le mieux vos yeux.',
+  obLight: 'Clair',
+  obDark: 'Sombre',
+  obSystem: 'Comme mon appareil',
+  obPalette: 'Couleur',
+  obMushafTitle: 'Quel mushaf ?',
+  obMushafSub: 'La graphie des pages.',
+  obNext: 'Suivant',
+  obBack: 'Retour',
+  obDone: 'Commencer la lecture',
   arabic: 'العربية',
   english: 'English',
   reciters: 'Récitateurs',
