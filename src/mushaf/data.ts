@@ -11,10 +11,26 @@
 export type Word = [string] | [string, string]
 export type Line = { n: number; w: Word[] }
 export type Layout = { version: string; pages: Line[][] }
+/**
+ * How finely a recitation is timed.
+ *
+ * `word` is what the mushaf wants and what almost nobody publishes: a start
+ * time for every word of every ayah. `ayah` is a start time per verse and
+ * nothing inside it — far cheaper to produce, and enough to shade the verse
+ * being recited even though it cannot box the word.
+ *
+ * The two share a file format, which is deliberate: an ayah-timed surah is a
+ * word-timed one whose `starts` happen to hold a single number. Everything
+ * that reads a verse start works on both without knowing which it has.
+ */
+export type Granularity = 'word' | 'ayah'
+
 /** Per surah: [ayah, [word start times in ms]] */
 export type Timings = {
   unit: string
   source: string
+  /** Absent means `word`, which is what every file predating this was. */
+  granularity?: Granularity
   surahs: Record<string, [number, number[]][]>
 }
 
@@ -105,6 +121,39 @@ export function surahTimed(reciterId: string, surah: number | null): boolean {
   if (surah === null) return false
   const t = loadedTimings.get(reciterId)
   return !!t?.surahs[String(surah)]
+}
+
+/**
+ * A surah as whole ayahs, read out of the page layout.
+ *
+ * The app ships no running text — `data/quran-text.json` is a build input and
+ * never reaches the browser. The layout is the only Quran text here, and it
+ * is words in printed lines, so anything that wants an ayah has to put one
+ * back together. Doing that here rather than shipping a second copy of the
+ * whole Quran saves 1.4 MB and, more importantly, means the translation view
+ * and the printed page can never drift apart: same words, same orthography,
+ * one source.
+ */
+export function ayahsOfSurah(
+  layout: Layout | null,
+  surah: number | null,
+): { ayah: number; text: string }[] {
+  if (!layout || !surah) return []
+  const prefix = `${surah}:`
+  const out: { ayah: number; text: string }[] = []
+  for (const lines of layout.pages) {
+    for (const line of lines) {
+      for (const w of line.w) {
+        const key = w[1]
+        if (!key?.startsWith(prefix)) continue
+        const ayah = Number(key.split(':')[1])
+        const last = out[out.length - 1]
+        if (last?.ayah === ayah) last.text += ' ' + w[0]
+        else out.push({ ayah, text: w[0] })
+      }
+    }
+  }
+  return out
 }
 
 /** Ayah start times in ms for a surah, or null if timings are not loaded. */

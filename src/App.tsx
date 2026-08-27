@@ -46,6 +46,9 @@ import { withTransition } from './ui/transition'
 import { ReciterPanel, type PlaceCard } from './ui/ReciterPanel'
 import { MushafView, ayahStartsFor } from './ui/MushafView'
 import { MushafIndex } from './ui/MushafIndex'
+import { TranslationView } from './ui/TranslationView'
+import { ReadingSwitch } from './ui/ReadingSwitch'
+import { defaultFor, translationById } from './mushaf/translations'
 import { HifzBoard } from './ui/HifzBoard'
 import { ForkDrill } from './ui/ForkDrill'
 import { PagedMushaf } from './ui/PagedMushaf'
@@ -854,6 +857,30 @@ export default function App() {
 
   /** The index, open over the page rather than beside it. */
   const [indexOpen, setIndexOpen] = useState(false)
+
+  /**
+   * Which way the Quran is being read: as the printed page, or as ayahs with
+   * their meaning underneath.
+   *
+   * Two readings of the same text, not two settings — so this is a view
+   * choice made on the screen, remembered because most people want the same
+   * one every time.
+   */
+  const [reading, setReading] = useState<'mushaf' | 'translation'>('mushaf')
+  const [translationId, setTranslationId] = useState<string>(() => defaultFor(lang))
+  useEffect(() => {
+    void getPref<'mushaf' | 'translation'>('readingMode', 'mushaf').then(setReading)
+    // Falls back to the default for the interface language, so a reader who
+    // has never chosen still gets a translation they can read rather than
+    // the first one in the list.
+    void getPref<string>('translationId', '').then((id) =>
+      setTranslationId(id && translationById(id) ? id : defaultFor(lang)),
+    )
+    // Deliberately not keyed on `lang`: once someone has chosen a
+    // translation, changing the interface language must not silently swap
+    // the scripture they are reading.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   /** Which page the mushaf is showing, reported up so the index can mark it. */
   const [atPage, setAtPage] = useState(1)
   const immersive = tab === 'text' && fullPage && !indexOpen
@@ -2077,7 +2104,47 @@ export default function App() {
                 />
               ) : !currentView ? (
                 <p className="empty">{t.pickSurahForText}</p>
+              ) : reading === 'translation' ? (
+                <>
+                  <ReadingSwitch
+                    t={t}
+                    reading={reading}
+                    onChange={(r) => {
+                      setReading(r)
+                      void setPref('readingMode', r)
+                    }}
+                    onOpenIndex={() => setIndexOpen(true)}
+                  />
+                  <TranslationView
+                    surah={currentView.surah}
+                    lang={lang}
+                    t={t}
+                    time={time}
+                    reciterId={reciterId}
+                    translationId={translationId}
+                    onChooseTranslation={(id) => {
+                      setTranslationId(id)
+                      void setPref('translationId', id)
+                    }}
+                    onSeek={(sec) => engine.current!.seek(sec)}
+                  />
+                </>
               ) : (
+                <>
+                  {/* Off the page in full screen: the switch is app chrome,
+                      and full screen is the page alone. It comes back with
+                      the rest of the controls on a tap. */}
+                  {!immersive && (
+                    <ReadingSwitch
+                      t={t}
+                      reading={reading}
+                      onChange={(r) => {
+                        setReading(r)
+                        void setPref('readingMode', r)
+                      }}
+                      onOpenIndex={() => setIndexOpen(true)}
+                    />
+                  )}
                 <MushafView
                   surah={currentView.surah}
                   lang={lang}
@@ -2100,6 +2167,7 @@ export default function App() {
                   onPeek={(pg, ms) => void addPeek(pg, ms, Date.now())}
                   onStumble={(key, pg) => void markStumble(key, pg)}
                 />
+                </>
               )}
             </div>
           )}

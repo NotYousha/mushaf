@@ -135,6 +135,47 @@ block in `scripts/refresh-catalog.mjs` and one route in `worker/src/index.js`.
   which the source collection does not contain. **Action:** record its
   provenance, or serve it the same way as everything else.
 
+## Translations
+
+Six translations are bundled, all obtained from the **Tanzil Project**
+(<https://tanzil.net/trans/>), built by `scripts/build-translations.mjs` into
+`public/trans/`.
+
+- **Saheeh International** — English. © Al-Muntada al-Islami / Abul-Qasim
+  Publishing House. Not public domain; carried under Tanzil's terms.
+- **Talal Itani, *Clear Quran*** — English. Freely licensed by the translator.
+- **Fatah Muhammad Jalandhari** — Urdu.
+- **Suhel Farooq Khan and Saifur Rahman Nadwi** — Hindi.
+- **Muhammad Hamidullah** — French.
+- **Tafsir al-Muyassar** — Arabic. King Fahd Glorious Qur'an Printing Complex.
+  A short tafsir rather than a translation, and the interface says so.
+
+Tanzil's terms: *"The translations provided at this page are for
+non-commercial purposes only. If used otherwise, you need to obtain necessary
+permission from the translator or the publisher."* They further require a link
+back where more than three of their translations are used, which this is:
+<https://tanzil.net/trans/>.
+
+**Al-Mau'iza must not be sold, or bundled into anything sold, while these
+translations are in it.** That is a licence condition, not a preference.
+
+Deliberately absent: **Dr. Mustafa Khattab's *The Clear Quran***, the
+translation most often asked for. Furqaan Institute of Quranic Education holds
+an exclusive licence to publish and distribute it; quran.com has withdrawn it
+from their public API and the Quranic Universal Library carries it as the only
+resource on that site with its download removed. Copies are easy to find and
+none of them is a licence. **Action:** if it is wanted, ask Furqaan Institute
+(<https://theclearquran.org/copyright-information>) — they do grant free app
+licences, and Quran for Android carries an explicit one. Until then, Talal
+Itani's translation of the same name is offered instead.
+
+## Quran division metadata
+
+Juz, hizb and rub' al-hizb boundaries in `data/divisions.json` are derived
+from quran.com API v4 verse metadata and cross-checked against the printed
+Madani mushaf and against `data/mushaf-layout.json`. Tanzil publishes the same
+tables under **CC BY 3.0** and was used to verify them.
+
 ## Software
 
 Runtime dependencies are React, React-DOM and `idb`, all MIT. Build

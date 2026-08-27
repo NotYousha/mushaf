@@ -1,0 +1,62 @@
+[
+ {
+  "id": "en-sahih",
+  "lang": "en",
+  "name": "Saheeh International",
+  "translator": "Saheeh International",
+  "source": "Tanzil Project — tanzil.net/trans/en.sahih",
+  "tafsir": false,
+  "default": true,
+  "bytes": 878286
+ },
+ {
+  "id": "en-itani",
+  "lang": "en",
+  "name": "Clear Quran",
+  "translator": "Talal Itani",
+  "source": "Tanzil Project — tanzil.net/trans/en.itani",
+  "tafsir": false,
+  "default": false,
+  "bytes": 765058
+ },
+ {
+  "id": "ur-jalandhry",
+  "lang": "ur",
+  "name": "تفسیر جالندھری",
+  "translator": "Fatah Muhammad Jalandhari",
+  "source": "Tanzil Project — tanzil.net/trans/ur.jalandhry",
+  "tafsir": false,
+  "default": true,
+  "bytes": 821176
+ },
+ {
+  "id": "hi-hindi",
+  "lang": "hi",
+  "name": "हिन्दी अनुवाद",
+  "translator": "Suhel Farooq Khan & Saifur Rahman Nadwi",
+  "source": "Tanzil Project — tanzil.net/trans/hi.hindi",
+  "tafsir": false,
+  "default": true,
+  "bytes": 958454
+ },
+ {
+  "id": "fr-hamidullah",
+  "lang": "fr",
+  "name": "Le Noble Coran",
+  "translator": "Muhammad Hamidullah",
+  "source": "Tanzil Project — tanzil.net/trans/fr.hamidullah",
+  "tafsir": false,
+  "default": true,
+  "bytes": 899595
+ },
+ {
+  "id": "ar-muyassar",
+  "lang": "ar",
+  "name": "التفسير الميسر",
+  "translator": "مجمع الملك فهد لطباعة المصحف الشريف",
+  "source": "Tanzil Project — tanzil.net/trans/ar.muyassar",
+  "tafsir": true,
+  "default": true,
+  "bytes": 1393660
+ }
+]

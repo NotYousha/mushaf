@@ -134,7 +134,9 @@ export const en = {
   dueToday: 'Due today',
   nothingDue: 'Nothing is due right now.',
   noPagesYet: 'No pages recorded yet. Open the mushaf and review one to begin.',
-  pageN: (n: number) => `Page ${n}`,
+  /** Takes a string as well as a number: callers that have already put
+   *  the number into the reader's own numerals pass the string. */
+  pageN: (n: number | string) => `Page ${n}`,
   /**
    * The juz, and what an IndoPak mushaf calls the same thirtieth.
    *
@@ -156,6 +158,11 @@ export const en = {
   ayahCount: (n: string) => `${n} verses`,
   /** Under a juz heading no surah opens: the one running through it. */
   continues: 'continues here',
+  mushafTab: 'Mushaf',
+  translationTab: 'Translation',
+  translation: 'Translation',
+  tafsirLabel: 'Tafsir',
+  playFromHere: 'Play from this verse',
   review: 'Review',
   markClean: 'Clean',
   heatMap: 'Mushaf map',

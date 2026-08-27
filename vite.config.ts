@@ -171,6 +171,25 @@ export default defineConfig({
             },
           },
           {
+            /**
+             * The translations.
+             *
+             * Six files, five and a half megabytes between them, and a reader
+             * needs one. Precaching all of them would put the Urdu, Hindi,
+             * French and the Arabic tafsir on the phone of someone who reads
+             * English — so they are fetched on first use and kept, which
+             * makes the one you actually read work offline at the cost of the
+             * one you actually read.
+             */
+            urlPattern: /\/trans\/[\w-]+\.json$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'translations',
+              expiration: { maxEntries: 12, maxAgeSeconds: 60 * 60 * 24 * 365 },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
             // Printed pages of the Ad-Duri mushaf. All 604 weigh 79 MB, far
             // too much to precache, but a page the reader has actually opened
             // should still be there on a train with no signal. Kept to a few

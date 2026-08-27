@@ -29,6 +29,10 @@ const EXEMPT = new Set([
   '.mushaf-page',
   '.mushaf-line',
   '.mushaf-basmala',
+  // The ayah in the translation view. Scripture again, and sized against the
+  // same printed page — it is the mushaf's own text lifted out of the page
+  // and set as a document, not an interface string that happens to be large.
+  '.tayah-ar',
   // The fork drill, which sets the Quran in its own measure.
   '.fork-text',
   '.fork-cue',

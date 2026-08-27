@@ -2053,6 +2053,197 @@ body {
   }
 }
 
+/* ============ the translation view ============ */
+
+/*
+ * Not a mushaf page.
+ *
+ * The page is a facsimile and everything about it — the frame, the fifteen
+ * lines, the justification — exists to imitate print. This is a document:
+ * ayah, meaning, ayah. Sharing the page's styling would make it a bad
+ * facsimile instead of a good document.
+ */
+.tview {
+  padding: 0.5rem 0 2rem;
+}
+
+/* Where you are. Sticky, because the page, the juz and the hizb all change
+   as you read and the answer is only useful while you are reading. */
+.tview-where {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: 0.6rem 0.9rem;
+  margin-bottom: 0.75rem;
+  border-radius: var(--radius-card);
+  background: var(--card-2);
+  box-shadow: 0 1px 8px rgb(var(--shadow-rgb) / 0.06);
+}
+
+.tview-surah {
+  font-family: var(--font-name);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--ink-strong);
+}
+
+.tview-place {
+  font-size: var(--text-xs);
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.tview-pick {
+  position: relative;
+  margin-bottom: 0.75rem;
+}
+
+.tview-pick-list {
+  position: absolute;
+  inset-inline-start: 0;
+  top: calc(100% + 0.35rem);
+  z-index: 6;
+  min-width: 16rem;
+  max-width: min(24rem, 90vw);
+  list-style: none;
+  margin: 0;
+  padding: 0.3rem;
+  border-radius: var(--radius-card);
+  background: var(--card);
+  box-shadow: var(--shadow-md);
+}
+
+.tview-pick-list button {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  width: 100%;
+  text-align: start;
+  padding: 0.5rem 0.7rem;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  font: inherit;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.tview-pick-list button.on {
+  background: var(--tile);
+}
+
+.tview-pick-name {
+  font-size: var(--text-sm);
+  color: var(--ink-strong);
+}
+
+.tview-pick-by {
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+.tview-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.tayah {
+  padding: 0.9rem 0.25rem;
+  border-radius: 10px;
+  transition: background-color 200ms ease;
+}
+
+.tayah + .tayah {
+  border-top: 1px solid var(--accent-line);
+}
+
+/*
+ * The ayah being recited.
+ *
+ * The whole verse, shaded — not one word. Verse boundaries are the finest
+ * timing most recitations have, and shading a verse is honest about that in a
+ * way that guessing at a word inside it would not be. Where word timings do
+ * exist, the mushaf page is the surface that uses them.
+ */
+.tayah.is-now {
+  background: var(--tile);
+}
+
+.tayah-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+/* The verse number, boxed, the way a reference is written rather than the
+   way a mushaf sets a rosette. This is a document; 4:173 is a citation. */
+.tayah-key {
+  padding: 0.15rem 0.5rem;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  font-size: var(--text-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+.tayah-play {
+  border: 0;
+  background: none;
+  padding: 0.15rem 0.35rem;
+  color: var(--gold);
+  cursor: pointer;
+  font-size: var(--text-sm);
+  line-height: 1;
+}
+
+.tayah-ar {
+  font-family: var(--font-quran);
+  /* Scripture, sized against the page it comes from rather than against the
+     interface scale — the same exemption the mushaf's own lines carry. */
+  font-size: 1.6rem;
+  line-height: 2.3;
+  text-align: justify;
+  color: var(--ink-strong);
+  margin: 0 0 0.6rem;
+}
+
+.tayah-tr {
+  font-size: var(--text-sm);
+  line-height: 1.65;
+  color: var(--ink);
+  margin: 0;
+}
+
+/*
+ * Urdu is nastaliq, whatever the interface is set to.
+ *
+ * Named here rather than taken from --font-ui, because that token is only
+ * nastaliq while the *interface* is Urdu — and someone reading English can
+ * perfectly well choose the Urdu translation. Nastaliq slopes down from the
+ * top right and needs the leading, or the descenders of one line sit on the
+ * next.
+ */
+.tayah-tr[lang='ur'] {
+  font-family: 'Noto Nastaliq Urdu', var(--font-ar);
+  line-height: 2.4;
+}
+
+.tayah-tr[lang='ar'] {
+  font-family: var(--font-ar);
+  line-height: 2;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tayah {
+    transition: none;
+  }
+}
+
 /* ============ the mushaf index ============ */
 
 /*
@@ -4367,4 +4558,26 @@ body {
 
 .dl-x:disabled {
   opacity: 0.4;
+}
+
+/*
+ * The reading switch: mushaf or translation, and the index.
+ *
+ * Above the text rather than in the app header, because it acts on the text
+ * and the header is shared with five other screens.
+ */
+.reading-switch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.reading-switch .seg {
+  flex: 1;
+}
+
+.reading-switch .seg button {
+  flex: 1;
 }
