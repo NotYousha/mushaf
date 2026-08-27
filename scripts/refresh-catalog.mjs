@@ -733,9 +733,15 @@ async function publishedSurahs(src) {
  *
  * Al-Juhany's files sit on a host that drops connections under any real
  * concurrency — a first pass over 114 surahs saw a third of them come back
- * 522 from the proxy. Those are not missing recordings and must not be
+ * 522 from the proxy. Those were not missing recordings and must not be
  * treated as holes in the catalog, so a few patient retries stand between a
  * flaky host and a wrong conclusion.
+ *
+ * Retries are not a cure for everything, though. Thirty-one of his surahs now
+ * 522 on every attempt rather than intermittently -- see docs/roadmap.md -- and
+ * for those the patience here is spent for nothing. If a run seems to hang,
+ * that is what it is doing: nine attempts with exponential backoff against a
+ * host that will not answer.
  */
 async function fetchWithRetry(url, attempts = Number(process.env.REFRESH_ATTEMPTS ?? 4)) {
   let last = null

@@ -199,5 +199,21 @@ Its files sit on `top4top.io`, which sends no CORS header and is unreachable
 from some networks entirely. It also drops connections under any concurrency:
 a first pass over 114 surahs saw a third come back 522 from the proxy, which
 is why the catalog refresh retries and can be told to run serially
-(`REFRESH_CONCURRENCY=1 REFRESH_ATTEMPTS=7`). Those 522s are a flaky host,
-not missing recordings, and must never be mistaken for holes in the catalog.
+(`REFRESH_CONCURRENCY=1 REFRESH_ATTEMPTS=7`). Those 522s were a flaky host,
+not missing recordings, and must not be mistaken for holes in the catalog.
+
+**That is no longer the whole story (2026-08-27).** Thirty-one of the 114 now
+522 *deterministically*. Probed three times over a minute, surahs 1, 6, 9, 10
+and 13 returned 522 on every attempt while surah 2 returned 206 each time — so
+these are not the host flapping, and no number of retries will collect them.
+The list endpoint still reports 114 published, meaning the pages exist and the
+audio behind thirty-one of them does not.
+
+There is nowhere else to get it. mp3quran lists exactly one Al-Juhany mushaf
+and it is Hafs from Asim — the one this app already carries as `juhany-hafs`.
+No other host publishes his Ad-Duri. So the entry stands at 83, and the
+remaining thirty-one are blocked on `top4top.io`, not on this app.
+
+Five *other* reciters do have a complete Ad-Duri from Abu Amr on mp3quran —
+Al-Husary among them — but that is a different mushaf by a different man, and
+substituting it would be passing one reciter's recitation off as another's.
