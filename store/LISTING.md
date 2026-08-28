@@ -246,6 +246,34 @@ one stops a rollout at the last step.
 
 Category: **Reference, News, or Educational**. Expected outcome: Everyone / 3+.
 
+### "Content that isn't part of the initial app download" — Yes, and not narrowly
+
+IARC's examples are songs in Spotify and articles in the New York Times, which
+invites the reading that this is about a catalogue of third-party media and
+that a fixed scripture app is outside it. That reading does not survive looking
+at the bundle.
+
+`app-release.aab` is 468 files and 1.1 MB: `classes.dex`, the splash images,
+the launcher icons, and an 873-byte copy of the web manifest. **There is no
+Quran text in it.** No translations, no fonts, no mushaf layout, no page
+images, no audio. `data/quran-text.json`, the six Tanzil translations and every
+recitation are fetched over the network at runtime, because this is a Trusted
+Web Activity — the initial download is a shell whose only job is to open a URL.
+So the whole app is content that is not part of the initial download, before
+the audio question is even reached.
+
+The reason not to answer No is not caution, it is that No contradicts the store
+listing two fields away. The full description says the recitations come "mostly
+straight from the Internet Archive", and its LISTEN OFFLINE section is about
+downloading audio — which only makes sense if the audio was not already there.
+A rating obtained on a false questionnaire answer can be invalidated and the
+app removed; that is a far worse outcome than a follow-up question.
+
+Expect follow-ups on the nature of that content. All of them are already
+answered above: no user-generated content, no user-to-user communication, no
+purchasing, no location. Expected outcome is unchanged — Everyone / 3+, perhaps
+with a standard note that online content is not rated by IARC.
+
 | Question | Answer |
 | --- | --- |
 | Violence, blood, sexual content, profanity, drugs, gambling | None |
@@ -255,6 +283,7 @@ Category: **Reference, News, or Educational**. Expected outcome: Everyone / 3+.
 | Allows purchase of digital goods | No |
 | Contains ads | **No** |
 | Links to external websites | **Yes** — Settings links to the Wikimedia Commons page and the Creative Commons deed for the photograph used on the home screen, and they open in a browser |
+| Content not in the initial download, reachable from the app | **Yes** — see below |
 | Targets children / designed for families | **No** — declare it is not, which keeps the Families policy out of scope |
 | News app | No |
 
