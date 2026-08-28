@@ -85,115 +85,63 @@ Arabic (72):
 English:
 
 ```
-Al-Mau'iza is a Quran listening app built around complete murattal mushafs and
-reading along with them.
+Al-Mau'iza is a Quran listening app built around complete murattal mushafs and reading along with them.
 
 RECITERS
-16 complete mushafs, and the Taraweeh and Tahajjud archives of the two
-Holy Mosques going back to 1414 AH. Among them: Yasser Al-Dosari, Abdurrahman
-As-Sudais, Maher Al-Muaiqly, Bandar Baleela, Muhammad Al-Luhaidan, Mishary
-Rashid Al-Afasy, Badr Al-Turki, Abdullah Al-Bu'ayjan and Muhammad Burhaji,
-alongside a mushaf in the riwayah of Ad-Duri from Abu Amr al-Basri.
+16 complete mushafs, and the Taraweeh and Tahajjud archives of the two Holy Mosques going back to 1414 AH. Among them: Yasser Al-Dosari, Abdurrahman As-Sudais, Maher Al-Muaiqly, Bandar Baleela, Muhammad Al-Luhaidan, Mishary Rashid Al-Afasy, Badr Al-Turki, Abdullah Al-Bu'ayjan and Muhammad Burhaji, alongside a mushaf in the riwayah of Ad-Duri from Abu Amr al-Basri.
 
-Every surah is checked before it is listed. A file whose length disagrees with
-the text it claims to hold is not shown, because a recitation playing under the
-wrong surah name is worse than a gap.
+Every surah is checked before it is listed. A file whose length disagrees with the text it claims to hold is not shown, because a recitation playing under the wrong surah name is worse than a gap.
 
 LISTEN OFFLINE
-Download a single surah, a selection, or a whole mushaf, and it plays with no
-signal. Downloads are stored on your own device — nothing is uploaded, and
-there is no account. A Downloads screen shows what is saved, how much room it
-takes, and lets you remove one surah, several, or an entire reciter.
+Download a single surah, a selection, or a whole mushaf, and it plays with no signal. Downloads are stored on your own device — nothing is uploaded, and there is no account. A Downloads screen shows what is saved, how much room it takes, and lets you remove one surah, several, or an entire reciter.
 
-Downloads resume where they stopped, and are verified against the source so a
-resumed file can never splice two different recordings together.
+Downloads resume where they stopped, and are verified against the source so a resumed file can never splice two different recordings together.
 
 THE PRINTED PAGE
-Follow the recitation on the mushaf page as it is printed, with the word being
-recited marked where word timings exist. For a reciter reading a riwayah other
-than Hafs, the page is hidden rather than shown disagreeing with the voice.
+Follow the recitation on the mushaf page as it is printed, with the word being recited marked where word timings exist. For a reciter reading a riwayah other than Hafs, the page is hidden rather than shown disagreeing with the voice.
 
 MEMORISATION
-Keep a wird, mark the places you stumble, and see which pages need review.
-Nothing is assessed or scored: the app cannot hear you and does not pretend to.
+Keep a wird, mark the places you stumble, and see which pages need review. Nothing is assessed or scored: the app cannot hear you and does not pretend to.
 
 TARAWEEH BY THE NIGHT
-For the years the Haram and the Prophet's Mosque publish changeover times, the
-app knows which imam is reciting at any moment and can step to the next voice —
-measured against the audio itself, not guessed from a chapter list.
+For the years the Haram and the Prophet's Mosque publish changeover times, the app knows which imam is reciting at any moment and can step to the next voice — measured against the audio itself, not guessed from a chapter list.
 
 FIVE LANGUAGES
-Arabic, English, Urdu, Hindi and French, each with its own script and numerals,
-and full right-to-left layout.
+Arabic, English, Urdu, Hindi and French, each with its own script and numerals, and full right-to-left layout.
 
-NO ACCOUNTS, NO ADS, NO TRACKING
-No sign-in, no advertising, no analytics, and no third-party SDKs of any kind.
-The only requests the app makes are for the recitation audio itself, mostly
-straight from the Internet Archive — and that is enforced by a
-Content-Security-Policy rather than merely promised.
+NO ACCOUNTS, NO ADS, NO TRACKING No sign-in, no advertising, no analytics, and no third-party SDKs of any kind. The only requests the app makes are for the recitation audio itself, mostly straight from the Internet Archive — and that is enforced by a Content-Security-Policy rather than merely promised.
 
-Recitations are produced by the Saudi Center for Quranic Recitations, the King
-Fahd Glorious Qur'an Printing Complex, and the Presidency of the Two Holy
-Mosques, and are credited in the app on each reciter's entry.
+Recitations are produced by the Saudi Center for Quranic Recitations, the King Fahd Glorious Qur'an Printing Complex, and the Presidency of the Two Holy Mosques, and are credited in the app on each reciter's entry.
 
-Note on storage: downloaded recitations are held by the browser engine for this
-app. They do not appear under the app in Android's Settings, and clearing this
-app's site data removes them.
+Note on storage: downloaded recitations are held by the browser engine for this app. They do not appear under the app in Android's Settings, and clearing this app's site data removes them.
 ```
 
 Arabic:
 
 ```
-الموعظة تطبيق للاستماع إلى القرآن الكريم، مبنيّ على المصاحف المرتّلة الكاملة
-وعلى متابعة التلاوة في المصحف.
+الموعظة تطبيق للاستماع إلى القرآن الكريم، مبنيّ على المصاحف المرتّلة الكاملة وعلى متابعة التلاوة في المصحف.
 
-القُرَّاء
-ستة عشر مصحفًا مرتّلًا كاملًا، مع أرشيف التراويح والتهجّد من الحرمين الشريفين
-منذ عام ١٤١٤هـ. من بينهم: ياسر الدوسري، وعبد الرحمن السديس، وماهر المعيقلي،
-وبندر بليلة، ومحمد اللحيدان، ومشاري راشد العفاسي، وبدر التركي، وعبد الله
-البعيجان، ومحمد برهجي، إضافةً إلى مصحف برواية الدوري عن أبي عمرو البصري.
+القُرَّاء ستة عشر مصحفًا مرتّلًا كاملًا، مع أرشيف التراويح والتهجّد من الحرمين الشريفين منذ عام ١٤١٤هـ. من بينهم: ياسر الدوسري، وعبد الرحمن السديس، وماهر المعيقلي، وبندر بليلة، ومحمد اللحيدان، ومشاري راشد العفاسي، وبدر التركي، وعبد الله البعيجان، ومحمد برهجي، إضافةً إلى مصحف برواية الدوري عن أبي عمرو البصري.
 
-كل سورة تُفحَص قبل إدراجها. والملف الذي لا تتفق مدّته مع النص الذي يُنسب إليه
-لا يُعرض، لأن تلاوةً تعمل تحت اسم سورة أخرى أسوأ من غيابها.
+كل سورة تُفحَص قبل إدراجها. والملف الذي لا تتفق مدّته مع النص الذي يُنسب إليه لا يُعرض، لأن تلاوةً تعمل تحت اسم سورة أخرى أسوأ من غيابها.
 
-الاستماع دون اتصال
-نزّل سورة واحدة، أو مجموعة منها، أو مصحفًا كاملًا، ثم استمع إليه بلا شبكة.
-التنزيلات محفوظة على جهازك وحده — لا يُرفع منها شيء، ولا حساب في التطبيق أصلًا.
-وشاشة "التنزيلات" تُظهر ما هو محفوظ، وكم يشغل من مساحة، وتتيح حذف سورة واحدة،
-أو عدة سور، أو قارئ بأكمله.
+الاستماع دون اتصال نزّل سورة واحدة، أو مجموعة منها، أو مصحفًا كاملًا، ثم استمع إليه بلا شبكة. التنزيلات محفوظة على جهازك وحده — لا يُرفع منها شيء، ولا حساب في التطبيق أصلًا. وشاشة "التنزيلات" تُظهر ما هو محفوظ، وكم يشغل من مساحة، وتتيح حذف سورة واحدة، أو عدة سور، أو قارئ بأكمله.
 
-والتنزيل يستأنف من حيث توقف، ويُطابَق بالمصدر، فلا يمكن لملف مستأنَف أن يجمع
-بين تسجيلين مختلفين.
+والتنزيل يستأنف من حيث توقف، ويُطابَق بالمصدر، فلا يمكن لملف مستأنَف أن يجمع بين تسجيلين مختلفين.
 
-الصفحة المطبوعة
-تابع التلاوة على صفحة المصحف كما طُبعت، مع تعليم الكلمة المتلوّة حيث توجد
-توقيتات للكلمات. وللقارئ الذي يقرأ برواية غير حفص تُخفى الصفحة بدلًا من
-عرضها مخالِفةً للصوت.
+الصفحة المطبوعة تابع التلاوة على صفحة المصحف كما طُبعت، مع تعليم الكلمة المتلوّة حيث توجد توقيتات للكلمات. وللقارئ الذي يقرأ برواية غير حفص تُخفى الصفحة بدلًا من عرضها مخالِفةً للصوت.
 
-الحفظ
-اجعل لك وِردًا، وعلِّم المواضع التي تتعثّر فيها، واعرف الصفحات التي تحتاج
-مراجعة. ولا شيء هنا يُقيَّم أو يُعطى درجة: التطبيق لا يسمعك ولا يدّعي ذلك.
+الحفظ اجعل لك وِردًا، وعلِّم المواضع التي تتعثّر فيها، واعرف الصفحات التي تحتاج مراجعة. ولا شيء هنا يُقيَّم أو يُعطى درجة: التطبيق لا يسمعك ولا يدّعي ذلك.
 
-التراويح ليلةً ليلة
-في السنوات التي يُنشَر فيها وقت تبادل الأئمة في المسجد الحرام والمسجد النبوي،
-يعرف التطبيق مَن يتلو في كل لحظة، ويستطيع الانتقال إلى الصوت التالي — مقيسًا
-على التسجيل نفسه، لا مُستنتَجًا من قائمة.
+التراويح ليلةً ليلة في السنوات التي يُنشَر فيها وقت تبادل الأئمة في المسجد الحرام والمسجد النبوي، يعرف التطبيق مَن يتلو في كل لحظة، ويستطيع الانتقال إلى الصوت التالي — مقيسًا على التسجيل نفسه، لا مُستنتَجًا من قائمة.
 
-خمس لغات
-العربية والإنجليزية والأردية والهندية والفرنسية، لكلٍّ رسمها وأرقامها، مع
-تخطيط كامل من اليمين إلى اليسار.
+خمس لغات العربية والإنجليزية والأردية والهندية والفرنسية، لكلٍّ رسمها وأرقامها، مع تخطيط كامل من اليمين إلى اليسار.
 
-بلا حسابات ولا إعلانات ولا تتبُّع
-لا تسجيل دخول، ولا إعلانات، ولا تحليلات، ولا أي حزمة تطوير خارجية. والطلبات
-الوحيدة التي يرسلها التطبيق هي طلب التلاوة نفسها، من أرشيف الإنترنت في
-الغالب — وهذا مفروضٌ بسياسة أمان المحتوى (CSP) لا موعودٌ به فحسب.
+بلا حسابات ولا إعلانات ولا تتبُّع لا تسجيل دخول، ولا إعلانات، ولا تحليلات، ولا أي حزمة تطوير خارجية. والطلبات الوحيدة التي يرسلها التطبيق هي طلب التلاوة نفسها، من أرشيف الإنترنت في الغالب — وهذا مفروضٌ بسياسة أمان المحتوى (CSP) لا موعودٌ به فحسب.
 
-التلاوات من إنتاج المركز السعودي للتلاوات القرآنية، ومجمع الملك فهد لطباعة
-المصحف الشريف، والرئاسة العامة لشؤون المسجد الحرام والمسجد النبوي، وهي منسوبة
-إليها داخل التطبيق عند كل قارئ.
+التلاوات من إنتاج المركز السعودي للتلاوات القرآنية، ومجمع الملك فهد لطباعة المصحف الشريف، والرئاسة العامة لشؤون المسجد الحرام والمسجد النبوي، وهي منسوبة إليها داخل التطبيق عند كل قارئ.
 
-ملاحظة عن التخزين: التلاوات المنزَّلة يحفظها محرك المتصفح لهذا التطبيق. ولا
-تظهر تحت التطبيق في إعدادات أندرويد، ومسح بيانات موقع هذا التطبيق يحذفها.
+ملاحظة عن التخزين: التلاوات المنزَّلة يحفظها محرك المتصفح لهذا التطبيق. ولا تظهر تحت التطبيق في إعدادات أندرويد، ومسح بيانات موقع هذا التطبيق يحذفها.
 ```
 
 Written against the same source as the English above, not machine-translated
