@@ -41,11 +41,23 @@ export function holdUpdatesWhile(fn: () => boolean) {
   busy = fn
 }
 
-/** Reload at the first moment nothing is playing or downloading. */
+/**
+ * The waiting worker, and the call that lets it take the page.
+ *
+ * Assigned by `keepFresh`. `registerSW` returns a function that posts
+ * SKIP_WAITING to the worker parked in `waiting` and reloads once it has taken
+ * control; a bare `window.location.reload()` would only re-serve the build
+ * that is already installed, which is the failure this whole module exists to
+ * prevent.
+ */
+let takeUpdate: ((reload?: boolean) => Promise<void>) | null = null
+
+/** Hand the page over at the first moment nothing is playing or downloading. */
 function reloadWhenIdle() {
   const go = () => {
     if (busy?.()) return false
-    window.location.reload()
+    if (takeUpdate) void takeUpdate(true)
+    else window.location.reload()
     return true
   }
   if (go()) return
@@ -86,9 +98,8 @@ export function keepFresh() {
   const update = registerSW({
     immediate: true,
     onNeedRefresh() {
-      // autoUpdate already claims the page; reloading is what makes the new
-      // assets actually be the ones running — but not in the middle of a
-      // recitation. See holdUpdatesWhile.
+      // A new build is installed and waiting. Let it have the page at the
+      // first moment that costs nobody a recitation. See holdUpdatesWhile.
       reloadWhenIdle()
     },
     onRegisteredSW(_url, registration) {
@@ -103,6 +114,7 @@ export function keepFresh() {
     },
   })
 
+  takeUpdate = update
   return update
 }
 

@@ -73,13 +73,34 @@ export function TranslationView({
   const [pickerOpen, setPickerOpen] = useState(false)
   const scroller = useRef<HTMLDivElement | null>(null)
 
+  /**
+   * How many times the reader has asked for the layout.
+   *
+   * The layout is a 2.6 MB lazy chunk and is deliberately not precached, so
+   * the first time this screen opens it needs a connection. When it does not
+   * have one the import rejects, and the screen used to sit on "Loading…"
+   * with nothing behind it — no error, no retry, and no way to ask again.
+   * Bumping this re-runs the effect, and `loadLayout` no longer remembers the
+   * failure, so a reader who has since found signal can simply tap.
+   */
+  const [attempt, setAttempt] = useState(0)
+  const [layoutFailed, setLayoutFailed] = useState(false)
+
   useEffect(() => {
     let alive = true
-    void loadLayout().then((l) => alive && setLayout(l))
+    setLayoutFailed(false)
+    loadLayout().then(
+      (l) => {
+        if (alive) setLayout(l)
+      },
+      () => {
+        if (alive) setLayoutFailed(true)
+      },
+    )
     return () => {
       alive = false
     }
-  }, [])
+  }, [attempt])
 
   useEffect(() => {
     let alive = true
@@ -158,6 +179,17 @@ export function TranslationView({
   }, [surah, active])
 
   if (surah === null) return <p className="empty">{t.pickSurahForText}</p>
+  if (!layout && layoutFailed) {
+    return (
+      <p className="empty">
+        {t.textNeedsNet}
+        <br />
+        <button type="button" className="btn" onClick={() => setAttempt((n) => n + 1)}>
+          {t.retry}
+        </button>
+      </p>
+    )
+  }
   if (!layout) return <p className="empty">{t.loading}</p>
 
   const meta = NAMES.get(surah)

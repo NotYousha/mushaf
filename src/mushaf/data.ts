@@ -54,10 +54,31 @@ const timingCache = new Map<string, Promise<Timings | null>>()
  *  without forcing the download themselves. */
 const loadedTimings = new Map<string, Timings>()
 
+/**
+ * Forget a promise that rejected, so asking again can succeed.
+ *
+ * These caches hold the promise, not the value — which is right, because two
+ * callers arriving at once should share one 2.6 MB download. But a rejection
+ * is cached just as firmly as a result, and the chunk is excluded from the
+ * precache: open the app offline, touch the Translation tab, and the import
+ * fails once and then fails identically for the rest of the session. Coming
+ * back online did not help; only killing the app did, and inside a TWA there
+ * is no reload to pull for.
+ */
+function forgetOnFailure<T>(cache: Map<string, Promise<T>>, key: string, p: Promise<T>) {
+  const guarded = p.catch((e) => {
+    cache.delete(key)
+    throw e
+  })
+  cache.set(key, guarded)
+  return guarded
+}
+
 export const loadLayout = (which = 'madani') => {
   const key = which in LAYOUTS ? which : 'madani'
-  if (!layoutCache.has(key)) layoutCache.set(key, LAYOUTS[key]())
-  return layoutCache.get(key)!
+  const hit = layoutCache.get(key)
+  if (hit) return hit
+  return forgetOnFailure(layoutCache, key, LAYOUTS[key]())
 }
 
 /**
@@ -174,15 +195,23 @@ export const loadTimings = (reciterId: string) => {
      * would consult the file, find no 'ayah', and hand out word positions the
      * registry had just decided were not good enough to show.
      */
-    timingCache.set(
-      reciterId,
-      entry
-        ? entry.load().then((t) => ({ ...t, granularity: entry.granularity }))
-        : Promise.resolve(null),
+    if (entry) {
+      forgetOnFailure(
+        timingCache,
+        reciterId,
+        entry.load().then((t) => ({ ...t, granularity: entry.granularity })),
+      )
+    } else {
+      timingCache.set(reciterId, Promise.resolve(null))
+    }
+    void timingCache.get(reciterId)!.then(
+      (t) => {
+        if (t) loadedTimings.set(reciterId, t)
+      },
+      () => {
+        /* handled by the caller; this listener exists only to fill the map */
+      },
     )
-    void timingCache.get(reciterId)!.then((t) => {
-      if (t) loadedTimings.set(reciterId, t)
-    })
   }
   return timingCache.get(reciterId)!
 }

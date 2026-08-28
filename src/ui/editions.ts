@@ -37,6 +37,7 @@ export type EditionChoice = {
   name: string
   nameAr: string
   description: string
+  descriptionAr: string
   /** What this edition can still do — see EditionKind. */
   kind: EditionKind
 }
@@ -46,6 +47,10 @@ const asChoice = (e: Edition): EditionChoice => ({
   name: e.name,
   nameAr: e.nameAr,
   description: e.description,
+  // Dropped here, which is why the first-run mushaf step showed an English
+  // paragraph under an Arabic title on an Arabic phone — the Arabic was two
+  // files away in mushaf/editions.ts the whole time.
+  descriptionAr: e.descriptionAr,
   kind: e.kind,
 })
 
@@ -58,3 +63,7 @@ export const defaultEdition = (): string => DEFAULT_EDITION
 /** The reader's own script for the name, falling back to the Latin one. */
 export const editionName = (e: EditionChoice, lang: Lang): string =>
   inScript(lang, e.nameAr, e.name)
+
+/** The same rule for the line that says what the edition is. */
+export const editionNote = (e: EditionChoice, lang: Lang): string =>
+  inScript(lang, e.descriptionAr, e.description)

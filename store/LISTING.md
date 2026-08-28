@@ -115,9 +115,65 @@ app. They do not appear under the app in Android's Settings, and clearing this
 app's site data removes them.
 ```
 
-Arabic: to be translated from the above before release. The app is fully
-localised into Arabic already (`src/i18n/ar.ts`), so a listing that is not is
-the odd one out.
+Arabic:
+
+```
+"الموعظة" تطبيق للاستماع إلى القرآن الكريم، مبنيّ على المصاحف المرتّلة الكاملة
+وعلى متابعة التلاوة في المصحف.
+
+القُرَّاء
+ستة عشر مصحفًا مرتّلًا كاملًا، مع أرشيف التراويح والتهجّد من الحرمين الشريفين
+منذ عام ١٤١٤هـ. من بينهم: ياسر الدوسري، وعبد الرحمن السديس، وماهر المعيقلي،
+وبندر بليلة، ومحمد اللحيدان، ومشاري راشد العفاسي، وبدر التركي، وعبد الله
+البعيجان، ومحمد برهجي، إضافةً إلى مصحف برواية الدوري عن أبي عمرو البصري.
+
+كل سورة تُفحَص قبل إدراجها. والملف الذي لا تتفق مدّته مع النص الذي يُنسب إليه
+لا يُعرض، لأن تلاوةً تعمل تحت اسم سورة أخرى أسوأ من غيابها.
+
+الاستماع دون اتصال
+نزّل سورة واحدة، أو مجموعة منها، أو مصحفًا كاملًا، ثم استمع إليه بلا شبكة.
+التنزيلات محفوظة على جهازك وحده — لا يُرفع منها شيء، ولا حساب في التطبيق أصلًا.
+وشاشة "التنزيلات" تُظهر ما هو محفوظ، وكم يشغل من مساحة، وتتيح حذف سورة واحدة،
+أو عدة سور، أو قارئ بأكمله.
+
+والتنزيل يستأنف من حيث توقف، ويُطابَق بالمصدر، فلا يمكن لملف مستأنَف أن يجمع
+بين تسجيلين مختلفين.
+
+الصفحة المطبوعة
+تابع التلاوة على صفحة المصحف كما طُبعت، مع تعليم الكلمة المتلوّة حيث توجد
+توقيتات للكلمات. وللقارئ الذي يقرأ برواية غير حفص تُخفى الصفحة بدلًا من
+عرضها مخالِفةً للصوت.
+
+الحفظ
+اجعل لك وِردًا، وعلِّم المواضع التي تتعثّر فيها، واعرف الصفحات التي تحتاج
+مراجعة. ولا شيء هنا يُقيَّم أو يُعطى درجة: التطبيق لا يسمعك ولا يدّعي ذلك.
+
+التراويح ليلةً ليلة
+في السنوات التي يُنشَر فيها وقت تبادل الأئمة في المسجد الحرام والمسجد النبوي،
+يعرف التطبيق مَن يتلو في كل لحظة، ويستطيع الانتقال إلى الصوت التالي — مقيسًا
+على التسجيل نفسه، لا مُستنتَجًا من قائمة.
+
+خمس لغات
+العربية والإنجليزية والأردية والهندية والفرنسية، لكلٍّ رسمها وأرقامها، مع
+تخطيط كامل من اليمين إلى اليسار.
+
+بلا حسابات ولا إعلانات ولا تتبُّع
+لا تسجيل دخول، ولا إعلانات، ولا تحليلات، ولا أي حزمة تطوير خارجية. والطلبات
+الوحيدة التي يرسلها التطبيق هي طلب التلاوة نفسها، من أرشيف الإنترنت في
+الغالب — وهذا مفروضٌ بسياسة أمان المحتوى (CSP) لا موعودٌ به فحسب.
+
+التلاوات من إنتاج المركز السعودي للتلاوات القرآنية، ومجمع الملك فهد لطباعة
+المصحف الشريف، والرئاسة العامة لشؤون المسجد الحرام والمسجد النبوي، وهي منسوبة
+إليها داخل التطبيق عند كل قارئ.
+
+ملاحظة عن التخزين: التلاوات المنزَّلة يحفظها محرك المتصفح لهذا التطبيق. ولا
+تظهر تحت التطبيق في إعدادات أندرويد، ومسح بيانات موقع هذا التطبيق يحذفها.
+```
+
+Written against the same source as the English above, not machine-translated
+from it — the two say the same things in the same order, and the Arabic is the
+one the store will show by default, since `ar` is the listing's default
+language and the manifest's `lang`.
 
 ---
 
@@ -128,12 +184,18 @@ the odd one out.
 Justification, if review asks:
 
 - Every store is device-local: IndexedDB (`prefs`, `audio`, `downloads`,
-  `chunks`, `stumbles`, `pages`) and two localStorage keys for theme and
-  language. Nothing is transmitted.
+  `chunks`, `stumbles`, `pages`, `faces`), four localStorage keys — theme,
+  light/dark mode, language, and a rolling on-device log of the media commands
+  the lock screen sends, kept so a playback fault can be described — and one
+  sessionStorage flag for the splash screen. Nothing is transmitted.
+  (`faces` holds portraits added from the device. No screen in this build
+  opens the picker: `FacePanel` has no import site. The store is described
+  anyway, because it exists and a reviewer reading the schema will see it.)
 - There is no account system, no analytics, no advertising, no crash reporting
   and no third-party SDK. Runtime dependencies are React, React-DOM and `idb`.
 - The only external requests are for the recitation audio itself: mostly
-  `archive.org`, plus `download.quranicaudio.com` and `server8.mp3quran.net`,
+  `archive.org` — which redirects to storage nodes under `*.archive.org`, both
+  named in the CSP — plus `download.quranicaudio.com` and `server8.mp3quran.net`,
   and — for the few reciters whose links must be looked up or that expire —
   `mushaf-audio.mushaftarteel.workers.dev`, a proxy operated by the developer.
   Each carries the device IP as any HTTP request must, and nothing else: no
@@ -148,7 +210,35 @@ Tick, in the optional security section:
   the Downloads screen deletes audio, and uninstalling or clearing site data
   removes everything.
 
-**Permissions:** the app requests none. A TWA needs only `INTERNET`.
+**Permissions:** the app requests none at all — verified against the built
+artefact, not assumed. `aapt2 dump badging` on `app-release.apk` lists one
+`uses-permission`, and it is the framework's own
+`…DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`, which Android generates for every
+app targeting SDK 33+. **There is not even `INTERNET`**, because a Trusted Web
+Activity does no networking itself: it hands the URL to Chrome, and Chrome's
+process makes the requests. An earlier draft of this file said "a TWA needs
+only INTERNET"; that was wrong, and the true answer is the better one to give
+a reviewer.
+
+### The other declarations the Console will not let you skip
+
+Data Safety and the content rating are the two that get written about, but a
+release is blocked until all of these are answered too. Every answer here is
+derivable from the code; the only reason they are listed is that an unanswered
+one stops a rollout at the last step.
+
+| Declaration | Answer | Why |
+| --- | --- | --- |
+| Advertising ID | **No** | No ad SDK, no `advertisingId`, no ads. |
+| App access | **All functionality available without restrictions** | There is no login and nothing gated. Say so explicitly; leaving it blank makes a reviewer ask for test credentials that do not exist. |
+| Target audience and content | **13+ and up only** | Do **not** tick an under-13 band. Doing so pulls in the Families policy and the Designed-for-Families requirements, neither of which this app is built for — and nothing in the code needs them. |
+| Designed for families | **No** | Follows from the row above. |
+| Government app | **No** | |
+| Financial features | **None** | No payments, no billing, no crypto, no donation link. |
+| Health apps | **No** | |
+| Data encrypted in transit | **Yes** | HTTPS throughout; the CSP names no `http:` origin. |
+| Data deletion route provided | **Yes** | The Downloads screen deletes audio; clearing site data or uninstalling removes everything. |
+| News app | **No** | |
 
 ---
 
@@ -174,10 +264,41 @@ Category: **Reference, News, or Educational**. Expected outcome: Everyone / 3+.
 
 | Asset | Status |
 | --- | --- |
-| App icon 512×512, 32-bit PNG | `store/icon-512.png` |
-| Feature graphic 1024×500 | `store/feature-graphic.png` |
-| Phone screenshots (2–8, 16:9 or 9:16) | `store/screenshots/phone-*.png` |
+| App icon 512×512, 32-bit PNG | `store/icon-512.png` — 512×512 RGBA. Ready. |
+| Feature graphic 1024×500 | `store/feature-graphic.png` — 1024×500 RGB. Ready. |
+| Phone screenshots (2–8, 16:9 or 9:16) | `store/screenshots/phone-1..6-*.png` — six, 1080×1920, regenerated 2026-08-28 from the current build. |
 | 7" and 10" tablet screenshots | Only needed if you declare tablet support. Skip for the first release. |
+
+The screenshots were re-shot rather than reused. The old set showed a **Mushaf
+tab and a Hifz tab**, both of which this build holds back (`READING_TABS` is
+`false` in `src/App.tsx`), so the listing would have advertised two screens the
+app does not have — a misdescription, and the first thing a tester would have
+written in. `scripts/make-screenshots.py` now walks the three first-run
+questions before it starts shooting, and photographs the Translation tab in
+place of the Mushaf one.
+
+Re-shoot with the preview server running:
+
+```
+npm run build
+npx vite preview --port 5178 --strictPort    # one terminal
+python scripts/make-screenshots.py           # another
+```
+
+---
+
+## The Android build
+
+The keystore, the SDK and the AAB all exist. See `store/ANDROID.md` for how,
+and for the two things about the Windows toolchain that are not obvious.
+
+| | |
+| --- | --- |
+| Bundle to upload | `../mushaf-android/app/build/outputs/bundle/release/app-release.aab` |
+| APK for installing on your own phone | `../mushaf-android/app/build/outputs/apk/release/app-release.apk` |
+| Upload key SHA-256 | `38:39:CC:32:BA:49:8D:62:14:14:A4:65:83:69:3F:F5:DD:CF:79:B3:00:9F:E3:3D:9F:26:ED:EF:5B:CD:EA:A6` |
+| versionCode / versionName | `26082701` / `1.0.0` |
+| targetSdk / minSdk | 36 / 21 |
 
 ---
 
@@ -185,25 +306,38 @@ Category: **Reference, News, or Educational**. Expected outcome: Everyone / 3+.
 
 1. **Closed testing is mandatory for a new personal developer account** — 12
    testers who stay opted in for 14 continuous days, before you can apply for
-   production access. Start this early; it is the longest pole.
-2. **Digital Asset Links.** `public/.well-known/assetlinks.json` in the
-   `notyousha.github.io` repo must carry the **App Signing** SHA-256 from Play
-   Console → Setup → App integrity, not only the upload key's. Play re-signs
-   every build, so an assetlinks file with just the upload fingerprint produces
-   a TWA that shows a browser address bar in production. Put both in.
-3. **Back up the upload keystore** somewhere that is not this repository and
-   not only this machine. A lost upload key needs a Play-side reset.
-4. **Settle the two UNRESOLVED entries in NOTICES.md before production, not
-   before testing.** Internal and closed testing are private; production is
-   public distribution and a different question.
-   - The **604 printed page images** are the larger one, and as of 2026-08-27
-     their provenance is unprovable: the source PDF has been deleted and the
-     rendered pages carry no publisher mark. Either name the publisher, or
-     replace them with Ad-Duri as text plus the Douri font, or remove them and
-     let that reciter fall back to the page-hidden behaviour the app already
-     has. NOTICES.md has the detail and the replacement route.
-   - The **25 imam photographs** have no recorded source or licence, and they
-     also appear in the store screenshots, which is more exposed than in-app.
-5. **Confirm Cloudflare Workers log retention** (`worker/wrangler.toml` sets no
-   `[observability]` block, and recent compatibility dates default it on). The
-   privacy policy says what is logged; make it true.
+   production access. Start this early; it is the longest pole, and everything
+   else here can be done while it runs.
+2. **Back up the upload keystore.** `../mushaf-android/android.keystore` and
+   the password in `../mushaf-android/keystore.properties`. Neither is in any
+   repository, and neither should be — but "not in a repository" and "on one
+   laptop" are not the same thing. A lost upload key needs a Play-side reset.
+3. **Digital Asset Links.** `https://notyousha.github.io/.well-known/assetlinks.json`
+   returns 404 today, and until it does not, every tester sees a Chrome address
+   bar pinned over the mushaf. It cannot be finished before the first upload,
+   because the fingerprint that matters is the **App Signing** SHA-256 that
+   Play generates when it re-signs — Console → Setup → App integrity. Put both
+   that and the upload fingerprint above into
+   `store/assetlinks.template.json` and publish it. Do it on upload day.
+4. **The 604 printed page images.** No longer unprovable — see NOTICES.md. The
+   King Fahd Complex's own usage-rights page permits free use of its digital
+   masahif in "websites and computer software", inside the Kingdom and outside
+   it, and it publishes the Ad-Duri edition in exactly the format that grant
+   names, with an md5 and SHA1 to check it against. What remains is an
+   afternoon: download the Complex's file from a network that can reach
+   `qurancomplex.gov.sa`, verify the hash, re-render, and keep the source this
+   time. Do it before production, not before testing.
+5. **The imam photographs.** 32 portraits of identifiable living people with no
+   recorded source, photographer or licence, six of them on the home screen and
+   in the store screenshots, captioned with each man's name and title. The
+   decision on 2026-08-28 was to ship them as they are. NOTICES.md keeps the
+   record of what is and is not known about them, and `src/db/faces.ts` already
+   implements the fallback — a name and a blank ring — if that decision is ever
+   revisited.
+6. **Cloudflare Workers logging** — settled by disclosure rather than by
+   configuration. `worker/wrangler.toml` sets no `[observability]` block and
+   recent compatibility dates default it on, so `public/privacy.html` now says
+   plainly that the proxy's host keeps ordinary request logs including the
+   connecting IP, and for how long and to what end. The document and the
+   deployment agree; either could have been changed to make that so, and the
+   honest one was cheaper.

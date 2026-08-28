@@ -264,6 +264,12 @@ export const ar: Strings = {
   cancel: 'إلغاء',
   noResults: 'لا توجد نتائج',
   loading: 'جارٍ التحميل…',
+  textNeedsNet: 'يلزم جلب تخطيط الصفحة مرة واحدة. اتصل بالإنترنت ثم أعد المحاولة.',
+  retry: 'أعد المحاولة',
+  purgedSuspect: (n: number | string) =>
+    `أُزيلت ${n} سورة محفوظة قد تكون خاطئة — يمكنك حفظها من جديد.`,
+  lastAvailable: (name: string) => `آخر سورة متاحة: ${name}`,
+  sleepMins: (n: number | string) => `${n}د`,
   pickSurahForText: 'اختر سورة لعرض المصحف.',
   ayahTimingsOnly:
     'هذه التلاوة موقوتة آية بآية، فتُظلَّل الآية كاملة بدل الكلمة.',

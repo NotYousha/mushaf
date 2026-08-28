@@ -146,8 +146,24 @@ export async function downloadChunked(
     if (opts.signal?.aborted) throw new DOMException('aborted', 'AbortError')
 
     let res: Response | null = null
+    let buf: ArrayBuffer | null = null
     let lastError: unknown = null
+    /** The file changed underneath us; everything stored has to go. */
+    let restart = false
+    /** The server says there is nothing past `from`; we already have it all. */
+    let atEnd = false
 
+    /*
+     * The body is read inside the retry, not after it.
+     *
+     * `fetchRange` resolves as soon as the headers arrive, and on a phone the
+     * connection is far likelier to die during the two megabytes that follow
+     * than during the handshake. With the read outside, one walk into a tunnel
+     * failed the surah outright — and during a "download all" the queue then
+     * started the next job, which failed on the same dead connection, and so
+     * on: a hundred and fourteen surahs marked failed in about two seconds,
+     * with one error message to explain it and nothing left retrying.
+     */
     for (let attempt = 0; attempt < RETRIES; attempt++) {
       try {
         res = await fetchRange(
@@ -157,27 +173,56 @@ export async function downloadChunked(
           m?.etag ?? m?.lastModified ?? null,
           opts.signal,
         )
+
+        // The validator did not match: the file changed, so everything already
+        // stored is from a different recording and must go.
+        if (res.status === 200 && from > 0) {
+          void res.body?.cancel()
+          restart = true
+          break
+        }
+        /*
+         * 416 on a resume is an answer, not a fault.
+         *
+         * For the archive.org years there is no readable `Content-Range` — the
+         * host sends no `Access-Control-Expose-Headers` — so `total` stays at
+         * whatever byte count the shipped catalog claims. If that number is a
+         * little too large, the last pass asks for bytes beyond the end of the
+         * file and gets 416 forever, on every retry, leaving a stuck partial
+         * that can never finish. Reaching the end of the file is what we came
+         * for; take it as such.
+         */
+        if (res.status === 416 && from > 0) {
+          void res.body?.cancel()
+          atEnd = true
+          break
+        }
+        if (!res.ok && res.status !== 206) throw new Error(`HTTP ${res.status}`)
+
+        buf = await res.arrayBuffer()
         break
       } catch (e) {
         lastError = e
+        res = null
+        buf = null
         if (opts.signal?.aborted) throw e
         // A dropped connection is the normal case on a phone, not a failure.
         await sleep(1000 * 2 ** attempt + Math.random() * 250, opts.signal)
       }
     }
-    if (!res) throw lastError instanceof Error ? lastError : new Error('network')
 
-    // The validator did not match: the file changed, so everything already
-    // stored is from a different recording and must go.
-    if (res.status === 200 && from > 0) {
-      void res.body?.cancel()
+    if (restart) {
       await deleteDownload(key)
       m = undefined
       from = 0
       total = hinted
       continue
     }
-    if (!res.ok && res.status !== 206) throw new Error(`HTTP ${res.status}`)
+    if (atEnd) {
+      if (m) total = m.bytesWritten
+      break
+    }
+    if (!res || !buf) throw lastError instanceof Error ? lastError : new Error('network')
 
     const cr = res.headers.get('content-range')
     if (cr) {
@@ -185,7 +230,6 @@ export async function downloadChunked(
       if (parsed) total = parseInt(parsed[1], 10)
     }
 
-    const buf = await res.arrayBuffer()
     if (buf.byteLength === 0) break
 
     if (!m) {
@@ -227,18 +271,71 @@ export async function downloadChunked(
       total = buf.byteLength
       break
     }
+    /*
+     * A full range request answered with less than a full chunk is the end of
+     * the file. Without a readable `Content-Range` that is the only signal
+     * there is, and taking it matters in the other direction from the 416
+     * above: where the catalog's byte count is too *small*, the loop would
+     * otherwise stop early, `bytesWritten >= totalBytes` would pass, and a
+     * truncated recitation would be stored and served as a complete one.
+     */
+    if (!cr && buf.byteLength < chunkSize) {
+      total = m.bytesWritten
+      break
+    }
+    /*
+     * A full chunk landing exactly on the claimed end means the claim is a
+     * floor, not a length. Keep asking.
+     *
+     * This is the other half of the same problem. With no `Content-Range` the
+     * only length we have is `data/mosque-years.json`'s byte count, and when
+     * that count is too small the loop reached it, stopped, and passed its own
+     * completeness check — filing a recitation that stops early as a whole
+     * one. Extending by a chunk costs one extra request at the true end, where
+     * the 416 branch or the short read above ends it properly.
+     */
+    if (!cr && from >= total) total = from + chunkSize
   }
 
   if (!m) throw new Error('nothing downloaded')
+  /*
+   * Record what the file turned out to be, not what the catalog guessed.
+   *
+   * `total` is corrected above whenever the download discovers the real end —
+   * a 416, a short chunk, a server that ignored the range. The manifest still
+   * held the catalog's figure, so the check immediately below compared the
+   * bytes actually stored against a number already known to be wrong, and a
+   * complete download of an overstated file threw `incomplete download`
+   * forever, on every retry.
+   */
+  if (Number.isFinite(total) && total > 0 && m.totalBytes !== total) {
+    m = { ...m, totalBytes: total }
+    await putManifest(m)
+  }
   if (m.bytesWritten < m.totalBytes) {
     throw new Error(`incomplete download: ${m.bytesWritten} of ${m.totalBytes} bytes`)
   }
 
+  /*
+   * Assemble first, mark complete second.
+   *
+   * These used to run the other way round, and the write was not undone when
+   * the assembly then failed — so a surah whose chunks had been deleted
+   * underneath the download (cancel and delete race each other; the cancel
+   * aborts, but a commit already in flight can land after the delete) was left
+   * with a manifest saying `complete` and no bytes behind it. `listDownloaded`
+   * then reported it saved, "download all" skipped it forever, and `getAudio`
+   * returned nothing: permanently listed as downloaded, permanently silent
+   * offline, and with no way to ask for it again.
+   */
+  const blob = await assembleBlob(m)
+  if (!blob) {
+    await deleteDownload(key)
+    throw new Error('stored chunks are missing')
+  }
+
   m = { ...m, state: 'complete' }
   await putManifest(m)
-
-  const blob = await assembleBlob(m)
-  if (!blob) throw new Error('stored chunks are missing')
   return blob
 }
 

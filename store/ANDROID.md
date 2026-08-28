@@ -5,17 +5,26 @@ around the deployed site. The AAB is a couple of megabytes; the app itself is
 the site, so a fix deployed to Pages reaches everyone without a Play release.
 That is the main reason to prefer it here over a rewrite.
 
-Two things are deliberately not done for you below.
+**This has now been done.** What follows is the record of how, because two
+steps of it do not work the way Bubblewrap's own documentation says they do on
+Windows, and the next person to run it — including you, on a new laptop, after
+losing this one — should not have to rediscover that.
 
-**The signing key is your app's identity.** Whoever holds the upload keystore
-can publish updates, and losing it means asking Google to reset it. It should
-be created by you, with a password only you have, and backed up somewhere that
-is not this repository and not only this machine. So the keystore step is yours.
+The artefacts are outside this repository, in `../mushaf-android/`:
 
-**Bubblewrap's setup is interactive** — it offers to download its own JDK 17
-and Android SDK on first run, and prompts for the keystore password. It cannot
-be driven from a non-interactive shell, which is why these are commands to run
-rather than a script that was already run.
+| | |
+| --- | --- |
+| `app/build/outputs/bundle/release/app-release.aab` | upload this to Play |
+| `app/build/outputs/apk/release/app-release.apk` | install this on your own phone to test |
+| `android.keystore` | **the app's identity. Back it up.** |
+| `keystore.properties` | its password. Not in any repo; `.gitignore`d. |
+
+**The signing key is the app's identity.** Whoever holds the upload keystore
+can publish updates, and losing it means asking Google to reset it. It is a
+4096-bit RSA key valid to 2056, generated on 2026-08-28, with the SHA-256
+fingerprint recorded in `LISTING.md`. Back up both the keystore and its
+password somewhere that is not this machine — that is the one step nobody else
+can do for you.
 
 ---
 
@@ -33,49 +42,117 @@ If a field is missing, fix it in `vite.config.ts` and deploy first — Bubblewra
 bakes these into the Android project and re-reading them later means
 regenerating it.
 
-## 2. Generate the project and your keystore
+## 2. The toolchain, and the two places it does not work as documented
+
+Bubblewrap keeps its JDK and Android SDK under `~/.bubblewrap`, and its
+`config.json` names both. **Trap one: it does not want an Android SDK laid out
+the way Google ships one.** `AndroidSdkTools.validatePath` looks for
+`<sdkRoot>/bin` or `<sdkRoot>/tools`, and `checkBuildTools` looks for
+`<sdkRoot>/build-tools/<version>` — so it wants the command-line tools' own
+`bin/` and `lib/` sitting *at the SDK root*, beside `build-tools/`, not tucked
+under `cmdline-tools/latest/` where `sdkmanager` puts them. Get that wrong and
+the only thing it says is `The provided androidSdk isn't correct.`
+
+What worked:
 
 ```
-mkdir ../mushaf-android && cd ../mushaf-android
-npx @bubblewrap/cli init --manifest https://notyousha.github.io/mushaf/manifest.webmanifest
+# 1. command-line tools
+curl -L -o cmdline-tools.zip   https://dl.google.com/android/repository/commandlinetools-win-11076708_latest.zip
+unzip cmdline-tools.zip -d ~/.bubblewrap/android_sdk
+cd ~/.bubblewrap/android_sdk
+mkdir -p cmdline-tools/latest && mv cmdline-tools/{bin,lib,NOTICE.txt,source.properties} cmdline-tools/latest/
+
+# 2. packages. 36.1.0 is the version Bubblewrap's BUILD_TOOLS_VERSION names;
+#    android-36 matches the compileSdk it writes into build.gradle.
+yes | cmdline-tools/latest/bin/sdkmanager.bat --sdk_root=. --licenses
+cmdline-tools/latest/bin/sdkmanager.bat --sdk_root=.   platform-tools "platforms;android-36" "build-tools;36.1.0"
+
+# 3. the layout Bubblewrap expects, in addition to the one above
+cp -r cmdline-tools/latest/bin cmdline-tools/latest/lib .
 ```
 
-Answer:
+Then point `~/.bubblewrap/config.json` at both, with **escaped** Windows paths —
+it is JSON, so a single backslash is a broken escape and the error you get is
+`Bad escaped character in JSON at position 15`:
 
-| Prompt | Answer |
-| --- | --- |
-| Install the JDK / Android SDK | **Yes** to both |
-| Domain | `notyousha.github.io` |
-| URL path | `/mushaf/` |
-| Application name | `Al-Mau'iza — الموعظة` |
-| Short name | `Al-Mau'iza` |
-| Application ID | `io.github.notyousha.mushaf` |
-| Display mode | `standalone` |
-| Orientation | `portrait` |
-| Status bar colour | `#f6f0e6` |
-| Splash colour | `#f6f0e6` |
-| Icon URL | `https://notyousha.github.io/mushaf/mark-512.png` |
-| Maskable icon URL | `https://notyousha.github.io/mushaf/mark-maskable-512.png` |
-| Monochrome icon URL | leave blank — see the note at the end |
-| Include support for Play Billing | **No** |
-| Request geolocation permission | **No** |
-| Signing key: create new | **Yes**, and choose a password you record safely |
-
-The application id cannot change after the first upload, so decide it now.
-`io.github.notyousha.mushaf` matches the origin the app is actually served
-from; if you later move to a custom domain, keep this id — it is a name, not
-an address, and changing it would be a different app on the store.
-
-## 3. Build
-
-```
-npx @bubblewrap/cli build
+```json
+{"jdkPath":"C:\Users\you\.bubblewrap\jdk\jdk-17.0.11+9",
+ "androidSdkPath":"C:\Users\you\.bubblewrap\android_sdk"}
 ```
 
-Produces `app-release-bundle.aab` (upload this) and `app-release-signed.apk`
-(useful for installing on your own phone to test). Also prints the SHA-256
-fingerprint of your **upload** key — keep it, but note it is not the one that
-matters most; see step 5.
+## 3. Generate the project, and the keystore
+
+The keystore first, because the build wants it:
+
+```
+keytool -genkeypair -alias android -keystore android.keystore   -storetype PKCS12 -keyalg RSA -keysize 4096 -validity 10950   -dname "CN=Your Name, O=Al-Mauiza, L=London, ST=Ontario, C=CA"
+```
+
+10950 days is thirty years. Play requires the certificate to outlast 2033, and
+a key you have to replace is a key you have to ask Google to reset.
+
+Then the project. `twa-manifest.json` is already in this repo (`store/`) and in
+`../mushaf-android/`, so there is nothing to answer interactively:
+
+```
+cd ../mushaf-android
+npx @bubblewrap/cli update --skipVersionUpgrade
+```
+
+`update` regenerates `app/build.gradle` from `twa-manifest.json`. **It will
+overwrite the signing block described below, so re-apply that after every
+`update`.**
+
+## 3a. Two fixes to the generated Gradle
+
+**`splashScreenFadeOutDuration: ,`** — Bubblewrap emits the key with no value
+when `twa-manifest.json` omits it, and Groovy will not parse that. Fixed at
+source by adding `"splashScreenFadeOutDuration": 300` to `twa-manifest.json`,
+so a regeneration stays correct.
+
+**Signing is declared in Gradle, not left to Bubblewrap.** `bubblewrap build`
+shells out to `gradlew.bat` without a `./`, and Windows does not have the
+current directory on `PATH`, so it fails with `'gradlew.bat' is not recognized`
+before it compiles anything. Rather than work around that, `app/build.gradle`
+reads a `keystore.properties` at the project root and declares a real
+`signingConfig`, so plain Gradle produces an already-signed bundle:
+
+```
+keystore.properties        # gitignored
+  storeFile=android.keystore
+  storePassword=…
+  keyAlias=android
+  keyPassword=…
+```
+
+Note `storeFile=android.keystore`, not `../android.keystore`: it is resolved
+with `rootProject.file()`, and the root project *is* `mushaf-android`.
+
+## 3b. Build
+
+```
+export JAVA_HOME=~/.bubblewrap/jdk/jdk-17.0.11+9
+export ANDROID_HOME=~/.bubblewrap/android_sdk
+./gradlew.bat bundleRelease assembleRelease --no-daemon
+```
+
+Then check what you are about to upload, rather than assuming:
+
+```
+apksigner verify --print-certs app/build/outputs/apk/release/app-release.apk
+aapt2 dump badging app/build/outputs/apk/release/app-release.apk   | grep -E "package:|application-label:|uses-permission|SdkVersion"
+```
+
+The label must read `Al-Mau'iza — الموعظة`. If it reads `Al-Mau'iza`, do not
+"fix" the escaping in `build.gradle`: Bubblewrap writes `'Al-Mau\'iza'`
+on purpose, because Groovy unescapes it to `Al-Mau'iza` and **AAPT then wants
+that backslash** — an apostrophe is a reserved character in an Android string
+resource. Removing it does not produce a nicer name; it fails the build at
+`mergeReleaseResources` with `Can not extract resource from ParsedResource`.
+
+The permission list should be one line, the framework's own
+`DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`. There is no `INTERNET`, and that is
+correct — a TWA hands the URL to Chrome and does no networking of its own.
 
 ## 4. First upload
 
@@ -133,8 +210,19 @@ No address bar means it verified.
 ## 6. Updating later
 
 - **Content, layout, data, new reciters** — deploy to Pages as usual. Nothing
-  to do on Play; the service worker picks it up, and it now waits until nothing
-  is playing before it reloads.
+  to do on Play; the service worker picks it up, and it waits until nothing is
+  playing or downloading before it hands the page over.
+
+  That last clause was written here before it was true. `registerType` was
+  `'autoUpdate'`, and under that setting vite-plugin-pwa's client wires the
+  worker's `activated` event straight to `window.location.reload()` and never
+  calls `onNeedRefresh` at all — which is the branch `src/pwa.ts`'s
+  `reloadWhenIdle` hangs off. So the careful logic was unreachable and every
+  deploy hard-reloaded the app the next time it was looked at. In a browser tab
+  that is a flicker. In a TWA there is no address bar and no tab, so a
+  recitation stopping and the player emptying reads as a crash. It is
+  `'prompt'` now, with `skipWaiting` dropped, and the app asks for the page
+  when the moment is safe.
 - **Icons, name, orientation, anything in the manifest Bubblewrap baked in** —
   `npx @bubblewrap/cli update`, bump `versionCode` in `twa-manifest.json`,
   rebuild, upload. `versionCode` must increase every time; `YYMMDDnn`

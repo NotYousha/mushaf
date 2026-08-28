@@ -55,12 +55,12 @@ const EXEMPT = new Set([
   '.crash-actions button',
   '.crash-note',
   /*
-   * The one documented exception on the scale itself. A dock label in Urdu is
-   * nastaliq, which is unreadable at the size Latin tolerates, and the tab bar
-   * cannot grow — 0.74rem is the smallest this can honestly be set and the
-   * rule beside it says so.
+   * The Urdu dock label used to be the one documented exception here, at
+   * 0.74rem. It was never in force: the rule sat on `.dock-tab` while the
+   * size lives on `.dock-tab span`, which sets its own. Corrected, the label
+   * is --text-xs — larger than the exemption ever claimed — so there is
+   * nothing left to exempt, and the list is shorter by one claim.
    */
-  ":root[lang='ur'] .dock-tab",
 ])
 
 function rawSizes(css: string) {

@@ -21,7 +21,20 @@
   /* Gold as material -- fills, rules, rosettes; never a word. */
   --leaf: var(--accent);
   --accent: #c9a961;
-  --accent-deep: #b8974f;
+  /*
+   * Deep enough to be seen, not only to be gold.
+   *
+   * This was #b8974f, which is 2.64:1 on --card — under the 3:1 a state
+   * indicator needs, and this token draws every "which one did I pick" mark
+   * in the app: the onboarding selection rings, the chosen reciter's ring on
+   * See all, the downloads checkbox, the player's fold chevron. Every other
+   * theme's accent-deep is a genuinely deep colour and clears 4.5:1; this
+   * palette is the default one, and it was the only one nothing tested,
+   * because themes.test.ts reads the [data-theme] blocks in themes.css and
+   * this lives on :root here. #8a6d33 is the same metal, taken down in value
+   * until it reads: 4.6:1 on --card.
+   */
+  --accent-deep: #8a6d33;
   --accent-soft: #dcc9a8;
   --accent-line: #ebdec4;
   /* What sits on top of a filled accent. */
@@ -987,6 +1000,31 @@ body {
   cursor: pointer;
   touch-action: none;
   margin: 0.55rem 0.3rem;
+}
+
+/*
+ * The bar is four pixels; a fingertip is nearer forty.
+ *
+ * The drawn line is the right thickness — a scrubber that looks like a scrubber
+ * ought to be thin — but it was also the whole target, so seeking twenty
+ * minutes into a Taraweeh recitation meant landing a thumb on a 4px line.
+ * The surrounding padding belongs to `.progress`, which has no handler, so
+ * every near miss did nothing at all. This gives the same line a target that
+ * clears the 24px WCAG floor without changing a pixel of what is drawn.
+ *
+ * Not applied to the collapsed strip: there the bar is a progress line rather
+ * than a control, and an invisible 44px band across the dock capsule would
+ * swallow taps meant for the play button beside it.
+ */
+.track::before {
+  content: '';
+  position: absolute;
+  inset-inline: 0;
+  inset-block: -18px;
+}
+
+.player.is-min .track::before {
+  inset-block: 0;
 }
 
 /*
@@ -4408,9 +4446,24 @@ body {
 :root[lang='ur'] .dock-tab {
   gap: 0;
   line-height: 1.5;
-  /* 9.9px of nastaliq is a smudge. This is the smallest it can honestly be
-     set, and the label still fits because Urdu tab names are short. */
-  font-size: 0.74rem;
+}
+
+/*
+ * On the span, not on the button — and on the scale, not beside it.
+ *
+ * `.dock-tab span` sets `font-size: var(--label)` itself, and an own
+ * declaration beats an inherited one, so the old rule sat on the button and
+ * changed nothing: the smudge its comment described was exactly what shipped.
+ * Nastaliq needs the height more than any other script here — its ascenders
+ * and descenders overlap, and at ten pixels they merge.
+ *
+ * It used to be 0.74rem with a standing exemption from the type scale. At
+ * --text-xs it is larger than that and needs no exemption, which is the better
+ * outcome: the one documented exception on the scale turns out not to have
+ * been necessary.
+ */
+:root[lang='ur'] .dock-tab span {
+  font-size: var(--text-xs);
 }
 
 /* The pill has to grow for the tail of سسٹم, or the glyph sits outside it. */

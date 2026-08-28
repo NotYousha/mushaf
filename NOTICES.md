@@ -58,24 +58,67 @@ were checked, on 2026-08-27:
 - The filename is a timestamp (`260822_162138`), the shape of a download from
   some site rather than a publisher's release.
 
-There is a **promising but unverified** lead. If the PDF was a King Fahd
-Complex publication, the Complex's own terms appear to permit free use in
-computer programs, inside and outside Saudi Arabia, restricting only
-commercial-sale printing of masahif.
+### The terms, now read — 2026-08-28
 
-**Nobody has read the live terms.** That wording
-came from a Wayback snapshot recovered by a research subagent and relayed
-between sessions; `dm.qurancomplex.gov.sa` and `qurancomplex.gov.sa` refuse
-connections from this network, and `web.archive.org` is unreachable from the
-tooling here. Treat it as a snapshot until somebody on a network that can reach
-the host reads it. And it would only matter if the PDF were theirs, which is
-exactly what cannot now be shown.
+The lead that earlier sessions called "promising but unverified" has been
+verified, and it holds. The Complex's usage-rights page was retrieved at three
+separate Wayback snapshots — 2022-01-10, 2022-05-18 and 2023-04-01 — and the
+wording is byte-identical in all three. Under **حقوق الاستخدام**, granted on
+the named authority of the Minister of Islamic Affairs, the digital copy of the
+Madinah Mushaf may be used **مجاناً** (free of charge) in personal and
+individual work, the work of government bodies and private and civil
+institutions, paper printing, desktop and media publishing, **مواقع الإنترنت
+والبرامج الحاسوبية** — websites and computer software — **داخل المملكة العربية
+السعودية وخارجها**, inside the Kingdom and outside it. The single carve-out is
+the printing of physical masahif inside the Kingdom, or importing them, for
+commercial sale. Nothing in it restricts software.
 
-**Decision, 2026-08-27: kept for internal and closed testing, to be settled
-before production.** Those tracks are private, so the exposure there is
+- <https://dm.qurancomplex.gov.sa/copyright/>
+- <https://dm.qurancomplex.gov.sa/douridownload/> — and there **is** an
+  official Ad-Duri release: 460.43 MB, md5 `5557B758056EDD3304A4EDFE8ED7087B`,
+  sha1 `F37C19E7E6E5070596AAE0B0B8E9DF234BF9492E`.
+
+Two things follow, and together they change what this entry is.
+
+**The grant names one format, and the Ad-Duri release is in it.** The
+usage-rights page lists `رسم المتجهات Illustrator` — vector — and the Ad-Duri
+edition is published as exactly that, `بصيغة ai للمتجهات`. This is inside the
+grant's own wording rather than by analogy to it, which makes it firmer ground
+than the Unicode-text route described below, whose dataset lives on a separate
+developer portal the grant does not enumerate.
+
+**Provenance becomes checksummable.** The Complex publishes the hashes of its
+own file, so "where did this mushaf come from" stops being something anyone has
+to take on trust.
+
+The images we ship are still **not** that file: `build-duri-pages.py` records a
+~76 MB PDF, not a 460 MB `.ai`, and the filename was a download-site timestamp.
+They are almost certainly a third party's conversion of the Complex's work —
+same vector drawing with no text layer, same 604 pages, same pagination. The
+Complex's terms would cover the underlying work; it is the chain of custody
+that cannot be shown, and re-fetching the publisher's own file makes the chain
+irrelevant.
+
+**Action, before production — an afternoon, not a research problem.** From a
+network that can reach `qurancomplex.gov.sa` (every host refuses connections
+from this one): download the Ad-Duri digital copy, check `sha1sum` against the
+value above and stop if it differs, re-run `scripts/build-duri-pages.py`, and
+diff the output against the current pages — page 50 must open at Aal-Imran 3:1
+and page 604 must be the last three surahs. Render the cover page too, kept out
+of `public/duri/`: the script skips it as "the cover", and it is the one page
+that would have named the publisher. **And keep the source file this time.**
+The whole of this entry exists because the last one was thrown away.
+
+There is also an email worth sending, which turns an archived page into a
+current permission — `info@qurancomplex.gov.sa`, asking them to confirm that a
+free non-commercial app is inside the grant, how they would prefer to be
+credited, and whether the same permission covers the Unicode text and the
+Douri font.
+
+**Decision, 2026-08-27, unchanged: kept for internal and closed testing, to be
+settled before production.** Those tracks are private, so the exposure there is
 negligible, and the alternative is putting a lesser app in front of the twelve
-testers whose feedback unlocks production. Production is public distribution
-and a different question.
+testers whose feedback unlocks production.
 
 ### The route that would end this rather than document it
 
@@ -118,8 +161,12 @@ production.
 ## Reciter and imam photographs — **UNRESOLVED**
 
 `public/imam-*.webp`, `public/afasy.webp`, `public/turki*.webp`,
-`public/juhany.webp`, `public/luhaidan.webp`, `public/sheikh.jpg` — 25
-photographs of identifiable living people.
+`public/juhany.webp`, `public/luhaidan.webp`, `public/sheikh.jpg`,
+`public/ali-jaber.webp`, `public/ghilan.webp`, `public/minshawi.webp`,
+`public/ossi.webp` — **32** photographs of identifiable living people. (This
+entry said 25 until 2026-08-28; `public/` holds 34 `.webp`/`.jpg` files, of
+which only `logo-mark.webp` and the correctly-licensed `quran-page.webp` are
+not portraits.)
 
 `scripts/crop-imam-photos.py` reads them from a local folder
 (`C:/Users/yoush/imam-photos`) and contains no source URLs. No photographer,
@@ -129,11 +176,27 @@ The app's own code already states the correct standard, in `src/db/faces.ts`:
 it declines to *"bundle pictures of people we have no rights to"*. These
 predate that and do not meet it.
 
-- **Action, before release:** for each portrait, either record source +
-  photographer + licence (Wikimedia Commons has usable images of several of
-  these imams), or remove it. `refresh-catalog.mjs` already establishes the
-  fallback — a reciter shows a name and a blank ring rather than a face that
-  might be somebody else's or somebody else's photograph.
+Six of them are on the home screen and therefore in the Play store
+screenshots, each captioned with the man's name and, for several, his official
+title. That is the most exposed placement any of these assets has: store
+listing artwork is what a human reviewer actually looks at, and name plus
+official title plus unlicensed portrait is the shape Play's Impersonation
+policy describes. Research on 2026-08-28 found usable CC-licensed or
+public-domain portraits on Wikimedia Commons for four of the thirty-two —
+As-Sudais, Al-Muaiqly, Al-Afasy and Shuraim — and nothing usable for the rest.
+
+**Decision, 2026-08-28: ship them as they are.** The alternatives were put and
+declined: removing all thirty-two and falling back to a name and a blank ring,
+or sourcing the four licensed portraits and blanking the other twenty-eight.
+This entry stays as the record of what is and is not known, so that the choice
+is a choice rather than an oversight, and so that whoever revisits it does not
+have to establish the position again.
+
+If it is revisited, the work is small. `src/db/faces.ts` already states the
+standard — it declines to *"bundle pictures of people we have no rights to"* —
+and `refresh-catalog.mjs` already implements the fallback: a reciter shows a
+name and a blank ring rather than a face that might be somebody else's, or
+somebody else's photograph. Deleting the files is the whole of the change.
 
 ## The home screen photograph
 

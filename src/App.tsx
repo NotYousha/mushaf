@@ -43,6 +43,7 @@ import { HomePanel, type HomeFace, type HomeResume } from './ui/HomePanel'
 import { HOME_RECITERS } from './catalog/home'
 import { shortTitle, fullTitle } from './catalog/titles'
 import { withTransition } from './ui/transition'
+import { useBackDismiss } from './ui/backstack'
 import { ReciterPanel, type PlaceCard } from './ui/ReciterPanel'
 import { MushafView, ayahStartsFor } from './ui/MushafView'
 import { MushafIndex } from './ui/MushafIndex'
@@ -489,9 +490,11 @@ export default function App() {
         const removed = await purgeSuspectAudio()
         await setPref('purgedSuspectAudio', true)
         if (removed) {
-          setError(
-            `أُزيلت ${removed} سورة محفوظة قد تكون خاطئة — يمكنك حفظها من جديد.`,
-          )
+          // Was hardcoded Arabic, shown to every reader in every language —
+          // an unreadable notice in an LTR layout for four of the five.
+          // `lang` is seeded synchronously from the same store the boot script
+          // read, so it is already the reader's language on this first pass.
+          setError(stringsFor(lang).purgedSuspect(digits(lang, removed)))
         }
       }
 
@@ -632,9 +635,12 @@ export default function App() {
         s.fallbackUrl,
         startAt,
       )
-      setBusy(false)
+      // A superseded load is one the listener replaced themselves by tapping
+      // something else. Its `busy` and its error both belong to a surah that
+      // is no longer on screen, so neither is ours to clear or to show.
+      if (res.ok || !res.superseded) setBusy(false)
       if (!res.ok) {
-        setError(`${plainName(s.name)}: ${res.reason}`)
+        if (!res.superseded) setError(`${plainName(s.name)}: ${res.reason}`)
         return
       }
       setMode(res.mode)
@@ -832,7 +838,7 @@ export default function App() {
       if (current !== surah) {
         const res = await engine.current!.load(reciter.id, surah, s.url, s.fallbackUrl, from)
         if (!res.ok) {
-          setError(`${plainName(s.name)}: ${res.reason}`)
+          if (!res.superseded) setError(`${plainName(s.name)}: ${res.reason}`)
           return
         }
         setCurrent(surah)
@@ -1007,6 +1013,27 @@ export default function App() {
       })
     }, 400)
   }, [])
+
+  /*
+   * The back button, in the order a reader would expect to unwind.
+   *
+   * Registration order here is not stack order — the stack is built as each
+   * surface actually opens — but the two tab-level entries must be declared
+   * before the drill-in, so that arriving somewhere by drilling in leaves the
+   * drill on top and one press returns to where the reader came from.
+   *
+   * Onboarding is deliberately absent. It is three questions on a first run
+   * and it has a way through; a back press that dropped a reader out of it
+   * into an unconfigured app would be worse than one that does nothing.
+   */
+  useBackDismiss(tab !== 'home', () => pickTab('home'))
+  useBackDismiss(cameFrom !== null, goBack)
+  useBackDismiss(!playerMin, closeSheet)
+  useBackDismiss(confirmAll, () => setConfirmAll(false))
+  useBackDismiss(yearsOpen !== null, () => setYearsOpen(null))
+  useBackDismiss(pickerOpen, () => setPickerOpen(false))
+  useBackDismiss(indexOpen, () => setIndexOpen(false))
+  useBackDismiss(drill !== null, () => setTalqeen(false))
 
   const scrollRef = useRef<HTMLDivElement | null>(null)
   const searchRef = useRef<HTMLInputElement | null>(null)
@@ -1538,6 +1565,43 @@ export default function App() {
     const r = e.currentTarget.getBoundingClientRect()
     const f = (e.clientX - r.left) / r.width
     engine.current!.seek(Math.max(0, Math.min(1, f)) * duration)
+  }
+
+  /**
+   * Scrub by dragging, not only by tapping.
+   *
+   * The bar carried a click handler and a handle that looked draggable and was
+   * not, so the only way to reach a point in a ninety-minute Taraweeh
+   * recitation was to hit it first time on a four-pixel line. Pointer capture
+   * keeps the drag with the track once it has started, so a finger that
+   * wanders off the bar — which on a bar this thin it always does — goes on
+   * scrubbing instead of stopping dead.
+   */
+  const scrubFrom = (el: HTMLElement, clientX: number) => {
+    const r = el.getBoundingClientRect()
+    if (!r.width) return
+    const f = (clientX - r.left) / r.width
+    engine.current!.seek(Math.max(0, Math.min(1, f)) * duration)
+  }
+  const startScrub = (e: React.PointerEvent<HTMLDivElement>) => {
+    // Mouse right/middle buttons are not a scrub, and neither is a
+    // second finger arriving while the first is already dragging.
+    if (e.button !== 0) return
+    const el = e.currentTarget
+    el.setPointerCapture(e.pointerId)
+    scrubFrom(el, e.clientX)
+  }
+  const moveScrub = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (!e.currentTarget.hasPointerCapture(e.pointerId)) return
+    // A drag on a scrubber is not a page scroll; `touch-action: none` on the
+    // track says so to the browser, this says so to the gesture.
+    e.preventDefault()
+    scrubFrom(e.currentTarget, e.clientX)
+  }
+  const endScrub = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+      e.currentTarget.releasePointerCapture(e.pointerId)
+    }
   }
 
   const changeLang = async (next: Lang) => {
@@ -2722,12 +2786,19 @@ export default function App() {
             <div
               className="track"
               onClick={seekTo}
+              onPointerDown={startScrub}
+              onPointerMove={moveScrub}
+              onPointerUp={endScrub}
+              onPointerCancel={endScrub}
               role="slider"
               tabIndex={0}
               aria-label={t.position}
               aria-valuemin={0}
               aria-valuemax={Math.round(duration)}
               aria-valuenow={Math.round(time)}
+              // "3725" is not a position. formatTime already says it the way
+              // the reader's own language and numerals say it.
+              aria-valuetext={formatTime(time, lang)}
               onKeyDown={(e) => {
                 if (e.key === 'ArrowRight') engine.current!.seek(time + 10)
                 if (e.key === 'ArrowLeft') engine.current!.seek(time - 10)
@@ -2746,7 +2817,7 @@ export default function App() {
               <span>{formatTime(time, lang)}</span>
               <span className="badge">
                 {mode === 'offline' ? t.saved : t.streaming}
-                {sleepAt ? ` · ${sleepAt}د` : ''}
+                {sleepAt ? ` · ${t.sleepMins(digits(lang, sleepAt))}` : ''}
               </span>
               <span>-{formatTime(Math.max(0, duration - time), lang)}</span>
             </div>

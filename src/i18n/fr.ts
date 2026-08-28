@@ -264,6 +264,12 @@ export const fr: Strings = {
   cancel: 'Annuler',
   noResults: 'Aucun résultat',
   loading: 'Chargement…',
+  textNeedsNet: 'La mise en page doit être téléchargée une fois. Connectez-vous, puis réessayez.',
+  retry: 'Réessayer',
+  purgedSuspect: (n: number | string) =>
+    `${n} sourate(s) enregistrée(s) ont été retirées car l'enregistrement pouvait être erroné — vous pouvez les enregistrer à nouveau.`,
+  lastAvailable: (name: string) => `Dernière disponible : ${name}`,
+  sleepMins: (n: number | string) => `${n} min`,
   pickSurahForText: 'Choisissez une sourate pour ouvrir le mushaf.',
   ayahTimingsOnly:
     'Cette récitation est minutée verset par verset : le verset entier est marqué, pas le mot.',

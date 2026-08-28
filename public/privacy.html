@@ -88,7 +88,7 @@
   <body>
     <main>
       <h1>Privacy Policy</h1>
-      <p class="sub">Al-Mau'iza (الموعظة) — last updated 26 August 2026</p>
+      <p class="sub">Al-Mau'iza (الموعظة) — last updated 28 August 2026</p>
 
       <div class="box">
         <strong>The short version.</strong> This app has no accounts, no
@@ -127,7 +127,8 @@
       <p>
         Playing or downloading a recitation fetches audio from the archive that
         publishes it. Most of it comes straight from
-        <code>archive.org</code>, and some from
+        <code>archive.org</code> — which redirects to its own storage nodes,
+        with names like <code>ia601504.us.archive.org</code> — and some from
         <code>download.quranicaudio.com</code> or
         <code>server8.mp3quran.net</code>.
       </p>
@@ -136,6 +137,14 @@
         that expire, and those requests pass through
         <code>mushaf-audio.mushaftarteel.workers.dev</code>, a proxy operated by
         the developer of this app.
+      </p>
+      <p>
+        That proxy runs on Cloudflare Workers. Cloudflare keeps ordinary
+        web-server logs of the requests that reach it — the time, the audio
+        file asked for, and the connecting IP address — for a short retention
+        period. Neither Cloudflare nor the developer uses them for anything but
+        keeping the service working. There is nothing in them that identifies
+        you personally, because the app sends nothing that identifies you.
       </p>
       <p>
         Like any web request, these carry your device's IP address to whichever
@@ -148,7 +157,13 @@
 
       <h2>What the app does not do</h2>
       <ul>
-        <li>No analytics, telemetry, crash reporting or fingerprinting.</li>
+        <li>
+          No analytics, telemetry, crash reporting or fingerprinting. The app
+          does keep a short record on this device of the play and pause
+          commands your phone's lock screen sends it, so that a playback fault
+          can be described if you report one. It is never sent anywhere, and
+          clearing this site's data removes it.
+        </li>
         <li>No advertising and no advertising identifiers.</li>
         <li>No accounts, sign-in, email collection or contact list access.</li>
         <li>
@@ -170,6 +185,14 @@
         If a future version of the app collects or transmits anything, this
         policy will be updated before that version is released, and the date
         above will change.
+      </p>
+
+      <h2>Who publishes this app</h2>
+      <p>
+        Al-Mau'iza is published by <strong>Yousha Ahmed</strong>, an individual
+        developer. The audio proxy described above is operated by the same
+        person. Google Play requires this policy to name the developer, and the
+        name here is the one the Play developer account is registered under.
       </p>
 
       <h2>Contact</h2>

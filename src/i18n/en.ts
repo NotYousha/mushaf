@@ -292,6 +292,15 @@ export const en = {
   cancel: 'Cancel',
   noResults: 'No results',
   loading: 'Loading…',
+  /* The printed layout is a lazy chunk and is not precached: the first
+     time this screen opens it needs a connection, and afterwards it
+     does not. Said plainly, with a way to ask again. */
+  textNeedsNet: 'The page layout has to be fetched once. Connect, then try again.',
+  retry: 'Try again',
+  purgedSuspect: (n: number | string) =>
+    `Removed ${n} saved surah(s) that may have been the wrong recording — you can save them again.`,
+  lastAvailable: (name: string) => `Last available: ${name}`,
+  sleepMins: (n: number | string) => `${n} min`,
   pickSurahForText: 'Pick a surah to open the mushaf.',
   ayahTimingsOnly:
     'This recitation is timed verse by verse, so the whole verse is marked rather than the word.',

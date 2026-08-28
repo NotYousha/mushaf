@@ -24,7 +24,23 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      /*
+       * 'prompt', not 'autoUpdate' — and the app is the thing prompted.
+       *
+       * Under 'autoUpdate' the generated client wires `activated` straight to
+       * `window.location.reload()` and never reaches `onNeedRefresh` at all,
+       * which is the branch src/pwa.ts's `reloadWhenIdle` hangs off. So the
+       * careful "never reload mid-recitation" logic there was unreachable, and
+       * every deploy hard-reloaded the app the next time it was looked at.
+       * Inside a TWA that is not a flicker: there is no address bar and no
+       * tab, so the recitation stopping and the player emptying reads as a
+       * crash.
+       *
+       * 'prompt' parks the new worker in `waiting` and hands the decision to
+       * us. skipWaiting is dropped below for the same reason: the new worker
+       * must not take the page until the app says the moment is safe.
+       */
+      registerType: 'prompt',
       // Registered by src/pwa.ts instead, so the app can force a check and
       // reload rather than waiting for the browser to notice on its own.
       injectRegister: false,
@@ -212,10 +228,17 @@ export default defineConfig({
           },
         ],
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
-        // Without these, a new build sits behind the old service worker and
-        // only takes effect on some later visit — which is exactly how an
-        // update can appear not to have shipped at all.
-        skipWaiting: true,
+        /*
+         * The waiting worker takes over when the app asks it to, not on its
+         * own. `src/pwa.ts` sends it SKIP_WAITING at the first moment nothing
+         * is playing and nothing is downloading, and reloads on the same beat.
+         * Setting skipWaiting here instead took the page mid-surah.
+         *
+         * clientsClaim stays: it decides what happens once activation has
+         * been agreed, which is that the new worker serves this page rather
+         * than only the next one — the thing that made updates look as though
+         * they had never shipped.
+         */
         clientsClaim: true,
         cleanupOutdatedCaches: true,
 

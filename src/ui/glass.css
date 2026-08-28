@@ -87,7 +87,16 @@
 .dock {
   --tabs-h-rest: 3.6rem;
   --cap-h-rest: 3.4rem;
-  --label-rest: 0.62rem;
+  /*
+   * 0.7rem, not 0.62rem.
+   *
+   * 0.62rem is 9.92px, which is below the app's own 12.8px floor and below
+   * anything a dock label ought to be set at — and this is the one label
+   * strip that is on screen on every surface. It was invisible to
+   * typescale.test.ts twice over: that test does not read glass.css, and the
+   * size is behind a custom property it would not have resolved anyway.
+   */
+  --label-rest: 0.7rem;
   --tighten: 1;
   --tabs-h: var(--tabs-h-rest);
   --cap-h: var(--cap-h-rest);

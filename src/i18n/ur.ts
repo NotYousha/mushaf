@@ -262,6 +262,12 @@ export const ur: Strings = {
   cancel: 'منسوخ کریں',
   noResults: 'کوئی نتیجہ نہیں',
   loading: 'لوڈ ہو رہا ہے…',
+  textNeedsNet: 'صفحے کی ترتیب ایک بار حاصل کرنی ہوگی۔ انٹرنیٹ سے جڑ کر دوبارہ کوشش کریں۔',
+  retry: 'دوبارہ کوشش کریں',
+  purgedSuspect: (n: number | string) =>
+    `${n} محفوظ سورتیں ہٹا دی گئیں جو غلط ریکارڈنگ ہو سکتی تھیں — آپ انہیں دوبارہ محفوظ کر سکتے ہیں۔`,
+  lastAvailable: (name: string) => `آخری دستیاب سورت: ${name}`,
+  sleepMins: (n: number | string) => `${n} منٹ`,
   pickSurahForText: 'مصحف کھولنے کے لیے سورت منتخب کریں۔',
   ayahTimingsOnly:
     'اس تلاوت کا وقت آیت بہ آیت ہے، اس لیے لفظ کے بجائے پوری آیت نمایاں ہوتی ہے۔',

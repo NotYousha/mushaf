@@ -11,9 +11,18 @@ import {
 
 export type PlaybackMode = 'offline' | 'streaming'
 
+/** Sentinel for "a newer load took over"; never shown to a reader. */
+const SUPERSEDED = '__superseded__'
+
 export type LoadResult =
   | { ok: true; mode: PlaybackMode }
-  | { ok: false; reason: string }
+  /**
+   * `superseded` marks the one failure that is not a fault: a newer `load`
+   * took the element over while this one was still resolving. The caller must
+   * not show it, because the thing it would report has already been replaced
+   * by what the listener actually asked for.
+   */
+  | { ok: false; reason: string; superseded?: boolean }
 
 /**
  * Streaming-first playback.
@@ -60,21 +69,55 @@ export class PlayerEngine {
     objectUrl: string | null
   } | null = null
 
+  /**
+   * Which `load` owns the element.
+   *
+   * There is one `<audio>` and `load` awaits twice before it is finished with
+   * it — once on IndexedDB, then up to three times on the network, each for as
+   * long as fifteen seconds. Tap a surah whose host is slow, tap a different
+   * one before it gives up, and the first call wakes to find the element
+   * playing something else and assigns its fallback over the top: the second
+   * surah stops, the first one starts, and every label on screen still says
+   * the second. The position writer then files one surah's playhead under the
+   * other's name.
+   *
+   * So each call takes a ticket on the way in and checks it after every await.
+   * A stale ticket means the listener has already asked for something else,
+   * and the only correct thing to do is nothing at all.
+   */
+  private loadToken = 0
+
   constructor() {
     this.el = new Audio()
     this.el.preload = 'metadata'
 
+    /**
+     * Whether the clock on the element is describing the surah we think it is.
+     *
+     * Changing `src` runs the media load algorithm, which fires `pause` while
+     * `currentTime` still holds the old surah's position and then a
+     * `timeupdate` at zero — both after `currentSurah` has become the new
+     * surah. Left unguarded, switching away at forty-two minutes filed
+     * "forty-two minutes" against the surah just opened, and a failed load
+     * filed zero against a resume point worth keeping.
+     */
+    const positionIsReal = () =>
+      this.currentSurah !== null &&
+      this.currentReciter !== null &&
+      this.el.error === null &&
+      this.el.readyState >= HTMLMediaElement.HAVE_METADATA
+
     this.el.addEventListener('timeupdate', () => {
       const t = this.el.currentTime
-      if (this.currentSurah !== null && this.currentReciter && Math.abs(t - this.lastSaved) > 5) {
+      if (positionIsReal() && Math.abs(t - this.lastSaved) > 5) {
         this.lastSaved = t
-        void savePosition(this.currentReciter, this.currentSurah, t)
+        void savePosition(this.currentReciter!, this.currentSurah!, t)
       }
     })
 
     const flush = () => {
-      if (this.currentSurah !== null && this.currentReciter) {
-        void savePosition(this.currentReciter, this.currentSurah, this.el.currentTime)
+      if (positionIsReal()) {
+        void savePosition(this.currentReciter!, this.currentSurah!, this.el.currentTime)
       }
     }
     this.el.addEventListener('pause', flush)
@@ -130,7 +173,7 @@ export class PlayerEngine {
   }
 
   /** Resolves once the element can play the given src, or rejects. */
-  private trySrc(src: string): Promise<void> {
+  private trySrc(src: string, token: number): Promise<void> {
     return new Promise((resolve, reject) => {
       const cleanup = () => {
         this.el.removeEventListener('loadedmetadata', ok)
@@ -138,15 +181,26 @@ export class PlayerEngine {
         this.el.removeEventListener('error', bad)
         clearTimeout(timer)
       }
+      // A superseded attempt still has to take its own listeners off the
+      // shared element, or they fire again on the surah that replaced it.
+      const stale = () => {
+        if (token === this.loadToken) return false
+        cleanup()
+        reject(new Error(SUPERSEDED))
+        return true
+      }
       const ok = () => {
+        if (stale()) return
         cleanup()
         resolve()
       }
       const bad = () => {
+        if (stale()) return
         cleanup()
         reject(new Error(this.describeError()))
       }
       const timer = setTimeout(() => {
+        if (stale()) return
         cleanup()
         reject(new Error('timed out reaching the audio host'))
       }, 15000)
@@ -185,11 +239,28 @@ export class PlayerEngine {
     fallbackUrl: string | null = null,
     startAt = 0,
   ): Promise<LoadResult> {
+    const token = ++this.loadToken
+    const superseded = (): LoadResult => ({
+      ok: false,
+      reason: SUPERSEDED,
+      superseded: true,
+    })
+
     const saved = await getAudio(reciterId, surah)
+    if (token !== this.loadToken) return superseded()
     this.discardPending()
     this.releaseObjectUrl()
-    this.currentSurah = surah
-    this.currentReciter = reciterId
+    /*
+     * The playhead stops belonging to anybody until a candidate loads.
+     *
+     * These used to be set here, before the first attempt. If every candidate
+     * then failed, the engine was left naming a surah it had never opened with
+     * the element still at zero — and the next `pause` or tab switch wrote a
+     * position of 0 over a resume point that might have been an hour and a
+     * half into al-Baqarah.
+     */
+    this.currentSurah = null
+    this.currentReciter = null
     this.lastSaved = startAt
 
     const candidates: Array<{ src: string; mode: PlaybackMode }> = []
@@ -208,8 +279,12 @@ export class PlayerEngine {
 
     let last = 'the audio could not be loaded'
     for (const c of candidates) {
+      if (token !== this.loadToken) return superseded()
       try {
-        await this.trySrc(c.src)
+        await this.trySrc(c.src, token)
+        if (token !== this.loadToken) return superseded()
+        this.currentSurah = surah
+        this.currentReciter = reciterId
         this.mode = c.mode
         if (startAt > 0) {
           try {
@@ -220,7 +295,9 @@ export class PlayerEngine {
         }
         return { ok: true, mode: c.mode }
       } catch (e) {
-        last = e instanceof Error ? e.message : String(e)
+        const message = e instanceof Error ? e.message : String(e)
+        if (message === SUPERSEDED || token !== this.loadToken) return superseded()
+        last = message
       }
     }
 
@@ -276,6 +353,9 @@ export class PlayerEngine {
   startPrepared(): number | null {
     const p = this.pending
     if (!p) return null
+    // Taking the element counts as a load, so an older one still waiting on a
+    // slow host finds its ticket stale and leaves the next surah alone.
+    this.loadToken++
     this.pending = null
     this.releaseObjectUrl()
     this.objectUrl = p.objectUrl

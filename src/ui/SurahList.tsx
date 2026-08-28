@@ -1,7 +1,7 @@
 import { memo, useLayoutEffect, useRef } from 'react'
 import type { SurahView } from '../catalog/types'
 import { voiceLabel } from '../catalog/voice'
-import { digits } from '../i18n/script'
+import { digits, inScript } from '../i18n/script'
 import type { Strings, Lang } from '../i18n'
 import { Download } from './Icons'
 
@@ -209,9 +209,11 @@ export const SurahList = memo(function SurahList({
         <div className="frontier">
           <div className="fade" />
           <p>
-            {lang === 'ar'
-              ? `آخر سورة متاحة: ${plainName(lastRecorded.name)}`
-              : `Last available: ${lastRecorded.nameEn}`}
+            {/* Was Arabic-or-English, so Urdu, Hindi and French readers got
+                Latin text inside a list whose own fade is mirrored for them. */}
+            {t.lastAvailable(
+              inScript(lang, plainName(lastRecorded.name), lastRecorded.nameEn),
+            )}
           </p>
         </div>
       )}

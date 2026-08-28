@@ -37,5 +37,6 @@
   "signingKey": {
     "path": "./android.keystore",
     "alias": "android"
-  }
+  },
+  "splashScreenFadeOutDuration": 300
 }

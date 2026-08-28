@@ -3,7 +3,7 @@ import type { Strings, Lang } from '../i18n'
 import { LANGS, stringsFor, dirOf } from '../i18n'
 import { inScript } from '../i18n/script'
 import { THEMES, type ThemeId, type Mode, resolveMode } from './theming'
-import { editions, editionName, type EditionChoice } from './editions'
+import { editions, editionName, editionNote, type EditionChoice } from './editions'
 
 type Props = {
   /** What the app has decided to start in — the phone's language, or English. */
@@ -164,7 +164,7 @@ export function Onboarding({
                     onClick={() => onEdition(e.id)}
                   >
                     <span className="ob-option-name">{editionName(e, lang)}</span>
-                    <span className="ob-option-note">{e.description}</span>
+                    <span className="ob-option-note">{editionNote(e, lang)}</span>
                   </button>
                 </li>
               ))}
