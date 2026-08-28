@@ -12,7 +12,7 @@ connect-src and media-src name every host the app may reach.
 | Field | Value |
 | --- | --- |
 | App name (30 max) | `Al-Mau'iza — الموعظة` (21) |
-| Default language | Arabic (ar) — the app's own default, matching the manifest |
+| Default language | **English (en-US)** — the fallback, not the app's own language. See below. |
 | App or game | App |
 | Free or paid | **Free — and not a choice. See below.** |
 | Category | Books & Reference |
@@ -20,6 +20,32 @@ connect-src and media-src name every host the app may reach.
 | Contact email | yousha.ahmed55@gmail.com |
 | Website | https://notyousha.github.io/mushaf/ |
 | Privacy policy | https://notyousha.github.io/mushaf/privacy.html |
+
+### Which language is the default, and why it is not Arabic
+
+This table said Arabic until 2026-08-28, on the reasoning that it matches
+`lang: "ar"` in the web manifest and `DEFAULT_LANG` in the app. That conflated
+two different settings.
+
+The app's default language is what a reader sees when the app cannot tell what
+they speak, and Arabic is right for that: this is a mushaf. **The listing's
+default language is a fallback for locales with no translation** — so with
+Arabic there, a German, Turkish, Indonesian or Malay user gets an Arabic store
+page and no idea what the app does. English reaches all of them.
+
+So: **English in the default en-US listing, Arabic added under Manage
+translations → Arabic (ar).** Readers on an Arabic device get the Arabic
+listing; everyone else gets English rather than a page they cannot read.
+
+Do not put the Arabic strings into the en-US fields. Play permits it and the
+listing is then labelled English while reading Arabic, which its metadata
+policy flags.
+
+**Paste the Arabic from this file, not from a chat window.** Verified
+2026-08-28: the short description is 64 characters of 80, the full description
+2200 of 4000, both in logical order, and the file contains **no bidi control
+characters** — which are what actually corrupts an Arabic paste, and what is
+almost impossible to spot afterwards in a published listing.
 
 ### Free is a licence condition, not a pricing decision
 
@@ -118,7 +144,7 @@ app's site data removes them.
 Arabic:
 
 ```
-"الموعظة" تطبيق للاستماع إلى القرآن الكريم، مبنيّ على المصاحف المرتّلة الكاملة
+الموعظة تطبيق للاستماع إلى القرآن الكريم، مبنيّ على المصاحف المرتّلة الكاملة
 وعلى متابعة التلاوة في المصحف.
 
 القُرَّاء
