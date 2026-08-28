@@ -184,9 +184,30 @@ gh repo create NotYousha/notyousha.github.io --public --add-readme
 git clone https://github.com/NotYousha/notyousha.github.io
 cd notyousha.github.io
 mkdir -p .well-known
-# put assetlinks.json here — template in store/assetlinks.template.json
+touch .nojekyll
+# put assetlinks.json here — see the note below on where to get it
 git add -A && git commit -m "Digital Asset Links for the Play app" && git push
 ```
+
+**`.nojekyll` is not optional.** GitHub Pages runs Jekyll over the repository
+by default, and Jekyll skips files and directories whose names begin with a
+dot — so `.well-known/` is committed, visible in the repo, and never published.
+The file 404s, verification fails, and nothing anywhere says why. That empty
+file turns Jekyll off.
+
+**Get the JSON from the Console, do not hand-write it.** Setup → App integrity
+→ App signing → **Digital Asset Links JSON**. Play fills in the package name
+and its own app-signing SHA-256, which removes the two things that are easy to
+get wrong and impossible to notice: a mistyped fingerprint, and a package name
+that does not match the bundle. Append the upload-key fingerprint from
+`store/assetlinks.template.json` as a second entry so a locally built APK
+verifies too.
+
+**The package name must match the bundle.** It is set by the first upload, not
+chosen in the Console, and it cannot be changed afterwards. Confirm it in **App
+bundle explorer** before publishing anything: an assetlinks file naming a
+different package fails exactly as a wrong fingerprint does, silently, and the
+fingerprint is the part everyone thinks to check.
 
 Then enable Pages for that repo (Settings → Pages → deploy from `main`), and
 check the file answers:
