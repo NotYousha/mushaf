@@ -1,69 +1,511 @@
 /* =====================================================================
-   Glass
+   Liquid Glass
    ---------------------------------------------------------------------
-   An approximation of the material iOS uses for its floating controls.
-   Apple's own is native-only — there is no web API that exposes it — so
-   this is built from what the platform does give us: a backdrop blur with
-   the saturation pushed up, a translucent fill, and a bright inner edge
-   along the top with a dark one along the bottom to fake the thickness of
-   a lens.
+   Ported from the ICNL site (app/globals.css). Apple's material is
+   native-only — no web API exposes it — so this is the four separable
+   parts a web version can actually build, in the order they matter:
 
-   Saturation matters more than blur. Blur alone gives frosted plastic;
-   pushing chroma back up is what makes the colours underneath bleed
-   through and read as glass rather than as a grey scrim.
+     1. MATERIAL — the backdrop is blurred AND saturation-boosted, then
+        brightened and de-contrasted slightly. Blur alone is frosted
+        plastic; pushing chroma back up is what makes the colours
+        underneath bleed through and read as glass.
+     2. RIM — a bright hairline where light catches the lens edge, dark
+        where it does not. Blur with no rim does not read as glass at
+        any radius.
+     3. SHEEN — a specular highlight inside the top of the surface, as
+        if a light is above and to the left. src/ui/glass.ts moves it.
+     4. DEPTH — glass floats, so it casts a wide, very soft shadow.
 
-   Every value is themed, because a translucent white over a black kiswah
-   page is a smear, and a translucent black over cream is a bruise.
+   Refraction — content behind the pane visibly BENDING — is the fifth
+   part and is deliberately not here. See the note further down.
+
+   ---------------------------------------------------------------------
+   WHERE IT IS ALLOWED TO GO
+
+   This is a mushaf. Arabic running text is the one thing on screen that
+   must never lose contrast, and a translucent surface has whatever
+   contrast the thing scrolling behind it happens to give it. So glass
+   goes on CHROME ONLY — the reader's floating bars, the dock, the
+   now-playing sheet, the confirm dialog, the toast. The page itself,
+   the surah list rows and every panel that carries body text stay
+   opaque. Nothing below puts a backdrop-filter behind an ayah.
+
+   ---------------------------------------------------------------------
+   THE ONE EDGE RULE
+
+   A glass surface has exactly ONE edge and `::before` draws it. No
+   inset bevel lines in box-shadow, and no outer spread shadow for the
+   darkened edge: a spread shadow lands outside the border box while the
+   rim paints inside it, so the two are divided by the border and read
+   as two concentric rings. That gap is structural, not a colour
+   problem, and no amount of alpha tuning closes it. box-shadow here
+   carries the float and nothing else.
+
+   ---------------------------------------------------------------------
+   TURNING IT OFF
+
+   `document.documentElement.classList.add('lg-off')` reverts every
+   surface on the page to an opaque tint with no backdrop-filter, in one
+   class. src/ui/glass.ts wraps that as setGlassEnabled(false) and
+   remembers it. If only the scroll cost is the problem, the cheaper
+   first move is `--lg-blur-bar: 0px` on :root, which flattens the
+   surfaces that re-blur every frame and leaves the rest alone.
    ===================================================================== */
 
-:root {
-  --glass-tint: 255 255 255;
-  --glass-alpha: 0.62;
-  --glass-blur: 20px;
-  --glass-sat: 180%;
-  /* The lit top edge and the shadowed bottom one. */
-  --glass-edge-top: rgb(255 255 255 / 0.55);
-  --glass-edge-bottom: rgb(var(--shadow-rgb) / 0.08);
+:root,
+.lg-light {
+  /* --- Material ------------------------------------------------------ */
+  /* Diffusion is mostly radius. 22px rather than ICNL's 28: this app is
+     phone-first and every glass surface here is floating chrome. */
+  --lg-blur: 22px;
+  /* Surfaces that re-blur on every scroll frame stay cheaper. Set this
+     to 0px as the first response to a jank report from a real device. */
+  --lg-blur-bar: 14px;
+  /* Below ~150% glass reads as grey plastic. */
+  --lg-sat: 190%;
+  /* The other half of diffusion, and the half a blur cannot do. Lifting
+     brightness and pulling contrast in flattens the backdrop toward a
+     wash, so a page of Arabic stops competing with the label on top of
+     it. Small numbers: past about 0.85 contrast it turns to fog. */
+  --lg-bright: 1.06;
+  --lg-contrast: 0.94;
+
+  /*
+   * THE ENTRANCE MULTIPLIER. 0 = not there, 1 = full material. Every
+   * visible part is multiplied by it, so one animated value fades the
+   * whole surface.
+   *
+   * It exists because a glass surface CANNOT fade with `opacity`: an
+   * element below opacity 1 forms a backdrop root, its backdrop-filter
+   * has nothing left to sample, and the blur vanishes for the whole
+   * fade and snaps on at the end. Partial versions do not work either —
+   * leave the float shadow off the multiplier and a ghost of the
+   * control sits on the page before its entrance starts.
+   */
+  --lg-enter: 1;
+
+  /* Pure light and pure shadow, as RGB triples. Not theme colours: the
+     rim and sheen must not pick up the gold. */
+  --lg-tint: 255 255 255;
+  --lg-rim: 255 255 255;
+  --lg-shade: 0 0 0;
+
+  /*
+   * CLARITY — the iOS 27 transparency slider, as one number. 0 is ultra
+   * clear, 1 is fully tinted; --lg-tint-max is what "fully tinted"
+   * means for this palette and clarity scales it. Set it on :root for
+   * an app-wide preference or on any subtree for one surface.
+   *
+   * 0.85 against a ceiling of 0.72 resolves to 0.61, which is what the
+   * flat fill this file used to ship was. The material is new; the
+   * amount of paper you can see through it is not.
+   */
+  --lg-clarity: 0.85;
+  /*
+   * A per-surface adjustment, ADDED to the slider rather than replacing
+   * it, so a bar can be more solid than the rest without the
+   * preference stopping working on it.
+   *
+   * It HAS to be a second variable. `--lg-clarity: calc(var(--lg-clarity) + 0.2)`
+   * looks like the obvious way to say this and is a dependency cycle: a
+   * custom property may not reference itself, the declaration is
+   * invalid at computed-value time, and it falls back to the inherited
+   * value with no error reported anywhere.
+   */
+  --lg-clarity-bump: 0;
+  /* Rim dimming while a control is held. 1 = untouched. Also a second
+     variable, for exactly the same reason. */
+  --lg-press: 1;
+
+  --lg-tint-max: 0.72;
+  /*
+   * Chrome that floats over moving content gets its OWN, much higher
+   * ceiling. A sheet is translucent over a backdrop the reader chose to
+   * look at; the dock and the reader's bars are translucent over
+   * whatever happens to be passing under them, which at the panel
+   * ceiling left the dock labels well under 4.5:1 over a cream page.
+   */
+  --lg-tint-max-bar: 0.93;
+
+  /* --- Rim + sheen --------------------------------------------------- */
+  /*
+   * Bounded by the rule the whole material turns on: the rim is the
+   * surface's own lip, so it stays NEAR the fill's value. Put it far
+   * above and it reads as a separate white ring sitting on top of the
+   * panel rather than as its edge.
+   */
+  --lg-rim-alpha: 0.5;
+  --lg-rim-alpha-low: 0.1;
+  --lg-shade-alpha: 0.06;
+  --lg-sheen-alpha: 0.42;
+
+  /*
+   * The darkened outer edge. A hairline of shadow on the far side of
+   * the bright rim, so the sequence across the boundary is dark → bright
+   * → glass. That ordering is what gives the surface thickness and
+   * keeps it from dissolving into a light page. It lives INSIDE the rim
+   * gradient, never as a separate ring — see the one-edge rule above.
+   */
+  --lg-edge-alpha: 0.13;
+
+  /*
+   * WHERE THE LIGHT IS, as a percentage of the surface, x then y.
+   * Unitless so the sheen can do arithmetic on them. Geometry rather
+   * than colour, so unlike everything above these are NOT redefined per
+   * theme. src/ui/glass.ts is the only thing that ever writes them, and
+   * it writes them per element — never on :root, where an inherited
+   * custom property invalidates the style of every node in the
+   * document.
+   */
+  --lg-lx: 22;
+  --lg-ly: -12;
+
+  /* --- Depth --------------------------------------------------------- */
+  /* The theme's own darkness, so a cream palette shadows warm. */
+  --lg-shadow: var(--shadow-rgb);
+
+  /* The capsule artwork's hairline. Not part of the material — it rings
+     a photograph, not a pane of glass. */
   --glass-ring: rgb(var(--shadow-rgb) / 0.1);
 }
 
-[data-mode='dark'] {
-  --glass-tint: 26 26 28;
-  --glass-alpha: 0.58;
-  --glass-edge-top: rgb(255 255 255 / 0.14);
-  --glass-edge-bottom: rgb(0 0 0 / 0.4);
+/*
+ * Dark glass is NOT light glass with a darker tint. Under a dark
+ * palette the material tints toward black and the rim gets BRIGHTER
+ * relative to it — a dark lens edge on a dark page is invisible and the
+ * surface collapses into the background.
+ */
+[data-mode='dark'],
+.lg-dark {
+  --lg-tint: 26 26 28;
+  --lg-tint-max: 0.68;
+  --lg-tint-max-bar: 0.9;
+
+  /* Dark glass must brighten what is behind it LESS, or a dark page
+     turns to grey soup; the contrast pull does the diffusing here. */
+  --lg-bright: 0.94;
+  --lg-contrast: 0.95;
+
+  --lg-rim-alpha: 0.2;
+  --lg-rim-alpha-low: 0.05;
+  --lg-shade-alpha: 0.3;
+  --lg-sheen-alpha: 0.18;
+  /* The strongest of the three — a dark outer edge is the only thing
+     separating a dark pane from a dark page — but nowhere near enough
+     to become a ring of its own. The edge darkens the seam; it does not
+     draw a line. */
+  --lg-edge-alpha: 0.2;
+
   --glass-ring: rgb(255 255 255 / 0.08);
 }
 
-/* True black wants a fraction more fill, or the pill disappears into it. */
+/* True black wants a fraction more fill, or the pill disappears into
+   it. The same pair home.css singles out. */
 [data-theme='kiswah'][data-mode='dark'],
 [data-theme='tahajjud'][data-mode='dark'] {
-  --glass-tint: 32 30 26;
-  --glass-alpha: 0.66;
+  --lg-tint: 32 30 26;
+  --lg-tint-max: 0.78;
+  --lg-tint-max-bar: 0.95;
 }
 
-.glass {
+/* =====================================================================
+   The surface
+   ===================================================================== */
+
+.lg {
   position: relative;
-  background: rgb(var(--glass-tint) / var(--glass-alpha));
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
-  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  /* So the sheen's blend mode composites against this surface and not
+     against whatever the app has stacked behind it. Without it the
+     highlight bleeds onto the backdrop and the edges go milky. */
+  isolation: isolate;
+  /* The clarity slider resolves here and nowhere else. */
+  background-color: rgb(
+    var(--lg-tint) /
+      calc(
+        var(--lg-tint-max) *
+          clamp(0, calc(var(--lg-clarity) + var(--lg-clarity-bump)), 1) *
+          var(--lg-enter)
+      )
+  );
+  /* Reset the bump on every surface, so a glass control inside a glass
+     bar does not inherit the bar's. The variants below re-set it and
+     come later at the same specificity, so they win. */
+  --lg-clarity-bump: 0;
+  -webkit-backdrop-filter: blur(calc(var(--lg-blur) * var(--lg-enter)))
+    saturate(calc(100% + (var(--lg-sat) - 100%) * var(--lg-enter)))
+    brightness(calc(1 + (var(--lg-bright) - 1) * var(--lg-enter)))
+    contrast(calc(1 + (var(--lg-contrast) - 1) * var(--lg-enter)));
+  backdrop-filter: blur(calc(var(--lg-blur) * var(--lg-enter)))
+    saturate(calc(100% + (var(--lg-sat) - 100%) * var(--lg-enter)))
+    brightness(calc(1 + (var(--lg-bright) - 1) * var(--lg-enter)))
+    contrast(calc(1 + (var(--lg-contrast) - 1) * var(--lg-enter)));
+  /*
+   * The float, and ONLY the float — one shadow sampled at three
+   * distances. A single shadow reads as a sticker; the stack reads as
+   * something hovering. Nothing here may touch the boundary: see the
+   * one-edge rule in the header.
+   */
   box-shadow:
-    inset 0 1px 0 var(--glass-edge-top),
-    inset 0 -1px 0 var(--glass-edge-bottom),
-    0 0 0 0.5px var(--glass-ring),
-    0 10px 30px rgb(var(--shadow-rgb) / 0.18);
+    0 1px 2px -1px rgb(var(--lg-shadow) / calc(0.1 * var(--lg-enter))),
+    0 8px 24px -10px rgb(var(--lg-shadow) / calc(0.2 * var(--lg-enter))),
+    0 24px 56px -28px rgb(var(--lg-shadow) / calc(0.26 * var(--lg-enter)));
 }
 
 /*
- * Where the backdrop cannot be blurred, the fill alone would be
- * see-through enough to read text straight through it. Firefox and older
- * WebKit land here.
+ * The rim: a 1px gradient hairline that follows the border radius.
+ *
+ * A plain `border` cannot do this — a border takes ONE colour, and the
+ * whole point is that the rim is bright where light hits and nearly
+ * gone where it does not. Paint a full-bleed gradient, then mask it
+ * down to a 1px ring: `padding` sets the thickness, `mask-composite`
+ * removes the interior.
+ *
+ * Behind @supports because this ships inside an Android WebView as well
+ * as a browser, and on an engine without mask-composite the unmasked
+ * gradient would paint as a filled tinted rectangle rather than as an
+ * edge. No rim is a worse-looking surface; a filled rectangle is a bug.
  */
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .glass {
-    background: rgb(var(--glass-tint) / 0.94);
+@supports ((mask-composite: exclude) or (-webkit-mask-composite: xor)) {
+  .lg::before,
+  .lg-chip::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    /*
+     * Negative, so the rim and the sheen paint between the surface's
+     * own background and its content; `isolation: isolate` keeps them
+     * from escaping behind the page. This also means children need no
+     * z-index of their own — and a rule like `.lg > * { z-index: 2 }`
+     * is NOT equivalent, because it cannot reach bare text nodes, so a
+     * pill written as `<p><Icon/>Text</p>` gets its icon lifted and its
+     * words left under the sheen.
+     */
+    z-index: -1;
+    /*
+     * Carries the radius, and that is all it carries. `corner-shape` is
+     * NOT inherited, so a squircle on .lg with a circular-arc ::before
+     * is two different outlines over one box — which is what reads as a
+     * "double border", and it is geometry, so no colour tuning fixes
+     * it. Nothing in this app sets corner-shape; if anything ever does,
+     * it has to be set here too.
+     */
+    border-radius: inherit;
+    padding: 1px;
+    /*
+     * ONE ring carrying both halves of the edge. The bright stops are
+     * where light lands — top-left, and the far corner where light
+     * leaving the lens catches the lip. The MIDDLE stops are --lg-shade
+     * rather than a dimmer white: the parts facing away from the light
+     * are genuinely darker than the surface, not merely less bright.
+     * That is the darkened outer edge, expressed the only way the web
+     * can express it without drawing a second ring.
+     *
+     * 145deg, not 90deg: the light is above and to the LEFT.
+     */
+    background: linear-gradient(
+      145deg,
+      rgb(var(--lg-rim) / calc(var(--lg-rim-alpha) * var(--lg-press) * var(--lg-enter))) 0%,
+      rgb(var(--lg-shade) / calc(var(--lg-edge-alpha) * var(--lg-enter))) 38%,
+      rgb(var(--lg-shade) / calc(var(--lg-edge-alpha) * var(--lg-enter))) 62%,
+      rgb(var(--lg-rim) / calc(var(--lg-rim-alpha) * 0.7 * var(--lg-press) * var(--lg-enter))) 100%
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+
+  /* Fades in with the lens's tint, so it arrives as one thing. */
+  .lg-chip::before {
+    transition: opacity var(--t-base) var(--ease-out);
   }
 }
+
+/*
+ * The sheen: the specular highlight inside the top of the surface.
+ *
+ * An off-centre ellipse rather than a linear fade, because a linear
+ * fade looks like a gradient and an ellipse looks like a reflection.
+ * `screen` blend so it only ever adds light — over a dark page it
+ * brightens, over cream it does almost nothing, which is the correct
+ * physical behaviour and means one rule works in every theme.
+ *
+ * TWO highlights, not one turned up. The first is the light source off
+ * the top-left; the second is the much fainter glint on the opposite
+ * corner where light that entered the lens leaves it again. One reads
+ * as a gradient overlay; two reads as a curved object, and the second
+ * costs nothing because it is the same paint.
+ *
+ * The counter-glint is DERIVED, not driven: reflecting through
+ * (55%, 48%) — the constants are twice that — puts it on the far side,
+ * guarantees the two can never converge, and halves the work to two
+ * property writes per surface per frame instead of four. At rest these
+ * reproduce the static 88% / 108% position exactly, which is what every
+ * surface looks like under reduced motion and before glass.ts attaches.
+ */
+.lg::after,
+.lg-chip::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background:
+    radial-gradient(
+      120% 80% at calc(var(--lg-lx) * 1%) calc(var(--lg-ly) * 1%),
+      rgb(var(--lg-rim) / calc(var(--lg-sheen-alpha) * var(--lg-enter))) 0%,
+      rgb(var(--lg-rim) / 0) 58%
+    ),
+    radial-gradient(
+      90% 60% at calc((110 - var(--lg-lx)) * 1%) calc((96 - var(--lg-ly)) * 1%),
+      rgb(var(--lg-rim) / calc(var(--lg-sheen-alpha) * 0.45 * var(--lg-enter))) 0%,
+      rgb(var(--lg-rim) / 0) 62%
+    );
+  mix-blend-mode: screen;
+  pointer-events: none;
+}
+
+/* =====================================================================
+   Variants
+   ===================================================================== */
+
+/*
+ * Bar glass — chrome that floats over content the reader is scrolling.
+ *
+ * Cheaper blur, and `contain: paint` so the compositor treats it as a
+ * sealed region instead of re-reasoning about the page behind it. The
+ * tint ceiling goes up and takes a clarity bump on top: a bar has
+ * running text passing under it all day, which is the worst case for
+ * legibility on glass, and in a mushaf that text is the whole point.
+ *
+ * ICNL's version of this also replaced the rim with a top-only
+ * hairline, because its bar is full-bleed and a full ring on a
+ * full-bleed element draws two vertical strokes at the viewport edges
+ * that look like a rendering fault. Nothing in this app is full-bleed
+ * chrome — the dock, the reader's bars and the toast are all centred
+ * pills — so the full ring is correct here and that override is not
+ * ported. Do not re-add a bottom line to go with it: that would be the
+ * second edge the material forbids.
+ */
+.lg-bar {
+  --lg-blur: var(--lg-blur-bar);
+  --lg-tint-max: var(--lg-tint-max-bar);
+  --lg-clarity-bump: 0.4;
+  contain: paint;
+}
+
+/*
+ * THE SELECTION LENS — glass for the selected thing INSIDE a surface.
+ *
+ * It has NO backdrop-filter, and that is the whole design. Nesting one
+ * samples a backdrop the parent has ALREADY tinted and blurred, so the
+ * two multiply into a murky patch with a hard seam and the blur is paid
+ * for twice. The lens is the same material minus the sampling: tint,
+ * rim and specular painted over whatever the parent already resolved.
+ * That is genuinely what Apple's selection lens is — a brighter lozenge
+ * of the same glass, not a second pane of it.
+ *
+ * It also means the lens works on surfaces that are NOT glass, which is
+ * how the reciter grid uses it: that panel is an opaque card carrying
+ * names, a real blur over it would do nothing visible while still
+ * costing a compositor pass, and the lens gives the highlight for free
+ * without putting translucency under text.
+ *
+ * Slightly more tint than the surface under it, because a selected
+ * thing has to read as selected before it reads as glass.
+ */
+.lg-chip {
+  position: relative;
+  isolation: isolate;
+  /*
+   * The lens MOVES between items rather than blinking between them.
+   * Selection swaps this class from one element to another in the same
+   * frame, so with no transition the highlight teleports. Cross-fading
+   * the tint here and the rim's opacity above is as close as two
+   * separate elements get to a lens sliding along a track.
+   */
+  transition: background-color var(--t-base) var(--ease-out);
+  /*
+   * Published as its own property, and that is not tidiness.
+   *
+   * The lens goes on things that are buttons — a dock tab, a reciter cell —
+   * and a button is given `background: none` by the rule that strips its
+   * native chrome. Those rules are single-class, same as `.lg-chip`, and
+   * several of them are declared later in the cascade (`.dock-tab` below,
+   * `.face-cell` in home.css, which loads after this file), so they win on
+   * order and the lens comes out with no fill at all. Naming the fill lets
+   * those surfaces re-assert it at their own specificity without a second
+   * copy of the arithmetic — see the surfaces block at the end of this file.
+   */
+  --lg-chip-fill: rgb(
+    var(--lg-tint) /
+      calc(
+        var(--lg-tint-max) *
+          clamp(0, calc(var(--lg-clarity) + var(--lg-clarity-bump) + 0.25), 1)
+      )
+  );
+  background-color: var(--lg-chip-fill);
+  --lg-clarity-bump: 0;
+}
+
+/*
+ * Interactive glass. Apple's glass responds to touch: it brightens and
+ * the rim dims under the finger.
+ *
+ * ICNL also compresses the surface with `scale: 0.975` on :active. That
+ * is NOT ported, and it is a decision rather than an omission — this
+ * app already holds the rule that a glass element is transformed only
+ * where it is smaller than a thumb (see the press block in motion.css),
+ * because moving a backdrop-filter region re-blurs it every frame. The
+ * presses here live on the children, and the surface answers in tint
+ * and rim alone.
+ */
+.lg-interactive:hover {
+  --lg-clarity-bump: 0.14;
+}
+
+.lg-interactive:active {
+  /*
+   * A separate multiplier, NOT `calc(var(--lg-rim-alpha) * 0.7)`. That
+   * reads naturally and is a cycle: the declaration would be invalid at
+   * computed-value time and quietly fall back to the inherited value,
+   * so the rim would never dim and nothing would report it.
+   */
+  --lg-press: 0.62;
+}
+
+/*
+ * Concentric radii. Glass nests inside glass by making the inner radius
+ * equal the outer radius minus the gap, so the two curves stay
+ * parallel. Set --lg-r and --lg-gap on the parent; the child reads them.
+ */
+.lg-concentric {
+  border-radius: calc(var(--lg-r, var(--radius-lg)) - var(--lg-gap, var(--space-2)));
+}
+
+/*
+ * NO `corner-shape: squircle`, and this is a decision, not an omission.
+ * It is not inherited, so set on .lg alone it clips the surface to a
+ * squircle while ::before — which paints the rim — stays a circular-arc
+ * rounded rect: two outlines over one box, meeting mid-edge and
+ * separating toward the corners. And at the pill radius every control
+ * here uses, a squircle is a rounded SQUARE rather than a capsule.
+ *
+ * NO SVG refraction either, which ICNL does ship (components/ui/glass.tsx,
+ * a displacement map driven by a blurred flood). Two reasons it does not
+ * belong in a mushaf. Refraction and diffusion are mutually exclusive —
+ * bending the backdrop only shows if the backdrop still HAS detail to
+ * bend, so ICNL's refracting surfaces drop to 10px of blur — and the
+ * detail behind every glass surface in this app is Arabic text that the
+ * blur is there to get out of the way of. It is also Chromium-only,
+ * which in an app shipping as both a browser PWA and an Android WebView
+ * means the two builds would not look the same.
+ */
 
 /* =====================================================================
    The dock
@@ -295,9 +737,12 @@
     color var(--t-base) var(--ease-out);
 }
 
+/* The fill is the selection lens — .lg-chip, added in Dock.tsx. This used
+   to be a flat `rgb(var(--glass-tint) / 0.5)` here, which is the same idea
+   without the rim, the sheen, or the cross-fade that keeps the highlight
+   from teleporting when the selected tab changes. */
 .dock-tab[aria-selected='true'] {
   color: var(--ink-strong);
-  background: rgb(var(--glass-tint) / 0.5);
 }
 
 /*
@@ -476,20 +921,30 @@
  * spare. It comes back the moment the list settles, which is when anyone is
  * actually looking at it.
  */
-.dock.is-scrolling .glass {
+.dock.is-scrolling .lg {
   -webkit-backdrop-filter: none;
   backdrop-filter: none;
-  /* 0.88 rather than 0.93: the step from the resting 0.62 is what the eye
-     catches, and a fill this close to opaque hides just as much. */
-  background: rgb(var(--glass-tint) / 0.88);
-  /* Instant on the way out. There is no showing sharp content through a 0.62
-     fill for even one frame, so the flat fill has to be there before the blur
-     goes. */
+  /*
+   * The tint takes over for the blur, through the material's own knobs
+   * rather than a flat background of its own — so the rim and the sheen
+   * stay exactly where they were and only the sampling stops. Written as
+   * a `background` shorthand this used to blow away .lg's tint entirely.
+   *
+   * 0.88 rather than the bar ceiling of 0.93: the step from the resting
+   * fill is what the eye catches, and a fill this close to opaque hides
+   * just as much.
+   */
+  --lg-clarity: 1;
+  --lg-tint-max: 0.88;
+  --lg-clarity-bump: 0;
+  /* Instant on the way out. There is no showing sharp content through the
+     resting fill for even one frame, so the flat fill has to be there
+     before the blur goes. */
   transition: none;
 }
 
 /* Its own layer, so scrolling underneath never repaints it. */
-.dock .glass {
+.dock .lg {
   will-change: transform;
   /* Only the return is eased — see .is-scrolling above. */
   transition: background-color var(--t-base) var(--ease-out);
@@ -515,4 +970,246 @@
 .dock-tabs {
   flex: 0 1 auto;
   margin-inline: auto;
+}
+
+/* =====================================================================
+   Which surfaces are glass
+   ---------------------------------------------------------------------
+   Every one of these floats over something. Nothing that carries body
+   text on a card is in this list, and the mushaf page itself is not:
+   the leaf, the surah rows and every `.panel` stay opaque, so no ayah
+   is ever read through a tinted pane.
+
+     .now-capsule      the dock's now-playing pill   lg lg-bar lg-interactive
+     .dock-tabs        the dock's tab pill           lg lg-bar
+     .mchrome.top      the reader's top bar          lg lg-bar
+     .mchrome.bottom   the reader's transport        lg lg-bar
+     .player           the now-playing sheet         lg
+     .dialog           the confirm modal             lg
+     .toast            the message strip             lg lg-bar
+     .dock-tab[aria-selected]   the tab lens         lg-chip
+     .face-cell.is-on           the chosen reciter   lg-chip
+
+   The classes live in the markup. What is below is the per-surface
+   tuning, and the removal of the edges these surfaces used to draw for
+   themselves — a glass surface has ONE edge and ::before draws it, so a
+   leftover border or inset line is a second one.
+
+   The opaque fills and card shadows these surfaces carried in theme.css
+   are not deleted there: .lg sets background-color and box-shadow from
+   this file, which loads after it, so theme.css keeps working for
+   anything that stops being glass.
+   ===================================================================== */
+
+/*
+ * The reader's chrome needs no tuning — `lg lg-bar` in MushafView.tsx is
+ * the whole of it — but it has the one rough edge in this port, and it
+ * is written down here so it is not rediscovered.
+ *
+ * `.mchrome` shows and hides with `opacity: 0 → 1`. An element below
+ * opacity 1 forms a backdrop root: its backdrop-filter has nothing left
+ * to sample and renders as no filter at all, so the pane fades in flat
+ * and the blur snaps on at the end of the 160ms rather than arriving
+ * with it. That is exactly the failure `--lg-enter` exists for, and the
+ * knob is ported and ready.
+ *
+ * It is not wired up here because the fix is not a swap. `--lg-enter: 0`
+ * makes the MATERIAL invisible — tint, rim, sheen and float all go to
+ * nothing — but the buttons and the page number inside it do not, so
+ * `.mchrome`'s contents would need a fade of their own and the reader's
+ * chrome entrance would be a different animation from the one that was
+ * tuned. Worth doing on its own, not as part of a material port.
+ */
+
+/*
+ * The now-playing sheet.
+ *
+ * It carries more text than any other glass surface here — the surah
+ * name, the reciter, the riwayah, the times — so it takes the bar tint
+ * ceiling even though it is not a bar. At clarity 0.85 plus the 0.4
+ * bump the fill clamps to its maximum, which is what puts that text on
+ * a known ground rather than on whichever row of the list is under it.
+ *
+ * It keeps the full blur radius rather than the bar's, because the
+ * sheet is opened deliberately, sits on `.sheet-scrim`, and is looked
+ * at rather than scrolled past.
+ *
+ * NOT `.lg-bar`, and the reason is `contain: paint`: this sheet is a
+ * scroller with a fold inside it whose children are animated in and
+ * out, and sealing the paint region of something that is mid-animation
+ * is the kind of clip that shows up only on the frames nobody looks at
+ * twice. The two things the variant is actually wanted for are set by
+ * hand instead.
+ */
+.player {
+  --lg-tint-max: var(--lg-tint-max-bar);
+  --lg-clarity-bump: 0.4;
+}
+
+/*
+ * The message strip. `border: 1px solid var(--accent-line)` was the
+ * surface's edge before it had a rim; leaving it draws two.
+ */
+.toast {
+  border: 0;
+}
+
+/*
+ * Focus rings drawn INSIDE the surfaces that `.lg-bar` now contains.
+ *
+ * `contain: paint` seals the bar's paint region, which is most of the
+ * reason the variant exists — and it clips anything a child paints
+ * outside the padding box, an outline included. The dock's pill and
+ * capsule were already `overflow: hidden`, so nothing changed for them,
+ * but the reader's chrome and the toast were not: their buttons had the
+ * browser's default ring and would now have had it cut off.
+ *
+ * Negative offset, so the ring is drawn just inside the edge where the
+ * containment cannot reach it. These three controls had no ring of
+ * their own before this; the rest of the app's are in desktop.css.
+ */
+.mchrome-btn:focus-visible,
+.mchrome-play:focus-visible,
+.toast-x:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -3px;
+}
+
+/*
+ * The two lenses, re-asserting the fill `.lg-chip` published.
+ *
+ * Both of these are buttons, and both are given `background: none` by a
+ * single-class rule that is declared after `.lg-chip` — `.dock-tab`
+ * further up this file, `.face-cell` in home.css, which loads after it.
+ * Equal specificity, later source order, so the lens loses its fill
+ * unless it is restated at two classes. This is the whole of that fix;
+ * the arithmetic still lives in one place.
+ */
+.dock-tab.lg-chip,
+.face-cell.lg-chip {
+  background-color: var(--lg-chip-fill);
+}
+
+/*
+ * The chosen reciter, in the reciter panel.
+ *
+ * The panel itself is an opaque card carrying names, so it is not glass
+ * and must not be — but the lens has no backdrop-filter by design, so
+ * it works here exactly as it does inside the dock. The gold ring on
+ * the portrait stays: that is what the row is scanned by, and the code
+ * that put it there says so. The lens is the lozenge behind the whole
+ * cell, which is the part a ring on one element cannot give.
+ *
+ * The padding is on `.face-cell` in home.css, so the lozenge has
+ * something to be the shape of.
+ */
+.face-cell.is-on {
+  border-radius: var(--radius-lg);
+}
+
+/* =====================================================================
+   Degradation — each of these leaves a usable, near-identical surface
+   ---------------------------------------------------------------------
+   LAST IN THE FILE ON PURPOSE. Every rule here is single-class, and so
+   is the per-surface tuning above it — `.player` raising its own tint
+   ceiling, for one. Equal specificity means source order decides, so
+   moved any earlier these lose to a surface that set the same knob for
+   itself, and `prefers-reduced-transparency` would have left the
+   now-playing sheet at 0.93 rather than opaque. An accessibility
+   setting and the kill switch have to be the last word.
+   ===================================================================== */
+
+/*
+ * No backdrop-filter at all. The tint has to carry legibility on its
+ * own, so it goes nearly opaque. The rim and sheen stay: they are what
+ * make the surface look intentional rather than like a failed effect.
+ */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .lg {
+    --lg-clarity: 1;
+    --lg-tint-max: 0.94;
+  }
+
+  [data-mode='dark'] .lg,
+  .lg-dark .lg {
+    --lg-clarity: 1;
+    --lg-tint-max: 0.92;
+  }
+}
+
+/*
+ * The accessibility setting that exists for exactly this material.
+ * Honour it properly: opaque surface, no sheen, no blur. Not a reduced
+ * blur — none.
+ */
+@media (prefers-reduced-transparency: reduce) {
+  .lg,
+  .lg-bar {
+    --lg-clarity: 1;
+    --lg-tint-max: 1;
+    --lg-blur: 0px;
+    --lg-bright: 1;
+    --lg-contrast: 1;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+
+  .lg::after {
+    display: none;
+  }
+}
+
+/*
+ * A different request from reduced transparency. Someone asking for
+ * more contrast has not asked for the translucency to go away; they
+ * have asked for the BOUNDARIES to be unambiguous. So the material
+ * survives, the tint goes fully opaque so text sits on a known
+ * background, and every surface gets a visible outline. This is the one
+ * place a second ring is wanted, so the one-edge rule is suspended on
+ * purpose.
+ */
+@media (prefers-contrast: more) {
+  .lg,
+  .lg-bar {
+    --lg-clarity: 1;
+    --lg-tint-max: 1;
+    --lg-rim-alpha: 1;
+    outline: 1px solid rgb(var(--lg-shade) / 0.85);
+    outline-offset: -1px;
+  }
+
+  .lg::after {
+    display: none;
+  }
+}
+
+/*
+ * The kill switch. `lg-off` on <html> reverts every glass surface to an
+ * opaque tint in one class — the shape a "reduce transparency" setting
+ * takes, and the first thing to try when a real device reports jank.
+ * src/ui/glass.ts sets and remembers it.
+ */
+.lg-off .lg,
+.lg-off .lg-bar {
+  --lg-clarity: 1;
+  --lg-tint-max: 1;
+  --lg-blur: 0px;
+  --lg-bright: 1;
+  --lg-contrast: 1;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+
+.lg-off .lg::after,
+.lg-off .lg-chip::after {
+  display: none;
+}
+
+/* Reduced motion keeps the material and stops the lens sliding; the
+   moving sheen is turned off in glass.ts, which removes the inline
+   properties so these defaults resume rather than freezing mid-travel. */
+@media (prefers-reduced-motion: reduce) {
+  .lg-chip {
+    transition: none;
+  }
 }

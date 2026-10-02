@@ -224,8 +224,8 @@ const SOURCES = {
   juhany: {
     route: 'j',
     home: true,
-    name: 'عبد الله الجهني',
-    nameEn: 'Abdullah Al-Juhany',
+    name: 'عبد الله عواد الجهني',
+    nameEn: 'Abdullah Awad Al-Juhany',
     fullName: 'الشيخ عبد الله بن علي الجهني',
     riwayah: 'رواية الدوري عن أبي عمرو البصري',
     riwayahEn: 'Ad-Duri from Abu Amr al-Basri',
@@ -258,8 +258,8 @@ const SOURCES = {
     route: 'jq',
     // complete; no need to ask
     fixedCount: 114,
-    name: 'عبد الله الجهني',
-    nameEn: 'Abdullah Al-Juhany',
+    name: 'عبد الله عواد الجهني',
+    nameEn: 'Abdullah Awad Al-Juhany',
     fullName: 'الشيخ عبد الله بن علي الجهني',
     mushaf: 'المصحف المرتل الكامل — برواية حفص عن عاصم',
     mushafEn: 'Complete murattal mushaf — Hafs from Asim',

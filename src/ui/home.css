@@ -433,7 +433,9 @@
   align-items: center;
   gap: 0.55rem;
   inline-size: 100%;
-  padding: 0;
+  /* Room for the selection lens to be a lozenge rather than a tight
+     outline round the name. The grid's own gap absorbs it. */
+  padding: 0.35rem 0.2rem;
   border: 0;
   background: none;
   font-family: inherit;

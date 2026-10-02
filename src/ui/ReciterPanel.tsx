@@ -214,9 +214,16 @@ export function ReciterPanel({
           const on = f.id === activeId
           return (
             <li key={f.id}>
+              {/*
+                  The chosen reciter takes the selection lens. This panel is an
+                  opaque card carrying names, so it is not glass and must not
+                  be — but `.lg-chip` has no backdrop-filter by design, so it
+                  works over an opaque surface as well as over a glass one, and
+                  gives the highlight without putting translucency under text.
+              */}
               <button
                 type="button"
-                className={`face-cell${on ? ' is-on' : ''}`}
+                className={`face-cell${on ? ' is-on lg-chip' : ''}`}
                 aria-pressed={on}
                 onClick={() => onPick(f.id)}
               >

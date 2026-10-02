@@ -191,7 +191,7 @@ export function Dock({
   return (
     <div ref={dockRef} className={cls}>
       {now && (
-        <div className="now-capsule glass">
+        <div className="now-capsule lg lg-bar lg-interactive">
           <button
             type="button"
             className="cap-open"
@@ -235,11 +235,19 @@ export function Dock({
         </div>
       )}
 
-      <nav className="dock-tabs glass" role="tablist">
+      <nav className="dock-tabs lg lg-bar" role="tablist">
+        {/*
+            The selected tab takes the selection lens, not a second pane of
+            glass. `.lg-chip` deliberately has no backdrop-filter of its own:
+            nesting one samples a backdrop the pill has already tinted and
+            blurred, so the two multiply into a murky patch with a hard seam
+            and the blur is paid for twice. The lens paints the same material
+            minus the sampling, over whatever the pill already resolved.
+        */}
         {tabs.map((tb) => (
           <button
             key={tb.id}
-            className="dock-tab"
+            className={`dock-tab${tb.id === active ? ' lg-chip' : ''}`}
             role="tab"
             aria-selected={tb.id === active}
             onClick={tb.onSelect}

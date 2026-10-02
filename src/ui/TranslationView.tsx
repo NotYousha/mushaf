@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { scrollParentY, useFollower } from './followScroll'
 import type { Lang, Strings } from '../i18n'
 import { digits, toArabicDigits } from '../i18n/script'
 import {
@@ -151,15 +152,23 @@ export function TranslationView({
     return found >= 0 ? found + 1 : null
   }, [starts, time])
 
-  // Keep the ayah being recited on screen, unless the reader is scrolling
-  // somewhere else — which is not distinguishable here, so this only moves
-  // when the ayah changes rather than on every tick.
+  /*
+   * Keep the ayah being recited on screen, and stop the moment the reader
+   * scrolls somewhere else.
+   *
+   * This used to say that a reader's scroll "is not distinguishable here", and
+   * only moved on an ayah change to blunt the damage. It is distinguishable:
+   * the follower remembers the scrollTop it wrote and treats anything else as
+   * the reader taking over. Changing surah hands control back.
+   */
+  const follower = useFollower(
+    () => scrollParentY(scroller.current) ?? scroller.current,
+    surah,
+  )
   useEffect(() => {
     if (active === null) return
-    scroller.current
-      ?.querySelector(`[data-ayah="${active}"]`)
-      ?.scrollIntoView({ block: 'center', behavior: 'smooth' })
-  }, [active])
+    follower.follow(scroller.current?.querySelector(`[data-ayah="${active}"]`))
+  }, [active, follower])
 
   /**
    * Where the reader is, as the header says it.

@@ -21,6 +21,7 @@ import {
 import { juzOfPage, surahOfPage, type UnitWord } from '../mushaf/divisions'
 import { MushafPage } from './MushafPage'
 import { loadTajweed, type Tajweed } from '../mushaf/tajweed'
+import { scrollParentY, useFollower } from './followScroll'
 import surahMeta from '../../data/surahs.json'
 import { getPref, setPref } from '../db/prefs'
 import {
@@ -556,13 +557,26 @@ export function MushafView({
     onPageChange?.(page + 1)
   }, [page, onPageChange])
 
+  /*
+   * Keep the word being recited on screen.
+   *
+   * Was scrollIntoView, which was wrong here three times over. It scrolls
+   * every scrollable ancestor, so it moved the horizontal page strip as well
+   * as the page -- and onStripScroll read that back as a manual page turn and
+   * switched follow-the-recitation off. It ran at word granularity, several
+   * times a second, each smooth animation cancelling the one before it. And
+   * it dragged back a reader who had scrolled away deliberately.
+   *
+   * The follower writes scrollTop on the one vertical scroller, only when the
+   * word has left the middle band, and stands down once the reader scrolls.
+   */
+  const follower = useFollower(
+    () => scrollParentY(pageRef.current?.querySelector('.mw.is-now') ?? pageRef.current),
+    surah,
+  )
   useEffect(() => {
-    // Located rather than held by a ref: a ref on the active word would be a
-    // changing prop, which is exactly what memoising the word avoids.
-    pageRef.current
-      ?.querySelector('.mw.is-now')
-      ?.scrollIntoView({ block: 'center', behavior: 'smooth' })
-  }, [activeKey])
+    follower.follow(pageRef.current?.querySelector('.mw.is-now'))
+  }, [activeKey, follower])
 
   /**
    * Size the type to fill the measure, then shrink the block to fit the leaf.
@@ -777,7 +791,7 @@ export function MushafView({
           how do I leave, at the top; what is playing, at the foot.
       */}
       {immersive && (
-        <div className="mchrome top glass" role="toolbar">
+        <div className="mchrome top lg lg-bar" role="toolbar">
           {onBack && (
             <button type="button" className="mchrome-btn" onClick={onBack} aria-label={t.back}>
               <ArrowBack size={20} />
@@ -913,7 +927,7 @@ export function MushafView({
 
       {/* What is playing, at the foot, in full screen only. */}
       {immersive && nowPlaying && (
-        <div className="mchrome bottom glass">
+        <div className="mchrome bottom lg lg-bar">
           <button
             type="button"
             className="mchrome-play"
