@@ -476,6 +476,9 @@ export class PlayerEngine {
     // next surah.
     this.el.defaultPlaybackRate = rate
     this.el.playbackRate = rate
+    // Explicit, though it is the default: a recitation slowed to 0.5x must
+    // keep the reciter's voice, not drop it an octave.
+    this.el.preservesPitch = true
   }
 
   /** Pause, and tell the OS the session is over rather than merely paused. */

@@ -170,7 +170,12 @@ const READING_TABS: boolean = false
  */
 const SQUARE_FRAME = { zoom: 100, x: 50, y: 50 }
 const UNCROPPED_PHOTOS = new Set(['sheikh.jpg'])
-const SPEEDS = [1, 1.25, 1.5, 0.75]
+/**
+ * The speed button cycles these. 2x for revising a surah you know, 0.5x for
+ * following a difficult passage or learning it by ear. Pitch is kept (see
+ * PlayerEngine.setRate), so a slowed recitation does not drop an octave.
+ */
+const SPEEDS = [1, 1.25, 1.5, 2, 0.5, 0.75]
 /** Sleep timer setting meaning "stop when this surah ends". */
 const SLEEP_SURAH = -1
 /** What tapping the moon cycles through. */
