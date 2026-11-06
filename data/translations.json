@@ -10,16 +10,6 @@
   "bytes": 878286
  },
  {
-  "id": "en-itani",
-  "lang": "en",
-  "name": "Clear Quran",
-  "translator": "Talal Itani",
-  "source": "Tanzil Project — tanzil.net/trans/en.itani",
-  "tafsir": false,
-  "default": false,
-  "bytes": 765058
- },
- {
   "id": "ur-jalandhry",
   "lang": "ur",
   "name": "تفسیر جالندھری",
