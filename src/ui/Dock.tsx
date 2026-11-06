@@ -71,6 +71,50 @@ export function Dock({
    */
   const tightRef = useRef(false)
 
+  /*
+   * Only a scroll the person made may draw the dock in.
+   *
+   * Switching tabs restores that tab's saved scroll position, and the
+   * follower scrolls the list on its own once per ayah during playback.
+   * Both read as "scrolling down", so tapping a tab, or just listening,
+   * minimised the dock. A touch, wheel or key on the list in the last
+   * 800 ms is what marks a scroll as the person's.
+   */
+  const lastInput = useRef(0)
+  useEffect(() => {
+    const el = scroller.current
+    if (!el) return
+    const mark = () => {
+      lastInput.current = performance.now()
+    }
+    const opts = { passive: true } as const
+    el.addEventListener('touchmove', mark, opts)
+    el.addEventListener('wheel', mark, opts)
+    el.addEventListener('pointerdown', mark, opts)
+    el.addEventListener('keydown', mark, opts)
+    return () => {
+      el.removeEventListener('touchmove', mark)
+      el.removeEventListener('wheel', mark)
+      el.removeEventListener('pointerdown', mark)
+      el.removeEventListener('keydown', mark)
+    }
+  }, [scroller])
+
+  // A new tab starts with the dock at full size, measured from where that
+  // tab's list was restored to.
+  useEffect(() => {
+    tightRef.current = false
+    setTight(false)
+    lastInput.current = 0
+    lastY.current = scroller.current?.scrollTop ?? 0
+    // Again next frame, once the tab's restored position has landed, unless
+    // the person has already started scrolling it.
+    const id = requestAnimationFrame(() => {
+      if (lastInput.current === 0) lastY.current = scroller.current?.scrollTop ?? 0
+    })
+    return () => cancelAnimationFrame(id)
+  }, [active, scroller])
+
   useEffect(() => {
     const el = scroller.current
     if (!el) return
@@ -90,6 +134,12 @@ export function Dock({
          * comes to rest, where it is what anyone actually looks at.
          */
         const y = el.scrollTop
+        // Momentum keeps going after the finger lifts, so the window is
+        // generous; anything outside it is the app scrolling, not a person.
+        if (performance.now() - lastInput.current > 800) {
+          lastY.current = y
+          return
+        }
         const delta = y - lastY.current
         /*
          * The dead zone comes first.

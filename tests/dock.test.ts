@@ -71,26 +71,46 @@ function mount(now: typeof NOW | null) {
   Object.defineProperty(scroller, 'scrollTop', { get: () => y })
 
   root = createRoot(host)
-  act(() => {
-    root!.render(
-      createElement(Dock, {
-        t: stringsFor('en'),
-        tabs: TABS,
-        active: 'quran',
-        now,
-        onOpenPlayer: () => {},
-        onToggle: () => {},
-        onNext: () => {},
-        scroller: { current: scroller },
-      }),
-    )
-  })
+  const ref = { current: scroller }
+  const render = (active: string) =>
+    act(() => {
+      root!.render(
+        createElement(Dock, {
+          t: stringsFor('en'),
+          tabs: TABS,
+          active,
+          now,
+          onOpenPlayer: () => {},
+          onToggle: () => {},
+          onNext: () => {},
+          scroller: ref,
+        }),
+      )
+    })
+  render('quran')
 
   const dock = host.querySelector('.dock') as HTMLElement
   return {
     dock,
-    /** Move the list and let the dock's rAF-deferred handler run. */
+    /** Tap another tab. */
+    async switchTo(tab: string) {
+      render(tab)
+      await act(async () => {
+        await new Promise((r) => setTimeout(r, 32))
+      })
+    },
+    /** Move the list as a person would (a touch, then the scroll) and let
+        the dock's rAF-deferred handler run. */
     async scrollTo(next: number) {
+      y = next
+      await act(async () => {
+        scroller.dispatchEvent(new Event('touchmove'))
+        scroller.dispatchEvent(new Event('scroll'))
+        await new Promise((r) => setTimeout(r, 32))
+      })
+    },
+    /** Move the list the way the app does (tab restore, ayah follower). */
+    async scrollByApp(next: number) {
       y = next
       await act(async () => {
         scroller.dispatchEvent(new Event('scroll'))
@@ -165,6 +185,31 @@ describe('the dock contracting', () => {
     // to scroll back up.
     await d.measures(132)
     expect(d.published()).toBe('132px')
+  })
+})
+
+/*
+ * "Sometimes switching the bottom tabs minimises it" (owner, Nov 2026).
+ * Restoring a tab's scroll position, and the follower moving the list once
+ * per ayah, both looked like scrolling down.
+ */
+describe('only a person scrolling draws the dock in', () => {
+  it('stays out when the app moves the list', async () => {
+    const d = mount(NOW)
+    await d.scrollByApp(400)
+    await d.scrollByApp(900)
+    expect(d.dock.classList.contains('is-tight')).toBe(false)
+  })
+
+  it('comes back out when another tab is chosen', async () => {
+    const d = mount(NOW)
+    await d.scrollTo(400)
+    expect(d.dock.classList.contains('is-tight')).toBe(true)
+    await d.switchTo('home')
+    expect(d.dock.classList.contains('is-tight')).toBe(false)
+    // The restored position of the new tab is not a scroll either.
+    await d.scrollByApp(1200)
+    expect(d.dock.classList.contains('is-tight')).toBe(false)
   })
 })
 
