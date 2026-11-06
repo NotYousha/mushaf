@@ -22,7 +22,16 @@ export type LoadResult =
    * not show it, because the thing it would report has already been replaced
    * by what the listener actually asked for.
    */
-  | { ok: false; reason: string; superseded?: boolean }
+  | {
+      ok: false
+      reason: string
+      superseded?: boolean
+      /**
+       * What went wrong, for the interface to say in the reader's language.
+       * `reason` stays the English detail for logs and the fallback.
+       */
+      code?: 'offline' | 'unrecorded' | 'failed'
+    }
 
 /**
  * Streaming-first playback.
@@ -274,7 +283,16 @@ export class PlayerEngine {
     }
 
     if (!candidates.length) {
-      return { ok: false, reason: 'this surah has not been recorded yet' }
+      return { ok: false, reason: 'this surah has not been recorded yet', code: 'unrecorded' }
+    }
+    /*
+     * Offline with nothing saved: say so now. Each streaming candidate would
+     * otherwise wait out its 15 s timeout first, so tapping an unsaved surah
+     * on a plane sat for half a minute before failing with a generic error.
+     * A captive portal reports online, and the timeout still covers that.
+     */
+    if (!saved && typeof navigator !== 'undefined' && navigator.onLine === false) {
+      return { ok: false, reason: 'offline and not saved', code: 'offline' }
     }
 
     let last = 'the audio could not be loaded'
@@ -302,7 +320,7 @@ export class PlayerEngine {
     }
 
     this.onError?.(last)
-    return { ok: false, reason: last }
+    return { ok: false, reason: last, code: 'failed' }
   }
 
   /**
@@ -458,6 +476,9 @@ export class PlayerEngine {
     // next surah.
     this.el.defaultPlaybackRate = rate
     this.el.playbackRate = rate
+    // Explicit, though it is the default: a recitation slowed to 0.5x must
+    // keep the reciter's voice, not drop it an octave.
+    this.el.preservesPitch = true
   }
 
   /** Pause, and tell the OS the session is over rather than merely paused. */

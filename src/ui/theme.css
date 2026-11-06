@@ -2358,8 +2358,9 @@ body {
 .tview-list .tayah-ar {
   font-family: var(--font-quran);
   /* Scripture, sized against the page it comes from rather than against the
-     interface scale — the same exemption the mushaf's own lines carry. */
-  font-size: 1.6rem;
+     interface scale — the same exemption the mushaf's own lines carry.
+     --ayah-scale is the reader's own A−/A+ on this view. */
+  font-size: calc(1.6rem * var(--ayah-scale, 1));
   line-height: 2.3;
   text-align: justify;
   color: var(--ink-strong);
@@ -2367,7 +2368,7 @@ body {
 }
 
 .tview-list .tayah-tr {
-  font-size: var(--text-sm);
+  font-size: calc(var(--text-sm) * var(--tr-scale, 1));
   line-height: 1.65;
   color: var(--ink);
   margin: 0;
@@ -5191,4 +5192,57 @@ body {
   font-size: var(--text-sm);
   color: var(--gold);
   cursor: pointer;
+}
+
+/* Pause / Resume beside Stop, under the download count. */
+.dl-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* Text size: an Aa button beside the translation picker, opening two rows of
+   A− / A+ (Arabic, translation). Opaque card, never glass: it sits over
+   ayah text. */
+.tview-pick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  align-items: flex-start;
+}
+.tview-size-btn {
+  min-width: 2.75rem;
+  font-weight: 600;
+}
+.tview-size {
+  position: absolute;
+  inset-inline-start: 0;
+  top: calc(100% + 0.35rem);
+  z-index: 7;
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background: var(--card);
+  border: 1px solid var(--accent-line);
+  border-radius: var(--radius-card);
+  box-shadow: 0 8px 24px rgb(var(--shadow-rgb) / 0.18);
+}
+.tview-size-row {
+  display: grid;
+  grid-template-columns: minmax(6rem, 1fr) auto auto;
+  align-items: center;
+  gap: var(--space-2);
+}
+.tview-size-row .btn {
+  min-width: 3rem;
+  min-height: 2.75rem;
+}
+
+/* "Play from 2:255" above the surah list when the search box holds a
+   reference. */
+.jump-ref {
+  margin: 0 1.2rem 0.85rem;
+  display: grid;
+  gap: var(--space-2);
+  justify-items: start;
 }

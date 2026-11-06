@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { Strings } from '../i18n'
 import { Play, Pause, Forward } from './Icons'
 import { isNativeShell } from '../native/shell'
+import { attachLens, type Lens } from './lensGL'
 
 export type DockTab = {
   id: string
@@ -70,6 +71,50 @@ export function Dock({
    */
   const tightRef = useRef(false)
 
+  /*
+   * Only a scroll the person made may draw the dock in.
+   *
+   * Switching tabs restores that tab's saved scroll position, and the
+   * follower scrolls the list on its own once per ayah during playback.
+   * Both read as "scrolling down", so tapping a tab, or just listening,
+   * minimised the dock. A touch, wheel or key on the list in the last
+   * 800 ms is what marks a scroll as the person's.
+   */
+  const lastInput = useRef(0)
+  useEffect(() => {
+    const el = scroller.current
+    if (!el) return
+    const mark = () => {
+      lastInput.current = performance.now()
+    }
+    const opts = { passive: true } as const
+    el.addEventListener('touchmove', mark, opts)
+    el.addEventListener('wheel', mark, opts)
+    el.addEventListener('pointerdown', mark, opts)
+    el.addEventListener('keydown', mark, opts)
+    return () => {
+      el.removeEventListener('touchmove', mark)
+      el.removeEventListener('wheel', mark)
+      el.removeEventListener('pointerdown', mark)
+      el.removeEventListener('keydown', mark)
+    }
+  }, [scroller])
+
+  // A new tab starts with the dock at full size, measured from where that
+  // tab's list was restored to.
+  useEffect(() => {
+    tightRef.current = false
+    setTight(false)
+    lastInput.current = 0
+    lastY.current = scroller.current?.scrollTop ?? 0
+    // Again next frame, once the tab's restored position has landed, unless
+    // the person has already started scrolling it.
+    const id = requestAnimationFrame(() => {
+      if (lastInput.current === 0) lastY.current = scroller.current?.scrollTop ?? 0
+    })
+    return () => cancelAnimationFrame(id)
+  }, [active, scroller])
+
   useEffect(() => {
     const el = scroller.current
     if (!el) return
@@ -89,6 +134,12 @@ export function Dock({
          * comes to rest, where it is what anyone actually looks at.
          */
         const y = el.scrollTop
+        // Momentum keeps going after the finger lifts, so the window is
+        // generous; anything outside it is the app scrolling, not a person.
+        if (performance.now() - lastInput.current > 800) {
+          lastY.current = y
+          return
+        }
         const delta = y - lastY.current
         /*
          * The dead zone comes first.
@@ -178,6 +229,26 @@ export function Dock({
     return () => ro.disconnect()
   }, [])
 
+  /*
+   * The WebGL lens over the selected tab (src/ui/lensGL.ts). It attaches once
+   * and is told when the selection moves; where it cannot run, the CSS
+   * `.lg-chip` underneath is the selection and nothing else changes.
+   */
+  const navRef = useRef<HTMLElement | null>(null)
+  const lensRef = useRef<Lens | null>(null)
+  useEffect(() => {
+    const nav = navRef.current
+    if (!nav) return
+    lensRef.current = attachLens(nav)
+    return () => {
+      lensRef.current?.dispose()
+      lensRef.current = null
+    }
+  }, [])
+  useEffect(() => {
+    lensRef.current?.update()
+  }, [active])
+
   if (isNativeShell()) return null
 
   /*
@@ -191,7 +262,7 @@ export function Dock({
   return (
     <div ref={dockRef} className={cls}>
       {now && (
-        <div className="now-capsule glass">
+        <div className="now-capsule lg lg-bar lg-interactive" data-glass="rim">
           <button
             type="button"
             className="cap-open"
@@ -235,11 +306,19 @@ export function Dock({
         </div>
       )}
 
-      <nav className="dock-tabs glass" role="tablist">
+      <nav ref={navRef} className="dock-tabs lg lg-bar" role="tablist" data-glass="rim">
+        {/*
+            The selected tab takes the selection lens, not a second pane of
+            glass. `.lg-chip` deliberately has no backdrop-filter of its own:
+            nesting one samples a backdrop the pill has already tinted and
+            blurred, so the two multiply into a murky patch with a hard seam
+            and the blur is paid for twice. The lens paints the same material
+            minus the sampling, over whatever the pill already resolved.
+        */}
         {tabs.map((tb) => (
           <button
             key={tb.id}
-            className="dock-tab"
+            className={`dock-tab${tb.id === active ? ' lg-chip' : ''}`}
             role="tab"
             aria-selected={tb.id === active}
             onClick={tb.onSelect}

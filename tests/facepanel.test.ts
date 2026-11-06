@@ -130,7 +130,18 @@ describe('the photo settings', () => {
      * deleted because the next reciter added without a portrait needs
      * somewhere to be named, and an empty set still fails him loudly.
      */
-    const FACELESS = new Set<string>([])
+    // Added November 2026 from quranicaudio / mp3quran, no verified portrait yet.
+    const FACELESS = new Set<string>([
+      'husary',
+      'husary-muallim',
+      'abdulbasit',
+      'abdulbasit-mujawwad',
+      'shatri',
+      'ajmy',
+      'qatami',
+      'jileel',
+      'fares',
+    ])
     for (const r of individual) {
       expect(Boolean(r.photo), `${r.id} has no portrait and is not listed as faceless`)
         .toBe(!FACELESS.has(r.id))

@@ -1,0 +1,26 @@
+name: Check branch
+
+# The heavy checks for work that is not on master yet. The owner's laptop
+# cannot run tsc or the full vitest suite without freezing, so every push to
+# a working branch is typechecked, tested and built here instead. No deploy.
+on:
+  push:
+    branches: [reading-surfaces]
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Typecheck
+        run: npx tsc --noEmit
+      - name: Test
+        run: npx vitest run
+      - name: Build
+        run: npm run build

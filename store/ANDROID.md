@@ -45,7 +45,29 @@ regenerating it.
 ## 2. The toolchain, and the two places it does not work as documented
 
 Bubblewrap keeps its JDK and Android SDK under `~/.bubblewrap`, and its
-`config.json` names both. **Trap one: it does not want an Android SDK laid out
+`config.json` names both.
+
+**Trap zero, and the nastiest: Bubblewrap's own JDK is 32-bit.** `java
+-XshowSettings:properties` on `~/.bubblewrap/jdk/jdk-17.0.11+9` reports
+`os.arch = x86`, `sun.arch.data.model = 32`, so the heap is capped near 1.5 GB
+whatever the machine has, and `-Xmx4g` is refused outright as "exceeds the
+maximum representable size". Bubblewrap's default `-Xmx1536m` sits right on the
+edge: `packageRelease` and `signReleaseBundle` fit sometimes and not others.
+
+What makes it dangerous rather than annoying is the shape of the failure.
+Gradle reports `OutOfMemoryError` and **leaves a truncated 281 KB `.aab` on
+disk** — a quarter the size of a real one, plausibly named, in the exact path
+you were about to upload from.
+
+```
+curl -L -o jdk17x64.zip   "https://api.adoptium.net/v3/binary/latest/17/ga/windows/x64/jdk/hotspot/normal/eclipse"
+unzip jdk17x64.zip -d ~/.bubblewrap/jdk64
+export JAVA_HOME=~/.bubblewrap/jdk64/jdk-17.0.20.1+1   # os.arch must read amd64
+```
+
+`gradle.properties` here asks for `-Xmx4g`, which a 32-bit JVM cannot start
+with at all — so the wrong JDK now fails loudly at launch rather than quietly
+three tasks in with a half-written bundle. **Trap one: it does not want an Android SDK laid out
 the way Google ships one.** `AndroidSdkTools.validatePath` looks for
 `<sdkRoot>/bin` or `<sdkRoot>/tools`, and `checkBuildTools` looks for
 `<sdkRoot>/build-tools/<version>` — so it wants the command-line tools' own
@@ -79,6 +101,29 @@ it is JSON, so a single backslash is a broken escape and the error you get is
 {"jdkPath":"C:\Users\you\.bubblewrap\jdk\jdk-17.0.11+9",
  "androidSdkPath":"C:\Users\you\.bubblewrap\android_sdk"}
 ```
+
+## 2a. The application id belongs to the Console, not to this repo
+
+It was `io.github.notyousha.mushaf` here until 2026-08-28, when the Play
+Console turned out to have **`com.almauiza.quran`** already fixed against the
+app. A package name is bound to the listing, and a bundle declaring a different
+one is rejected at upload rather than quietly accepted — so this is checked in
+**App bundle explorer** before building, not after.
+
+It is also the better name: the brand, where the old one tied the app's
+permanent identity to a GitHub username. It is a name and not an address, so
+moving off GitHub Pages later does not touch it — and it cannot be changed
+after the first upload in any case.
+
+To repoint it, edit `packageId` in `twa-manifest.json` and re-run `bubblewrap
+update`. That moves the namespace, the R class and the generated sources
+together; editing `app/build.gradle` alone leaves the Java sources in the old
+package. Re-apply the signing block afterwards — `update` regenerates the file.
+
+**The upload-key fingerprint does not move with it.** A certificate fingerprint
+is a property of the key, not of what it signs, so the same keystore signing
+`com.almauiza.quran` produced the identical SHA-256 it produced for the old id.
+Verified with `apksigner verify --print-certs`, not assumed.
 
 ## 3. Generate the project, and the keystore
 
@@ -184,9 +229,30 @@ gh repo create NotYousha/notyousha.github.io --public --add-readme
 git clone https://github.com/NotYousha/notyousha.github.io
 cd notyousha.github.io
 mkdir -p .well-known
-# put assetlinks.json here — template in store/assetlinks.template.json
+touch .nojekyll
+# put assetlinks.json here — see the note below on where to get it
 git add -A && git commit -m "Digital Asset Links for the Play app" && git push
 ```
+
+**`.nojekyll` is not optional.** GitHub Pages runs Jekyll over the repository
+by default, and Jekyll skips files and directories whose names begin with a
+dot — so `.well-known/` is committed, visible in the repo, and never published.
+The file 404s, verification fails, and nothing anywhere says why. That empty
+file turns Jekyll off.
+
+**Get the JSON from the Console, do not hand-write it.** Setup → App integrity
+→ App signing → **Digital Asset Links JSON**. Play fills in the package name
+and its own app-signing SHA-256, which removes the two things that are easy to
+get wrong and impossible to notice: a mistyped fingerprint, and a package name
+that does not match the bundle. Append the upload-key fingerprint from
+`store/assetlinks.template.json` as a second entry so a locally built APK
+verifies too.
+
+**The package name must match the bundle.** It is set by the first upload, not
+chosen in the Console, and it cannot be changed afterwards. Confirm it in **App
+bundle explorer** before publishing anything: an assetlinks file naming a
+different package fails exactly as a wrong fingerprint does, silently, and the
+fingerprint is the part everyone thinks to check.
 
 Then enable Pages for that repo (Settings → Pages → deploy from `main`), and
 check the file answers:
@@ -202,7 +268,7 @@ shape; replace the two placeholders.
 Verify from a connected phone:
 
 ```
-adb shell am start -a android.intent.action.VIEW -d "https://notyousha.github.io/mushaf/" io.github.notyousha.mushaf
+adb shell am start -a android.intent.action.VIEW -d "https://notyousha.github.io/mushaf/" com.almauiza.quran
 ```
 
 No address bar means it verified.

@@ -22,6 +22,15 @@ const BASE = import.meta.env?.BASE_URL ?? '/'
 
 export function Splash({ lang }: { lang: Lang }) {
   const [state, setState] = useState<'hidden' | 'running' | 'leaving'>(() => {
+    /*
+     * Not in the installed app. Android (and the Play Store build, which is
+     * the installed app) has already shown its own launch screen by the time
+     * this mounts, so a second one only made every cold start wait before
+     * anything could be touched. The browser tab keeps it.
+     */
+    if (typeof window !== 'undefined' && window.matchMedia?.('(display-mode: standalone)').matches) {
+      return 'hidden'
+    }
     if (typeof sessionStorage === 'undefined') return 'running'
     try {
       return sessionStorage.getItem(SEEN) ? 'hidden' : 'running'
@@ -39,7 +48,10 @@ export function Splash({ lang }: { lang: Lang }) {
       /* nothing to do */
     }
     const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
-    const hold = reduced ? 400 : 1650
+    // 700, not 1650. On Android the system has already shown its own launch
+    // splash, so a second long one made every cold start wait two seconds
+    // before anything could be touched.
+    const hold = reduced ? 400 : 700
     const leave = window.setTimeout(() => setState('leaving'), hold)
     // Matches the fade in CSS; unmounting sooner would cut it off.
     const done = window.setTimeout(() => setState('hidden'), hold + 420)

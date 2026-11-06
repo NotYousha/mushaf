@@ -48,13 +48,8 @@ const TRANSLATIONS = [
     // English-language Quran apps have already met.
     default: true,
   },
-  {
-    id: 'en-itani',
-    tanzil: 'en.itani',
-    lang: 'en',
-    name: 'Clear Quran',
-    translator: 'Talal Itani',
-  },
+  // Not 'en-itani' (Talal Itani's "Clear Quran"): it is copyrighted and
+  // its licence cannot be obtained for an app, so it is not shipped.
   {
     id: 'ur-jalandhry',
     tanzil: 'ur.jalandhry',

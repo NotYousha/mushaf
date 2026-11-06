@@ -82,7 +82,14 @@ export function loadTranslation(id: string): Promise<TranslationText | null> {
       id,
       fetch(`${BASE}trans/${id}.json`)
         .then((r) => (r.ok ? (r.json() as Promise<TranslationText>) : null))
-        .catch(() => null),
+        .catch(() => null)
+        .then((t) => {
+          // A failure is not remembered. Caching the null kept a translation
+          // missing for the rest of the session after one dropped request,
+          // with no way back short of restarting the app.
+          if (!t) cache.delete(id)
+          return t
+        }),
     )
   }
   return cache.get(id)!

@@ -134,7 +134,7 @@ describe('the roster panel', () => {
    */
   it('draws the same field as the Quran tab, asking for a reciter', () => {
     const html = render('en')
-    expect(html).toContain('class="search"')
+    expect(html).toMatch(/class="search[ "]/)
     expect(html).toContain(`placeholder="${stringsFor('en').searchReciters}"`)
     // Labelled as well as placeheld: a placeholder disappears the moment
     // anything is typed, and the magnifier beside it says nothing out loud.

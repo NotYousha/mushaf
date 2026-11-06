@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { loadCatalog, buildView, surahMeta } from './catalog/load'
-import { searchSurahs } from './catalog/search'
+import { parseReference, searchSurahs } from './catalog/search'
 import type { Reciter, SurahView } from './catalog/types'
 import {
   effectiveVerified,
@@ -126,6 +126,8 @@ import { Splash } from './ui/Splash'
 import { Onboarding } from './ui/Onboarding'
 import { defaultEdition } from './ui/editions'
 import { BUILD, holdUpdatesWhile } from './pwa'
+import { attachGlass } from './ui/glass'
+import { watchSurfaces } from './ui/lensGL'
 import './ui/theme.css'
 import './ui/themes.css'
 import './ui/glass.css'
@@ -168,7 +170,16 @@ const READING_TABS: boolean = false
  */
 const SQUARE_FRAME = { zoom: 100, x: 50, y: 50 }
 const UNCROPPED_PHOTOS = new Set(['sheikh.jpg'])
-const SPEEDS = [1, 1.25, 1.5, 0.75]
+/**
+ * The speed button cycles these. 2x for revising a surah you know, 0.5x for
+ * following a difficult passage or learning it by ear. Pitch is kept (see
+ * PlayerEngine.setRate), so a slowed recitation does not drop an octave.
+ */
+const SPEEDS = [1, 1.25, 1.5, 2, 0.5, 0.75]
+/** Sleep timer setting meaning "stop when this surah ends". */
+const SLEEP_SURAH = -1
+/** What tapping the moon cycles through. */
+const SLEEP_STEPS: Array<number | null> = [null, 15, 30, 60, SLEEP_SURAH]
 /** The transport's fixed jump. Ten seconds is the convention, and it is short
  *  enough to land back on the start of an ayah you half-caught. */
 const SKIP_SECONDS = 10
@@ -196,7 +207,14 @@ export default function App() {
   const [repeat, setRepeat] = useState<RepeatMode>('off')
   const [shuffle, setShuffle] = useState(false)
   const [speedIdx, setSpeedIdx] = useState(0)
+  /**
+   * The sleep timer: minutes from when it was set, SLEEP_SURAH for "at the
+   * end of this surah", or null for off.
+   */
   const [sleepAt, setSleepAt] = useState<number | null>(null)
+  /** Read by the ended handler, so the surah that is ending does not advance. */
+  const sleepAtRef = useRef<number | null>(null)
+  sleepAtRef.current = sleepAt
   // Opens on the home screen: the recitation you were in the middle of is
   // more useful than the top of a list of a hundred and fourteen surahs.
   const [tab, setTabState] = useState<Tab>('home')
@@ -262,6 +280,11 @@ export default function App() {
   /** Portraits the listener has added, imam id to object URL. */
   const [faces, setFaces] = useState<Map<string, Face>>(new Map())
   const [queued, setQueued] = useState(0)
+  /** The download queue is held, by the person or by losing the connection. */
+  const [dlPaused, setDlPaused] = useState(false)
+  /** Held because the connection dropped, so coming back online resumes it. */
+  const [dlOffline, setDlOffline] = useState(false)
+  const autoPaused = useRef(false)
   /*
    * Never reload for an update while something is playing or downloading.
    * The updater cannot see either of those, so it asks.
@@ -271,6 +294,16 @@ export default function App() {
   useEffect(() => {
     holdUpdatesWhile(() => busyRef.current)
   }, [])
+  /*
+   * The glass material's runtime half: the stored kill switch, and the
+   * specular highlight that follows the pointer on a desk and the device's
+   * tilt in the hand. Everything it does is additive — with this effect
+   * removed, every surface falls back to the static sheen glass.css already
+   * paints, which is also what reduced motion gets.
+   */
+  useEffect(() => attachGlass(), [])
+  // The WebGL rim and refraction on every `data-glass` surface (src/ui/lensGL.ts).
+  useEffect(() => watchSurfaces(), [])
   const [canCast, setCanCast] = useState(false)
   const [persisted, setPersisted] = useState<boolean | null>(null)
   const [talqeen, setTalqeen] = useState(false)
@@ -520,20 +553,71 @@ export default function App() {
     })()
   }, [refreshDownloaded])
 
+  /** Failures already shown, so closing the toast keeps it closed. */
+  const shownFailures = useRef(new Set<string>())
   useEffect(() => {
+    let remaining = -1
     return queue.current!.subscribe((s) => {
       setProgress(s.progress)
-      setQueued(s.active.length + s.pending.length)
+      const left = s.active.length + s.pending.length
+      setQueued(left)
+      setDlPaused(s.paused)
       // Running out of room stops the whole queue, so say that plainly
       // rather than repeating one surah's error message.
       if (queue.current!.outOfSpace) setError(t.outOfSpaceStopped)
       else {
-        const failed = Object.values(s.failed)[0]
-        if (failed) setError(t.saveFailed(failed))
+        /*
+         * Each failure once. Re-asserting the first failure on every queue
+         * event meant the toast came straight back after being closed, for
+         * as long as any other download was still running.
+         */
+        const fresh = Object.entries(s.failed).find(([k]) => !shownFailures.current.has(k))
+        if (fresh) {
+          shownFailures.current.add(fresh[0])
+          setError(t.saveFailed(fresh[1]))
+        }
       }
-      if (!s.active.length && !s.pending.length) void refreshDownloaded()
+      for (const k of shownFailures.current) if (!(k in s.failed)) shownFailures.current.delete(k)
+      /*
+       * Refresh what is saved whenever a job finishes, not only when the
+       * whole queue empties. During a "download all", finished surahs
+       * otherwise went back to showing a download button (or a stale
+       * percentage) until the last of the hundred and fourteen was done.
+       */
+      if (left < remaining || left === 0) void refreshDownloaded()
+      remaining = left
     })
   }, [refreshDownloaded, t])
+
+  /*
+   * Losing the connection pauses the queue instead of failing it.
+   *
+   * Without this, walking out of Wi-Fi during "download all" burned three
+   * retries per surah and then filed every remaining one as failed. Coming
+   * back online resumes it, but only a pause this made: one the person chose
+   * stays theirs.
+   */
+  useEffect(() => {
+    const q = queue.current!
+    const offline = () => {
+      if (q.isPaused || !q.state().active.length && !q.state().pending.length) return
+      autoPaused.current = true
+      setDlOffline(true)
+      q.pauseAll()
+    }
+    const online = () => {
+      if (!autoPaused.current) return
+      autoPaused.current = false
+      setDlOffline(false)
+      q.resumeAll()
+    }
+    window.addEventListener('offline', offline)
+    window.addEventListener('online', online)
+    return () => {
+      window.removeEventListener('offline', offline)
+      window.removeEventListener('online', online)
+    }
+  }, [])
 
   // A cast target may appear or vanish at any time, so this is a live watch
   // rather than a one-off check.
@@ -608,6 +692,16 @@ export default function App() {
 
   const advanceRef = useRef<(() => Promise<void>) | null>(null)
 
+  /** A load failure in the reader's language; the English detail otherwise. */
+  const failText = (res: { reason: string; code?: string }) =>
+    res.code === 'offline'
+      ? t.notSavedOffline
+      : res.code === 'unrecorded'
+        ? t.notRecorded
+        : res.code === 'failed'
+          ? t.audioLoadFailed
+          : res.reason
+
   const playSurah = useCallback(
     async (surah: number, startAt = 0) => {
       const s = surahs.find((x) => x.surah === surah)
@@ -640,7 +734,7 @@ export default function App() {
       // is no longer on screen, so neither is ours to clear or to show.
       if (res.ok || !res.superseded) setBusy(false)
       if (!res.ok) {
-        if (!res.superseded) setError(`${plainName(s.name)}: ${res.reason}`)
+        if (!res.superseded) setError(`${plainName(s.name)}: ${failText(res)}`)
         return
       }
       setMode(res.mode)
@@ -656,7 +750,7 @@ export default function App() {
       )
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [surahs, playable, speedIdx, reciter, downloadedHere, rejected, repeat],
+    [surahs, playable, speedIdx, reciter, downloadedHere, rejected, repeat, t],
   )
 
   const advance = useCallback(async () => {
@@ -838,7 +932,7 @@ export default function App() {
       if (current !== surah) {
         const res = await engine.current!.load(reciter.id, surah, s.url, s.fallbackUrl, from)
         if (!res.ok) {
-          if (!res.superseded) setError(`${plainName(s.name)}: ${res.reason}`)
+          if (!res.superseded) setError(`${plainName(s.name)}: ${failText(res)}`)
           return
         }
         setCurrent(surah)
@@ -846,21 +940,36 @@ export default function App() {
       engine.current!.seek(from)
       await engine.current!.play()
       await new Promise<void>((resolve) => {
-        const check = () => {
-          if (el.currentTime >= to || el.ended) {
-            el.removeEventListener('timeupdate', check)
-            clearInterval(id)
-            engine.current!.pause()
-            resolve()
-          }
+        let done = false
+        const finish = (pause: boolean) => {
+          if (done) return
+          done = true
+          el.removeEventListener('timeupdate', check)
+          el.removeEventListener('pause', stopped)
+          el.removeEventListener('emptied', stopped)
+          clearInterval(id)
+          if (pause) engine.current!.pause()
+          resolve()
         }
+        const check = () => {
+          if (el.currentTime >= to || el.ended) finish(true)
+        }
+        /*
+         * Paused by the person, or the source swapped for another surah,
+         * before the cut was reached. Without this the 40 ms interval ran
+         * for the rest of the session and the drill awaiting this range
+         * never moved on.
+         */
+        const stopped = () => finish(false)
         // timeupdate alone fires about four times a second, which can overrun
         // a cut by a syllable; the interval tightens that up.
         const id = setInterval(check, 40)
         el.addEventListener('timeupdate', check)
+        el.addEventListener('pause', stopped)
+        el.addEventListener('emptied', stopped)
       })
     },
-    [surahs, reciter, current],
+    [surahs, reciter, current, t],
   )
 
   /** Page the mushaf view should jump to, set when the board sends us there. */
@@ -1123,6 +1232,13 @@ export default function App() {
       // anything moves on.
       if (talqeenRef.current?.handleEnded()) return
 
+      // "Stop at the end of this surah": it has ended, so stop here rather
+      // than going on to the next.
+      if (sleepAtRef.current === SLEEP_SURAH) {
+        setSleepAt(null)
+        return
+      }
+
       /*
        * The prepared surah first, and without awaiting anything.
        *
@@ -1157,16 +1273,42 @@ export default function App() {
     return () => el.removeEventListener('ended', onEnded)
   }, [advance, surahs, reciter, repeat, playable])
 
+  /*
+   * The minutes timer.
+   *
+   * Measured against the clock on each timeupdate rather than one long
+   * setTimeout: timeupdate keeps firing while audio plays with the screen
+   * locked, where a background timer is throttled. The last ten seconds fade
+   * the volume out, and it PAUSES rather than stops, so the place is kept for
+   * tomorrow; it used to stop dead mid-word and lose the position.
+   */
   useEffect(() => {
-    if (sleepAt === null) return
-    const id = setTimeout(
-      () => {
-        engine.current!.stop()
+    if (sleepAt === null || sleepAt === SLEEP_SURAH) return
+    const el = engine.current!.el
+    const deadline = Date.now() + sleepAt * 60_000
+    const FADE = 10_000
+    const base = el.volume
+    const tick = () => {
+      const left = deadline - Date.now()
+      // Expired while paused (timeupdate only fires during playback): the
+      // night is over, so switch it off rather than pausing the morning's
+      // listening the moment it starts.
+      if (left < -60_000) {
+        el.volume = base
         setSleepAt(null)
-      },
-      sleepAt * 60_000,
-    )
-    return () => clearTimeout(id)
+      } else if (left <= 0) {
+        engine.current!.pause()
+        el.volume = base
+        setSleepAt(null)
+      } else if (left < FADE) {
+        el.volume = Math.max(0, base * (left / FADE))
+      }
+    }
+    el.addEventListener('timeupdate', tick)
+    return () => {
+      el.removeEventListener('timeupdate', tick)
+      el.volume = base
+    }
   }, [sleepAt])
 
   const switchReciter = async (id: string) => {
@@ -1400,6 +1542,15 @@ export default function App() {
     return surah === null ? null : { kind: 'surah' as const, surah }
   }, [current, time, openPlace, openYear, playable, voiceOfSurah])
   const releasedTotal = surahs.filter((s) => s.released).reduce((a, s) => a + s.bytes, 0)
+
+  /** The last jump could not start at its ayah (no timings). */
+  const [jumpUntimed, setJumpUntimed] = useState(false)
+  useEffect(() => setJumpUntimed(false), [query, reciterId])
+  /** The search box holds a reference ("2:255"), not just a name. */
+  const jumpRef = useMemo(
+    () => (/\d/.test(query) ? parseReference(surahs, query) : null),
+    [surahs, query],
+  )
 
   const filtered = useMemo(() => {
     const q = query.trim()
@@ -1645,6 +1796,27 @@ export default function App() {
         .reduce((a, s) => a + s.bytes * (1 - (partialsHere.get(s.surah) ?? 0)), 0),
     [surahs, downloadedHere, partialsHere],
   )
+
+  /*
+   * Juz 'Amma, surahs 78-114: the short surahs most people pray with, and
+   * the usual first download. A fraction of a whole mushaf, so it is offered
+   * on its own with its real remaining size.
+   */
+  const AMMA_FROM = 78
+  const missingAmma = useMemo(() => missing.filter(([n]) => n >= AMMA_FROM), [missing])
+  const missingAmmaBytes = useMemo(
+    () =>
+      surahs
+        .filter((s) => s.surah >= AMMA_FROM && s.released && !downloadedHere.has(s.surah))
+        .reduce((a, s) => a + s.bytes * (1 - (partialsHere.get(s.surah) ?? 0)), 0),
+    [surahs, downloadedHere, partialsHere],
+  )
+  const startDownloadAmma = () => {
+    for (const [n, u] of missingAmma) {
+      const s = surahs.find((x) => x.surah === n)
+      queue.current!.enqueue({ reciterId, surah: n, url: u, bytes: s?.bytes })
+    }
+  }
 
   const startDownloadAll = () => {
     // The byte count has to travel with the job. Without it the queue reads
@@ -1937,7 +2109,7 @@ export default function App() {
 
 
         {tab === 'quran' && (
-          <div className="search">
+          <div className="search lg-chip" data-glass="">
             <Search size={20} />
             <input
               ref={searchRef}
@@ -1983,6 +2155,34 @@ export default function App() {
                 window.setTimeout(() => searchRef.current?.focus(), 0)
               }}
             />
+          )}
+
+          {tab === 'quran' && jumpRef && (
+            /*
+             * "2:255", "kahf 10": a reference, so offer to play from that
+             * ayah. Timings are loaded on the tap (they are not until a
+             * reading view has asked), and a recitation without them says so
+             * and starts at the top of the surah.
+             */
+            <div className="jump-ref">
+              <button
+                type="button"
+                className="btn solid"
+                onClick={async () => {
+                  const ref = jumpRef
+                  await loadTimings(reciterId).catch(() => null)
+                  const at = ayahStartsFor(reciterId, ref.surah)?.[ref.ayah - 1]
+                  void playSurah(ref.surah, at !== undefined ? at / 1000 : 0)
+                  // Untimed: say so where the button is. A toast would be
+                  // cleared the moment playback starts.
+                  if (at === undefined) setJumpUntimed(true)
+                  else setQuery('')
+                }}
+              >
+                {t.playFromRef(`${digits(lang, jumpRef.surah)}:${digits(lang, jumpRef.ayah)}`)}
+              </button>
+              {jumpUntimed && <p className="count">{t.noAyahTimings}</p>}
+            </div>
           )}
 
           {tab === 'quran' && (
@@ -2225,27 +2425,57 @@ export default function App() {
                       surahs.filter((s) => s.released).length,
                     )}
                   </p>
-                  <button
-                    className="btn"
-                    onClick={() => {
-                      // cancel() aborts an active download and drops a pending
-                      // one, so this alone empties the queue.
-                      for (const n of urls.keys()) queue.current!.cancel(reciterId, n)
-                      setQueued(0)
-                      void refreshDownloaded()
-                    }}
-                  >
-                    {t.cancelAll}
-                  </button>
+                  {dlOffline && <p className="count">{t.downloadsPausedOffline}</p>}
+                  <div className="dl-actions">
+                    <button
+                      className="btn"
+                      onClick={() => {
+                        // A choice the person made: the connection coming
+                        // back must not override it.
+                        autoPaused.current = false
+                        setDlOffline(false)
+                        if (dlPaused) queue.current!.resumeAll()
+                        else queue.current!.pauseAll()
+                      }}
+                    >
+                      {dlPaused ? t.resumeDownloads : t.pauseDownloads}
+                    </button>
+                    <button
+                      className="btn"
+                      onClick={() => {
+                        // Every reciter's downloads, not only this one's: the
+                        // count above is the whole queue, and stopping half of
+                        // it left that count lying.
+                        autoPaused.current = false
+                        setDlOffline(false)
+                        queue.current!.cancelAll()
+                        setQueued(0)
+                        void refreshDownloaded()
+                      }}
+                    >
+                      {t.cancelAll}
+                    </button>
+                  </div>
                 </>
               ) : (
-                <button
-                  className="btn solid"
-                  disabled={!missing.length}
-                  onClick={() => setConfirmAll(true)}
-                >
-                  {t.downloadAllSize(formatBytes(missingBytes, lang))}
-                </button>
+                <div className="dl-actions">
+                  <button
+                    className="btn solid"
+                    disabled={!missing.length}
+                    onClick={() => setConfirmAll(true)}
+                  >
+                    {t.downloadAllSize(formatBytes(missingBytes, lang))}
+                  </button>
+                  {missingAmma.length > 0 && missingAmma.length < missing.length && (
+                    <button
+                      className="btn"
+                      disabled={!canDownloadAll(missingAmmaBytes, quota.free)}
+                      onClick={startDownloadAmma}
+                    >
+                      {t.downloadJuzAmma(formatBytes(missingAmmaBytes, lang))}
+                    </button>
+                  )}
+                </div>
               )}
 
               {!canDownloadAll(missingBytes, quota.free) && missing.length > 0 && (
@@ -2517,7 +2747,7 @@ export default function App() {
 
       {currentView && reciter && (!playerMin || leaving) && (
         <div
-          className={`player${leaving ? ' is-leaving' : ''}`}
+          className={`player lg${leaving ? ' is-leaving' : ''}`}
           role="dialog"
           aria-modal="true"
           aria-label={t.openPlayer}
@@ -2731,7 +2961,7 @@ export default function App() {
             </div>
           </div>
 
-          <div className="controls">
+          <div className="controls lg-chip" data-glass="">
 
             <button
               className="ctrl"
@@ -2817,7 +3047,11 @@ export default function App() {
               <span>{formatTime(time, lang)}</span>
               <span className="badge">
                 {mode === 'offline' ? t.saved : t.streaming}
-                {sleepAt ? ` · ${t.sleepMins(digits(lang, sleepAt))}` : ''}
+                {sleepAt === SLEEP_SURAH
+                  ? ` · ${t.sleepEndSurah}`
+                  : sleepAt
+                    ? ` · ${t.sleepMins(digits(lang, sleepAt))}`
+                    : ''}
               </span>
               <span>-{formatTime(Math.max(0, duration - time), lang)}</span>
             </div>
@@ -2906,7 +3140,10 @@ export default function App() {
               className="ctrl small"
               aria-label={t.sleep}
               aria-pressed={sleepAt !== null}
-              onClick={() => setSleepAt(sleepAt === null ? 30 : sleepAt === 30 ? 60 : null)}
+              onClick={() => {
+                const i = SLEEP_STEPS.indexOf(sleepAt)
+                setSleepAt(SLEEP_STEPS[(i + 1) % SLEEP_STEPS.length])
+              }}
             >
               <Moon size={22} />
             </button>
@@ -2923,7 +3160,7 @@ export default function App() {
           aria-label={t.confirmTitle}
           onClick={() => setConfirmAll(false)}
         >
-          <div className="dialog" onClick={(e) => e.stopPropagation()}>
+          <div className="dialog lg" onClick={(e) => e.stopPropagation()}>
             <h3>{t.confirmTitle}</h3>
             <p>
               {t.confirmBody(
@@ -2950,7 +3187,7 @@ export default function App() {
           that failed, the disk filling up mid-save. A toast above the dock is
           reachable whatever else is open. */}
       {error && (
-        <div className="toast" role="status" aria-live="polite">
+        <div className="toast lg lg-bar" role="status" aria-live="polite">
           <p className="err">{error}</p>
           <button
             type="button"

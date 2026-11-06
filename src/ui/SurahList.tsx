@@ -121,86 +121,25 @@ export const SurahList = memo(function SurahList({
       <ul className="surah-list" ref={listedRef}>
         {listed.map((s) => {
           const active = current === s.surah
-          const have = downloaded.has(s.surah)
-          const pct = progress[`${reciterId}:${s.surah}`]
-          // Stored but unfinished: tapping continues from where it stopped
-          // rather than starting the file over.
-          const held = partials?.get(s.surah)
           return (
-            <li key={s.surah} className={`row${active ? ' active' : ''}`}>
-              {/* The row and the save control are siblings, never nested. A
-                  button inside a button is invalid markup and swallows taps,
-                  which is why saving a surah did nothing on a phone. */}
-              <button
-                type="button"
-                className="row-main"
-                onClick={() => onPlay(s.surah)}
-                aria-current={active ? 'true' : undefined}
-              >
-                {/* The number, or the playing mark in its place. */}
-                <span className="numeral">
-                  {active ? (
-                    <span className={`eq${playing ? '' : ' is-still'}`} aria-hidden="true">
-                      <i />
-                      <i />
-                      <i />
-                    </span>
-                  ) : (
-                    digits(lang, s.surah)
-                  )}
-                </span>
-                <span className="names">
-                  {/* Always Arabic, inside a document whose language is
-                      the reader's. Unmarked, a screen reader gives it an
-                      English voice and the surah name comes out as noise. */}
-                  <span className="name-ar" lang="ar">
-                    {t.surahWord} {s.name}
-                  </span>
-                  {lang === 'en' && (
-                    <span className="name-plain">
-                      {s.nameEn} · {s.translation}
-                    </span>
-                  )}
-                  {/* Not gated on language the way the gloss above is. A
-                      gloss is a convenience for one language; who is
-                      reciting is information every reader wants, and
-                      voiceLabel already picks the right script. */}
-                  {voiceLabel(s, lang) && (
-                    <span className="name-voice">{voiceLabel(s, lang)}</span>
-                  )}
-                </span>
-              </button>
-
-              {/*
-                  Nothing is drawn here for a surah already saved.
-
-                  It used to keep a disabled button carrying a tick, which is
-                  an object per row saying there is nothing to do — and on a
-                  list of 114, the rows with nothing to do should be the quiet
-                  ones. The trailing drag handle went with it: this list has
-                  never been reorderable, so it was an affordance for a
-                  gesture that does not exist.
-              */}
-              <span className="row-end">
-                {pct !== undefined ? (
-                  <span className="ring">{digits(lang, Math.round(pct * 100))}%</span>
-                ) : have ? null : (
-                  <button
-                    type="button"
-                    className={`mini${held !== undefined ? ' is-partial' : ''}${!verified(s) ? ' needs-check' : ''}`}
-                    aria-label={
-                      held !== undefined ? t.resumeAt(Math.round(held * 100)) : t.save
-                    }
-                    onClick={() => onDownload(s.surah)}
-                  >
-                    <Download size={20} />
-                    {held !== undefined && (
-                      <span className="mini-pct">{digits(lang, Math.round(held * 100))}%</span>
-                    )}
-                  </button>
-                )}
-              </span>
-            </li>
+            <SurahRow
+              key={s.surah}
+              s={s}
+              active={active}
+              // Only the playing row shows the equaliser, so the others must
+              // not change when playback starts or stops.
+              playing={active && playing}
+              have={downloaded.has(s.surah)}
+              pct={progress[`${reciterId}:${s.surah}`]}
+              // Stored but unfinished: tapping continues from where it
+              // stopped rather than starting the file over.
+              held={partials?.get(s.surah)}
+              verifiedOk={verified(s)}
+              lang={lang}
+              t={t}
+              onPlay={onPlay}
+              onDownload={onDownload}
+            />
           )
         })}
       </ul>
@@ -224,7 +163,7 @@ export const SurahList = memo(function SurahList({
             <span className="row-main">
               <span className="numeral">{digits(lang, s.surah)}</span>
               <span className="names">
-                <span className="name-ar">
+                <span className="name-ar" lang="ar">
                   {t.surahWord} {s.name}
                 </span>
                 {lang === 'en' && (
@@ -241,5 +180,116 @@ export const SurahList = memo(function SurahList({
         ))}
       </ul>
     </>
+  )
+})
+
+/**
+ * One surah row, redrawn only when something about THIS surah changes.
+ *
+ * During a download the progress map changes with every chunk, and the list
+ * used to rebuild all 114 rows each time to move one percentage. Every prop
+ * here is a primitive, a catalog object that keeps its identity, or a stable
+ * callback, so memo skips every row but the one that moved.
+ */
+const SurahRow = memo(function SurahRow({
+  s,
+  active,
+  playing,
+  have,
+  pct,
+  held,
+  verifiedOk,
+  lang,
+  t,
+  onPlay,
+  onDownload,
+}: {
+  s: SurahView
+  active: boolean
+  playing: boolean
+  have: boolean
+  pct: number | undefined
+  held: number | undefined
+  verifiedOk: boolean
+  lang: Lang
+  t: Strings
+  onPlay: (surah: number) => void
+  onDownload: (surah: number) => void
+}) {
+  return (
+    <li className={`row${active ? ' active' : ''}`}>
+      {/* The row and the save control are siblings, never nested. A
+          button inside a button is invalid markup and swallows taps,
+          which is why saving a surah did nothing on a phone. */}
+      <button
+        type="button"
+        className="row-main"
+        onClick={() => onPlay(s.surah)}
+        aria-current={active ? 'true' : undefined}
+      >
+        {/* The number, or the playing mark in its place. */}
+        <span className="numeral">
+          {active ? (
+            <span className={`eq${playing ? '' : ' is-still'}`} aria-hidden="true">
+              <i />
+              <i />
+              <i />
+            </span>
+          ) : (
+            digits(lang, s.surah)
+          )}
+        </span>
+        <span className="names">
+          {/* Always Arabic, inside a document whose language is
+              the reader's. Unmarked, a screen reader gives it an
+              English voice and the surah name comes out as noise. */}
+          <span className="name-ar" lang="ar">
+            {t.surahWord} {s.name}
+          </span>
+          {lang === 'en' && (
+            <span className="name-plain">
+              {s.nameEn} · {s.translation}
+            </span>
+          )}
+          {/* Not gated on language the way the gloss above is. A
+              gloss is a convenience for one language; who is
+              reciting is information every reader wants, and
+              voiceLabel already picks the right script. */}
+          {voiceLabel(s, lang) && (
+            <span className="name-voice">{voiceLabel(s, lang)}</span>
+          )}
+        </span>
+      </button>
+
+      {/*
+          Nothing is drawn here for a surah already saved.
+
+          It used to keep a disabled button carrying a tick, which is
+          an object per row saying there is nothing to do — and on a
+          list of 114, the rows with nothing to do should be the quiet
+          ones. The trailing drag handle went with it: this list has
+          never been reorderable, so it was an affordance for a
+          gesture that does not exist.
+      */}
+      <span className="row-end">
+        {pct !== undefined ? (
+          <span className="ring">{digits(lang, Math.round(pct * 100))}%</span>
+        ) : have ? null : (
+          <button
+            type="button"
+            className={`mini${held !== undefined ? ' is-partial' : ''}${!verifiedOk ? ' needs-check' : ''}`}
+            aria-label={
+              held !== undefined ? t.resumeAt(Math.round(held * 100)) : t.save
+            }
+            onClick={() => onDownload(s.surah)}
+          >
+            <Download size={20} />
+            {held !== undefined && (
+              <span className="mini-pct">{digits(lang, Math.round(held * 100))}%</span>
+            )}
+          </button>
+        )}
+      </span>
+    </li>
   )
 })
