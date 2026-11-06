@@ -63,6 +63,35 @@ const isQuota = (e: unknown) => {
   return name === 'QuotaExceededError' || name === 'UnknownError'
 }
 
+/** Hosts whose CORS preflight admits If-Range: our own origin and the Worker. */
+const IF_RANGE_HOSTS = new Set(['mushaf-audio.mushaftarteel.workers.dev'])
+
+function sendsIfRange(url: string) {
+  try {
+    const u = new URL(url, location.href)
+    return u.origin === location.origin || IF_RANGE_HOSTS.has(u.host)
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Whether a resumed chunk came from a different file than the stored ones.
+ *
+ * The check If-Range would have made on the server, made here instead for
+ * hosts where that header cannot be sent. ETag and Last-Modified are both
+ * readable cross-origin when the host exposes them (Last-Modified always is:
+ * it is a CORS-safelisted response header). A validator present on both sides
+ * and different means the recording changed between chunks.
+ */
+function changedSince(m: Manifest, res: Response) {
+  const etag = res.headers.get('etag')
+  if (m.etag && etag) return m.etag !== etag
+  const lm = res.headers.get('last-modified')
+  if (m.lastModified && lm) return m.lastModified !== lm
+  return false
+}
+
 async function fetchRange(
   url: string,
   from: number,
@@ -79,7 +108,16 @@ async function fetchRange(
   // If-Range accepts an HTTP-date. With neither, this header cannot be sent at
   // all, the server has nothing to check, and the resume is unsafe: the caller
   // restarts from zero instead.
-  if (validator && from > 0) headers['If-Range'] = validator
+  //
+  // Only to hosts that admit it in a CORS preflight, though. `Range` alone is
+  // CORS-safelisted; `If-Range` is not, so adding it turns every resume into
+  // a preflighted request. archive.org answers that preflight with a redirect
+  // and quranicaudio leaves If-Range out of Allow-Headers, so the browser
+  // refused chunk two of every surah over 2 MB with "Failed to fetch": the
+  // first chunk landed, every later one failed, and only the Worker's
+  // reciters could finish (Play Store reports, Nov 2026). For everyone else
+  // the same guarantee is kept after the fact — see `changedSince` below.
+  if (validator && from > 0 && sendsIfRange(url)) headers['If-Range'] = validator
   return fetch(url, { headers, signal })
 }
 
@@ -176,7 +214,7 @@ export async function downloadChunked(
 
         // The validator did not match: the file changed, so everything already
         // stored is from a different recording and must go.
-        if (res.status === 200 && from > 0) {
+        if ((res.status === 200 && from > 0) || (from > 0 && m && res.status === 206 && changedSince(m, res))) {
           void res.body?.cancel()
           restart = true
           break
