@@ -131,6 +131,27 @@ const DIRECT = {
    * none of the other item's per-file spelling.
    */
   ws: (n) => `https://archive.org/download/Alwaleed-Alshamsan-Hafs-An-Assem/${pad(n)}.mp3`,
+  /*
+   * Fourteen complete murattal and mujawwad mushafs added in November 2026,
+   * each on a host checked to answer Range with 206, Last-Modified and an
+   * open CORS origin (surahs 1 and 114 probed): quranicaudio.com's folders,
+   * or mp3quran's CDN where its copy is the better-known one. All are
+   * numbered 001..114. The x prefix keeps them clear of the Worker's routes.
+   */
+  xhd: (n) => `https://download.quranicaudio.com/quran/huthayfi/${pad(n)}.mp3`,
+  xgs: (n) => `https://download.quranicaudio.com/quran/sa3d_al-ghaamidi/complete/${pad(n)}.mp3`,
+  xhm: (n) => `https://download.quranicaudio.com/quran/husary_muallim/${pad(n)}.mp3`,
+  xbm: (n) => `https://download.quranicaudio.com/quran/abdul_basit_murattal/${pad(n)}.mp3`,
+  xbj: (n) => `https://download.quranicaudio.com/quran/abdulbaset_mujawwad/${pad(n)}.mp3`,
+  xst: (n) => `https://download.quranicaudio.com/quran/abu_bakr_ash-shaatree/${pad(n)}.mp3`,
+  xtb: (n) => `https://download.quranicaudio.com/quran/thubaity/${pad(n)}.mp3`,
+  xqs: (n) => `https://download.quranicaudio.com/quran/abdul_muhsin_alqasim/${pad(n)}.mp3`,
+  xmh: (n) => `https://cdn.mp3quran.net/audio/khalid-mohanna/r1/${pad(n)}.mp3`,
+  xhs: (n) => `https://download.quranicaudio.com/quran/mahmood_khaleel_al-husaree/${pad(n)}.mp3`,
+  xaj: (n) => `https://download.quranicaudio.com/quran/ahmed_ibn_3ali_al-3ajamy/${pad(n)}.mp3`,
+  xqt: (n) => `https://cdn.mp3quran.net/audio/nasser-qatami/r1/${pad(n)}.mp3`,
+  xjl: (n) => `https://cdn.mp3quran.net/audio/khalid-jalil/r1/${pad(n)}.mp3`,
+  xfa: (n) => `https://download.quranicaudio.com/quran/fares/${pad(n)}.mp3`,
 }
 
 const pad = (n) => String(n).padStart(3, '0')
@@ -224,8 +245,8 @@ const SOURCES = {
   juhany: {
     route: 'j',
     home: true,
-    name: 'عبد الله الجهني',
-    nameEn: 'Abdullah Al-Juhany',
+    name: 'عبد الله عواد الجهني',
+    nameEn: 'Abdullah Awad Al-Juhany',
     fullName: 'الشيخ عبد الله بن علي الجهني',
     riwayah: 'رواية الدوري عن أبي عمرو البصري',
     riwayahEn: 'Ad-Duri from Abu Amr al-Basri',
@@ -258,8 +279,8 @@ const SOURCES = {
     route: 'jq',
     // complete; no need to ask
     fixedCount: 114,
-    name: 'عبد الله الجهني',
-    nameEn: 'Abdullah Al-Juhany',
+    name: 'عبد الله عواد الجهني',
+    nameEn: 'Abdullah Awad Al-Juhany',
     fullName: 'الشيخ عبد الله بن علي الجهني',
     mushaf: 'المصحف المرتل الكامل — برواية حفص عن عاصم',
     mushafEn: 'Complete murattal mushaf — Hafs from Asim',
@@ -700,6 +721,141 @@ const SOURCES = {
     // a different take; the length check keeps only what fits.
     partialOk: true,
   },
+  /*
+   * November 2026 additions. No portrait where the roster has none: the card
+   * shows the name alone rather than borrowing a face.
+   */
+  'hudhaify': {
+    route: 'xhd',
+    fixedCount: 114,
+    name: 'علي الحذيفي',
+    nameEn: 'Ali Al-Hudhaify',
+    fullName: 'الشيخ علي بن عبد الرحمن الحذيفي',
+    mushaf: 'المصحف المرتل',
+    mushafEn: 'Murattal mushaf',
+    photo: 'imam-hudhaify.webp',
+  },
+  'ghamdi-saad': {
+    route: 'xgs',
+    fixedCount: 114,
+    name: 'سعد الغامدي',
+    nameEn: 'Saad Al-Ghamdi',
+    fullName: 'الشيخ سعد بن سعيد الغامدي',
+    mushaf: 'المصحف المرتل',
+    mushafEn: 'Murattal mushaf',
+    photo: 'imam-ghamdi-saad.webp',
+  },
+  'thubaiti': {
+    route: 'xtb',
+    fixedCount: 114,
+    name: 'عبد الباري الثبيتي',
+    nameEn: 'Abdul Bari Ath-Thubaiti',
+    fullName: 'الشيخ عبد الباري بن عواض الثبيتي',
+    mushaf: 'المصحف المرتل',
+    mushafEn: 'Murattal mushaf',
+    photo: 'imam-thubaiti.webp',
+  },
+  'qasim': {
+    route: 'xqs',
+    fixedCount: 114,
+    name: 'عبد المحسن القاسم',
+    nameEn: 'Abdul Muhsin Al-Qasim',
+    fullName: 'الشيخ عبد المحسن بن محمد القاسم',
+    mushaf: 'المصحف المرتل',
+    mushafEn: 'Murattal mushaf',
+    photo: 'imam-qasim.webp',
+  },
+  'muhanna': {
+    route: 'xmh',
+    fixedCount: 114,
+    name: 'خالد المهنا',
+    nameEn: 'Khalid Al-Muhanna',
+    fullName: 'الشيخ خالد بن سليمان المهنا',
+    mushaf: 'المصحف المرتل',
+    mushafEn: 'Murattal mushaf',
+    photo: 'imam-muhanna.webp',
+  },
+  'husary': {
+    route: 'xhs',
+    fixedCount: 114,
+    name: 'محمود خليل الحصري',
+    nameEn: 'Mahmoud Khalil Al-Husary',
+    fullName: 'الشيخ محمود خليل الحصري',
+    mushaf: 'المصحف المرتل',
+    mushafEn: 'Murattal mushaf',
+  },
+  'husary-muallim': {
+    route: 'xhm',
+    fixedCount: 114,
+    name: 'محمود خليل الحصري',
+    nameEn: 'Mahmoud Khalil Al-Husary',
+    fullName: 'الشيخ محمود خليل الحصري',
+    mushaf: 'المصحف المعلّم — للتعليم والترديد',
+    mushafEn: "Al-Mushaf Al-Mu'allim — the teaching recitation",
+  },
+  'abdulbasit': {
+    route: 'xbm',
+    fixedCount: 114,
+    name: 'عبد الباسط عبد الصمد',
+    nameEn: 'Abdul Basit Abdus-Samad',
+    fullName: 'الشيخ عبد الباسط محمد عبد الصمد',
+    mushaf: 'المصحف المرتل',
+    mushafEn: 'Murattal mushaf',
+  },
+  'abdulbasit-mujawwad': {
+    route: 'xbj',
+    fixedCount: 114,
+    name: 'عبد الباسط عبد الصمد',
+    nameEn: 'Abdul Basit Abdus-Samad',
+    fullName: 'الشيخ عبد الباسط محمد عبد الصمد',
+    mushaf: 'المصحف المجوّد',
+    mushafEn: 'Mujawwad mushaf',
+  },
+  'shatri': {
+    route: 'xst',
+    fixedCount: 114,
+    name: 'أبو بكر الشاطري',
+    nameEn: 'Abu Bakr Ash-Shatri',
+    fullName: 'الشيخ أبو بكر الشاطري',
+    mushaf: 'المصحف المرتل',
+    mushafEn: 'Murattal mushaf',
+  },
+  'ajmy': {
+    route: 'xaj',
+    fixedCount: 114,
+    name: 'أحمد العجمي',
+    nameEn: 'Ahmad Al-Ajmy',
+    fullName: 'الشيخ أحمد بن علي العجمي',
+    mushaf: 'المصحف المرتل',
+    mushafEn: 'Murattal mushaf',
+  },
+  'qatami': {
+    route: 'xqt',
+    fixedCount: 114,
+    name: 'ناصر القطامي',
+    nameEn: 'Nasser Al-Qatami',
+    fullName: 'الشيخ ناصر بن علي القطامي',
+    mushaf: 'المصحف المرتل',
+    mushafEn: 'Murattal mushaf',
+  },
+  'jileel': {
+    route: 'xjl',
+    fixedCount: 114,
+    name: 'خالد الجليل',
+    nameEn: 'Khalid Al-Jileel',
+    fullName: 'الشيخ خالد بن عبد الله الجليل',
+    mushaf: 'المصحف المرتل',
+    mushafEn: 'Murattal mushaf',
+  },
+  'fares': {
+    route: 'xfa',
+    fixedCount: 114,
+    name: 'فارس عباد',
+    nameEn: 'Fares Abbad',
+    fullName: 'الشيخ فارس عباد',
+    mushaf: 'المصحف المرتل',
+    mushafEn: 'Murattal mushaf',
+  },
 }
 
 /**
@@ -936,7 +1092,7 @@ async function refresh(id) {
     source: DIRECT[src.route]
       ? DIRECT[src.route](1).replace(/\/\d{3}\.mp3$/, '/{surah}.mp3')
       : `${WORKER}/${src.route}/{surah}.mp3`,
-    photo: src.photo,
+    photo: src.photo ?? null,
     released: count,
     total: 114,
     surahs: published

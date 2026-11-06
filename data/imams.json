@@ -3,7 +3,7 @@
  "sudais-ali": {"name": "علي السديس", "nameEn": "Ali As-Sudais", "match": "علي السديس", "serves": ["madinah"]},
  "shuraim": {"name": "سعود الشريم", "nameEn": "Saud Ash-Shuraim", "match": "الشريم", "serves": ["makkah"], "photo": "imam-shuraim.webp"},
  "muaiqly": {"name": "ماهر المعيقلي", "nameEn": "Maher Al-Muaiqly", "match": "المعيقلي", "serves": ["makkah", "madinah"], "photo": "imam-muaiqly.webp"},
- "juhany": {"name": "عبد الله الجهني", "nameEn": "Abdullah Al-Juhany", "match": "الجهني", "serves": ["makkah", "madinah"], "photo": "juhany.webp"},
+ "juhany": {"name": "عبد الله عواد الجهني", "nameEn": "Abdullah Awad Al-Juhany", "match": "الجهني", "serves": ["makkah", "madinah"], "photo": "juhany.webp"},
  "baleela": {"name": "بندر بليلة", "nameEn": "Bandar Baleela", "match": "بليلة", "serves": ["makkah"], "photo": "imam-baleela.webp"},
  "dosari": {"name": "ياسر الدوسري", "nameEn": "Yasser Al-Dosari", "match": "الدوسري", "serves": ["makkah"], "photo": "sheikh.jpg", "frames": {"player": {"zoom": 160, "x": 63, "y": 13}}},
  "ghamdi": {"name": "خالد الغامدي", "nameEn": "Khalid Al-Ghamdi", "match": "خالد بن علي الغامدي", "serves": ["makkah"], "photo": "imam-ghamdi.webp"},
