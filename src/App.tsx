@@ -878,18 +878,33 @@ export default function App() {
       engine.current!.seek(from)
       await engine.current!.play()
       await new Promise<void>((resolve) => {
-        const check = () => {
-          if (el.currentTime >= to || el.ended) {
-            el.removeEventListener('timeupdate', check)
-            clearInterval(id)
-            engine.current!.pause()
-            resolve()
-          }
+        let done = false
+        const finish = (pause: boolean) => {
+          if (done) return
+          done = true
+          el.removeEventListener('timeupdate', check)
+          el.removeEventListener('pause', stopped)
+          el.removeEventListener('emptied', stopped)
+          clearInterval(id)
+          if (pause) engine.current!.pause()
+          resolve()
         }
+        const check = () => {
+          if (el.currentTime >= to || el.ended) finish(true)
+        }
+        /*
+         * Paused by the person, or the source swapped for another surah,
+         * before the cut was reached. Without this the 40 ms interval ran
+         * for the rest of the session and the drill awaiting this range
+         * never moved on.
+         */
+        const stopped = () => finish(false)
         // timeupdate alone fires about four times a second, which can overrun
         // a cut by a syllable; the interval tightens that up.
         const id = setInterval(check, 40)
         el.addEventListener('timeupdate', check)
+        el.addEventListener('pause', stopped)
+        el.addEventListener('emptied', stopped)
       })
     },
     [surahs, reciter, current],
