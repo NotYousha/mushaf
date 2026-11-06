@@ -81,6 +81,8 @@ export const en = {
   resumeAt: (p: number) => `Resume from ${p}%`,
   streaming: 'streaming',
   notRecorded: 'not recorded yet',
+  notSavedOffline: 'not saved on this device, and you are offline',
+  audioLoadFailed: 'the audio could not be loaded. Check your connection and try again.',
   excluded: 'excluded',
   save: 'Save',
   ayahs: 'ayahs',

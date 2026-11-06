@@ -65,6 +65,8 @@ export const fr: Strings = {
   resumeAt: (p: number) => `Reprendre à ${p}%`,
   streaming: 'diffusion',
   notRecorded: 'pas encore enregistrée',
+  notSavedOffline: 'pas enregistrée sur cet appareil, et vous êtes hors ligne',
+  audioLoadFailed: "l'audio n'a pas pu être chargé. Vérifiez votre connexion et réessayez.",
   excluded: 'exclue',
   save: 'Enregistrer',
   ayahs: 'versets',

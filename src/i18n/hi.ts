@@ -65,6 +65,8 @@ export const hi: Strings = {
   resumeAt: (p: number) => `${p}% से जारी रखें`,
   streaming: 'स्ट्रीमिंग',
   notRecorded: 'अभी रिकॉर्ड नहीं हुआ',
+  notSavedOffline: 'इस डिवाइस पर सेव नहीं है, और आप ऑफ़लाइन हैं',
+  audioLoadFailed: 'ऑडियो लोड नहीं हो सका। कनेक्शन जाँचें और फिर कोशिश करें।',
   excluded: 'बाहर रखा गया',
   save: 'सहेजें',
   ayahs: 'आयतें',

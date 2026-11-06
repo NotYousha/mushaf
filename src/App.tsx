@@ -676,6 +676,16 @@ export default function App() {
 
   const advanceRef = useRef<(() => Promise<void>) | null>(null)
 
+  /** A load failure in the reader's language; the English detail otherwise. */
+  const failText = (res: { reason: string; code?: string }) =>
+    res.code === 'offline'
+      ? t.notSavedOffline
+      : res.code === 'unrecorded'
+        ? t.notRecorded
+        : res.code === 'failed'
+          ? t.audioLoadFailed
+          : res.reason
+
   const playSurah = useCallback(
     async (surah: number, startAt = 0) => {
       const s = surahs.find((x) => x.surah === surah)
@@ -708,7 +718,7 @@ export default function App() {
       // is no longer on screen, so neither is ours to clear or to show.
       if (res.ok || !res.superseded) setBusy(false)
       if (!res.ok) {
-        if (!res.superseded) setError(`${plainName(s.name)}: ${res.reason}`)
+        if (!res.superseded) setError(`${plainName(s.name)}: ${failText(res)}`)
         return
       }
       setMode(res.mode)
@@ -724,7 +734,7 @@ export default function App() {
       )
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [surahs, playable, speedIdx, reciter, downloadedHere, rejected, repeat],
+    [surahs, playable, speedIdx, reciter, downloadedHere, rejected, repeat, t],
   )
 
   const advance = useCallback(async () => {
@@ -906,7 +916,7 @@ export default function App() {
       if (current !== surah) {
         const res = await engine.current!.load(reciter.id, surah, s.url, s.fallbackUrl, from)
         if (!res.ok) {
-          if (!res.superseded) setError(`${plainName(s.name)}: ${res.reason}`)
+          if (!res.superseded) setError(`${plainName(s.name)}: ${failText(res)}`)
           return
         }
         setCurrent(surah)
@@ -943,7 +953,7 @@ export default function App() {
         el.addEventListener('emptied', stopped)
       })
     },
-    [surahs, reciter, current],
+    [surahs, reciter, current, t],
   )
 
   /** Page the mushaf view should jump to, set when the board sends us there. */

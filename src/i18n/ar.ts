@@ -66,6 +66,8 @@ export const ar: Strings = {
   resumeAt: (p: number) => `متابعة التحميل من ${p}%`,
   streaming: 'بث',
   notRecorded: 'لم تُسجَّل بعد',
+  notSavedOffline: 'غير محفوظة على هذا الجهاز، ولا يوجد اتصال',
+  audioLoadFailed: 'تعذّر تحميل الصوت. تحقّق من الاتصال وحاول مرة أخرى.',
   excluded: 'مستبعَدة',
   save: 'حفظ',
   ayahs: 'آية',

@@ -65,6 +65,8 @@ export const ur: Strings = {
   resumeAt: (p: number) => `${p}% سے دوبارہ شروع کریں`,
   streaming: 'اسٹریمنگ',
   notRecorded: 'ابھی ریکارڈ نہیں ہوئی',
+  notSavedOffline: 'اس ڈیوائس پر محفوظ نہیں، اور آپ آف لائن ہیں',
+  audioLoadFailed: 'آڈیو لوڈ نہیں ہو سکا۔ کنکشن چیک کر کے دوبارہ کوشش کریں۔',
   excluded: 'خارج شدہ',
   save: 'محفوظ کریں',
   ayahs: 'آیات',
