@@ -105,6 +105,7 @@ export const en = {
   savedCount: (n: number) => `${n} surahs saved for this reciter`,
   downloadAll: 'Download the whole Quran',
   downloadAllSize: (s: string) => `Download all · ${s}`,
+  downloadJuzAmma: (s: string) => `Download Juz 'Amma (78-114) · ${s}`,
   deleteSaved: 'Delete saved audio',
   downloading: (done: number, total: number) => `Downloading ${done} of ${total}`,
   cancelAll: 'Stop downloading',

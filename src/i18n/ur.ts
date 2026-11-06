@@ -89,6 +89,7 @@ export const ur: Strings = {
   savedCount: (n: number) => `اس قاری کی ${n} سورتیں محفوظ ہیں`,
   downloadAll: 'پورا قرآن ڈاؤن لوڈ کریں',
   downloadAllSize: (s: string) => `سب ڈاؤن لوڈ کریں · ${s}`,
+  downloadJuzAmma: (s: string) => `پارہ عمّ ڈاؤن لوڈ کریں (78-114) · ${s}`,
   deleteSaved: 'محفوظ شدہ آڈیو حذف کریں',
   downloading: (done: number, total: number) => `${total} میں سے ${done} ڈاؤن لوڈ ہو رہی ہیں`,
   cancelAll: 'ڈاؤن لوڈ روکیں',

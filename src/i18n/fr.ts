@@ -89,6 +89,7 @@ export const fr: Strings = {
   savedCount: (n: number) => `${n} sourates enregistrées pour ce récitateur`,
   downloadAll: 'Télécharger tout le Coran',
   downloadAllSize: (s: string) => `Tout télécharger · ${s}`,
+  downloadJuzAmma: (s: string) => `Télécharger Juz 'Amma (78-114) · ${s}`,
   deleteSaved: "Supprimer l'audio enregistré",
   downloading: (done: number, total: number) => `Téléchargement de ${done} sur ${total}`,
   cancelAll: 'Arrêter le téléchargement',

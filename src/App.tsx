@@ -1797,6 +1797,27 @@ export default function App() {
     [surahs, downloadedHere, partialsHere],
   )
 
+  /*
+   * Juz 'Amma, surahs 78-114: the short surahs most people pray with, and
+   * the usual first download. A fraction of a whole mushaf, so it is offered
+   * on its own with its real remaining size.
+   */
+  const AMMA_FROM = 78
+  const missingAmma = useMemo(() => missing.filter(([n]) => n >= AMMA_FROM), [missing])
+  const missingAmmaBytes = useMemo(
+    () =>
+      surahs
+        .filter((s) => s.surah >= AMMA_FROM && s.released && !downloadedHere.has(s.surah))
+        .reduce((a, s) => a + s.bytes * (1 - (partialsHere.get(s.surah) ?? 0)), 0),
+    [surahs, downloadedHere, partialsHere],
+  )
+  const startDownloadAmma = () => {
+    for (const [n, u] of missingAmma) {
+      const s = surahs.find((x) => x.surah === n)
+      queue.current!.enqueue({ reciterId, surah: n, url: u, bytes: s?.bytes })
+    }
+  }
+
   const startDownloadAll = () => {
     // The byte count has to travel with the job. Without it the queue reads
     // every bulk download as small and runs three at once — which for a
@@ -2437,13 +2458,24 @@ export default function App() {
                   </div>
                 </>
               ) : (
-                <button
-                  className="btn solid"
-                  disabled={!missing.length}
-                  onClick={() => setConfirmAll(true)}
-                >
-                  {t.downloadAllSize(formatBytes(missingBytes, lang))}
-                </button>
+                <div className="dl-actions">
+                  <button
+                    className="btn solid"
+                    disabled={!missing.length}
+                    onClick={() => setConfirmAll(true)}
+                  >
+                    {t.downloadAllSize(formatBytes(missingBytes, lang))}
+                  </button>
+                  {missingAmma.length > 0 && missingAmma.length < missing.length && (
+                    <button
+                      className="btn"
+                      disabled={!canDownloadAll(missingAmmaBytes, quota.free)}
+                      onClick={startDownloadAmma}
+                    >
+                      {t.downloadJuzAmma(formatBytes(missingAmmaBytes, lang))}
+                    </button>
+                  )}
+                </div>
               )}
 
               {!canDownloadAll(missingBytes, quota.free) && missing.length > 0 && (

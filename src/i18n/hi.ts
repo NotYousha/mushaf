@@ -89,6 +89,7 @@ export const hi: Strings = {
   savedCount: (n: number) => `इस क़ारी के लिए ${n} सूरहें सहेजी गईं`,
   downloadAll: 'पूरा क़ुरआन डाउनलोड करें',
   downloadAllSize: (s: string) => `सभी डाउनलोड करें · ${s}`,
+  downloadJuzAmma: (s: string) => `जुज़ अम्म डाउनलोड करें (78-114) · ${s}`,
   deleteSaved: 'सहेजी गई ऑडियो हटाएँ',
   downloading: (done: number, total: number) => `${total} में से ${done} डाउनलोड हो रहा है`,
   cancelAll: 'डाउनलोड रोकें',

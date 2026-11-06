@@ -90,6 +90,7 @@ export const ar: Strings = {
   savedCount: (n: number) => `محفوظة لهذا القارئ: ${n} سورة`,
   downloadAll: 'تحميل المصحف كاملًا',
   downloadAllSize: (s: string) => `تحميل الكل · ${s}`,
+  downloadJuzAmma: (s: string) => `تحميل جزء عمّ (٧٨-١١٤) · ${s}`,
   deleteSaved: 'حذف المحفوظ',
   downloading: (done: number, total: number) => `جارٍ التحميل ${done} من ${total}`,
   cancelAll: 'إيقاف التحميل',
