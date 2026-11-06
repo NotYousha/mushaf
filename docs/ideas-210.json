@@ -1,0 +1,1682 @@
+[
+ {
+  "title": "Drag-to-dismiss player sheet with velocity snap",
+  "area": "Player sheet",
+  "what": "Add a grabber to the now-playing sheet and let a downward pan drag it with the finger: translateY follows the pointer, release above about 0.5 px/ms or past 30% height commits to the existing sheet-down animation, otherwise it springs back. The scrim's opacity tracks the drag distance.",
+  "why": "Right now the sheet only closes from the scrim, the back gesture or Escape (closeSheet in App.tsx). An iOS sheet that won't follow the thumb feels broken. Transform-only dragging costs no extra blur.",
+  "where": "src/App.tsx (sheet, closeSheet, sheet-scrim), src/ui/motion.css",
+  "effort": "M"
+ },
+ {
+  "title": "Capsule-to-sheet morph (matched geometry)",
+  "area": "Motion",
+  "what": "Open the full player by morphing the dock's now-playing capsule into the sheet: artwork grows into the medallion and the title slides into the surah-name, using view-transition-name on both elements. The existing withTransition wrapper in transition.ts already drives this.",
+  "why": "Apple Music's mini-player morph is the motion people expect from iOS 26. A plain slide-up loses the sense that the capsule and the sheet are the same thing.",
+  "where": "src/ui/Dock.tsx, src/App.tsx player-top/medallion, src/ui/transition.ts, src/ui/motion.css",
+  "effort": "M"
+ },
+ {
+  "title": "Haptics layer (navigator.vibrate) with a single helper",
+  "area": "Micro-interactions",
+  "what": "Add src/ui/haptics.ts with tick (8 ms), select (12 ms) and success ([10,40,14]) patterns, then call it on dock tab change, scrubber detents at each ayah boundary, favourite toggle, download complete and sheet commit. Include an off switch in More and respect reduced motion.",
+  "why": "The codebase has no vibrate calls anywhere. Chrome inside the TWA supports navigator.vibrate on Android, so taps can carry the tactile confirmation HIG pairs with selection changes.",
+  "where": "new src/ui/haptics.ts, src/ui/Dock.tsx, src/App.tsx scrubber (startScrub)",
+  "effort": "S"
+ },
+ {
+  "title": "Ayah detents on the scrubber",
+  "area": "Player sheet",
+  "what": "For reciters with timings (hasTimings), draw small tick marks on the track at each ayah start. While dragging, snap within ±6 px of a tick, show a floating glass bubble with the Arabic ayah number and fire a haptic tick on each crossing.",
+  "why": "Listeners want 'go back to ayah 12', not '3:41'. The segment data already exists in catalog/segments.ts.",
+  "where": "src/App.tsx (startScrub, track), src/catalog/segments.ts, src/ui/motion.css",
+  "effort": "M"
+ },
+ {
+  "title": "Glass clarity slider in More",
+  "area": "Liquid Glass",
+  "what": "Expose the --lg-clarity variable, which glass.css documents as 'the iOS 27 transparency slider' but no UI sets, as a 0 to 1 slider in More with a live preview chip. Add a 'Solid' end stop that applies lg-off and persist the value through prefs.",
+  "why": "iOS 26.1 shipped a Clear/Tinted toggle because people disagreed on legibility. The CSS hook is already built and only needs a control.",
+  "where": "src/App.tsx (more tab), src/ui/glass.ts, src/db/prefs.ts",
+  "effort": "S"
+ },
+ {
+  "title": "Auto 'Performance glass' on low-end devices",
+  "area": "Liquid Glass",
+  "what": "On first run, sample 60 frames of a scripted dock scroll in the background (or read navigator.deviceMemory and hardwareConcurrency). Below a threshold, set --lg-blur-bar:0px and stand down the WebGL lens, and say so in More with a toggle to override.",
+  "why": "The owner's top complaint is lag and flicker. glass.css already names --lg-blur-bar:0 as the first fix but leaves it to manual action.",
+  "where": "src/ui/glass.ts, src/ui/lensGL.ts, src/main.tsx",
+  "effort": "S"
+ },
+ {
+  "title": "Ambient artwork tint behind the player",
+  "area": "Player sheet",
+  "what": "Extract two dominant colours from the reciter's face photo or mosque artwork once per reciter on an 8x8 canvas downsample, cache them in IndexedDB, and paint the sheet's backdrop as a slow, static two-stop mesh gradient under the glass.",
+  "why": "Apple Music's 'living artwork' background is what makes a now-playing screen feel premium. One cached gradient per reciter costs nothing per frame.",
+  "where": "src/App.tsx player sheet, src/db/faces.ts, src/ui/motion.css",
+  "effort": "M"
+ },
+ {
+  "title": "Large-title collapsing headers",
+  "area": "Layout",
+  "what": "Give each tab (Home, Quran, Translation, More) an iOS large title that shrinks into a centred inline glass nav title as the list scrolls, driven by a CSS scroll-driven animation (animation-timeline: scroll()) with a JS fallback.",
+  "why": "The .sheet-head is static today. Large titles give orientation at the top and free space while reading. Scroll-driven animations run off the main thread, so they add no jank.",
+  "where": "src/App.tsx sheet-head, src/ui/theme.css, src/ui/motion.css",
+  "effort": "M"
+ },
+ {
+  "title": "Scroll edge effect instead of hard header borders",
+  "area": "Liquid Glass",
+  "what": "Replace header and dock separators with iOS 26's 'scroll edge effect': a 24 px gradient mask that softly dims content as it passes under the top bar and the dock. Use mask-image on the scroller rather than an extra blurred layer.",
+  "why": "This is how iOS 26 separates glass chrome from content without lines. mask-image is far cheaper than another backdrop-filter and keeps ayah text uncovered at rest.",
+  "where": "src/ui/glass.css, src/ui/theme.css (.sheet scroller)",
+  "effort": "S"
+ },
+ {
+  "title": "Dock search tab that morphs into a search field",
+  "area": "Dock",
+  "what": "Add a separate circular search button at the trailing end of the dock, matching iOS 26's tab-bar search role. Tapping it expands the circle into a full-width glass search field above the keyboard and searches surahs, reciters, mosques and translation text together.",
+  "why": "Search currently lives inside individual panels (ReciterPanel, MushafPicker). iOS 26 standardised bottom-anchored search within thumb reach.",
+  "where": "src/ui/Dock.tsx, src/catalog/search.ts, new src/ui/SearchSheet.tsx",
+  "effort": "L"
+ },
+ {
+  "title": "Dock accessory: now-playing capsule above the tabs",
+  "area": "Dock",
+  "what": "Follow the iOS 26 'bottom accessory' pattern. While the list scrolls, the playing capsule shrinks into the tab row as a mini inline capsule beside the active tab. When scrolling stops it re-expands to a full line above the tabs.",
+  "why": "The Dock already contracts on scroll (tight state) but keeps two rows. Merging them reclaims about 3.5rem of reading space during long lists.",
+  "where": "src/ui/Dock.tsx, src/ui/motion.css",
+  "effort": "M"
+ },
+ {
+  "title": "Lens stretch follows the finger on dock swipe",
+  "area": "Dock",
+  "what": "Let a horizontal drag across the dock move the WebGL selection lens with the finger, stretching it by velocity, then snap to the nearest tab on release with a haptic tick.",
+  "why": "iOS 26's tab bar lens can be scrubbed like this. attachLens already animates between tabs, so it only needs pointer-driven targets.",
+  "where": "src/ui/lensGL.ts (attachLens), src/ui/Dock.tsx",
+  "effort": "M"
+ },
+ {
+  "title": "Mushaf-style surah header cartouches in Translation",
+  "area": "Typography",
+  "what": "Above each surah in the Translation view, draw an SVG frame cartouche around the surah name in Amiri Quran, with the bismillah set as a calligraphic ligature line. Ayah markers become ornamented end-of-ayah rosettes (U+06DD) with Arabic-Indic digits.",
+  "why": "The tview-where header currently shows the plain English name. Top Quran apps such as Quran.com and Ayah earn trust through a mushaf-faithful presentation.",
+  "where": "src/ui/TranslationView.tsx, src/ui/theme.css",
+  "effort": "M"
+ },
+ {
+  "title": "Reading typography controls with live preview",
+  "area": "Typography",
+  "what": "Add a glass popover in the Translation view with Arabic size (5 steps), translation size, line height, and toggles to hide Arabic or hide translation. A live sample ayah updates as you adjust, and the values are stored as CSS variables in prefs.",
+  "why": "Per-reader size control is table stakes for Quran readers, older users especially. No such control exists in TranslationView.",
+  "where": "src/ui/TranslationView.tsx, src/db/prefs.ts, src/ui/theme.css",
+  "effort": "S"
+ },
+ {
+  "title": "Ship a dedicated Quran font with variable weight",
+  "area": "Typography",
+  "what": "Evaluate KFGQPC Uthmanic Script HAFS (free for distribution from the King Fahd Complex) or Amiri Quran Colored for ayah text. Subset it per surah range with unicode-range so the first paint loads only what is on screen, and keep Amiri for UI Arabic.",
+  "why": "--font-quran is Amiri Quran. Many readers expect the Madinah Uthmani glyph shapes, and per-range subsetting keeps a TWA cold start fast.",
+  "where": "src/ui/theme.css (--font-quran), public/fonts",
+  "effort": "M"
+ },
+ {
+  "title": "Optical sizes for Latin: system font stack tuned to SF/Inter",
+  "area": "Typography",
+  "what": "For English and French, put a Latin face ahead of IBM Plex Sans Arabic in the stack, either Inter variable or system-ui with font-optical-sizing:auto. Use tabular-nums for times and counts and tighten tracking on large titles (-0.02em).",
+  "why": "The UI stack currently starts with IBM Plex Sans Arabic for every script, so Latin labels pick up Plex's Arabic-first metrics. HIG typography leans on tracking per size.",
+  "where": "src/ui/theme.css (--font-ui per lang)",
+  "effort": "S"
+ },
+ {
+  "title": "Active ayah highlight as a soft moving glow, not a box",
+  "area": "Motion",
+  "what": "During playback in Translation, mark the current ayah with a theme-tinted underlay that slides between ayahs. Use a single absolutely positioned element animated with transform only, never a background swap on each ayah row.",
+  "why": "A re-highlight per ayah causes layout and paint churn and can flicker. One transformed element keeps the follow-along smooth, and the rule against glass behind ayah text still holds because the underlay is an opaque tint.",
+  "where": "src/ui/TranslationView.tsx, src/ui/followScroll.ts, src/ui/theme.css",
+  "effort": "M"
+ },
+ {
+  "title": "Word-by-word karaoke underline where timings allow",
+  "area": "Typography",
+  "what": "For recordings with word-level segments, draw a thin gold underline that sweeps under each word in time with the audio. It runs as a CSS width transition on one span per ayah, so it adds no per-word DOM.",
+  "why": "Quran.com's word highlighting is the most loved feature among learners. It belongs to the recordings that have the data (timings belong to recordings, not reciters).",
+  "where": "src/ui/TranslationView.tsx, src/catalog/segments.ts",
+  "effort": "L"
+ },
+ {
+  "title": "Home: 'Continue' hero card with progress ring",
+  "area": "Home",
+  "what": "Turn the resume section into a larger hero with the reciter artwork, the surah name in Amiri, a circular progress ring around a glass play button showing the exact percentage through the surah, and a time-remaining label.",
+  "why": "The resume block exists (HomePanel resume-art and resume-go) but is a row. The single most common action deserves the largest target, following Apple Podcasts' 'Up Next' hero.",
+  "where": "src/ui/HomePanel.tsx, src/ui/home.css",
+  "effort": "S"
+ },
+ {
+  "title": "Home: time-aware greeting and suggestion row",
+  "area": "Home",
+  "what": "Add a small row under the brand that changes with the local time and day: Al-Kahf on Thursday night and Friday, Al-Mulk after Isha, Al-Waqi'ah at Maghrib, and Ya-Sin in the morning. Each is a one-tap glass chip.",
+  "why": "It gives the home screen a reason to change daily without a backend. These are well-established sunnah-linked readings that people look for every week.",
+  "where": "src/ui/HomePanel.tsx, src/catalog/home.ts",
+  "effort": "S"
+ },
+ {
+  "title": "Recently played shelf with horizontal snap",
+  "area": "Home",
+  "what": "Add a 'Recently played' horizontal carousel using scroll-snap-type:x mandatory. Each card shows artwork, surah and reciter and resumes at the saved position.",
+  "why": "Home currently has resume plus a face grid. Returning listeners alternate between two or three reciters, and a snap shelf is the native iOS pattern for this.",
+  "where": "src/ui/HomePanel.tsx, src/ui/home.css, src/db/prefs.ts",
+  "effort": "S"
+ },
+ {
+  "title": "Skeleton shimmer states for every async panel",
+  "area": "Empty/error states",
+  "what": "Replace the bare <p className='empty'>{t.loading}</p> in TranslationView, HifzBoard and ForkDrill with layout-matching skeletons: ayah-shaped bars, a shimmer driven by one shared background-position animation, and reduced-motion-safe static fallbacks.",
+  "why": "Text-only 'Loading' lines make the app feel slow even when it isn't, and skeletons stop layout jumping when the content lands.",
+  "where": "src/ui/TranslationView.tsx, src/ui/HifzBoard.tsx, src/ui/ForkDrill.tsx, src/ui/theme.css",
+  "effort": "S"
+ },
+ {
+  "title": "Illustrated empty states with a single action",
+  "area": "Empty/error states",
+  "what": "Design empty states for Favourites, Downloads and an empty search: a small line-art glyph in the theme's accent (a mihrab arch or an open mushaf), one sentence and one primary glass button such as 'Browse reciters' or 'Download Al-Fatiha'.",
+  "why": "favs-empty and dl-empty are plain sentences today. HIG asks that an empty state points to the next action.",
+  "where": "src/ui/FavouritesPanel.tsx, src/ui/DownloadsPanel.tsx, src/ui/Icons.tsx",
+  "effort": "S"
+ },
+ {
+  "title": "Offline and stream-error banner that explains and recovers",
+  "area": "Empty/error states",
+  "what": "When a stream fails or the device is offline, slide a compact glass banner from the top that names the cause ('No connection, playing your 12 saved surahs only') and offers 'Show saved' or 'Retry'. Saved surahs get a small download badge across lists.",
+  "why": "Errors currently go through setError into a generic toast. Offline-first audio is a core strength of this app and should be visible.",
+  "where": "src/App.tsx (setError, toast), src/ui/SurahList.tsx, src/ui/glass.css",
+  "effort": "M"
+ },
+ {
+  "title": "Download progress ring on surah rows",
+  "area": "Micro-interactions",
+  "what": "Show each queued surah's 2 MB chunk progress as a thin circular ring around the row's trailing icon. The ring fills to a check and the row's download icon morphs into the check with a 200 ms stroke animation.",
+  "why": "The chunked downloader (src/download/chunked.ts) knows progress per chunk. Showing it on the row is clearer than sending people to the Downloads panel.",
+  "where": "src/ui/SurahList.tsx, src/download/queue.ts, src/ui/Icons.tsx",
+  "effort": "S"
+ },
+ {
+  "title": "Tablet and foldable two-pane layout",
+  "area": "Tablet/foldable",
+  "what": "At 48rem and above, or when (horizontal-viewport-segments: 2) matches, show the surah list on the leading pane and the Translation or player on the trailing pane, with a glass sidebar in place of the bottom dock (the iPadOS 26 sidebar-adaptable tab bar).",
+  "why": "desktop.css has width breakpoints but no viewport-segments handling, and the app ships on Android, where foldables are common. One column wastes a Galaxy Fold's inner screen.",
+  "where": "src/ui/desktop.css, src/ui/Dock.tsx, src/App.tsx",
+  "effort": "L"
+ },
+ {
+  "title": "Landscape player layout",
+  "area": "Layout",
+  "what": "Under (orientation: landscape) and max-height 30rem, lay the player sheet out side by side: medallion on the left, transport and scrubber on the right. Currently it only shrinks.",
+  "why": "Listening in a car mount or on a stand is landscape. desktop.css has a max-height rule but no reflow for the sheet.",
+  "where": "src/ui/desktop.css, src/ui/motion.css",
+  "effort": "S"
+ },
+ {
+  "title": "Theme crossfade via View Transitions",
+  "area": "Dark/light themes",
+  "what": "When switching between the eight themes or light and dark, run the change in startViewTransition with a circular clip-path reveal that expands from the tapped swatch.",
+  "why": "Swapping data-theme today repaints instantly. A reveal from the tapped point is a delightful, cheap, GPU-composited moment.",
+  "where": "src/ui/ThemePicker.tsx, src/ui/transition.ts, src/ui/motion.css",
+  "effort": "S"
+ },
+ {
+  "title": "Auto night shift: tahajjud theme after Isha",
+  "area": "Dark/light themes",
+  "what": "Add an 'Automatic by prayer time' mode option that switches to the dark mode of the current theme, or optionally to the Tahajjud palette, from Isha to Fajr, computed offline from coarse location or a manually chosen city with a standard calculation method.",
+  "why": "Mode is system/light/dark today. Night recitation is a key use, and tying dark mode to Isha suits this app more than OS sunset.",
+  "where": "src/ui/theming.ts, src/ui/ThemePicker.tsx",
+  "effort": "M"
+ },
+ {
+  "title": "True-black OLED variant for dark mode",
+  "area": "Dark/light themes",
+  "what": "Add an 'OLED black' toggle that overrides --bg to #000 in every dark palette and lowers glass tint so chrome reads against pure black.",
+  "why": "Most Android phones in the TWA's audience have OLED screens. Pure black saves battery during long night listening and avoids grey bloom.",
+  "where": "src/ui/themes.css, src/ui/theming.ts",
+  "effort": "S"
+ },
+ {
+  "title": "Theme picker as live mini app previews",
+  "area": "Dark/light themes",
+  "what": "Render each theme swatch in ThemePicker as a 3:4 miniature of the actual app (dock, one ayah, accent), with light and dark halves split diagonally, rather than colour dots.",
+  "why": "Eight themes named Isha, Kiswah, Lapis and so on are hard to judge from a name. Previews make the choice instant.",
+  "where": "src/ui/ThemePicker.tsx, src/ui/themes.css",
+  "effort": "S"
+ },
+ {
+  "title": "Press states: glass 'squish' and light pooling",
+  "area": "Micro-interactions",
+  "what": "On pointerdown, scale glass buttons to 0.96 and move the sheen's light point (--lg-lx/--lg-ly, written per element by glass.ts) to the touch point, then spring back on release.",
+  "why": "iOS 26 glass reacts to touch by brightening where the finger is. glass.ts already moves the sheen, so this only binds it to pointer coordinates on press, with no continuous animation.",
+  "where": "src/ui/glass.ts, src/ui/glass.css (--lg-press)",
+  "effort": "S"
+ },
+ {
+  "title": "Spring easing tokens across the app",
+  "area": "Motion",
+  "what": "Define three linear() easing tokens in motion.css that approximate SwiftUI's .smooth, .snappy and .bouncy springs, and replace ad hoc cubic-beziers so sheet, lens, toasts and chips share one motion language.",
+  "why": "Consistent spring physics is what makes iOS feel 'liquid'. CSS linear() lets a spring curve run as a pure CSS animation.",
+  "where": "src/ui/motion.css, src/ui/glass.css, src/ui/theme.css",
+  "effort": "S"
+ },
+ {
+  "title": "Play/pause icon morph",
+  "area": "Micro-interactions",
+  "what": "Animate the play triangle into two pause bars with an SVG path morph (two paths with matched point counts), 180 ms, on both the dock capsule and the sheet.",
+  "why": "An instant icon swap reads as a flicker. A morph confirms the tap and is cheap.",
+  "where": "src/ui/Icons.tsx (Play, Pause), src/ui/Dock.tsx",
+  "effort": "S"
+ },
+ {
+  "title": "Swipe on the dock capsule to skip surah",
+  "area": "Dock",
+  "what": "A horizontal swipe on the now-playing capsule moves to the next or previous surah: the title slides out with the finger and the new title slides in, as in Spotify's mini-player.",
+  "why": "Next is already on the capsule (onNext) but there is no previous, and a swipe is faster one-handed.",
+  "where": "src/ui/Dock.tsx",
+  "effort": "S"
+ },
+ {
+  "title": "Sleep timer with glass countdown chip",
+  "area": "Player sheet",
+  "what": "Add a moon button on the sheet offering 15, 30 or 60 minutes, end of surah, or after N ayahs. Once set, a small glass chip on the capsule counts down and audio fades out over the last 10 seconds.",
+  "why": "Night listening is central. Sleep timers are among the most requested features in Quran app reviews and need no backend.",
+  "where": "src/App.tsx (player-actions), src/player/engine.ts, src/ui/Dock.tsx",
+  "effort": "M"
+ },
+ {
+  "title": "Repeat/range control as a segmented glass popover",
+  "area": "Player sheet",
+  "what": "Add one 'Repeat' button that opens a popover with Off / Surah / Ayah / Range from-to (with ayah pickers) and a repeat count of 1, 3, 5, 10 or infinite. The active mode shows as a tiny badge on the button.",
+  "why": "Hifz users loop ayah ranges constantly. Grouping repeat into one popover keeps the sheet's 'two lines, not six' rule intact.",
+  "where": "src/App.tsx, src/player/playQueue.ts, src/player/talqeen.ts",
+  "effort": "M"
+ },
+ {
+  "title": "Context menus with long-press preview",
+  "area": "Micro-interactions",
+  "what": "A long press on a surah row, reciter face or ayah opens an iOS-style context menu: the item lifts with a scaled glass preview and the background dims. Actions are Play, Play next, Download, Favourite and Share ayah, with a haptic on open.",
+  "why": "It surfaces power actions without cluttering rows, and it is the HIG pattern for secondary actions on touch.",
+  "where": "new src/ui/ContextMenu.tsx, src/ui/SurahList.tsx, src/ui/HomePanel.tsx",
+  "effort": "M"
+ },
+ {
+  "title": "Share-ayah image card",
+  "area": "Visual design",
+  "what": "From an ayah's menu, render a 1080x1350 card on canvas: the ayah in Amiri Quran on the current theme's background, the translation below, and the surah:ayah reference. Share it through navigator.share({files}).",
+  "why": "Shareable ayah images are a major growth channel for Quran apps and need no server. The TWA supports Web Share Level 2.",
+  "where": "new src/ui/shareCard.ts, src/ui/TranslationView.tsx",
+  "effort": "M"
+ },
+ {
+  "title": "Reciter profile pages with parallax hero",
+  "area": "Layout",
+  "what": "Tapping a reciter face opens a profile: a full-bleed portrait hero that scales and blurs on scroll (scroll-driven animation), his office title (titles.ts), riwayah, and his surah list with saved badges. Add a sticky glass Play/Shuffle bar.",
+  "why": "Reciters are the heart of the app, but tapping a face currently only switches reciter. Profiles make browsing 'add reciters' work feel like Apple Music artists.",
+  "where": "src/ui/ReciterPanel.tsx, src/ui/ImamPanel.tsx, src/catalog/titles.ts",
+  "effort": "L"
+ },
+ {
+  "title": "Alphabet and juz index scrubber on the surah list",
+  "area": "Layout",
+  "what": "Add a thin vertical scrubber at the trailing edge of the Quran list with juz 1-30 markers. Dragging it shows a large glass bubble with the juz number and first surah, plus a haptic tick per juz.",
+  "why": "With 114 surahs, jumping to Al-Mulk means a long flick. iOS Contacts-style index rails make that a single drag.",
+  "where": "src/ui/SurahList.tsx, src/mushaf/divisions.ts",
+  "effort": "S"
+ },
+ {
+  "title": "Accessibility: Dynamic Type and Increase Contrast",
+  "area": "Accessibility",
+  "what": "Size UI in rem from a root that honours Android font scale, and add @media (prefers-contrast: more) to raise --lg-clarity to 1 and --lg-tint-max-bar to 0.98. Check that the dock labels reach 4.5:1 over every theme.",
+  "why": "Glass legibility is a known weak spot (glass.css itself notes the dock labels fell below 4.5:1 at one point). Following OS contrast settings is the HIG answer.",
+  "where": "src/ui/glass.css, src/ui/theme.css",
+  "effort": "S"
+ },
+ {
+  "title": "Splash to home continuity",
+  "area": "Motion",
+  "what": "Have the Splash logo animate straight into the home-mark's position with a shared view-transition-name, rather than fading out, so app launch reads as one continuous motion.",
+  "why": "In a TWA, cold start is the first impression. A continuous handoff hides font and catalog load time.",
+  "where": "src/ui/Splash.tsx, src/ui/HomePanel.tsx, src/ui/motion.css",
+  "effort": "S"
+ },
+ {
+  "title": "Lock-screen style 'Now Reading' fullscreen mode",
+  "area": "Player sheet",
+  "what": "Swipe up from the sheet to get a distraction-free fullscreen view: the current ayah in large Amiri Quran with translation, timed to audio, on a dimmed ambient background and with no chrome. Tap to bring the controls back.",
+  "why": "It gives night listeners something to read without the full Mushaf tab, which is held back, using the timing data that already drives talqeen.",
+  "where": "src/App.tsx, src/ui/TranslationView.tsx, src/catalog/segments.ts",
+  "effort": "M"
+ },
+ {
+  "title": "Pull-to-refresh replaced by pull-to-search",
+  "area": "Micro-interactions",
+  "what": "On the Quran and Home lists, an over-pull at the top reveals a glass search field (the iOS Mail and Settings pattern) and focuses it past a threshold with a haptic.",
+  "why": "There is no content to refresh, since the catalog is static, so the over-scroll gesture is better spent on search.",
+  "where": "src/App.tsx (.sheet scroller), src/ui/SurahList.tsx",
+  "effort": "S"
+ },
+ {
+  "title": "Context-aware dock tint per tab",
+  "area": "Liquid Glass",
+  "what": "Tint the dock's glass faintly with the active tab's context: warm vellum over Translation, the reciter's ambient colour while the player is minimised. Interpolate --lg-tint over 300 ms with no blur change.",
+  "why": "iOS 26 glass adapts its tint to what lies beneath. A per-tab tint costs nothing and makes the dock feel alive rather than a static grey.",
+  "where": "src/ui/Dock.tsx, src/ui/glass.css",
+  "effort": "S"
+ },
+ {
+  "title": "Bismillah and tajweed colour legend sheet",
+  "area": "Typography",
+  "what": "When the tajweed colouring from src/mushaf/tajweed.ts is on, a small 'i' glass button opens a sheet with a legend of each colour (ghunnah, qalqalah, madd and so on), with Arabic examples and short English and Urdu explanations.",
+  "why": "Coloured tajweed without a legend confuses learners. Every leading tajweed mushaf app includes one.",
+  "where": "src/mushaf/tajweed.ts, src/ui/MushafView.tsx, src/i18n",
+  "effort": "S"
+ },
+ {
+  "title": "Add Ali Al-Hudhaify (Madinah imam) solo mushaf",
+  "area": "reciters",
+  "what": "Catalog entry from https://download.quranicaudio.com/quran/huthayfi/{NNN}.mp3, numbering is zero-padded to 3 digits (001..114). Range probe on 036: 206, Content-Range bytes 0-99/25159808, Last-Modified 06 Jan 2023, ACAO *. 001/002/114 all 200.",
+  "why": "His portrait (imam-hudhaify.webp) and roster entry already ship for the Taraweeh years, so his solo mushaf can go in with no new art. The app is built around the Haram imams, and this is a gap in that set.",
+  "effort": "S",
+  "where": "data/catalog.json generator, data/imams.json (id hudhaify), data/reciter-frames.json"
+ },
+ {
+  "title": "Add Abdul Bari Ath-Thubaiti solo mushaf",
+  "area": "reciters",
+  "what": "https://download.quranicaudio.com/quran/thubaity/{NNN}.mp3 (3-digit padding). 036 gives 206 with Last-Modified and ACAO *, and 114 gives 200.",
+  "why": "Another Haram imam whose portrait (imam-thubaiti.webp) is already bundled. Adding him only needs a catalog row.",
+  "effort": "S",
+  "where": "data/catalog.json generator, data/imams.json"
+ },
+ {
+  "title": "Add Abdul Muhsin Al-Qasim solo mushaf",
+  "area": "reciters",
+  "what": "https://download.quranicaudio.com/quran/abdul_muhsin_alqasim/{NNN}.mp3 (3-digit). 036 gives 206 (16300160 bytes) with Last-Modified and ACAO *, and 114 gives 200.",
+  "why": "He is a Madinah imam and imam-qasim.webp already ships. That makes three Haram-imam additions with existing art.",
+  "effort": "S",
+  "where": "data/catalog.json generator"
+ },
+ {
+  "title": "Add Saad Al-Ghamdi complete mushaf",
+  "area": "reciters",
+  "what": "https://download.quranicaudio.com/quran/sa3d_al-ghaamidi/complete/{NNN}.mp3 (3-digit). 036 gives 206 (25258112 bytes) with Last-Modified, and 001, 002 and 114 all give 200. Do not use the sa3d_al-ghaamidi/hidayah/ folder, which is partial.",
+  "why": "He is one of the most-requested murattal voices worldwide. Roster id ghamdi-saad and imam-ghamdi-saad.webp already exist, but no playable mushaf does.",
+  "effort": "S",
+  "where": "data/catalog.json generator"
+ },
+ {
+  "title": "Add Khalid Al-Muhanna mushaf (mp3quran CDN)",
+  "area": "reciters",
+  "what": "https://cdn.mp3quran.net/audio/khalid-mohanna/r1/{NNN}.mp3 (3-digit), 114 surahs listed. 036 gives 206 with an ETag plus Last-Modified, and Access-Control-Expose-Headers includes ETag and Content-Range.",
+  "why": "imam-muhanna.webp already ships. The CDN exposes a strong ETag, so the chunked resume validator in chunked.ts works fully.",
+  "effort": "S",
+  "where": "data/catalog.json generator"
+ },
+ {
+  "title": "Add Mahmoud Khalil Al-Husary murattal (with free word sync)",
+  "area": "reciters",
+  "what": "https://download.quranicaudio.com/quran/mahmood_khaleel_al-husaree/{NNN}.mp3 (3-digit). 036 gives 206 (22900864 bytes) with Last-Modified and ACAO *, and 001, 002 and 114 give 200. cdn.mp3quran.net/audio/mahmoud-husary/r1/ is the ETag-bearing fallbackUrl.",
+  "why": "roadmap.md Phase 1 says 26 QUL segment sets were timed against the original download.quranicaudio.com files and are directly reusable. Husary is one of them, so it is the cheapest route to a second fully synced voice for Talqeen, Hifz and ayah highlighting. Re-check against QUL surah_segments before shipping.",
+  "effort": "M",
+  "where": "data/catalog.json, data/timings-husary.json (new), scripts that build timings"
+ },
+ {
+  "title": "Add Husary Al-Mu'allim (teaching recitation) for Hifz",
+  "area": "reciters",
+  "what": "https://download.quranicaudio.com/quran/husary_muallim/{NNN}.mp3 (3-digit). 036 gives 206 with Last-Modified, and 001, 002 and 114 give 200. Tag it 'المعلم / Teaching' using the existing tag/tagEn fields.",
+  "why": "This is the standard recording for children and learners, with slow, deliberate pacing. It suits the Hifz tab and Talqeen better than any reciter in the current catalog.",
+  "effort": "S",
+  "where": "data/catalog.json, src/catalog/types.ts (tag)"
+ },
+ {
+  "title": "Add Abdul Basit Abdus-Samad Murattal",
+  "area": "reciters",
+  "what": "https://download.quranicaudio.com/quran/abdul_basit_murattal/{NNN}.mp3 (3-digit). 036 gives 206 (20914304 bytes) with Last-Modified and ACAO *, and 001, 002 and 114 give 200. cdn.mp3quran.net/audio/abdulbasit-abdulsamad/r3/ is the fallback.",
+  "why": "It is the most recognised recitation in the world and is missing from the app. QUL has a quranicaudio-timed set, so it is another candidate for free sync.",
+  "effort": "S",
+  "where": "data/catalog.json"
+ },
+ {
+  "title": "Add Abdul Basit Mujawwad",
+  "area": "reciters",
+  "what": "https://download.quranicaudio.com/quran/abdulbaset_mujawwad/{NNN}.mp3 (3-digit). 036 gives 206 (33753216 bytes) with Last-Modified. Tag it 'مجود / Mujawwad' so the card can be told apart from the murattal one.",
+  "why": "The app has no mujawwad recitation at all. Listeners who play recitation for its own sake, in the car or at night, want this style.",
+  "effort": "S",
+  "where": "data/catalog.json"
+ },
+ {
+  "title": "Add Minshawi Mujawwad beside the existing Minshawi murattal",
+  "area": "reciters",
+  "what": "https://download.quranicaudio.com/quran/minshawi_mujawwad/{NNN}.mp3 (3-digit). 036 gives 206 (46119517 bytes) with Last-Modified 22 Oct 2026, and 001, 002 and 114 give 200. Tag it Mujawwad.",
+  "why": "Minshawi is already a favourite in the app (id minshawi), so this is a second mushaf for an existing face. Note that the files were re-uploaded on 22 Oct 2026, so any QUL timings must be re-measured against them.",
+  "effort": "S",
+  "where": "data/catalog.json"
+ },
+ {
+  "title": "Add Ahmad Al-Ajmy with dual-host fallback",
+  "area": "reciters",
+  "what": "Primary: https://download.quranicaudio.com/quran/ahmed_ibn_3ali_al-3ajamy/{NNN}.mp3, where 036 gives 206 with Last-Modified. fallbackUrl: https://cdn.mp3quran.net/audio/ahmad-ajmi/r1/{NNN}.mp3, where 036 gives 206 with an ETag. Both use 3-digit padding.",
+  "why": "He is hugely popular, especially in South Asia, which is the app's Urdu and Hindi audience. Two independent hosts make the existing fallbackUrl field useful.",
+  "effort": "S",
+  "where": "data/catalog.json"
+ },
+ {
+  "title": "Add Abu Bakr Ash-Shatri with dual-host fallback",
+  "area": "reciters",
+  "what": "Primary: https://download.quranicaudio.com/quran/abu_bakr_ash-shaatree/{NNN}.mp3, where 036 gives 206 with Last-Modified and 001, 002 and 114 give 200. fallbackUrl: https://cdn.mp3quran.net/audio/abubakr-shatri/r1/{NNN}.mp3, where 036 gives 206 with an ETag.",
+  "why": "He is one of the most-played murattal reciters on quranicaudio, and each surah file is compact (about 12-13 MB for Ya-Sin), which suits phones short on storage.",
+  "effort": "S",
+  "where": "data/catalog.json"
+ },
+ {
+  "title": "Add Nasser Al-Qatami",
+  "area": "reciters",
+  "what": "https://cdn.mp3quran.net/audio/nasser-qatami/r1/{NNN}.mp3 (3-digit), 114 surahs. 036 gives 206 (11608368 bytes) with an ETag, Last-Modified and exposed headers. Fallback: download.quranicaudio.com/quran/nasser_bin_ali_alqatami/, where 036 also gives 206.",
+  "why": "He is a popular younger Gulf voice and the downloads are small. The two hosts agree on the file size to within a few KB, so the fallback is safe.",
+  "effort": "S",
+  "where": "data/catalog.json"
+ },
+ {
+  "title": "Add Khalid Al-Jileel",
+  "area": "reciters",
+  "what": "https://cdn.mp3quran.net/audio/khalid-jalil/r1/{NNN}.mp3 (3-digit), 114 surahs. 036 gives 206 (19428549 bytes) with an ETag and Last-Modified, and ETag and Content-Range are in Access-Control-Expose-Headers.",
+  "why": "He is one of the most-searched Gulf reciters on YouTube, so users will come asking for him. The CDN headers are as good as the project's own Worker.",
+  "effort": "S",
+  "where": "data/catalog.json"
+ },
+ {
+  "title": "Add Fares Abbad",
+  "area": "reciters",
+  "what": "https://download.quranicaudio.com/quran/fares/{NNN}.mp3 (3-digit). 036 gives 206 (19779712 bytes) with Last-Modified, and 001, 002 and 114 give 200. A fallback is available at cdn.mp3quran.net/audio/fares-abbad/r1/ (listed with 114 surahs).",
+  "why": "He is a calm, widely loved murattal voice and is often requested for sleep listening. That pairs with the sleep timer ideas below.",
+  "effort": "S",
+  "where": "data/catalog.json"
+ },
+ {
+  "title": "Second wave of verified reciters",
+  "area": "reciters",
+  "what": "These were all verified as 206 with an ETag on cdn.mp3quran.net/audio/<slug>/r1/{NNN}.mp3: raad-kurdi, ahmad-nufais, mansour-salimi, haitham-dukhain, hani-rifai, and islam-sobhi (only 109 of 114, so ship it with released=109). On quranicaudio, idrees_abkar, salah_alhashim and salaah_bukhaatir all give 206 with Last-Modified.",
+  "why": "With these, the catalog has a ready pipeline of about 21 new voices without any Worker hosting cost. Ship them in batches so the 'See all' grid stays curated.",
+  "effort": "S",
+  "where": "data/catalog.json"
+ },
+ {
+  "title": "Repoint Al-Luhaidan off the server8 redirect",
+  "area": "reciters",
+  "what": "Every Luhaidan URL is https://server8.mp3quran.net/lhdan/NNN.mp3, and that now answers 301 to https://cdn.mp3quran.net/audio/muhammad-luhaidan/r1/NNN.mp3. The redirect target gives 206 with an ETag. Rewrite the catalog URLs to the cdn host.",
+  "why": "Every 2 MB chunk currently pays for an extra cross-origin redirect hop, and the validator comparison in chunked.ts reads headers from a redirected response. Pointing at the cdn host directly removes a source of latency and a failure path.",
+  "effort": "S",
+  "where": "data/catalog.json generator, src/download/chunked.ts"
+ },
+ {
+  "title": "Other riwayat for Husary and Abdul Basit using the existing riwayah field",
+  "area": "reciters",
+  "what": "Add Husary Warsh, Qalun and Ad-Duri (cdn.mp3quran.net/audio/mahmoud-husary/r3, r5 and r4, 114 each) and Abdul Basit Warsh (abdulbaset_warsh/ on quranicaudio, where 036 gives 206). Each sets riwayah/riwayahEn so the Hafs mushaf page stands down, as it already does for Al-Juhany Ad-Duri.",
+  "why": "Warsh is the majority reading in North and West Africa. The code path for a non-Hafs riwayah already exists and has been tested on the Juhany Ad-Duri entry.",
+  "effort": "S",
+  "where": "data/catalog.json, src/catalog/riwayah.ts"
+ },
+ {
+  "title": "10-second reciter preview before committing",
+  "area": "reciters",
+  "what": "On a ReciterPanel card, long-press or press a small play button to Range-fetch the first ~250 KB of surah 112 (Al-Ikhlas) and play it in a throwaway audio element. Nothing is saved to IndexedDB.",
+  "why": "With 35 or more reciters, choosing by name alone fails. The hosts' Range support makes the preview cost about 250 KB instead of a whole surah.",
+  "effort": "M",
+  "where": "src/ui/ReciterPanel.tsx, src/player/engine.ts"
+ },
+ {
+  "title": "Style and riwayah filter chips in 'See all'",
+  "area": "reciters",
+  "what": "Chips along the top of the reciter directory: Haram imams, Murattal, Mujawwad, Teaching, Synced (has timings), Other riwayat, Downloaded. They derive from the existing tag, riwayah, serves (imams.json) and timings-*.json presence.",
+  "why": "The grid only stays glanceable at about a dozen entries, as the home field's doc comment says. The directory needs facets once the catalog grows past 35.",
+  "effort": "S",
+  "where": "src/ui/ReciterPanel.tsx, src/catalog/byImam.ts"
+ },
+ {
+  "title": "Ayah-range repeat (A to B, N times, with a gap)",
+  "area": "player",
+  "what": "Pick a start and end ayah (long-press ayah numbers in TranslationView), a repeat count (1, 3, 5, 10 or infinite), and an optional gap between loops. The loop is driven off ayahStartsFor(reciterId, surah), the same way Talqeen seeks rather than pauses, so it keeps running with the screen off.",
+  "why": "The only loop today is whole-surah repeat ('off', 'one', 'all') plus Talqeen's line echo. Range repeat is the top-requested memorisation feature in every Quran app.",
+  "effort": "M",
+  "where": "src/player/playQueue.ts, new src/player/rangeLoop.ts, src/ui/TranslationView.tsx, src/App.tsx"
+ },
+ {
+  "title": "Free A-B loop for reciters without timings",
+  "area": "player",
+  "what": "Two taps on the scrubber or Waveform set A and B, and the player loops that time window. This works for every reciter, synced or not.",
+  "why": "Only 4 of the 21 reciters have timings files, so ayah repeat would otherwise fail for the other 80% of the catalog.",
+  "effort": "S",
+  "where": "src/ui/Waveform.tsx, src/App.tsx"
+ },
+ {
+  "title": "Cumulative chaining drill (the 3x3 hifz method)",
+  "area": "player",
+  "what": "Ayah 1 plays x3, then ayah 2 x3, then ayahs 1-2 x3, then ayah 3 x3, then 1-3 x3, and so on. It is built on the range-loop primitive and works with the screen off.",
+  "why": "This is the classic halaqa memorisation pattern. It extends Talqeen and the Hifz board, which already exist, and keeps all audio cues on the lock screen.",
+  "effort": "M",
+  "where": "src/player/rangeLoop.ts, src/ui/HifzBoard.tsx"
+ },
+ {
+  "title": "Talqeen gap multiplier",
+  "area": "player",
+  "what": "Let the user choose an echo gap of 1x, 1.5x or 2x the line's duration. The implementation keeps Talqeen's existing trick: replay the line muted once more, or for half of it, instead of pausing.",
+  "why": "Beginners need more time than the reciter took. The muted-replay design in talqeen.ts makes this possible without breaking screen-off playback.",
+  "effort": "S",
+  "where": "src/player/talqeen.ts"
+ },
+ {
+  "title": "Sleep timer that ends at the ayah or surah boundary, with a fade",
+  "area": "player",
+  "what": "Replace the 30/60-minute setTimeout that calls engine.stop() mid-word. New options: 'end of this ayah', 'end of surah', 'after N ayahs', and 15/30/45/60 minutes, with the last 20 s ramping el.volume down. Checking currentTime in the timeupdate handler, rather than relying on a long setTimeout, keeps it reliable when the phone is locked.",
+  "why": "Cutting a recitation off mid-ayah is jarring, especially for the bedtime listening the app is used for. The current timer also calls stop(), which loses the resume position. Pausing would keep it.",
+  "effort": "S",
+  "where": "src/App.tsx (sleepAt effect around line 1193), src/player/engine.ts"
+ },
+ {
+  "title": "Bedtime routine preset",
+  "area": "player",
+  "what": "One tap plays Al-Mulk, then As-Sajdah (the Sunnah before sleep), with the sleep timer set to 'end of queue' and a fade-out. The user can choose which reciter it uses.",
+  "why": "It turns one of the most common nightly uses of the app into a single tap, with no settings to set each time.",
+  "effort": "S",
+  "where": "src/ui/HomePanel.tsx, src/player/playQueue.ts"
+ },
+ {
+  "title": "Wider speed range with a long-press menu",
+  "area": "player",
+  "what": "SPEEDS is [1, 1.25, 1.5, 0.75], cycled by tapping. Add 0.5, 0.85 and 2.0, open a picker on long-press, set preservesPitch explicitly, and remember the speed per reciter and per mode (Hifz defaults to 0.85).",
+  "why": "0.5x is standard for learning articulation, and 2x is for revision. Cycling through 4 values one tap at a time is slow.",
+  "effort": "S",
+  "where": "src/App.tsx (SPEEDS, line 173), src/db/prefs.ts"
+ },
+ {
+  "title": "Gapless next-surah handoff with a pre-armed second element",
+  "area": "player",
+  "what": "When about 20 s remain, prepare the next surah (its IndexedDB object URL, or the stream) on a second HTMLAudioElement. Start it in the 'ended' handler synchronously, with no await, and swap the engine's element.",
+  "why": "engine.ts documents that awaiting between surahs lets a locked phone go to sleep and stop the recitation. A pre-armed element removes both the await and the audible gap. This matters for long listening sessions and for Juz playback.",
+  "effort": "L",
+  "where": "src/player/engine.ts, src/App.tsx (advance/onEnded)"
+ },
+ {
+  "title": "Juz and Hizb playback across surah boundaries",
+  "area": "player",
+  "what": "'Play Juz 30' or 'Play Hizb 5' builds a queue from divisions.json, with start and end ayah offsets resolved through ayahStartsFor. Synced reciters cut exactly at the division boundary; others play the whole surahs.",
+  "why": "People follow daily Juz plans, especially in Ramadan. The division data already ships but only drives navigation.",
+  "effort": "M",
+  "where": "data/divisions.json, src/mushaf/divisions.ts, src/player/playQueue.ts"
+ },
+ {
+  "title": "Visible Up Next queue",
+  "area": "player",
+  "what": "A glass sheet listing upcoming items (surah, reciter, range), with drag to reorder, swipe to remove, and 'play next' from any surah row. It replaces the implicit nextSurah() ordering.",
+  "why": "There is currently no way to see or shape what plays next beyond shuffle and repeat. A queue is the base for playlists and Juz playback.",
+  "effort": "M",
+  "where": "new src/ui/QueueSheet.tsx, src/player/playQueue.ts"
+ },
+ {
+  "title": "Saved playlists, included in the backup file",
+  "area": "player",
+  "what": "Named lists of {reciterId, surah, fromAyah?, toAyah?}, for example 'Friday: Al-Kahf', 'Ruqyah set', 'Ayat al-Kursi + last 2 of Baqarah'. They are stored in IndexedDB and included in the single-file export/import that the roadmap names as the no-accounts sync.",
+  "why": "Mixed-reciter sets are a common need with no home in the app. Including them in the existing export keeps the no-accounts promise.",
+  "effort": "M",
+  "where": "src/db/index.ts (new store), src/ui/FavouritesPanel.tsx"
+ },
+ {
+  "title": "Friday Al-Kahf card",
+  "area": "player",
+  "what": "From Thursday Maghrib to Friday Maghrib (local clock), the home screen shows 'Al-Kahf' with the user's reciter and a resume position. There is no notification, so it needs no permissions.",
+  "why": "It is a weekly Sunnah, and it is the most-played surah on Fridays. It also fits the roadmap rule against bloat: it is a mushaf feature, not a prayer-times feature.",
+  "effort": "S",
+  "where": "src/catalog/home.ts, src/ui/HomePanel.tsx"
+ },
+ {
+  "title": "Listening khatma tracker shown as debt, not streaks",
+  "area": "player",
+  "what": "Record the seconds actually heard per surah (from timeupdate, excluding seeks) toward a 'khatma by ear'. A plan such as 30 days or 'by Eid' shows the minutes left today, computed from real surah durations.",
+  "why": "The roadmap rejects streaks and points and prefers to show debt. A by-ear khatma is something no major app tracks honestly.",
+  "effort": "M",
+  "where": "src/db/practice.ts, src/ui/HomePanel.tsx"
+ },
+ {
+  "title": "Taraweeh night mode: Ramadan night N",
+  "area": "player",
+  "what": "In Ramadan, the home screen offers 'Night 12, Makkah 1447'. It plays that night's portion of the Haram year mushaf, using segments.json imam changes as chapters, and shows which imam is on and how far into the night's juz the listener is.",
+  "why": "The app carries Makkah and Madinah through 1447 with per-imam segments. Organising it by night matches how people actually follow Taraweeh from home.",
+  "effort": "M",
+  "where": "data/segments.json, data/mosque-years.json, src/catalog/mosques.ts"
+ },
+ {
+  "title": "Mid-surah lock-screen update on imam change",
+  "area": "player",
+  "what": "When imamAt() crosses a segment boundary in a Taraweeh surah, call updateMetadata again with that imam's name as artist and their portrait as artwork.",
+  "why": "The lock screen, car display and Bluetooth readouts currently keep showing the first imam for the whole compilation surah, which is wrong for most of a night.",
+  "effort": "S",
+  "where": "src/player/mediaSession.ts (updateMetadata), src/catalog/segments.ts"
+ },
+ {
+  "title": "Ayah-level Media Session for synced reciters",
+  "area": "player",
+  "what": "For reciters with timings, the lock-screen title reads 'Al-Kahf · 18:10', and seekforward/seekbackward step to the next or previous ayah start instead of a fixed jump.",
+  "why": "Headset and car buttons become usable for revising ayah by ayah without touching the phone. App.tsx already falls back to a fixed jump when there are no timings, so the hook exists.",
+  "effort": "S",
+  "where": "src/player/mediaSession.ts, src/App.tsx (around line 804)"
+ },
+ {
+  "title": "Car mode screen",
+  "area": "player",
+  "what": "A full-screen, high-contrast layout with three huge targets (previous, play/pause, next), the surah name in large type, no glass, no blur and no lens. It turns on manually, or automatically when the Remote Playback or Media Session state indicates a car.",
+  "why": "Glass effects and small icons are unsafe and laggy while driving. This addresses the owner's top complaint about lag on low-end phones.",
+  "effort": "S",
+  "where": "new src/ui/CarMode.tsx"
+ },
+ {
+  "title": "Casting that works for downloaded surahs",
+  "area": "player",
+  "what": "Before calling remote.prompt(), switch the element's src from the IndexedDB blob URL to the surah's network URL at the same currentTime. Revert when casting ends.",
+  "why": "A Cast or Remote Playback receiver cannot fetch a blob: URL from the phone, so casting an offline surah plays nothing. The fix sits where engine.ts already exposes remote.",
+  "effort": "S",
+  "where": "src/player/engine.ts (remote getter, around line 480)"
+ },
+ {
+  "title": "Loudness matching across reciters",
+  "area": "player",
+  "what": "In the weekly catalog generator, measure each reciter's integrated loudness (EBU R128) on a few surahs and store a gain value. Apply it as el.volume scaling, with no Web Audio graph, so background playback is unaffected.",
+  "why": "Live Haram recordings and studio mushafs differ by several dB, so switching reciters or shuffling makes the volume jump.",
+  "effort": "M",
+  "where": "catalog generator script, src/catalog/types.ts, src/player/engine.ts"
+ },
+ {
+  "title": "Skip long lead-ins",
+  "area": "player",
+  "what": "Store a per-surah firstAyahAt offset in the catalog, taken from timings or a silence probe. A preference starts playback at the istiadha or at the first ayah, and the scrubber marks the cut.",
+  "why": "Some sources open with several seconds of silence or announcements (the roadmap measured a 4-7 s lead-in on Minshawi). On repeat-one, that dead air repeats on every loop.",
+  "effort": "S",
+  "where": "data/catalog.json, src/App.tsx"
+ },
+ {
+  "title": "Ayah ticks on the scrubber and snap-to-ayah scrubbing",
+  "area": "player",
+  "what": "Draw thin ticks at ayah starts (or imam changes for Taraweeh) on the Waveform. While dragging, snap to the nearest ayah and show '2:255' as a tooltip.",
+  "why": "Seeking inside al-Baqarah (about 2 h) by raw seconds is guesswork. Ayah markers make the scrubber useful for navigation.",
+  "effort": "S",
+  "where": "src/ui/Waveform.tsx"
+ },
+ {
+  "title": "Keep the ayah when switching reciter",
+  "area": "player",
+  "what": "When both the old and new reciter have ayah starts, switchReciter resumes the new reciter at the same ayah instead of time 0. Otherwise it falls back to the same fraction of the surah.",
+  "why": "switchReciter currently resets current, time and duration to zero. Comparing two voices on one passage is a common reason to switch.",
+  "effort": "S",
+  "where": "src/App.tsx (switchReciter, around line 1204)"
+ },
+ {
+  "title": "Listening history",
+  "area": "player",
+  "what": "A reverse-chronological list of what was played (reciter, surah, last position, date), with tap to resume. It is kept in IndexedDB for 90 days and covers more than the single home resume card.",
+  "why": "Users often want to get back to 'that surah from yesterday night', and only the latest position is kept today.",
+  "effort": "S",
+  "where": "src/db/prefs.ts, new src/ui/HistoryPanel.tsx"
+ },
+ {
+  "title": "Keep my listening offline automatically",
+  "area": "player",
+  "what": "An optional rule: any surah streamed to completion is kept in IndexedDB, up to a storage budget (using storage/quota.ts), evicting the least recently played. A Wi-Fi-only switch reads navigator.connection.type where the browser supports it.",
+  "why": "It stops people paying twice in data for the surahs they replay most. The quota code and chunked downloader already exist.",
+  "effort": "M",
+  "where": "src/download/queue.ts, src/storage/quota.ts"
+ },
+ {
+  "title": "One-tap Juz Amma pack per reciter",
+  "area": "player",
+  "what": "A 'Download Juz 30' button on each reciter's page queues surahs 78-114 in the download queue and shows the total size before starting (from catalog bytes).",
+  "why": "Short surahs are the most played and the cheapest to keep offline. Today they have to be downloaded one by one.",
+  "effort": "S",
+  "where": "src/ui/DownloadsPanel.tsx, src/download/queue.ts"
+ },
+ {
+  "title": "Deep link to reciter, surah and time",
+  "area": "player",
+  "what": "Support ?r=dosari&s=18&t=125 (or &a=10 for an ayah) on the Pages URL. The TWA opens it directly, and a share button produces the link from the current position.",
+  "why": "People share recitations on WhatsApp. A link that lands on the exact ayah in the app beats sharing a YouTube clip, and it needs no backend.",
+  "effort": "S",
+  "where": "src/App.tsx, src/ui/backstack.ts"
+ },
+ {
+  "title": "Ship the reading tabs behind a staged rollout flag",
+  "area": "Reading / release",
+  "what": "Swap the hard-coded READING_TABS=false in src/App.tsx for a pref flag the user can switch on in Settings as a 'Preview: Mushaf & Hifz', so the existing Mushaf page view, veil and HifzBoard get real users without becoming the default.",
+  "why": "The veil, peek tracking, SRS tiers, wird plan, talqeen and fork drill are already built (MushafView.tsx, HifzBoard.tsx, hifz/schedule.ts) but nobody in production can reach them. This exposes the most work for the least new code.",
+  "where": "src/App.tsx (READING_TABS lines 161, 902, 1443, 1817, 2303, 2426), src/db/prefs.ts, src/i18n/*",
+  "effort": "S"
+ },
+ {
+  "title": "Word-level veil: reveal one word per tap",
+  "area": "Hifz",
+  "what": "Add a fifth VEILS mode, 'word', that blanks the whole page and reveals the next word in reading order on each tap or right-side swipe. Each reveal is logged as a peek against surah:ayah:word, not against the page.",
+  "why": "The current veils (faded/firsts/blank) work at page level, but students actually forget individual words. Word keys already exist in the layout (Word = [text, 's:a:w']), so per-word peeks would plug into ForkDrill's stumble ranking.",
+  "where": "src/ui/MushafView.tsx (VEILS, veil-* classes), src/db/practice.ts (addPeek keyed by word), src/ui/glass.css",
+  "effort": "M"
+ },
+ {
+  "title": "Ayah-by-ayah reveal with self-grade buttons",
+  "area": "Hifz",
+  "what": "In blank-veil mode, show only the first word of the next hidden ayah. After reciting from memory, the user reveals the ayah and grades it Clean / Hesitated / Wrong. The grades feed review() as stumbles.",
+  "why": "markReviewed currently takes one stumble count for the whole page after the fact. Grading each ayah makes the SRS input much more precise, and it is the standard 'test yourself' loop in Tarteel and Quran Companion.",
+  "where": "src/ui/MushafView.tsx, src/hifz/schedule.ts (review), src/db/practice.ts",
+  "effort": "M"
+ },
+ {
+  "title": "Stumble heatmap drawn on the page itself",
+  "area": "Hifz",
+  "what": "Toggle an overlay that underlines (never glass) the words with recorded stumbles or peeks, coloured by count, so the weak spots are visible on the page before a review.",
+  "why": "HifzBoard already computes heat per page, but the student cannot see where on the page the trouble is. Underlines keep the ayah text fully legible, which the no-glass-behind-text rule requires.",
+  "where": "src/ui/MushafView.tsx, src/db/practice.ts (stumblesFor), src/ui/theme.css",
+  "effort": "S"
+ },
+ {
+  "title": "Tap a word to mark a stumble while a teacher listens",
+  "area": "Hifz",
+  "what": "A 'Teacher mode' toggle: a parent or teacher holds the phone while the student recites, and each tapped word is recorded as a Stumble with an error type (forgot, wrong word, tajweed, harakah). A summary sheet at the end shows the errors and the page grade.",
+  "why": "The app already says the teacher decides what is memorised (schedule.ts header), but there is no UI that lets a teacher record anything. This is the real halaqa workflow.",
+  "where": "src/ui/MushafView.tsx (onStumble), src/db/practice.ts (Stumble type gets 'kind'), new src/ui/TeacherSheet.tsx",
+  "effort": "M"
+ },
+ {
+  "title": "Daily review queue card on Home",
+  "area": "Hifz / SRS",
+  "what": "A Home card listing today's due pages from dueToday(), split into sabaq/sabqi/manzil with estimated minutes. One tap opens the first due page with the veil already on, and finishing it moves to the next page.",
+  "why": "dueToday and tierOf exist but only show up inside the hidden HifzBoard. A one-tap daily queue is what makes SRS stick, and the review path has to have as little friction as possible.",
+  "where": "src/ui/HomePanel.tsx, src/hifz/schedule.ts, src/App.tsx",
+  "effort": "M"
+ },
+ {
+  "title": "Add pages to hifz by range (juz, surah, page span)",
+  "area": "Hifz",
+  "what": "A 'I have memorised...' sheet with pickers for juz, surah or page range (using divisions.ts pagesOfJuz/surahPage) that creates PageRecords in bulk, with an optional 'memorised long ago' flag that seeds them straight into manzil.",
+  "why": "Today a returning hafiz would have to add 604 pages one by one. Onboarding a student's existing hifz in seconds is necessary before any of the SRS is useful to them.",
+  "where": "src/ui/HifzBoard.tsx, src/db/practice.ts (putPageRecord), src/mushaf/divisions.ts",
+  "effort": "S"
+ },
+ {
+  "title": "Manzil rotation planner (7-day / 30-day khatm of revision)",
+  "area": "Hifz",
+  "what": "Let the user choose a manzil cycle length. The planner spreads all memorised manzil pages evenly across the cycle as fixed daily portions, blended with the stumble-driven due scores.",
+  "why": "Traditional hifz revision works on a fixed rotation, not pure SRS. dueScore alone can let strong pages go unrevised for a month, which teachers do not accept for manzil.",
+  "where": "src/hifz/schedule.ts (new manzilRotation), src/ui/HifzBoard.tsx",
+  "effort": "M"
+ },
+ {
+  "title": "Mutashabihat explorer beside the fork drill",
+  "area": "Hifz / understanding",
+  "what": "For any ayah, a sheet lists every similar ayah in data/forks.json side by side with the diverging words highlighted, plus a 'drill this pair' button that opens ForkDrill on it.",
+  "why": "forks.json and rankForks are already built for the drill but cannot be browsed. Confusing similar verses is the most common hifz error, and this would be among the best-in-class hifz tools.",
+  "where": "src/hifz/forks.ts, src/ui/ForkDrill.tsx, new src/ui/SimilarAyat.tsx",
+  "effort": "M"
+ },
+ {
+  "title": "Talqeen per-ayah repeat counts (3x / 5x / 10x / custom)",
+  "area": "Hifz / audio",
+  "what": "Extend talqeen.ts so each segment can play N times, optionally with the echo gap, and an 'accumulate' option plays ayah 1, then 1-2, then 1-3, and so on (the chaining method).",
+  "why": "Repetition counts and cumulative chaining are the top requests in hifz apps (Quran Companion, Ayat). The seek-back-not-pause engine already keeps the screen-off session alive, so this is just a bit more state.",
+  "where": "src/player/talqeen.ts, src/App.tsx (talqeenRef controls)",
+  "effort": "M"
+ },
+ {
+  "title": "Loop an ayah range A to B from the page",
+  "area": "Reading / audio",
+  "what": "Long-press a starting ayah and then an ending ayah on the mushaf page to set a loop range. The range plays with the chosen reciter on repeat, using ayahStartsFor timings.",
+  "why": "repeat is currently surah-level only ('one'/'all'). Range loops are the main memorisation listening tool, and ayah starts already exist for the timed reciters.",
+  "where": "src/ui/MushafView.tsx, src/mushaf/data.ts (ayahStartsFor), src/player/engine.ts",
+  "effort": "M"
+ },
+ {
+  "title": "Record-and-compare recitation, kept on the device",
+  "area": "Hifz",
+  "what": "Record the user's own recitation of an ayah with MediaRecorder, store it in IndexedDB, and play it back alternating with the reciter's line, so the student can hear the difference. Nothing is uploaded.",
+  "why": "This gives Tarteel-style self-checking with no backend or AI, and it fits the no-accounts rule. TWA Chrome supports MediaRecorder.",
+  "where": "new src/db/recordings.ts, src/player/talqeen.ts, src/ui/MushafView.tsx",
+  "effort": "L"
+ },
+ {
+  "title": "Tajweed rule legend and tap-to-explain",
+  "area": "Tajweed",
+  "what": "In the tajweed edition, tapping a coloured run opens a small sheet naming the rule (from the Span rule id), a one-line explanation and an example. A collapsible legend strip shows only the rules present on the current page.",
+  "why": "tajweed.ts already returns rule names in runs(), but the colours mean nothing to a learner without a key. Every major tajweed mushaf prints a legend.",
+  "where": "src/mushaf/tajweed.ts, src/ui/MushafView.tsx, src/i18n/*.ts (rule names)",
+  "effort": "S"
+ },
+ {
+  "title": "Tajweed focus filter: highlight only one rule",
+  "area": "Tajweed",
+  "what": "A chip row (Ghunnah, Qalqalah, Ikhfa, Madd...) that dims every other tajweed colour to plain text so a student can practise one rule across a page.",
+  "why": "Teachers teach one rule at a time, and full colour is visually noisy. This is cheap because it only changes CSS classes on the existing runs.",
+  "where": "src/ui/MushafView.tsx, src/ui/theme.css",
+  "effort": "S"
+ },
+ {
+  "title": "Word-by-word translation from QUL / QuranEnc data",
+  "area": "Understanding",
+  "what": "Tap a word to get a small popover with its English, Urdu, Hindi or French gloss and transliteration, from a licensable word-by-word dataset (Tarteel's QUL publishes WBW data with stated terms). It ships as a lazily fetched per-language JSON keyed by s:a:w.",
+  "why": "Word keys line up exactly with the layout, so a popover is all it takes. WBW is the most requested feature among non-Arabic readers (the quran.com and Bayyinah apps).",
+  "where": "new data/wbw-<lang>.json, src/mushaf/wbw.ts, src/ui/MushafView.tsx",
+  "effort": "M"
+ },
+ {
+  "title": "Interlinear word-by-word mode in TranslationView",
+  "area": "Understanding",
+  "what": "A layout option where each Arabic word has its gloss stacked under it in small type, wrapping right-to-left, as an alternative to the ayah-plus-translation block.",
+  "why": "Interlinear reading is how learners build vocabulary. TranslationView already renders per-ayah words from the layout, so it can reuse the same data as the WBW popover.",
+  "where": "src/ui/TranslationView.tsx",
+  "effort": "M"
+ },
+ {
+  "title": "Add QuranEnc licensed translations",
+  "area": "Translations",
+  "what": "Extend data/translations.json with translations from QuranEnc.com (King Fahd Complex / Rowwad), which allow free redistribution with attribution: for example English Rowwad, Urdu, Hindi, French, Bengali, Indonesian and Turkish, with their footnotes.",
+  "why": "The current catalogue is six Tanzil texts and includes Clear Quran (en-itani), which memory marks as unlicensable. QuranEnc gives versioned texts with explicit permission and footnotes, which Tanzil's do not.",
+  "where": "data/translations.json, src/mushaf/translations.ts, src/i18n/index.ts (more langs)",
+  "effort": "M"
+ },
+ {
+  "title": "Drop Clear Quran (en-itani) from the catalogue",
+  "area": "Translations / compliance",
+  "what": "Remove or hide the en-itani entry and migrate anyone who selected it to Saheeh International. Show a one-time note explaining why.",
+  "why": "Project memory says Clear Quran is unlicensable, yet it is still in data/translations.json. A Play-listed app carrying an unlicensed text is a takedown risk.",
+  "where": "data/translations.json, src/mushaf/translations.ts, src/db/prefs.ts",
+  "effort": "S"
+ },
+ {
+  "title": "Short tafsir sheet per ayah (Muyassar, Jalalayn, Sa'di)",
+  "area": "Understanding",
+  "what": "An ayah long-press action, 'Tafsir', opens a bottom sheet with Al-Muyassar (already shipped), plus Arabic Tafsir al-Jalalayn (public domain) and Sa'di. Each loads on demand and is cached in IndexedDB.",
+  "why": "Muyassar currently sits in the translation slot as if it were a translation. A dedicated tafsir sheet keeps translation and explanation apart and adds classical depth for free.",
+  "where": "data/translations.json (tafsir:true), new src/mushaf/tafsir.ts, new src/ui/TafsirSheet.tsx",
+  "effort": "M"
+ },
+ {
+  "title": "Two translations side by side",
+  "area": "Translations",
+  "what": "Allow a second translation under the first (for example Urdu Jalandhry plus English Sahih) in TranslationView, each labelled with its translator.",
+  "why": "Bilingual households (Urdu/English is the owner's own case) compare translations. Per-language files are already loaded separately.",
+  "where": "src/ui/TranslationView.tsx, src/mushaf/translations.ts",
+  "effort": "S"
+ },
+ {
+  "title": "Full-text search across Arabic and translations",
+  "area": "Search",
+  "what": "A search sheet over quran-text.json, using foldArabic so diacritics, hamza forms and alif variants are ignored, and over the loaded translation, with results grouped by surah and matched words highlighted. Tapping a result opens the mushaf page at that ayah.",
+  "why": "Search today only covers surah names (catalog/search.ts searchSurahs). Searching the text itself is a core feature of every competitor, and foldArabic already exists.",
+  "where": "src/catalog/search.ts, data/quran-text.json, new src/ui/SearchSheet.tsx",
+  "effort": "M"
+ },
+ {
+  "title": "Root and lemma search using Quranic Arabic Corpus morphology",
+  "area": "Search / understanding",
+  "what": "Bundle a compact root index derived from the Quranic Arabic Corpus morphology (GPL data, attribution required) mapping s:a:w to root. Tapping 'all occurrences of this root' from the word popover lists every ayah, with a count.",
+  "why": "Root study is how serious students understand Arabic vocabulary, and the per-word keys make it a natural extension of the WBW popover.",
+  "where": "new data/roots.json, src/mushaf/roots.ts, src/ui/SearchSheet.tsx",
+  "effort": "L"
+ },
+ {
+  "title": "Jump-to box that understands 2:255, 'Kursi', page 50, juz 30",
+  "area": "Navigation",
+  "what": "A single input in MushafIndex that parses s:a references, page numbers, juz/hizb numbers and famous ayah names (Ayat al-Kursi, last two of Baqarah) and jumps there with pageForKey.",
+  "why": "Navigation currently means browsing lists. A smart jump box removes several taps from the most frequent reading action.",
+  "where": "src/ui/MushafIndex.tsx, src/mushaf/data.ts (pageForKey), src/mushaf/divisions.ts",
+  "effort": "S"
+ },
+ {
+  "title": "Ayah-level bookmarks with colours and folders",
+  "area": "Bookmarks",
+  "what": "Upgrade the page-level marks (marks.includes(atPage)) to ayah bookmarks with a colour, an optional collection name ('Duas', 'For Jumuah', 'Hifz trouble') and a list view sorted by last opened.",
+  "why": "Page bookmarks cannot tell which ayah was meant, and collections are a standard feature (quran.com, Ayah app). This is the precondition for notes and sharing.",
+  "where": "src/App.tsx (marks), src/db/prefs.ts or new src/db/bookmarks.ts, src/ui/FavouritesPanel.tsx",
+  "effort": "M"
+ },
+ {
+  "title": "Automatic 'last read' position, separate from bookmarks",
+  "area": "Reading",
+  "what": "Save the last visible ayah per reading surface (mushaf, translation) automatically on scroll idle. Home offers 'Continue at 18:45, page 300' and can hold several positions (khatm, hifz, casual).",
+  "why": "Readers rely on resuming where they stopped, and mixing that with manual bookmarks clutters both. It costs one IndexedDB write when the user stops scrolling.",
+  "where": "src/ui/PagedMushaf.tsx, src/ui/HomePanel.tsx, src/db/prefs.ts",
+  "effort": "S"
+ },
+ {
+  "title": "Private notes on ayahs (reflections)",
+  "area": "Notes",
+  "what": "Attach a plain-text note to any ayah, shown as a small margin marker (never over the text). A Notes panel lists them, and they export and import as a JSON file for backup since there are no accounts.",
+  "why": "Personal tadabbur journals are a top feature in Quran apps. On-device storage plus file export respects the no-backend rule.",
+  "where": "new src/db/notes.ts, src/ui/MushafView.tsx, src/ui/TranslationView.tsx",
+  "effort": "M"
+ },
+ {
+  "title": "Backup and restore everything to a single file",
+  "area": "Data safety",
+  "what": "Export bookmarks, notes, page records, stumbles, the wird plan and preferences into one .json via the Web Share API or a file save, and restore it from an import. Downloaded audio is excluded.",
+  "why": "With no accounts, uninstalling the TWA or clearing storage wipes years of hifz history. This is the only way to change phones safely.",
+  "where": "src/db/index.ts, src/db/practice.ts, src/db/prefs.ts, new src/ui/BackupPanel.tsx",
+  "effort": "M"
+ },
+ {
+  "title": "Khatm planner with daily portion and progress ring",
+  "area": "Reading goals",
+  "what": "Pick a finish date, or 'finish in Ramadan', and get a daily portion in pages, rubs or juz, with a progress ring on Home and a gentle catch-up that redistributes missed days.",
+  "why": "wirdSchedule and wirdProgress already exist in schedule.ts and HifzBoard tracks pagesRead, so only the UI and the redistribution logic are missing.",
+  "where": "src/hifz/schedule.ts, src/ui/HomePanel.tsx, src/ui/HifzBoard.tsx",
+  "effort": "S"
+ },
+ {
+  "title": "Reading streak that forgives",
+  "area": "Habit",
+  "what": "Count consecutive days with at least one ayah read or listened to. Show a weekly dot row rather than a big number, and grant a free 'excused day' each week (travel, illness) so one miss does not reset everything.",
+  "why": "Streaks drive retention (Duolingo-style), but harsh resets make people quit. A dot row is calm enough to sit with the app's tone.",
+  "where": "src/db/prefs.ts (daily activity log), src/ui/HomePanel.tsx",
+  "effort": "S"
+ },
+ {
+  "title": "Daily ayah card",
+  "area": "Engagement",
+  "what": "Home shows one ayah a day, picked deterministically from the date (so it needs no server), with translation, a play button for that ayah, 'open in mushaf' and a share-as-image action rendered to canvas with the app's glass frame around the text.",
+  "why": "A daily ayah is a lightweight reason to open the app every day. Deterministic selection fits the static GitHub Pages hosting.",
+  "where": "src/ui/HomePanel.tsx, data/quran-text.json, src/mushaf/translations.ts",
+  "effort": "S"
+ },
+ {
+  "title": "Share ayah as text or image",
+  "area": "Sharing",
+  "what": "An ayah action that copies or shares 'Arabic + translation + (Surah 2:255)' as text, or as a PNG drawn on canvas in the Amiri Quran face with the translator's attribution.",
+  "why": "Sharing ayahs on WhatsApp is extremely common in this audience, and it brings in new users. The translation licence terms require the attribution to stay attached.",
+  "where": "src/ui/MushafView.tsx, src/ui/TranslationView.tsx, new src/ui/shareImage.ts",
+  "effort": "M"
+ },
+ {
+  "title": "Kids mode: short surahs, big type, star rewards",
+  "area": "Kids",
+  "what": "A separate home with Juz Amma only, large Madani text, one ayah at a time with talqeen repeat, a tap-to-hear-each-word option for word-timed reciters, and a star for each surah completed. Nothing else in the app is reachable from it.",
+  "why": "Parents teach children the short surahs, and a locked-down mode makes the phone safe to hand over. It reuses talqeen and word timings.",
+  "where": "new src/ui/KidsHome.tsx, src/player/talqeen.ts, src/mushaf/data.ts (wordSchedule)",
+  "effort": "L"
+ },
+ {
+  "title": "Word-highlight karaoke in Translation view",
+  "area": "Reading / audio",
+  "what": "For word-timed reciters, highlight the current word in TranslationView's Arabic line as well, rather than only the ayah (the code at TranslationView line 118 currently throws word timings away).",
+  "why": "Following word by word is the strongest learning aid and the timing data is already loaded. Only a transform-based highlight is needed, with no layout reflow, so it stays smooth.",
+  "where": "src/ui/TranslationView.tsx, src/mushaf/data.ts (wordSchedule)",
+  "effort": "S"
+ },
+ {
+  "title": "Night reading: sepia and true-black mushaf themes",
+  "area": "Reading comfort",
+  "what": "Mushaf-specific paper tones (cream, sepia, OLED black with warm gold text) chosen separately from the app's glass theme, plus an optional automatic switch at Maghrib or system dark mode.",
+  "why": "Long Tahajjud and Taraweeh reading in the dark is a core use. A paper colour separate from the UI theme matches what physical mushafs offer.",
+  "where": "src/ui/themes.css, src/ui/theming.ts, src/ui/ThemePicker.tsx",
+  "effort": "S"
+ },
+ {
+  "title": "Focus reading: hide all chrome and keep the screen awake",
+  "area": "Reading",
+  "what": "Tap the page centre to fade the dock and header out, with no glass on screen at all. Use the Screen Wake Lock API while reading, and tap again to bring the chrome back.",
+  "why": "Minimal chrome when reading is one of the owner's priorities. Removing glass layers during reading also cuts GPU work, which helps with the lag and flicker complaint.",
+  "where": "src/ui/PagedMushaf.tsx, src/ui/Dock.tsx, src/App.tsx",
+  "effort": "S"
+ },
+ {
+  "title": "Sajdah and waqf markers with tap explanations",
+  "area": "Reading",
+  "what": "Mark sajdah ayat (divisions.ts sajdas) with a margin glyph and an optional gentle prompt. Tapping a pause sign (waqf) explains it ('lazim: must stop', 'jaiz: optional').",
+  "why": "Readers often miss the sajdah, and learners do not know the waqf symbols. The data already exists in divisions.ts.",
+  "where": "src/mushaf/divisions.ts, src/ui/MushafView.tsx",
+  "effort": "S"
+ },
+ {
+  "title": "Rub/hizb/juz progress margin cues on the page",
+  "area": "Reading / navigation",
+  "what": "Show the classic printed-mushaf marginal markers (rub el hizb, juz start, the ¼ ½ ¾ fractions from FRACTIONS) in the page margin, plus a thin page-progress line inside the current juz.",
+  "why": "Hafiz students navigate by rub and hizb, and printed mushafs carry these marks. rubInHizb and FRACTIONS are already computed.",
+  "where": "src/mushaf/divisions.ts, src/ui/MushafPage.tsx",
+  "effort": "S"
+ },
+ {
+  "title": "Weekly hifz report you can send to a teacher",
+  "area": "Hifz",
+  "what": "Generate a one-page summary of pages reviewed, stumbles by page, new sabaq and peek time, shared as an image or text through the Web Share API to a teacher or parent on WhatsApp.",
+  "why": "With no accounts there is no teacher dashboard, so sharing a report is the accountability loop. The data is all in practice.ts.",
+  "where": "src/db/practice.ts, src/ui/HifzBoard.tsx, new src/ui/hifzReport.ts",
+  "effort": "M"
+ },
+ {
+  "title": "First-letter recall drill outside the mushaf",
+  "area": "Hifz",
+  "what": "A quick quiz: show the first word of an ayah (or the previous ayah's ending) and the student recites the rest, then reveals it. 'What comes next?' and 'which surah is this ayah from?' rounds are drawn from memorised pages.",
+  "why": "Varied retrieval beats re-reading. It reuses the memorised page set, and the 'firsts' veil logic already isolates first words.",
+  "where": "new src/ui/RecallQuiz.tsx, src/db/practice.ts, data/quran-text.json",
+  "effort": "M"
+ },
+ {
+  "title": "Revelation context card per surah",
+  "area": "Understanding",
+  "what": "The surah header in the mushaf and translation views expands into a card with Makki/Madani status, revelation order, ayah count, main themes in two lines, and the related juz and pages.",
+  "why": "This gives quick context without a full tafsir. surahs.json already has the metadata base, and the themes can be short original summaries, so there is no licensing problem.",
+  "where": "data/surahs.json, src/ui/MushafView.tsx (surah header), src/ui/TranslationView.tsx",
+  "effort": "S"
+ },
+ {
+  "title": "Take the playback clock out of the App root",
+  "area": "Rendering perf",
+  "what": "The playhead lives in App state (App.tsx:196) and is set on every timeupdate (App.tsx:576), so the whole 3030-line App re-renders about four times a second while audio plays. Move currentTime into a small external store read through useSyncExternalStore, and subscribe only the time labels, the scrubber and the active-ayah logic.",
+  "why": "This is the biggest constant source of main-thread work during playback, which is exactly when the owner sees lag. Every unmemoised child (HomePanel, DownloadsPanel, the player sheet) reconciles on every tick.",
+  "where": "src/App.tsx:196, 576, 2347, 2412, 2834-2855; new src/player/clock.ts",
+  "effort": "M"
+ },
+ {
+  "title": "Translation view: re-render only when the ayah changes",
+  "area": "Rendering perf",
+  "what": "TranslationView takes `time` as a prop (TranslationView.tsx:39) and maps every ayah inline (TranslationView.tsx:271-331), so all 286 rows of al-Baqarah reconcile on every tick even though `active` changes only every few seconds. Turn the ayah row into a memo(AyahRow) keyed on (ayah, isNow, text), and derive `active` from a clock subscription that only sets state when the ayah index changes.",
+  "why": "Translation is the reading tab that is live in production. Long surahs currently do several hundred row diffs a second during recitation, which shows up as scroll jank.",
+  "where": "src/ui/TranslationView.tsx:39, 139-153, 271-331",
+  "effort": "S"
+ },
+ {
+  "title": "content-visibility on translation ayahs",
+  "area": "Rendering perf",
+  "what": "Add `content-visibility:auto; contain-intrinsic-size:auto 8rem` to `.tayah` (theme.css:2301), as is already done for surah rows (motion.css:202). centreY reads rects of the target only, and `auto` remembers sizes after first paint.",
+  "why": "Al-Baqarah lays out and paints 286 Arabic paragraphs plus translations on open. Skipping the off-screen ones cuts first paint and scroll cost on the tab that is live.",
+  "where": "src/ui/theme.css:2301; src/ui/motion.css:202 (pattern)",
+  "effort": "S"
+ },
+ {
+  "title": "Scrubber knob on transform, not left",
+  "area": "Rendering perf",
+  "what": "The knob is positioned with `left: pct%` (App.tsx:2843), which triggers layout on every tick. Drive it with `transform: translateX()` from the same --pct variable the fill already uses (App.tsx:2840).",
+  "why": "It is a layout write four times a second inside a glass sheet with backdrop blur, and the change is trivial.",
+  "where": "src/App.tsx:2838-2843; player knob CSS in theme.css",
+  "effort": "S"
+ },
+ {
+  "title": "Stop re-binding the global keydown listener every tick",
+  "area": "Rendering perf",
+  "what": "The keyboard-transport effect lists `time` in its dependencies (App.tsx:1762), so it removes and re-adds a window listener about four times a second. Read time, current and playerMin through refs and bind once.",
+  "why": "This is wasted work and GC churn on every tick, and the fix is mechanical.",
+  "where": "src/App.tsx:1722-1763",
+  "effort": "S"
+ },
+ {
+  "title": "Fix the leaked 40 ms interval in playRange",
+  "area": "Reliability",
+  "what": "playRange's promise resolves only when currentTime >= to or the audio ends (App.tsx:880-892). If the user pauses, seeks backwards or switches surah, the 25 Hz setInterval and the timeupdate listener run forever, and each drill adds another. Also resolve on pause, emptied or a load-token change, and clear the interval.",
+  "why": "It is a real leak that accumulates over a Hifz/fork drill session and burns CPU in the background. It will bite once READING_TABS is switched on.",
+  "where": "src/App.tsx:865-895",
+  "effort": "S"
+ },
+ {
+  "title": "Per-row memo in SurahList during downloads",
+  "area": "Rendering perf",
+  "what": "Every 2 MB chunk emits a fresh `progress` object (queue.ts:131-132 → App.tsx:540). The memoised SurahList (SurahList.tsx:88) therefore re-renders all 114 rows per chunk. Split out a memo(SurahRow) that takes its own pct, have, held and active primitives.",
+  "why": "During 'download all' the list the user is scrolling re-renders several times a second. Only one or three rows actually change.",
+  "where": "src/ui/SurahList.tsx:88-175; src/App.tsx:540",
+  "effort": "S"
+ },
+ {
+  "title": "Don't read every finished download back into a Blob",
+  "area": "Downloads",
+  "what": "downloadChunked always ends with assembleBlob(m) (chunked.ts:369) and returns it, but the queue's save is a no-op (App.tsx:405), so every download reads the whole file back out of IndexedDB just to throw it away. Verify completeness with `count()` over the chunk key range instead, and return void.",
+  "why": "For a 200 MB surah that means about 100 IDB reads and 200 MB of blob churn at the end of each download, which happens 114 times in a 'download all'. It is pure jank and a memory spike on 2 GB phones.",
+  "where": "src/download/chunked.ts:369-377; src/download/queue.ts:18-23; src/App.tsx:405",
+  "effort": "S"
+ },
+ {
+  "title": "Assemble saved audio in one transaction",
+  "area": "Offline playback",
+  "what": "assembleBlob issues one awaited db.get per chunk, each in its own transaction (downloads.ts:135-141). Walk the same IDBKeyRange that deleteDownload uses (downloads.ts:160) with a single readonly cursor transaction, wrapping each value in a Blob as it arrives.",
+  "why": "Tap-to-play on a saved long surah currently waits on about 100 sequential IDB round trips before the first sound (engine.ts:249). prepareNext pays the same cost (engine.ts:322).",
+  "where": "src/db/downloads.ts:131-143; src/player/engine.ts:249, 322",
+  "effort": "S"
+ },
+ {
+  "title": "Serve saved audio through a Service Worker range responder",
+  "area": "Offline playback",
+  "what": "Have the SW answer /offline-audio/<reciter>/<surah> with 206 responses sliced directly from the chunk store, and point the audio element at that URL instead of a whole-file object URL.",
+  "why": "Saved surahs would start instantly and seek instantly, with no 200 MB Blob assembled per play or for next-surah preparation (engine.ts:268, 323). This removes the largest offline memory risk on Android.",
+  "where": "src/player/engine.ts:249-268, 322-331; SW via vite-plugin-pwa injectManifest; src/db/downloads.ts",
+  "effort": "L"
+ },
+ {
+  "title": "Keep listDownloaded off the imported audio buffers",
+  "area": "Downloads",
+  "what": "listDownloaded calls db.getAll('audio') (audio.ts:103), which deserialises every imported recording's full ArrayBuffer just to read `bytes`. App calls it after every finished job (App.tsx:567). Add an audioMeta store, or read metadata through a key cursor, so the buffers are never loaded.",
+  "why": "A user with a few imported surahs pulls hundreds of MB into the heap on each refresh, 114 times during a 'download all'. That is a likely cause of renderer kills and stutter.",
+  "where": "src/db/audio.ts:85-119, 135-156; src/db/index.ts (new store, v5); src/App.tsx:409-436, 567",
+  "effort": "M"
+ },
+ {
+  "title": "Parallelise and batch the startup IndexedDB reads",
+  "area": "Startup",
+  "what": "The boot effect awaits about a dozen IDB calls one after another (App.tsx:480-530): seven getPref calls, verdicts, purge check, listDownloaded, persist, loadPosition. Read the whole prefs store in one getAll, run the independent reads with Promise.all, and restore the last position before the downloads scan.",
+  "why": "Cold start in the TWA shows a default reciter and an empty resume card until the chain finishes. Batching cuts several round trips and shows 'continue where you left off' sooner.",
+  "where": "src/App.tsx:478-530; src/db/prefs.ts:25",
+  "effort": "M"
+ },
+ {
+  "title": "Drop the 1.1 s splash on TWA cold starts",
+  "area": "Startup",
+  "what": "Splash holds for 700 ms plus a 420 ms fade (Splash.tsx:44-48) whenever sessionStorage is empty, which is every cold launch of the TWA. Skip it in display-mode standalone (Android already showed its launch screen), or dismiss it as soon as the catalog and position are ready.",
+  "why": "Play users see two splashes and wait more than a second before anything can be touched. Perceived speed is the owner's main complaint.",
+  "where": "src/ui/Splash.tsx:20-53; src/App.tsx:1853",
+  "effort": "S"
+ },
+ {
+  "title": "Lazy-load the held-back reading surfaces and settings panels",
+  "area": "Bundle size",
+  "what": "MushafView, MushafIndex, MushafPicker, HifzBoard and ForkDrill are statically imported (App.tsx:48-55) even though READING_TABS is false (App.tsx:161). Settings-only panels (FacePanel, VerifyPanel, ImportPanel, LockScreenPanel) are imported the same way. Move them behind React.lazy with Suspense.",
+  "why": "Code that production never runs is parsed on every cold start inside the TWA.",
+  "where": "src/App.tsx:48-55, 161 and the panel imports",
+  "effort": "S"
+ },
+ {
+  "title": "URL templates instead of 2,000 full URLs in catalog.json",
+  "area": "Bundle size",
+  "what": "In the bundled catalog (load.ts:1), `url` accounts for about 141 KB of the roughly 180 KB of per-surah values across 21 reciters, and almost all follow a pattern such as workers.dev/d/{n}.mp3. Store a per-reciter urlTemplate and a bytes array, expand them in buildView, and keep explicit url only for exceptions.",
+  "why": "It shrinks the main chunk and the weekly remote refresh payload, and cuts JSON parse time at startup.",
+  "where": "data/catalog.json; src/catalog/load.ts:1-80; src/catalog/types.ts; catalog refresh script",
+  "effort": "M"
+ },
+ {
+  "title": "Per-surah Arabic text for the Translation tab",
+  "area": "Bundle size",
+  "what": "TranslationView loads the whole 2.6 MB mushaf-layout chunk (TranslationView.tsx:93 → data.ts:47) only to rebuild ayah text. Emit public/text/<surah>.json from data/quran-text.json at build time (about 12 KB on average) and keep the layout for the Mushaf tab only.",
+  "why": "The first open of Translation, which is live, needs no 2.6 MB download and parse. The tab opens instantly on a slow link and its offline footprint is small.",
+  "where": "src/ui/TranslationView.tsx:90-136; src/mushaf/data.ts:47-48; build script",
+  "effort": "M"
+ },
+ {
+  "title": "Split translation files per surah and prefetch the next one",
+  "area": "Offline",
+  "what": "loadTranslation fetches the whole translation (up to 2.5 MB for ar-muyassar) in one go (translations.ts:83). Serve trans/<id>/<surah>.json and prefetch surah+1 when playback nears the end.",
+  "why": "Faster first render, smaller runtime cache, and a dropped connection costs one surah instead of the whole translation.",
+  "where": "src/mushaf/translations.ts:79-96; public/trans; vite.config.ts runtimeCaching translations rule",
+  "effort": "M"
+ },
+ {
+  "title": "'Make reading available offline' button",
+  "area": "Offline",
+  "what": "Layout, timings and translations are only runtime-cached after first use (vite.config.ts globIgnores and the mushaf-data and translations rules), so a reader who goes offline before opening a tab gets textNeedsNet (TranslationView.tsx:191-200). Add a Downloads-panel action that warms those caches for the chosen translation and shows their size.",
+  "why": "An offline-first Quran app should not need the user to visit each tab while online. Commuters and travellers hit this.",
+  "where": "src/ui/DownloadsPanel.tsx; src/mushaf/data.ts; src/mushaf/translations.ts",
+  "effort": "S"
+ },
+ {
+  "title": "Make the download queue online/offline aware",
+  "area": "Downloads",
+  "what": "Nothing in src/ reads navigator.onLine or listens for online/offline. When signal drops, each job burns three retries with 1-4 s backoff (chunked.ts:205-249), fails, and the queue moves on to the next job, so a 'download all' marks surah after surah failed. Pause the queue on 'offline' and resume it on 'online'.",
+  "why": "Downloads on the move are the common case on phones. A tunnel should pause the queue, not fail it.",
+  "where": "src/download/queue.ts:100-119; src/download/chunked.ts:205-263; src/App.tsx queue setup ~389",
+  "effort": "S"
+ },
+ {
+  "title": "Fail fast when offline and the surah is not saved",
+  "area": "Error messages",
+  "what": "With no saved copy, engine.load tries the stream and then the fallback, each with a 15 s timeout (engine.ts:202-206, 270-279), so an offline tap can hang for up to 30 s before showing 'timed out reaching the audio host'. Check navigator.onLine first and show a localised 'Not saved, you're offline' with 'Download when online' and 'Show saved surahs' actions.",
+  "why": "A 30-second spinner followed by a technical message reads as a broken app.",
+  "where": "src/player/engine.ts:202-206, 234-310",
+  "effort": "S"
+ },
+ {
+  "title": "Real Pause/Resume for downloads",
+  "area": "Downloads",
+  "what": "DownloadQueue already has pauseAll and resumeAll (queue.ts:100-108), but no UI calls them. The only control is 'Stop downloading', which cancels and drops the queue (App.tsx:2259-2271). Add Pause and Resume next to Stop. Partial chunks already make resume cheap.",
+  "why": "Users want to pause a 2.9 GB mushaf download on mobile data without losing the queue. The machinery already exists.",
+  "where": "src/App.tsx:2252-2281; src/download/queue.ts:100-108",
+  "effort": "S"
+ },
+ {
+  "title": "Persist the download queue across app kills",
+  "area": "Downloads",
+  "what": "Pending jobs live only in memory (queue.ts:39). If Android kills the TWA during a 'download all', the partial surah is kept but the other 100 queued jobs vanish. Write the pending list to prefs on change and re-enqueue it, plus any partial manifests, on launch, honouring the pause and Wi-Fi settings.",
+  "why": "Downloads should survive interruptions without the user re-triggering 'download all'.",
+  "where": "src/download/queue.ts:80-119; src/App.tsx:478-530; src/db/prefs.ts",
+  "effort": "M"
+ },
+ {
+  "title": "Wi-Fi-only and Data Saver download setting",
+  "area": "Downloads",
+  "what": "The only Wi-Fi guidance is a sentence in the confirm dialog (en.ts:219). Add a 'Download on Wi-Fi only' toggle using navigator.connection.type and its change event (available in Chrome on Android, so in the TWA) that pauses the queue on cellular. Also respect navigator.connection.saveData.",
+  "why": "Surahs are hundreds of MB, and data caps are a real concern in many of the app's target markets.",
+  "where": "src/download/queue.ts; src/App.tsx settings area; src/i18n/*.ts",
+  "effort": "S"
+ },
+ {
+  "title": "Screen Wake Lock during 'download all'",
+  "area": "Downloads",
+  "what": "While the queue is non-empty and the app is visible, hold navigator.wakeLock.request('screen'), with a toggle and a 'keep the app open to finish' hint. Release it when the queue drains.",
+  "why": "Chrome throttles a backgrounded or sleeping TWA, so multi-GB downloads stall when the screen locks. This is the cheap fix before Background Fetch.",
+  "where": "src/App.tsx queue subscribe ~537-569",
+  "effort": "S"
+ },
+ {
+  "title": "Background Fetch for whole-surah downloads",
+  "area": "Downloads",
+  "what": "On Chrome for Android, use the Background Fetch API from the service worker to download queued surahs while the app is closed, then split the response into the existing chunk records in backgroundfetchsuccess. Fall back to the current chunked path elsewhere.",
+  "why": "It gives true background downloading with a system progress notification, which native Quran apps have and a TWA can only approach this way.",
+  "where": "service worker (switch vite-plugin-pwa to injectManifest); src/db/downloads.ts; src/download/queue.ts",
+  "effort": "L"
+ },
+ {
+  "title": "Adaptive chunk size",
+  "area": "Downloads",
+  "what": "The chunk size is fixed at 2 MB (chunked.ts:34). Grow it toward 8 MB while chunks arrive quickly and without error, and drop back to 1-2 MB after a retry. Manifest.chunks already tolerates variable sizes (downloads.ts:38-47).",
+  "why": "On Wi-Fi a 200 MB surah means about 100 requests and IDB transactions. Fewer, larger ones download faster and cause less main-thread churn, while flaky links keep small units of loss.",
+  "where": "src/download/chunked.ts:34, 183-336",
+  "effort": "S"
+ },
+ {
+  "title": "'Stop downloading' should stop every reciter, and the count should add up",
+  "area": "Reliability",
+  "what": "Stop only cancels the current reciter's surahs (App.tsx:2264), so jobs queued for another reciter keep running after the UI says they stopped. The 'X of Y' label subtracts the whole queue, all reciters, from the current reciter's total (App.tsx:2253-2256). Add queue.cancelAll() and per-reciter counts from QueueState.",
+  "why": "These are real bugs: switching reciter during a download all gives wrong progress and a Stop that does not stop.",
+  "where": "src/App.tsx:2252-2271; src/download/queue.ts",
+  "effort": "S"
+ },
+ {
+  "title": "Aggregate download progress with speed and ETA",
+  "area": "Downloads",
+  "what": "Show bytes done of total, MB/s and time remaining for the whole queue, grouped per reciter in DownloadsPanel. The bytes are already known from the catalog and onProgress.",
+  "why": "'12 of 114' tells you nothing when one surah is 200 MB and another is 1 MB.",
+  "where": "src/download/queue.ts:130-133; src/ui/DownloadsPanel.tsx; src/App.tsx:2252",
+  "effort": "M"
+ },
+ {
+  "title": "Localise and humanise every error",
+  "area": "Error messages",
+  "what": "The engine returns English-only strings (engine.ts:217-232, 203, 276), and download failures pass raw messages such as 'HTTP 503', 'Failed to fetch' and 'incomplete download: N of M bytes' (chunked.ts:263, 354, 372; queue.ts:154) into t.saveFailed (App.tsx:555, en.ts:111). Throw typed error codes (network, host, decode, offline, quota, changed) and map them to per-language strings, each with one action (Retry, Free space, Try other source).",
+  "why": "Arabic, Urdu, Hindi and French users currently see English technical text in an RTL layout.",
+  "where": "src/player/engine.ts:217-279; src/download/chunked.ts; src/download/queue.ts:154; src/App.tsx:540-556; src/i18n/*.ts",
+  "effort": "M"
+ },
+ {
+  "title": "'Retry failed' in the Downloads panel",
+  "area": "Downloads",
+  "what": "The queue keeps a failed map (queue.ts:43), but the UI shows each failure once as a toast and then forgets it (App.tsx:552-556). List failed surahs with a single 'Retry N failed' button that re-enqueues them.",
+  "why": "After a patchy-signal 'download all', users have no idea which surahs are missing and no one-tap fix.",
+  "where": "src/download/queue.ts:43, 154; src/ui/DownloadsPanel.tsx; src/App.tsx:537-569",
+  "effort": "S"
+ },
+ {
+  "title": "Act on storage persistence being denied",
+  "area": "Offline",
+  "what": "requestPersistence() runs once at boot (App.tsx:514), and the result is only stored in state. If it is false, show a quiet warning in Downloads that Android may clear saved audio, and ask again after a user gesture such as the first completed download (Chrome grants persist() more readily on engagement).",
+  "why": "Losing gigabytes of saved recitation without warning is the worst offline failure the app can have.",
+  "where": "src/App.tsx:514; src/storage/quota.ts:8-16; src/ui/DownloadsPanel.tsx",
+  "effort": "S"
+ },
+ {
+  "title": "Safer update reloads",
+  "area": "Reliability",
+  "what": "reloadWhenIdle reloads the page as soon as nothing is playing or downloading, including on visibilitychange back to visible (pwa.ts:57-73). A reader scrolled deep into a translation can come back and find the page reset. Reload only while the page is hidden, and save the tab and scroll position to sessionStorage first. Each repeat call also adds another interval and listener (pwa.ts:66-72), which should be deduplicated.",
+  "why": "An unexpected reload while reading is exactly the 'flicker' the owner complains about.",
+  "where": "src/pwa.ts:57-73; src/App.tsx (save/restore tab and scroll)",
+  "effort": "S"
+ },
+ {
+  "title": "Adaptive glass quality tier for low-end phones",
+  "area": "Glass perf",
+  "what": "On touch devices, tilt attaches to deviceorientation with no permission prompt (glass.ts:456-461). Each move of more than 1.5 points rewrites --lg-lx/--lg-ly on every visible blurred surface (glass.ts:349-350), which repaints the backdrop blur. Pick a tier at boot from navigator.deviceMemory, hardwareConcurrency and a few seconds of frame timing: full, no tilt, or lg-off. Also suspend tilt while scrolling or playing.",
+  "why": "The owner's top complaint is lag. Budget Androids should get static glass automatically instead of having to find the kill switch.",
+  "where": "src/ui/glass.ts:91, 430-475; src/ui/lensGL.ts:64-67",
+  "effort": "M"
+ },
+ {
+  "title": "On-device jank recorder in Settings",
+  "area": "Reliability",
+  "what": "With no backend, add a hidden Settings > Diagnostics page that keeps a ring buffer in localStorage of long-animation-frame and longtask entries (PerformanceObserver), tagged with tab, glass tier and whether audio was playing, plus a copy-to-clipboard export.",
+  "why": "Lag reports from Play users currently cannot be reproduced. This turns 'it's laggy' into a frame log from the real phone without any telemetry server.",
+  "where": "new src/ui/Diagnostics.tsx; src/main.tsx",
+  "effort": "S"
+ },
+ {
+  "title": "One shared WebGL context for glass rims",
+  "area": "Glass perf",
+  "what": "attachSurface creates a separate WebGL context, compiles shaders and allocates a canvas for every data-glass element (lensGL.ts:64-88, 286-289), and the dock lens adds another. Opening the player sheet builds a fresh context for its controls (App.tsx:2766) and destroys it on close. Render rims once with one offscreen context and blit them via transferToImageBitmap into 2D canvases, or cache them by size and radius.",
+  "why": "This removes shader compile and context churn on every sheet open, the flash-then-draw on mount, and context-loss flicker on low-limit Android GPUs.",
+  "where": "src/ui/lensGL.ts:64-110, 286-386",
+  "effort": "M"
+ },
+ {
+  "title": "Arrow-key navigation in the dock tablist",
+  "area": "Accessibility",
+  "what": "The dock declares role=tablist and role=tab (Dock.tsx:309-323) but has no roving tabindex and no Left/Right/Home/End handling, which the ARIA tab pattern requires. In RTL, Left should move to the next tab.",
+  "why": "Screen-reader and keyboard users on desktop and Chromebook (desktop.css exists) get a tablist that does not behave like one.",
+  "where": "src/ui/Dock.tsx:309-329",
+  "effort": "S"
+ },
+ {
+  "title": "Focus trap and inert background for the player sheet",
+  "area": "Accessibility",
+  "what": "The player is role=dialog with aria-modal (App.tsx:2550-2556), but focus is not moved into it or trapped, and the content behind it is not made `inert`. Escape is the only way out (App.tsx:1739). Focus the sheet on open, trap Tab, mark the main content inert, and return focus to the now-capsule on close. Apply the same to the second dialog (App.tsx:2953).",
+  "why": "TalkBack users can currently swipe behind the open sheet into the surah list.",
+  "where": "src/App.tsx:2550-2560, 2950-2960, 1021-1040",
+  "effort": "S"
+ },
+ {
+  "title": "Screen-reader semantics for the reciting ayah and the scrubber",
+  "area": "Accessibility",
+  "what": "Add aria-current to the .tayah.is-now row (TranslationView.tsx:277), plus an opt-in polite live announcement of 'Ayah N'. Give the slider Home, End and PageUp/PageDown handling, since it currently only handles the arrow keys (App.tsx:2834-2837).",
+  "why": "A blind listener cannot tell which ayah is being recited or jump to the start or end of a two-hour recording.",
+  "where": "src/ui/TranslationView.tsx:274-278; src/App.tsx:2834-2837",
+  "effort": "S"
+ },
+ {
+  "title": "Accessible download progress",
+  "area": "Accessibility",
+  "what": "Nothing in src/ uses role=progressbar. The row save control should expose aria-valuenow for the in-flight percentage, and completion or failure should go to the existing polite live region (App.tsx:2985), throttled to one announcement per surah.",
+  "why": "Screen-reader users currently get no feedback that a 200 MB download is progressing or has finished.",
+  "where": "src/ui/SurahList.tsx:176-240; src/App.tsx:2985",
+  "effort": "S"
+ },
+ {
+  "title": "Reader text-size and line-spacing control",
+  "area": "Large text",
+  "what": "Arabic ayah text is fixed at 1.6rem (theme.css:2362) and translations use var(--text-sm) (theme.css:2370). Add A−/A+ controls in the Translation header that set --ayah-scale and --tr-scale on the root, saved to prefs and to localStorage for boot, with a matching line-height.",
+  "why": "Elderly readers are a core audience for a Quran app, and Android's font-scale does not reliably reach a TWA's rem-based layout.",
+  "where": "src/ui/TranslationView.tsx:218-268; src/ui/theme.css:2358-2392; src/ui/theming.ts (boot)",
+  "effort": "S"
+ },
+ {
+  "title": "'Back to recitation' chip when follow-scroll is released",
+  "area": "UX reliability",
+  "what": "useFollower releases control as soon as the reader scrolls (followScroll.ts:85) and only re-arms on a surah change (followScroll.ts:107-110). readerOwns() and rearm() are never used in the UI. Show a floating 'Follow recitation' chip while released that calls rearm() and jumps to the active ayah.",
+  "why": "One accidental swipe currently stops follow-along for the rest of a long surah with no visible way back.",
+  "where": "src/ui/followScroll.ts:79-131; src/ui/TranslationView.tsx:164-171",
+  "effort": "S"
+ },
+ {
+  "title": "Visible state when a translation fails to load",
+  "area": "Error messages",
+  "what": "loadTranslation turns any failure into null (translations.ts:85), and TranslationView then shows Arabic only, silently (TranslationView.tsx:109, 320). Show one inline banner under the header ('Translation unavailable offline' plus Retry) when the text is null after loading.",
+  "why": "Users think the translation feature is broken or missing, and there is nothing they can do about it.",
+  "where": "src/mushaf/translations.ts:79-96; src/ui/TranslationView.tsx:106-113, 218-268",
+  "effort": "S"
+ },
+ {
+  "title": "Ask Android not to delete downloaded audio (storage.persist)",
+  "area": "Offline / trust",
+  "what": "Call navigator.storage.persist() after the first finished download and show the result on the Downloads panel ('Protected from clean-up' or 'Android may clear this when space is low'). Nothing in src/ calls it today, so gigabytes of IndexedDB audio are 'best-effort' storage that Chrome can evict under pressure.",
+  "why": "Offline use is the feature every comparison guide ranks first (https://www.fiveprayer.app/blog/best-quran-apps-complete-review). A reader who loses a 2.4 GB reciter once will uninstall. The cost is one call plus one status line.",
+  "effort": "S",
+  "where": "src/storage/quota.ts, src/ui/DownloadsPanel.tsx, src/download/queue.ts"
+ },
+ {
+  "title": "One backup file instead of accounts",
+  "area": "Data portability",
+  "what": "Export bookmarks, resume points, sabaq board, stumble marks, veil peeks, prefs and favourite reciters as one small .mauiza JSON file. Hand it out through the Android share sheet (navigator.share with files) and restore it with an Import button or by opening the file. The roadmap promises this ('Export/import of a single file solves... I got a new phone') but nothing in the code builds it yet.",
+  "why": "Cross-device bookmark sync is the oldest heavily discussed request on quran_android (#342, 21 comments; #1896) at https://github.com/quran/quran_android/issues. Quran.com, which has accounts, still gets 'bookmarks disappearing' and 'last read' bug reports (https://feedback.gtaf.org/quran/p/improve-last-read-bugs-ux-issues). A file covers the 'new phone' case with no server.",
+  "effort": "M",
+  "where": "src/db/index.ts, src/db/prefs.ts, src/db/practice.ts, new src/db/backup.ts, More tab in src/App.tsx"
+ },
+ {
+  "title": "Deep links to an ayah with a chosen reciter",
+  "area": "Sharing / growth",
+  "what": "Give every ayah a URL such as notyousha.github.io/mushaf/#/18:10?r=barhaji (and #/p/293 for a page) that opens the app at that ayah, with that reciter queued at the ayah's offset where timings exist. The TWA's assetlinks already makes these links open in the installed app. Nothing in src/ reads location.hash or searchParams today.",
+  "why": "Without accounts or ads, a link someone pastes into WhatsApp is the only way the app spreads. Every ayah shared becomes an install path.",
+  "effort": "M",
+  "where": "src/App.tsx (routing on load), src/ui/backstack.ts, src/catalog/segments.ts, store/assetlinks.template.json"
+ },
+ {
+  "title": "Ayah share card image",
+  "area": "Sharing / growth",
+  "what": "Long-press an ayah, then Share as image. A canvas draws the Uthmani text from quran-text.json, the active translation, surah:ayah, a theme background and a small 'Al-Mau'iza' wordmark with the deep link. It shares as a PNG through navigator.share({files}). Text stays on a solid plate, never on glass.",
+  "why": "Muslim Pro and Quran Majeed both rank verse-image sharing among their most-used features, and every shared image doubles as an ad without running ads. navigator.share appears nowhere in src/ today.",
+  "effort": "M",
+  "where": "new src/ui/shareCard.ts, src/ui/TranslationView.tsx, src/ui/MushafView.tsx"
+ },
+ {
+  "title": "Type '2:255' anywhere to jump",
+  "area": "Navigation",
+  "what": "Extend catalog search so '2:255', '2 255', '٢:٢٥٥', 'kahf 10', 'p293' and 'juz 30' jump straight to the ayah, page or juz, with the parsed target shown as the first result. search.ts matches surah titles and transliterations but not references.",
+  "why": "Ayah reviewers single out 'searching any ayah in the surah:ayah format' (https://apps.apple.com/gb/app/ayah-quran-app/id706037876). It is the fastest path from hearing an ayah cited in a khutbah to reading it.",
+  "effort": "S",
+  "where": "src/catalog/search.ts, src/ui/SurahList.tsx"
+ },
+ {
+  "title": "Remember recent searches and jumps",
+  "area": "Navigation",
+  "what": "Show the last 8 searches and jumps as chips under the search field. Store them locally, with a one-tap clear.",
+  "why": "An open quran_android request (#447 'remember last search queries', https://github.com/quran/quran_android/issues). It cuts the repeat-lookup path to a single tap.",
+  "effort": "S",
+  "where": "src/catalog/search.ts, src/db/prefs.ts"
+ },
+ {
+  "title": "Private notes on an ayah",
+  "area": "Study",
+  "what": "Attach a plain-text note to any ayah or page, stored in IndexedDB and included in the backup file. Notes appear as a small dot in the margin, outside the text, and are listed on a Notes screen grouped by surah.",
+  "why": "'add notes to an ayah' is quran_android #37 with 17 comments and still open years later (https://github.com/quran/quran_android/issues). Keeping notes on the device suits the privacy pitch: personal reflections never touch a server.",
+  "effort": "M",
+  "where": "src/db/ (new notes store), src/ui/TranslationView.tsx, src/ui/MushafView.tsx"
+ },
+ {
+  "title": "Coloured bookmark groups that collapse",
+  "area": "Bookmarks",
+  "what": "Let bookmarks carry one of five colours or a named group (Hifz, Ruqyah, Duas, Khutbah), with groups that collapse on the Bookmarks list. Bookmarks are page-only today ('Bookmark this page').",
+  "why": "Ayah lists 'colorful bookmarks and starred verses' as a selling point (https://apps.apple.com/gb/app/ayah-quran-app/id706037876). quran_android has two open requests to collapse tag groups (#2522, #1342).",
+  "effort": "S",
+  "where": "src/ui/FavouritesPanel.tsx, src/db/prefs.ts, src/i18n/*"
+ },
+ {
+  "title": "Reciter playlists and drag-to-reorder favourites",
+  "area": "Reciters",
+  "what": "Let readers drag-reorder favourite reciters, and build a playlist such as Kahf by Budair, then Mulk by Juhany, then Sudais from 1447 that plays as one queue on the lock screen.",
+  "why": "Open quran_android requests #1448 ('Allow users to rearrange reciters') and #1891 ('Listening multiple reciters consecutively with preset order') (https://github.com/quran/quran_android/issues). This catalogue is reciter- and mosque-year-heavy, so ordering matters more here than in a single-reciter app.",
+  "effort": "M",
+  "where": "src/player/playQueue.ts, src/ui/FavouritesPanel.tsx, src/ui/ReciterPanel.tsx"
+ },
+ {
+  "title": "Arabic-plus-English recitation as a 'reciter'",
+  "area": "Reciters",
+  "what": "Add archive.org's per-surah 'Mishary + Ibrahim Walk (Sahih International)' sets, which interleave ayah and translation, as a catalogue entry tagged 'with English'. Range and ETag need checking first. Urdu equivalents (e.g. Sudais + Urdu) can be added the same way if archive.org hosts them per surah.",
+  "why": "Open quran_android requests #641 ('Arabic recitation with English translation') and #908 (https://github.com/quran/quran_android/issues). Converts and children listening in the car ask for this most, and it is pure catalogue data with no code.",
+  "effort": "S",
+  "where": "data/catalog.json, data/imams.json, scripts/ (Range probe)"
+ },
+ {
+  "title": "Cast to a speaker or TV",
+  "area": "Playback",
+  "what": "Add a Cast button on the player using the Remote Playback API (audio.remote.prompt()), which Chrome on Android supports for <audio> and so also works in the TWA. Hide it when remote.watchAvailability reports no devices.",
+  "why": "quran_android #900 'Chromecast support' is open (https://github.com/quran/quran_android/issues). Families play Quran on the living-room speaker. This needs no SDK and no server.",
+  "effort": "S",
+  "where": "src/player/engine.ts, player controls in src/App.tsx"
+ },
+ {
+  "title": "Starter pack: Juz Amma in under 40 MB on first run",
+  "area": "Onboarding / offline",
+  "what": "After onboarding, offer one card: 'Keep Juz Amma + Yasin + Mulk + Kahf offline (about 38 MB) with <default reciter>'. It downloads in the background through the existing chunked queue, and big downloads stay opt-in.",
+  "why": "quran_android #1994 (first download in the background) and #936 (small sound files) (https://github.com/quran/quran_android/issues). It gives a new user offline value on day one without asking them to commit GBs.",
+  "effort": "S",
+  "where": "src/ui/Onboarding.tsx, src/download/queue.ts, src/catalog/home.ts"
+ },
+ {
+  "title": "Onboarding ends on the first recitation playing",
+  "area": "Onboarding",
+  "what": "Replace the 'which mushaf' step with 'Choose a voice'. Show four reciter faces with one-tap 10-second previews (Fatihah). Finishing onboarding starts Al-Fatihah in that voice, so the reader hears recitation within 15 seconds of install. The mushaf edition stays in Settings, since Onboarding.tsx itself says it is the choice users care least about.",
+  "why": "Most uninstalls happen in the first session. Reviews praise apps for 'tens of reciters' (https://apps.apple.com/gb/app/ayah-quran-app/id706037876), and audio is this app's moat, so it should come first.",
+  "effort": "S",
+  "where": "src/ui/Onboarding.tsx, src/ui/onboarding.css, src/player/engine.ts"
+ },
+ {
+  "title": "'Nothing leaves your phone' privacy receipt",
+  "area": "Privacy as a feature",
+  "what": "Add a Privacy screen under More that lists the only hosts the app can reach (taken from the CSP connect-src and media-src), what each is used for (audio files only), and a live local counter of requests made this session. It ends with: 'No account, no analytics, no ads. This is enforced by the page's security policy, not just promised.'",
+  "why": "Muslim Pro's 2020 location-data scandal led a council of 90 New York mosques to urge members to delete it (https://www.aljazeera.com/news/2020/11/18/muslim-pro-app-denies-selling-user-data-to-us-military). AlfaazPlus QuranApp puts 'no analytics or tracking' at the top of its pitch (https://github.com/alfaazplus/QuranApp). Showing proof beats making a claim.",
+  "effort": "S",
+  "where": "new src/ui/PrivacyPanel.tsx, index.html CSP, public/privacy.html"
+ },
+ {
+  "title": "Store listing that leads with 'no ads, no account'",
+  "area": "Store listing",
+  "what": "Rewrite the 80-character short description and the first screenshot caption around what users complain about elsewhere: 'Free Quran audio & mushaf. No ads. No account. Works offline.' The second screenshot should be the reciter wall, the third talqeen or veil. Mirror this in the Arabic, Urdu and Indonesian listings.",
+  "why": "The dominant complaint about Quran Majeed is heavy, non-skippable ads, even from paying users (https://chrome-stats.com/d/id365557665, https://ca.trustpilot.com/review/quranmajeed.com). For Tarteel it is the subscription paywall (https://justuseapp.com/en/app/1391009396/tarteel-recite-al-quran/reviews). Being free is this app's differentiator, and the current listing says it only in the body text.",
+  "effort": "S",
+  "where": "store/LISTING.md, store/screenshots, store/screenshots-en"
+ },
+ {
+  "title": "Free 'recite back' check without AI",
+  "area": "Hifz",
+  "what": "In Talqeen or Veil, a Record button captures the reader's own recitation of the range with MediaRecorder, kept locally. Playback alternates: their line, then the reciter's line, using the word timings, so they hear their own mistakes. Nothing is uploaded or auto-graded, so it never falsely marks a correct recitation wrong.",
+  "why": "Tarteel's most consistent complaints are that mistake detection is paywalled and that it flags 'undeserved' errors (https://kimola.com/reports/unlock-insights-tarteel-quran-memorization-app-feedback-report-google-play-en-gb-156338, https://justuseapp.com/en/app/1391009396/tarteel-recite-al-quran/reviews). This gives the free, private, honest version that the roadmap's 'no AI checking' stance allows.",
+  "effort": "M",
+  "where": "src/player/talqeen.ts, src/ui/HifzBoard.tsx, src/db/practice.ts (needs READING_TABS on)"
+ },
+ {
+  "title": "Family khatm by link",
+  "area": "Sharing / community",
+  "what": "A 'Split a khatm' screen assigns the 30 juz across N named people and produces one link with the plan in the URL fragment (#khatm=...). Each person opens it, picks their name, and their juz becomes their wird with a resume point. There is no server, so no completion tracking, just the assignment.",
+  "why": "Group khatms for Ramadan, Jumu'ah and after a death are a common practice that currently runs on WhatsApp lists. The app becomes the thing everyone in the group installs, which is growth without ads.",
+  "effort": "M",
+  "where": "new src/ui/KhatmPanel.tsx, wird engine in src/hifz/schedule.ts, hash routing in src/App.tsx"
+ },
+ {
+  "title": "Teacher sends a sabaq by link",
+  "area": "Hifz / community",
+  "what": "A teacher marks sabaq, sabqi and manzil ranges on their own board and taps 'Send to student', which produces a link carrying the assignment in the fragment. The student's board imports it with a single confirm. This fits the roadmap rule that 'the app never sets your curriculum, your teacher does'.",
+  "why": "It turns every hifz teacher into a distributor of the app to a whole class, with no server and no accounts.",
+  "effort": "M",
+  "where": "src/hifz/schedule.ts, src/ui/HifzBoard.tsx, src/App.tsx routing"
+ },
+ {
+  "title": "Long-press icon shortcuts",
+  "area": "Android integration",
+  "what": "Add manifest shortcuts (Bubblewrap turns them into Android app shortcuts): Continue listening, Surah al-Kahf, Juz Amma, Sleep listening (30-minute timer). The vite manifest has no 'shortcuts' today.",
+  "why": "It brings the most frequent Friday and night actions down to one gesture from the home screen. It is free to add and the kind of polish reviewers notice in 'clean and fast' apps (https://www.fiveprayer.app/blog/best-quran-apps-complete-review).",
+  "effort": "S",
+  "where": "vite.config.ts (manifest), store/twa-manifest.json, App.tsx hash handling"
+ },
+ {
+  "title": "Friday Kahf card on Home",
+  "area": "Habit (no streaks)",
+  "what": "From Thursday Maghrib to Friday Maghrib (approximated from device time), Home shows one card: 'Al-Kahf: continue at ayah 46 / 110', with read or listen buttons. It disappears when finished. No push notifications, no flame.",
+  "why": "Reading Kahf on Friday is the most common weekly Quran habit, and Quran Majeed even sells a 'Surah Kahf' edition of its app (https://marlvel.ai/apps/quran-majeed-surah-kahf/vs). This keeps the roadmap's anti-streak stance.",
+  "effort": "S",
+  "where": "src/catalog/home.ts, src/ui/HomePanel.tsx"
+ },
+ {
+  "title": "Calendar reminder file for the wird",
+  "area": "Habit (no server)",
+  "what": "A TWA cannot schedule local notifications without a push server. Instead, 'Remind me daily' produces an .ics recurring event (e.g. 21:30, 'Juz 12 tonight', with the app's deep link) that the phone's own calendar raises.",
+  "why": "quran_android has an open reminder-notifications request (https://github.com/quran/quran_android/issues). This meets it while keeping the no-backend constraint.",
+  "effort": "S",
+  "where": "src/hifz/schedule.ts, new src/ui/remind.ts"
+ },
+ {
+  "title": "Keep the screen on while reading or in talqeen",
+  "area": "Reading UX",
+  "what": "Request a Screen Wake Lock while the mushaf, translation view or talqeen is in the foreground, release it on idle or background, and add a setting. The wakeLock API is not used anywhere in src/.",
+  "why": "Reviewers praise being able to 'enlarge the text while praying' (https://apps.apple.com/gb/app/ayah-quran-app/id706037876). A screen that dims mid-page during qiyam or a halaqa is a constant small irritation.",
+  "effort": "S",
+  "where": "src/ui/TranslationView.tsx, src/ui/MushafView.tsx, src/player/talqeen.ts"
+ },
+ {
+  "title": "Text size control for translation and Arabic",
+  "area": "Accessibility",
+  "what": "Add an A- / A+ control (or pinch) on the translation tab that scales the Arabic and translation independently, saved in prefs. Add a 'Large' preset in onboarding for older readers. It works by setting CSS variables, not by re-rendering.",
+  "why": "Ayah reviewers specifically praise enlarging text (https://apps.apple.com/gb/app/ayah-quran-app/id706037876). Older family members are a large share of daily readers. MushafView already reads the computed font size, so the layout supports scaling.",
+  "effort": "S",
+  "where": "src/ui/TranslationView.tsx, src/ui/theme.css, src/db/prefs.ts"
+ },
+ {
+  "title": "Transliteration line for new Muslims and children",
+  "area": "Translation",
+  "what": "Add Tanzil's en.transliteration as an optional line between the Arabic and the translation, styled smaller and lighter.",
+  "why": "Transliteration is a standard selling point of Muslim Pro and Quran Majeed for converts and non-Arabic-reading children. The app already sells on 'Translation tab is live'. It is pure data from the same Tanzil source, under the same non-commercial terms.",
+  "effort": "S",
+  "where": "data/translations.json, public/trans, src/mushaf/translations.ts"
+ },
+ {
+  "title": "Indonesian, Turkish, Bengali and Malay translations",
+  "area": "Translation / growth markets",
+  "what": "Add Tanzil's id.indonesian (Kemenag), tr.diyanet, bn.bengali and ms.basmeih as lazy-loaded editions, and add Indonesian and Bengali UI strings.",
+  "why": "The app ships ar/en/fr/hi/ur, missing the two largest Muslim populations (Indonesia, Bangladesh). Ayah reviewers explicitly ask for Turkish and Dutch (https://apps.apple.com/gb/app/ayah-quran-app/id706037876). Each language added opens a new store-search audience at zero ad cost.",
+  "effort": "M",
+  "where": "data/translations.json, public/trans, src/i18n/ (new id.ts, bn.ts), store/LISTING.md"
+ },
+ {
+  "title": "Second tafsir: Jalalayn alongside Muyassar",
+  "area": "Study",
+  "what": "Add Tanzil's ar.jalalayn as a second Arabic tafsir, shown in the same expandable slot as ar-muyassar, with a short 'What is this tafsir?' note.",
+  "why": "Ayah got angry reviews when it removed Tafsir al-Muyassar ('تفسير الميسر أُزيل من التطبيق') (https://apps.apple.com/gb/app/ayah-quran-app/id706037876), which shows how much readers value even a short tafsir. Jalalayn is short and classical, and Tanzil hosts it as a downloadable file.",
+  "effort": "S",
+  "where": "data/translations.json, public/trans, src/ui/TranslationView.tsx"
+ },
+ {
+  "title": "Never silently remove a translation or reciter",
+  "area": "Trust",
+  "what": "Once a translation or reciter has been downloaded, it stays on the device even if a later catalog drops it. The entry is shown as 'Retired: still on your phone' with the reason, instead of disappearing.",
+  "why": "Ayah's 1-star reviews include 'why did you remove the english translation after this last update?' (https://apps.apple.com/gb/app/ayah-quran-app/id706037876). The Clear Quran (en-itani) licensing issue means this app will likely face exactly this situation.",
+  "effort": "S",
+  "where": "src/mushaf/translations.ts, src/catalog/load.ts, src/ui/DownloadsPanel.tsx"
+ },
+ {
+  "title": "Quiet listening history, measured as hours not flames",
+  "area": "Habit (no streaks)",
+  "what": "A private 'This month' card shows hours listened, pages read and surahs completed, as a small bar per week. It has no streak count and no badge, and resets nothing if a day is missed. It is computed from local play events and included in the backup.",
+  "why": "quran_android #3018 asks for 'read history and charts' (https://github.com/quran/quran_android/issues). Quran.com users complain that its reading history 'skips verses and totals are incorrect' (https://feedback.quran.com/bugs/p/reading-history-skips-verses-and-totals-are-incorrect), so an accurate, local version is a real win. It respects the roadmap's anti-streak rule.",
+  "effort": "M",
+  "where": "src/player/engine.ts (events), src/db/ (history store), src/ui/HomePanel.tsx"
+ },
+ {
+  "title": "Resume points that never jump to the start of the surah",
+  "area": "Reading/listening UX",
+  "what": "Give each reciter and surah its own resume point, remembered to within about 2 seconds and rewound slightly (about 3 s) on return. The resume card says 'Al-Baqarah 142, 1:04:12 with Budair'. Opening a bookmark goes to the exact ayah, not the top of the surah.",
+  "why": "Quran.com's tracker is full of 'bookmarks opening to start of the surah' and 'Improve Last Read' bugs (https://feedback.gtaf.org/quran/p/bookmarks-opening-to-start-of-the-surah, https://feedback.gtaf.org/quran/p/improve-last-read-bugs-ux-issues). HomeResume already exists, so this widens it from one global point to one per surah.",
+  "effort": "S",
+  "where": "src/ui/HomePanel.tsx (HomeResume), src/db/prefs.ts, src/player/engine.ts"
+ },
+ {
+  "title": "Show the app at the masjid: printable QR poster",
+  "area": "Growth without ads",
+  "what": "A More > Share the app screen shows a large QR code for the Play listing plus the web link, and a one-tap printable A4 poster (Arabic and English) for a masjid noticeboard. Two people can then install it face to face.",
+  "why": "Word of mouth through masjids and halaqas is how no-ad apps spread. With no ad budget, the noticeboard is the channel.",
+  "effort": "S",
+  "where": "new src/ui/ShareAppPanel.tsx, public/ (poster template)"
+ },
+ {
+  "title": "Ask for a review only after real use",
+  "area": "Store ranking",
+  "what": "After the third completed surah or the first finished khatm-by-link, show one dismissible glass card: 'If the app has helped, a review helps others find it', linking to the Play listing (market:// intent from the TWA). Never show it during recitation, and never more than twice.",
+  "why": "Rating volume drives Play ranking. Ayah's 4.8 from 110k reviews (https://apps.appfollow.io/ios/ayah-quran-app/706037876?country=us) is the bar. Asking at a point of real value, never mid-recitation, keeps it respectful.",
+  "effort": "S",
+  "where": "src/ui/HomePanel.tsx, src/db/prefs.ts, src/native/shell.ts"
+ },
+ {
+  "title": "Open-source and IzzyOnDroid listing as a trust signal",
+  "area": "Trust / distribution",
+  "what": "Publish the repository with a clear README and licence notes (NOTICES.md already exists). Submit an APK to the IzzyOnDroid repo, add a 'Source code' link in More, and link the CSP-based Data Safety claim to the code.",
+  "why": "'Help with placing software on F-droid' is quran_android's most-commented open issue (#755, 77 comments, https://github.com/quran/quran_android/issues). Privacy-minded Muslims actively look for FOSS Quran apps such as QuranApp (https://github.com/alfaazplus/QuranApp).",
+  "effort": "M",
+  "where": "README, NOTICES.md, store/ANDROID.md"
+ },
+ {
+  "title": "Tablet and landscape two-page spread",
+  "area": "Reading UX",
+  "what": "When the viewport is wider than about 900 px, or in landscape, PagedMushaf shows the facing pages (even on the right in RTL) like a printed mushaf, with the page turn moving both. Put it on a reading-stand-friendly layout with the dock auto-hidden.",
+  "why": "Qiyam-focused apps such as Mushaf al-Qiyam (https://apps.apple.com/app/id1530008007) exist precisely for tablets on a stand during Taraweeh. desktop.css exists, but the mushaf itself still renders single-page.",
+  "effort": "M",
+  "where": "src/ui/PagedMushaf.tsx, src/ui/desktop.css (READING_TABS)"
+ },
+ {
+  "title": "Public changelog and roadmap with a feedback channel",
+  "area": "Community / trust",
+  "what": "A 'What's new' sheet appears once after an update, with three plain lines and a link to a public roadmap page (docs/roadmap.md rendered on GitHub Pages) plus a GitHub Discussions or email link for requests.",
+  "why": "Quran.com runs a public board (https://feedback.quran.com/feature-requests) and users engage with it heavily. Showing that requests are heard turns reviewers into advocates and channels complaints away from 1-star reviews.",
+  "effort": "S",
+  "where": "src/App.tsx, public/ (changelog.json), docs/roadmap.md"
+ },
+ {
+  "title": "Tajweed colours in the translation view",
+  "area": "Study",
+  "what": "Reuse the existing tajweed.json and src/mushaf/tajweed.ts colouring as a toggle on the live Translation tab's Arabic line, since the mushaf tabs (which use it) are held back in production. Add a small colour legend sheet.",
+  "why": "'Support Tajweed Color Quran مصحف التجويد الملون' is quran_android #1353 with 11 comments (https://github.com/quran/quran_android/issues). It ships something already built to the tab that is actually live.",
+  "effort": "S",
+  "where": "src/ui/TranslationView.tsx, src/mushaf/tajweed.ts, public/tajweed.json"
+ }
+]
