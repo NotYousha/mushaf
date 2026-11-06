@@ -1,4 +1,4 @@
-import { memo, useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { scrollParentY, useFollower } from './followScroll'
 import type { Lang, Strings } from '../i18n'
 import { digits, toArabicDigits } from '../i18n/script'
@@ -23,6 +23,26 @@ import {
   type TranslationText,
 } from '../mushaf/translations'
 import surahMeta from '../../data/surahs.json'
+
+/** Text size steps for the Arabic and the translation, separately. */
+const SCALES = [0.85, 1, 1.15, 1.3, 1.5, 1.75]
+const SIZE_KEY = 'mushaf:tview-size'
+/**
+ * Read synchronously, from localStorage, so the chosen size is there on the
+ * first paint rather than arriving a moment later from IndexedDB.
+ */
+function readSizes(): { ar: number; tr: number } {
+  try {
+    const v = JSON.parse(localStorage.getItem(SIZE_KEY) ?? 'null')
+    if (v && Number.isInteger(v.ar) && Number.isInteger(v.tr)) {
+      const clamp = (n: number) => Math.max(0, Math.min(SCALES.length - 1, n))
+      return { ar: clamp(v.ar), tr: clamp(v.tr) }
+    }
+  } catch {
+    /* blocked or unparseable: defaults */
+  }
+  return { ar: 1, tr: 1 }
+}
 
 const NAMES = new Map(
   (surahMeta as { surah: number; name: string; nameEn: string }[]).map((m) => [
@@ -68,6 +88,21 @@ export function TranslationView({
   onSeek,
   unitWord = 'juz',
 }: Props) {
+  // Hooks first: the early returns below would otherwise change how many
+  // run between renders (React error 310, which crashed this view).
+  const [sizes, setSizes] = useState(readSizes)
+  const [sizeOpen, setSizeOpen] = useState(false)
+  const step = (which: 'ar' | 'tr', by: number) =>
+    setSizes((cur) => {
+      const next = { ...cur, [which]: Math.max(0, Math.min(SCALES.length - 1, cur[which] + by)) }
+      try {
+        localStorage.setItem(SIZE_KEY, JSON.stringify(next))
+      } catch {
+        /* site data blocked: the size still applies for this visit */
+      }
+      return next
+    })
+
   const [layout, setLayout] = useState<Layout | null>(null)
   const [text, setText] = useState<TranslationText | null>(null)
   const [starts, setStarts] = useState<number[] | null>(null)
@@ -206,7 +241,13 @@ export function TranslationView({
   const unitName = unitWord === 'para' ? t.paraN : t.juzN
 
   return (
-    <div className="tview" ref={scroller}>
+    <div
+      className="tview"
+      ref={scroller}
+      // On this view, not on :root: a custom property written on the root
+      // restyles the whole document, and only these rows use it.
+      style={{ '--ayah-scale': SCALES[sizes.ar], '--tr-scale': SCALES[sizes.tr] } as CSSProperties}
+    >
       {/*
           Where you are, in one line.
 
@@ -233,6 +274,42 @@ export function TranslationView({
       </div>
 
       <div className="tview-pick">
+        <button
+          type="button"
+          className="btn tview-size-btn"
+          aria-expanded={sizeOpen}
+          aria-label={t.textSize}
+          onClick={() => setSizeOpen((o) => !o)}
+        >
+          <span aria-hidden="true">Aa</span>
+        </button>
+        {sizeOpen && (
+          <div className="tview-size" role="group" aria-label={t.textSize}>
+            {(['ar', 'tr'] as const).map((which) => (
+              <div className="tview-size-row" key={which}>
+                <span>{which === 'ar' ? t.arabicText : t.translation}</span>
+                <button
+                  type="button"
+                  className="btn"
+                  aria-label={`${which === 'ar' ? t.arabicText : t.translation}: ${t.smaller}`}
+                  disabled={sizes[which] === 0}
+                  onClick={() => step(which, -1)}
+                >
+                  A−
+                </button>
+                <button
+                  type="button"
+                  className="btn"
+                  aria-label={`${which === 'ar' ? t.arabicText : t.translation}: ${t.larger}`}
+                  disabled={sizes[which] === SCALES.length - 1}
+                  onClick={() => step(which, 1)}
+                >
+                  A+
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
         <button
           type="button"
           className="btn"
