@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useEffect, useMemo, useRef, useState } from 'react'
 import { scrollParentY, useFollower } from './followScroll'
 import type { Lang, Strings } from '../i18n'
 import { digits, toArabicDigits } from '../i18n/script'
@@ -268,71 +268,98 @@ export function TranslationView({
       </div>
 
       <ol className="tview-list">
-        {ayahs.map((a) => {
-          const on = a.ayah === active
-          return (
-            <li
-              key={a.ayah}
-              data-ayah={a.ayah}
-              className={`tayah${on ? ' is-now' : ''}`}
-            >
-              <div className="tayah-head">
-                <span className="tayah-key">
-                  {digits(lang, surah)}:{digits(lang, a.ayah)}
-                </span>
-                {/* Tapping the number plays from this ayah, where the
-                    recitation is timed finely enough to find it. */}
-                {onSeek && starts?.[a.ayah - 1] !== undefined && (
-                  <button
-                    type="button"
-                    className="tayah-play"
-                    aria-label={t.playFromHere}
-                    onClick={() => onSeek(starts[a.ayah - 1] / 1000)}
-                  >
-                    ▸
-                  </button>
-                )}
-              </div>
-
-              {/*
-                  The ayah closes with its rosette, as it does on the page.
-                  `ayahsOfSurah` returns only the words — the layout keeps the
-                  numeral as a separate keyless token and that token is
-                  dropped when the ayah is reassembled — so without this the
-                  verses ran into one another with nothing between them.
-
-                  Always Arabic-Indic, whatever the interface language: this
-                  is the number printed inside a mushaf's rosette, not a
-                  figure in the reader's own numerals like the page count.
-              */}
-              <p className="tayah-ar" lang="ar" dir="rtl">
-                {a.text}{' '}
-                <span className="ayah-mark">{toArabicDigits(a.ayah)}</span>
-              </p>
-
-              {/*
-                  The translation, or nothing.
-
-                  Nothing while it is still arriving, and nothing if the fetch
-                  failed — the ayah above is the Quran and is worth showing on
-                  its own. A row of error text under every verse would be a
-                  hundred and seventy-six copies of the same complaint.
-              */}
-              {text?.[String(surah)]?.[a.ayah - 1] && (
-                <p
-                  className="tayah-tr"
-                  lang={chosen?.lang}
-                  dir={
-                    chosen?.lang === 'ar' || chosen?.lang === 'ur' ? 'rtl' : 'ltr'
-                  }
-                >
-                  {text[String(surah)][a.ayah - 1]}
-                </p>
-              )}
-            </li>
-          )
-        })}
+        {ayahs.map((a) => (
+          <AyahRow
+            key={a.ayah}
+            surah={surah}
+            ayah={a.ayah}
+            arabic={a.text}
+            on={a.ayah === active}
+            lang={lang}
+            playLabel={t.playFromHere}
+            startMs={onSeek ? starts?.[a.ayah - 1] : undefined}
+            onSeek={onSeek}
+            translation={text?.[String(surah)]?.[a.ayah - 1]}
+            trLang={chosen?.lang}
+          />
+        ))}
       </ol>
     </div>
   )
 }
+
+/**
+ * One ayah, redrawn only when something about THIS ayah changes.
+ *
+ * The view re-renders on every playback tick (about four a second) because
+ * `time` moves, and before this every row of the surah was rebuilt each
+ * time: 286 rows of Arabic and translation for al-Baqarah. Every prop here
+ * is a primitive or a stable callback, so memo skips all but the row whose
+ * `on` flips when the recitation moves to the next ayah.
+ */
+const AyahRow = memo(function AyahRow({
+  surah,
+  ayah,
+  arabic,
+  on,
+  lang,
+  playLabel,
+  startMs,
+  onSeek,
+  translation,
+  trLang,
+}: {
+  surah: number
+  ayah: number
+  arabic: string
+  on: boolean
+  lang: Lang
+  playLabel: string
+  startMs: number | undefined
+  onSeek?: (sec: number) => void
+  translation: string | undefined
+  trLang: string | undefined
+}) {
+  return (
+    <li data-ayah={ayah} className={`tayah${on ? ' is-now' : ''}`}>
+      <div className="tayah-head">
+        <span className="tayah-key">
+          {digits(lang, surah)}:{digits(lang, ayah)}
+        </span>
+        {/* Tapping the number plays from this ayah, where the
+            recitation is timed finely enough to find it. */}
+        {onSeek && startMs !== undefined && (
+          <button
+            type="button"
+            className="tayah-play"
+            aria-label={playLabel}
+            onClick={() => onSeek(startMs / 1000)}
+          >
+            ▸
+          </button>
+        )}
+      </div>
+
+      {/*
+          The ayah closes with its rosette, as it does on the page.
+          `ayahsOfSurah` returns only the words, so without this the verses
+          ran into one another with nothing between them. Always
+          Arabic-Indic: this is the number printed inside a mushaf's rosette.
+      */}
+      <p className="tayah-ar" lang="ar" dir="rtl">
+        {arabic} <span className="ayah-mark">{toArabicDigits(ayah)}</span>
+      </p>
+
+      {/*
+          The translation, or nothing: nothing while it is still arriving,
+          and nothing if the fetch failed. The ayah above is the Quran and is
+          worth showing on its own.
+      */}
+      {translation && (
+        <p className="tayah-tr" lang={trLang} dir={trLang === 'ar' || trLang === 'ur' ? 'rtl' : 'ltr'}>
+          {translation}
+        </p>
+      )}
+    </li>
+  )
+})
