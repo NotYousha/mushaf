@@ -1,40 +1,40 @@
 /**
- * The WebGL selection lens for the dock's tabs.
+ * WebGL Liquid Glass: the rim of the ICNL Lens Test shader, with nothing
+ * photographed.
  *
- * The same shader as the ICNL Lens Test artifact: html2canvas takes a picture
- * of the tab labels, and a rounded-rect SDF bends that picture under the lens.
- * The bend grows with edge² toward the rim, red and blue bend 10% more and
- * less than green there (the dispersion fringe a real lens shows where bent
- * text meets its edge), and light catches the top-left rim. Between tabs the
- * lens slides and stretches along its travel, keeping its volume.
+ * The first version bent a picture of each surface's labels, taken with
+ * html2canvas. That picture cost a long main-thread stall every time it was
+ * retaken — on each tab tap, exactly while the lens was meant to be sliding,
+ * and on every resize as the dock drew in while scrolling — and on a phone
+ * that was the lag. So nothing is photographed any more. The GPU draws the
+ * glass itself: a rounded-rect SDF whose rim catches light from the top
+ * left, splits it into a thin red/blue dispersion fringe (red tight to the
+ * edge, blue a little further in), and darkens the shaded side. The live
+ * DOM content stays where it is and is never copied, so typing, progress
+ * text and artwork changes cost nothing.
  *
- * It is chrome only. The dock floats over the surah list and the translation,
- * never over an ayah being read, so bending what is behind it costs nothing
- * a reader needs; the picture it bends is the tab labels, not the page.
+ * Two kinds of glass:
+ *   attachLens(nav)   the dock's selection lens: a capsule that slides and
+ *                     stretches between tabs, drawn under the live labels.
+ *                     It redraws only while it moves (420 ms per tap).
+ *   watchSurfaces()   a rim on every `data-glass` element (the search bar,
+ *                     the dock pill, the play controls). Drawn once, and
+ *                     again only when the element's size or the theme
+ *                     changes, coalesced into one frame.
  *
- * Everything degrades to the CSS `.lg-chip` already in glass.css: no WebGL,
- * the material switched off (`lg-off`), reduced motion, a lost context, or
- * html2canvas failing to load all leave the nav without its `gl` class, and
- * the CSS chip is what shows. The canvas only draws while the lens moves or
- * the picture changes, so a still dock costs nothing per frame.
+ * Either one stands down to the CSS glass with no WebGL, with the material
+ * switched off (`lg-off`), or under reduced motion.
  */
 
 const VS =
   'attribute vec2 p; varying vec2 uv; void main(){ uv = p * 0.5 + 0.5; uv.y = 1.0 - uv.y; gl_Position = vec4(p, 0.0, 1.0); }'
 
-/*
- * Output is premultiplied and mostly opaque inside the lens, transparent
- * outside it. The lens has to hide the unbent labels the DOM still draws
- * underneath — otherwise every glyph near the rim shows twice — so its body
- * is the chip's own fill at high alpha with the bent picture over it.
- */
-const FS = `precision highp float;
+/* Premultiplied output; transparent outside the shape. */
+const FS = `precision mediump float;
 varying vec2 uv;
-uniform sampler2D t; uniform vec2 view; uniform vec2 texPx; uniform float sc;
-uniform vec4 R; uniform float rad; uniform float depth;
+uniform vec2 view; uniform vec4 R; uniform float rad; uniform float band;
 uniform vec3 fill; uniform float fillA; uniform float rimK;
 float sdRound(vec2 p, vec2 b, float r){ vec2 q = abs(p) - b + r; return length(max(q,0.0)) + min(max(q.x,q.y),0.0) - r; }
-vec4 px(vec2 v){ vec2 s = v * sc / texPx; if (s.x<0.0||s.y<0.0||s.x>1.0||s.y>1.0) return vec4(0.0); return texture2D(t, s); }
 float shape(vec2 v){ return sdRound(v - R.xy, R.zw, rad); }
 void main(){
   vec2 v = uv * view; float d = shape(v);
@@ -42,39 +42,43 @@ void main(){
   if (aa <= 0.0) { gl_FragColor = vec4(0.0); return; }
   vec2 e = vec2(1.0, 0.0);
   vec2 n = normalize(vec2(shape(v+e.xy)-shape(v-e.xy), shape(v+e.yx)-shape(v-e.yx)) + 1e-5);
-  float edge = clamp(1.0 + d / depth, 0.0, 1.0);
-  vec2 bend = -n * pow(edge, 2.5) * depth * 0.7;
-  vec4 c = px(v + bend);
-  float r = px(v + bend * 1.07).r, b = px(v + bend * 0.93).b;
-  c.r = mix(c.r, r, edge); c.b = mix(c.b, b, edge);
-  vec4 col = c + vec4(fill * fillA, fillA) * (1.0 - c.a);
-  float lightDir = clamp(dot(n, normalize(vec2(-0.6, -0.8))), 0.0, 1.0);
-  float rim = smoothstep(0.75, 1.0, edge) * (0.10 + 0.36 * lightDir) * rimK;
-  col.a = min(1.0, col.a + rim * 0.5);
-  col.rgb = min(col.rgb + rim, vec3(col.a));
-  gl_FragColor = col * aa;
+  float t = clamp(1.0 + d / band, 0.0, 1.0);
+  float lit = clamp(dot(n, normalize(vec2(-0.6, -0.8))), 0.0, 1.0);
+  float L = (0.14 + 0.62 * lit) * rimK;
+  // A white catch-light with a thin dispersion split: red tight to the
+  // edge, blue reaching a little further in. Red reaching further in, as
+  // first tuned, washed the whole rim amber.
+  vec3 fringe = vec3(pow(t, 7.0), pow(t, 6.0), pow(t, 5.0)) * L;
+  float shade = pow(t, 3.0) * 0.22 * (1.0 - lit) * rimK;
+  float a = min(1.0, fillA + max(fringe.r, fringe.b) * 0.85 + shade);
+  vec3 rgb = min(fill * fillA + fringe, vec3(a));
+  gl_FragColor = vec4(rgb, a) * aa;
 }`
 
-/**
- * What html2canvas may copy when photographing `target`.
- *
- * It clones the WHOLE document before drawing one element, and waits up to
- * 15 s for every image in the clone to load. On the surah list, full of
- * artwork, that meant a picture that never arrived. Only the target, the
- * elements that contain it, and the page's styles are worth cloning.
- */
-const KEEP = new Set(['HTML', 'HEAD', 'BODY', 'STYLE', 'LINK', 'META', 'TITLE'])
-const onlyPath = (target: HTMLElement) => (x: Element) =>
-  x.tagName === 'CANVAS' || (!KEEP.has(x.tagName) && !x.contains(target) && !target.contains(x))
+type Ctx = {
+  g: WebGLRenderingContext
+  U: (name: string) => WebGLUniformLocation | null
+  cv: HTMLCanvasElement
+}
 
-type GL = { U: (name: string) => WebGLUniformLocation | null }
-
-/** Compile the lens program into a context and bind the full-screen quad. */
-function setupGL(g: WebGLRenderingContext): GL | null {
+function makeCtx(className: string): Ctx | null {
+  if (typeof window === 'undefined') return null
+  if (document.documentElement.classList.contains('lg-off')) return null
+  if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return null
+  const cv = document.createElement('canvas')
+  cv.className = className
+  cv.setAttribute('aria-hidden', 'true')
+  let g: WebGLRenderingContext | null = null
+  try {
+    g = cv.getContext('webgl', { premultipliedAlpha: true, alpha: true, antialias: false })
+  } catch {
+    /* jsdom, or WebGL disabled */
+  }
+  if (!g) return null
   const sh = (type: number, src: string) => {
-    const x = g.createShader(type)!
-    g.shaderSource(x, src)
-    g.compileShader(x)
+    const x = g!.createShader(type)!
+    g!.shaderSource(x, src)
+    g!.compileShader(x)
     return x
   }
   const prog = g.createProgram()!
@@ -88,20 +92,68 @@ function setupGL(g: WebGLRenderingContext): GL | null {
   const loc = g.getAttribLocation(prog, 'p')
   g.enableVertexAttribArray(loc)
   g.vertexAttribPointer(loc, 2, g.FLOAT, false, 0, 0)
-  const U = (nm: string) => g.getUniformLocation(prog, nm)
-  g.bindTexture(g.TEXTURE_2D, g.createTexture())
-  g.texParameteri(g.TEXTURE_2D, g.TEXTURE_MIN_FILTER, g.LINEAR)
-  g.texParameteri(g.TEXTURE_2D, g.TEXTURE_MAG_FILTER, g.LINEAR)
-  g.texParameteri(g.TEXTURE_2D, g.TEXTURE_WRAP_S, g.CLAMP_TO_EDGE)
-  g.texParameteri(g.TEXTURE_2D, g.TEXTURE_WRAP_T, g.CLAMP_TO_EDGE)
-  g.pixelStorei(g.UNPACK_PREMULTIPLY_ALPHA_WEBGL, true)
-  return { U }
+  const cache = new Map<string, WebGLUniformLocation | null>()
+  const U = (nm: string) => {
+    if (!cache.has(nm)) cache.set(nm, g!.getUniformLocation(prog, nm))
+    return cache.get(nm) ?? null
+  }
+  return { g, U, cv }
 }
 
-type Rect = { cx: number; cy: number; hw: number; hh: number }
+type Shape = { cx: number; cy: number; hw: number; hh: number; rad: number }
+type Look = { fill: [number, number, number]; fillA: number; rimK: number; band: number }
+
+/** Size the canvas to its box (CSS px × dpr) and draw one shape. */
+function paint(c: Ctx, W: number, H: number, s: Shape, look: Look) {
+  const dpr = Math.min(window.devicePixelRatio || 1, 2.5)
+  const pw = Math.max(1, Math.round(W * dpr))
+  const ph = Math.max(1, Math.round(H * dpr))
+  const { g, U, cv } = c
+  if (cv.width !== pw || cv.height !== ph) {
+    cv.width = pw
+    cv.height = ph
+  }
+  g.viewport(0, 0, pw, ph)
+  g.clearColor(0, 0, 0, 0)
+  g.clear(g.COLOR_BUFFER_BIT)
+  g.uniform2f(U('view'), W, H)
+  g.uniform4f(U('R'), s.cx, s.cy, s.hw, s.hh)
+  g.uniform1f(U('rad'), Math.min(s.hw, s.hh, s.rad))
+  g.uniform1f(U('band'), look.band)
+  g.uniform3f(U('fill'), look.fill[0], look.fill[1], look.fill[2])
+  g.uniform1f(U('fillA'), look.fillA)
+  g.uniform1f(U('rimK'), look.rimK)
+  g.drawArrays(g.TRIANGLE_STRIP, 0, 4)
+}
+
+/** The glass tint for this theme, as 0–1 RGB, read once per theme. */
+function tintOf(el: Element): [number, number, number] {
+  const v = getComputedStyle(el).getPropertyValue('--lg-tint').trim().split(/[\s,]+/).map(Number)
+  return v.length === 3 && v.every((x) => !Number.isNaN(x))
+    ? [v[0] / 255, v[1] / 255, v[2] / 255]
+    : [1, 1, 1]
+}
+
+/** Observe theme switches only, not every class change on the root. */
+function onTheme(cb: () => void) {
+  const root = document.documentElement
+  let last = root.getAttribute('data-theme')
+  const mo = new MutationObserver(() => {
+    const now = root.getAttribute('data-theme')
+    if (now !== last) {
+      last = now
+      cb()
+    }
+  })
+  mo.observe(root, { attributes: true, attributeFilter: ['data-theme'] })
+  return () => mo.disconnect()
+}
+
+/* ========================================================================= */
+/* The dock's sliding selection lens                                          */
 
 export type Lens = {
-  /** The selected tab changed, or its label did: re-take the picture and move. */
+  /** The selected tab changed: slide there. */
   update(): void
   dispose(): void
 }
@@ -109,208 +161,107 @@ export type Lens = {
 const SLIDE_MS = 420
 
 export function attachLens(nav: HTMLElement): Lens | null {
-  if (typeof window === 'undefined') return null
-  const root = document.documentElement
-  if (root.classList.contains('lg-off')) return null
-  if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return null
+  const c = makeCtx('lens-gl')
+  if (!c) return null
+  nav.prepend(c.cv)
 
-  const cv = document.createElement('canvas')
-  cv.className = 'lens-gl'
-  cv.setAttribute('aria-hidden', 'true')
-  let g: WebGLRenderingContext | null = null
-  try {
-    g = cv.getContext('webgl', { premultipliedAlpha: true, alpha: true, antialias: false })
-  } catch {
-    /* jsdom, or a browser with WebGL disabled */
-  }
-  if (!g) return null
-
-  const gl = setupGL(g)
-  if (!gl) return null
-  const U = gl.U
-
-  nav.appendChild(cv)
-
-  let disposed = false
-  let ready = false
-  let texW = 1
-  let texH = 1
-  let sc = 1
-  let dpr = 1
-  let shotSeq = 0
-  /** Where the lens is drawn now, and the slide it is part-way through. */
-  let at: Rect | null = null
-  let from: Rect | null = null
-  let to: Rect | null = null
+  let fill = tintOf(nav)
+  let at: Shape | null = null
+  let from: Shape | null = null
+  let to: Shape | null = null
   let t0 = 0
   let raf = 0
+  let disposed = false
 
-  const off = () => {
-    ready = false
-    nav.classList.remove('gl')
-  }
-
-  const target = (): Rect | null => {
+  const target = (): Shape | null => {
     const tab = nav.querySelector<HTMLElement>('[aria-selected="true"]')
     if (!tab) return null
-    const n = nav.getBoundingClientRect()
-    const r = tab.getBoundingClientRect()
-    const cx = r.left - n.left + r.width / 2
-    const cy = r.top - n.top + r.height / 2
-    // Kept inside the pill: the end tabs sit against its rounded ends, and a
-    // lens wider than its tab would otherwise be cut off by the pill's edge.
-    const inset = 3
-    let hw = Math.max(r.width / 2 + 4, (r.height / 2) * 1.35)
-    const hh = Math.min(r.height / 2 + 1, n.height / 2 - inset)
-    const left = Math.max(cx - hw, inset)
-    const right = Math.min(cx + hw, n.width - inset)
-    hw = (right - left) / 2
-    return {
-      cx: (left + right) / 2,
-      cy,
-      hw,
-      hh,
-    }
-  }
-
-  function draw(r: Rect) {
     const W = nav.clientWidth
     const H = nav.clientHeight
-    const pw = Math.round(W * dpr)
-    const ph = Math.round(H * dpr)
-    if (cv.width !== pw || cv.height !== ph) {
-      cv.width = pw
-      cv.height = ph
-    }
-    // The chip's own fill, so the lens is the same colour in either theme.
-    const tint = getComputedStyle(nav).getPropertyValue('--lg-tint').trim().split(/[\s,]+/).map(Number)
-    const [fr, fg, fb] = tint.length === 3 && tint.every((x) => !Number.isNaN(x)) ? tint : [255, 255, 255]
-    g!.viewport(0, 0, pw, ph)
-    g!.clearColor(0, 0, 0, 0)
-    g!.clear(g!.COLOR_BUFFER_BIT)
-    g!.uniform2f(U('view'), W, H)
-    g!.uniform2f(U('texPx'), texW, texH)
-    g!.uniform1f(U('sc'), sc)
-    g!.uniform4f(U('R'), r.cx, r.cy, r.hw, r.hh)
-    g!.uniform1f(U('rad'), Math.min(r.hw, r.hh))
-    g!.uniform1f(U('depth'), Math.min(r.hw, r.hh) * 0.42)
-    g!.uniform3f(U('fill'), fr / 255, fg / 255, fb / 255)
-    g!.uniform1f(U('fillA'), 0.86)
-    g!.uniform1f(U('rimK'), 1)
-    g!.drawArrays(g!.TRIANGLE_STRIP, 0, 4)
+    const cx = tab.offsetLeft + tab.offsetWidth / 2
+    const inset = 3
+    // A capsule, wider than tall like the native tab lens, kept inside the
+    // pill so the end tabs are not cut off by its rounded ends.
+    const hh = Math.min(tab.offsetHeight / 2 + 1, H / 2 - inset)
+    const want = Math.max(tab.offsetWidth / 2 + 4, hh * 1.35)
+    const left = Math.max(cx - want, inset)
+    const right = Math.min(cx + want, W - inset)
+    return { cx: (left + right) / 2, cy: H / 2, hw: (right - left) / 2, hh, rad: hh }
   }
+
+  const look = (): Look => ({ fill, fillA: 0.3, rimK: 1, band: 9 })
 
   function frame(now: number) {
     raf = 0
-    if (disposed || !ready || !to) return
+    if (disposed || !to) return
+    const W = nav.clientWidth
+    const H = nav.clientHeight
     if (!from || !at) {
       at = to
-      draw(at)
+      paint(c!, W, H, at, look())
       return
     }
     const k = Math.min(1, (now - t0) / SLIDE_MS)
-    // easeOutBack: a little past, then settles — the lens has mass.
+    // easeOutBack: a little past, then settles. The lens has mass.
     const c1 = 1.4
     const e = 1 + (c1 + 1) * Math.pow(k - 1, 3) + c1 * Math.pow(k - 1, 2)
     const lerp = (a: number, b: number) => a + (b - a) * e
     // Stretch along the travel and thin across it, keeping the area.
-    const travel = Math.abs(to.cx - from.cx)
-    const sx = 1 + Math.min(0.3, travel / 400) * Math.sin(Math.PI * k)
-    at = {
-      cx: lerp(from.cx, to.cx),
-      cy: lerp(from.cy, to.cy),
-      hw: lerp(from.hw, to.hw) * sx,
-      hh: lerp(from.hh, to.hh) / Math.sqrt(sx),
-    }
-    draw(at)
+    const sx = 1 + Math.min(0.3, Math.abs(to.cx - from.cx) / 400) * Math.sin(Math.PI * k)
+    const hh = lerp(from.hh, to.hh) / Math.sqrt(sx)
+    at = { cx: lerp(from.cx, to.cx), cy: lerp(from.cy, to.cy), hw: lerp(from.hw, to.hw) * sx, hh, rad: hh }
+    paint(c!, W, H, at, look())
     if (k < 1) raf = requestAnimationFrame(frame)
     else {
       at = to
       from = null
-      draw(at)
+      paint(c!, W, H, at, look())
     }
   }
-
   const kick = () => {
     if (!raf) raf = requestAnimationFrame(frame)
-  }
-
-  async function snap() {
-    const seq = ++shotSeq
-    try {
-      const { default: html2canvas } = await import('html2canvas')
-      await document.fonts.ready
-      if (disposed || seq !== shotSeq) return
-      dpr = window.devicePixelRatio || 1
-      sc = Math.min(4, Math.ceil(dpr * 2)) // supersampled, so the bend resamples crisply
-      const shot = await html2canvas(nav, {
-        scale: sc,
-        backgroundColor: null,
-        logging: false,
-        imageTimeout: 3000,
-        ignoreElements: onlyPath(nav),
-        // The picture is of the labels only: no pill, no rim, no chip fill.
-        onclone: (_doc, el) => el.classList.add('lens-snap'),
-      })
-      if (disposed || seq !== shotSeq) return
-      texW = shot.width
-      texH = shot.height
-      g!.texImage2D(g!.TEXTURE_2D, 0, g!.RGBA, g!.RGBA, g!.UNSIGNED_BYTE, shot)
-      ready = true
-      nav.classList.add('gl')
-      const next = target()
-      if (next) to = next
-      kick()
-    } catch {
-      off()
-    }
   }
 
   function update() {
     const next = target()
     if (!next) return
-    if (at && ready) {
+    if (at) {
       from = { ...at }
       t0 = performance.now()
     }
     to = next
     kick()
-    // The selected label changes colour, so the picture is out of date.
-    void snap()
   }
 
-  /*
-   * The dock draws in while scrolling: the labels shrink and the pill loses
-   * height. The picture no longer matches, so the CSS chip shows for the
-   * moment of the resize and the lens comes back on the settled layout.
-   */
-  let resizeTimer = 0
+  // The dock draws in while scrolling. Follow it once it has settled; in
+  // between, CSS stretches the canvas with the pill.
+  let settle = 0
   const ro =
     typeof ResizeObserver === 'undefined'
       ? null
       : new ResizeObserver(() => {
-          if (!ready && !at) return
-          off()
-          window.clearTimeout(resizeTimer)
-          resizeTimer = window.setTimeout(() => {
-            at = null
-            from = null
-            to = target()
-            void snap()
-          }, 260)
+          window.clearTimeout(settle)
+          settle = window.setTimeout(() => {
+            const next = target()
+            if (!next) return
+            to = next
+            if (!from) at = null
+            kick()
+          }, 140)
         })
   ro?.observe(nav)
-
-  // A theme change recolours the labels.
-  const mo = new MutationObserver(() => void snap())
-  mo.observe(root, { attributes: true, attributeFilter: ['class', 'data-theme'] })
-
+  const stopTheme = onTheme(() => {
+    fill = tintOf(nav)
+    at = null
+    kick()
+  })
   const lost = (e: Event) => {
     e.preventDefault()
-    off()
+    nav.classList.remove('gl')
   }
-  cv.addEventListener('webglcontextlost', lost)
+  c.cv.addEventListener('webglcontextlost', lost)
 
+  nav.classList.add('gl')
   update()
 
   return {
@@ -318,160 +269,94 @@ export function attachLens(nav: HTMLElement): Lens | null {
     dispose() {
       disposed = true
       if (raf) cancelAnimationFrame(raf)
-      window.clearTimeout(resizeTimer)
+      window.clearTimeout(settle)
       ro?.disconnect()
-      mo.disconnect()
-      cv.removeEventListener('webglcontextlost', lost)
-      off()
-      cv.remove()
-      g?.getExtension('WEBGL_lose_context')?.loseContext()
+      stopTheme()
+      c.cv.removeEventListener('webglcontextlost', lost)
+      nav.classList.remove('gl')
+      c.cv.remove()
+      c.g.getExtension('WEBGL_lose_context')?.loseContext()
     },
   }
 }
 
-/* =========================================================================
- * Glass surfaces: a round button, the search field, the dock pill.
- *
- * The same lens, sized to the whole element and standing still. It
- * photographs the element's own icons once, hides the originals, and draws
- * them back bent at the rim with the colour fringe and the catch-light, over
- * whatever material the CSS already paints. A surface whose content sits well
- * clear of its edge (the dock pill) shows only the rim, which is what glass
- * looks like there.
- *
- * Text a person types is never photographed. An `input` is left out of the
- * picture and kept live above the canvas, so typing costs nothing and the
- * caret is always the real one.
- * ========================================================================= */
+/* ========================================================================= */
+/* Glass rims on `data-glass` surfaces                                        */
 
 export function attachSurface(el: HTMLElement): (() => void) | null {
-  if (typeof window === 'undefined') return null
-  const root = document.documentElement
-  if (root.classList.contains('lg-off')) return null
-  if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return null
+  const c = makeCtx('surface-gl')
+  if (!c) return null
+  el.appendChild(c.cv)
 
-  const cv = document.createElement('canvas')
-  cv.className = 'surface-gl'
-  cv.setAttribute('aria-hidden', 'true')
-  let g: WebGLRenderingContext | null = null
-  try {
-    g = cv.getContext('webgl', { premultipliedAlpha: true, alpha: true, antialias: false })
-  } catch {
-    /* jsdom, or a browser with WebGL disabled */
-  }
-  if (!g) return null
-  const gl = setupGL(g)
-  if (!gl) return null
-  const U = gl.U
-  el.appendChild(cv)
-
-  let disposed = false
-  let seq = 0
-
-  function draw(texW: number, texH: number, sc: number, dpr: number) {
+  let raf = 0
+  let radius = 0
+  const draw = () => {
+    raf = 0
     const W = el.clientWidth
     const H = el.clientHeight
-    const pw = Math.round(W * dpr)
-    const ph = Math.round(H * dpr)
-    cv.width = pw
-    cv.height = ph
-    const hw = W / 2
-    const hh = H / 2
-    const r = parseFloat(getComputedStyle(el).borderTopLeftRadius) || 0
-    const rad = Math.min(hw, hh, r)
-    g!.viewport(0, 0, pw, ph)
-    g!.clearColor(0, 0, 0, 0)
-    g!.clear(g!.COLOR_BUFFER_BIT)
-    g!.uniform2f(U('view'), W, H)
-    g!.uniform2f(U('texPx'), texW, texH)
-    g!.uniform1f(U('sc'), sc)
-    g!.uniform4f(U('R'), hw, hh, hw, hh)
-    g!.uniform1f(U('rad'), rad)
-    g!.uniform1f(U('depth'), Math.min(hw, hh) * 0.5)
-    g!.uniform3f(U('fill'), 0, 0, 0)
-    g!.uniform1f(U('fillA'), 0)
-    g!.uniform1f(U('rimK'), 0.8)
-    g!.drawArrays(g!.TRIANGLE_STRIP, 0, 4)
+    if (W === 0 || H === 0) return
+    paint(
+      c,
+      W,
+      H,
+      { cx: W / 2, cy: H / 2, hw: W / 2, hh: H / 2, rad: radius },
+      { fill: [0, 0, 0], fillA: 0, rimK: 0.9, band: Math.min(10, H / 3) },
+    )
+    el.classList.add('sgl')
   }
+  const kick = () => {
+    if (!raf) raf = requestAnimationFrame(draw)
+  }
+  const measure = () => {
+    radius = parseFloat(getComputedStyle(el).borderTopLeftRadius) || 0
+  }
+  measure()
 
-  async function snap() {
-    const mine = ++seq
-    try {
-      const { default: html2canvas } = await import('html2canvas')
-      await document.fonts.ready
-      if (disposed || mine !== seq || !el.isConnected || el.clientWidth === 0) return
-      el.classList.remove('sgl')
-      const dpr = window.devicePixelRatio || 1
-      const sc = Math.min(4, Math.ceil(dpr * 2))
-      if (el.dataset.glass === 'rim') {
-        // Rim only: nothing to photograph, so no html2canvas at all.
-        g!.texImage2D(g!.TEXTURE_2D, 0, g!.RGBA, 1, 1, 0, g!.RGBA, g!.UNSIGNED_BYTE, new Uint8Array(4))
-        draw(1, 1, sc, dpr)
-        el.classList.add('sgl')
-        return
-      }
-      const shot = await html2canvas(el, {
-        scale: sc,
-        backgroundColor: null,
-        logging: false,
-        imageTimeout: 3000,
-        ignoreElements: (x) => x.tagName === 'INPUT' || onlyPath(el)(x),
-        onclone: (_doc, c) => c.classList.add('lens-snap'),
-      })
-      if (disposed || mine !== seq) return
-      g!.texImage2D(g!.TEXTURE_2D, 0, g!.RGBA, g!.RGBA, g!.UNSIGNED_BYTE, shot)
-      draw(shot.width, shot.height, sc, dpr)
-      el.classList.add('sgl')
-    } catch (e) {
-      console.warn('glass surface', e)
-      el.classList.remove('sgl')
-    }
-  }
-
-  let timer = 0
-  const later = () => {
-    el.classList.remove('sgl')
-    window.clearTimeout(timer)
-    timer = window.setTimeout(() => void snap(), 260)
-  }
-  const ro = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(later)
+  /*
+   * Redraw once a resize has settled, not on every frame of it. The dock
+   * draws in while scrolling, and re-allocating a canvas and drawing it
+   * each frame of that 220 ms was the long stalls measured on the surah
+   * list. Meanwhile the canvas is stretched by CSS, which nobody sees.
+   */
+  let settle = 0
+  const ro =
+    typeof ResizeObserver === 'undefined'
+      ? null
+      : new ResizeObserver(() => {
+          window.clearTimeout(settle)
+          settle = window.setTimeout(kick, 140)
+        })
   ro?.observe(el)
-  const mo = new MutationObserver(later)
-  mo.observe(root, { attributes: true, attributeFilter: ['class', 'data-theme'] })
-  // A label that changes (the download size counting down) makes the picture
-  // stale. Mutations to the canvas itself, and to typed text, do not count.
-  const own = new MutationObserver((list) => {
-    if (list.some((m) => m.target !== cv && !(m.target instanceof HTMLInputElement) && ![...m.addedNodes, ...m.removedNodes].includes(cv))) later()
+  const stopTheme = onTheme(() => {
+    measure()
+    kick()
   })
-  own.observe(el, { childList: true, subtree: true, characterData: true })
   const lost = (e: Event) => {
     e.preventDefault()
     el.classList.remove('sgl')
   }
-  cv.addEventListener('webglcontextlost', lost)
-
-  void snap()
+  c.cv.addEventListener('webglcontextlost', lost)
+  kick()
 
   return () => {
-    disposed = true
-    window.clearTimeout(timer)
+    if (raf) cancelAnimationFrame(raf)
+    window.clearTimeout(settle)
     ro?.disconnect()
-    mo.disconnect()
-    own.disconnect()
-    cv.removeEventListener('webglcontextlost', lost)
+    stopTheme()
+    c.cv.removeEventListener('webglcontextlost', lost)
     el.classList.remove('sgl')
-    cv.remove()
-    g?.getExtension('WEBGL_lose_context')?.loseContext()
+    c.cv.remove()
+    c.g.getExtension('WEBGL_lose_context')?.loseContext()
   }
 }
 
 /**
- * Glass every surface marked `data-glass` as it appears, and let it go as it
- * leaves. One observer for the app, so a component only has to carry the
- * attribute.
+ * Glass every `data-glass` surface as it appears and release it as it goes.
+ * One observer for the app, rAF-coalesced, so a component only has to carry
+ * the attribute.
  */
 export function watchSurfaces(): () => void {
-  if (typeof window === 'undefined') return () => {}
+  if (typeof window === 'undefined' || typeof MutationObserver === 'undefined') return () => {}
   const live = new Map<HTMLElement, () => void>()
   const scan = () => {
     document.querySelectorAll<HTMLElement>('[data-glass]').forEach((el) => {

@@ -1933,8 +1933,7 @@ export default function App() {
                   the reciter and the count before anything is fetched.
               */}
               <button
-                className="head-save lg lg-interactive"
-                data-glass=""
+                className="head-save"
                 disabled={queued > 0}
                 aria-label={t.downloadAllSize(formatBytes(missingBytes, lang))}
                 onClick={() => setConfirmAll(true)}
@@ -1950,7 +1949,7 @@ export default function App() {
 
 
         {tab === 'quran' && (
-          <div className="search lg" data-glass="">
+          <div className="search lg-chip" data-glass="">
             <Search size={20} />
             <input
               ref={searchRef}
@@ -2744,7 +2743,7 @@ export default function App() {
             </div>
           </div>
 
-          <div className="controls">
+          <div className="controls lg-chip" data-glass="">
 
             <button
               className="ctrl"

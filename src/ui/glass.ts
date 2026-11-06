@@ -163,6 +163,9 @@ interface Tracked {
   t: number
   w: number
   h: number
+  /** The whole-unit values last written, so unchanged ones are skipped. */
+  wx: number
+  wy: number
 }
 
 /**
@@ -304,7 +307,7 @@ export function attachGlass(): () => void {
         const r = node.getBoundingClientRect()
         let s = tracked.get(node)
         if (!s) {
-          s = { x: REST_X, y: REST_Y, tx: REST_X, ty: REST_Y, l: 0, t: 0, w: 1, h: 1 }
+          s = { x: REST_X, y: REST_Y, tx: REST_X, ty: REST_Y, l: 0, t: 0, w: 1, h: 1, wx: NaN, wy: NaN }
           tracked.set(node, s)
         }
         s.l = r.left
@@ -341,8 +344,16 @@ export function attachGlass(): () => void {
       if (Math.abs(nx - s.x) > EPSILON || Math.abs(ny - s.y) > EPSILON) settled = false
       s.x = nx
       s.y = ny
-      node.style.setProperty('--lg-lx', nx.toFixed(1))
-      node.style.setProperty('--lg-ly', ny.toFixed(1))
+      // Whole units: a tenth of a percent of a glint is invisible, and each
+      // write repaints the surface's blur.
+      const lx = Math.round(nx)
+      const ly = Math.round(ny)
+      if (lx !== s.wx || ly !== s.wy) {
+        s.wx = lx
+        s.wy = ly
+        node.style.setProperty('--lg-lx', String(lx))
+        node.style.setProperty('--lg-ly', String(ly))
+      }
     }
 
     // The loop stops the moment the glints reach their targets. A still
@@ -418,16 +429,27 @@ export function attachGlass(): () => void {
 
   const onOrientation = (e: DeviceOrientationEvent) => {
     if (e.beta === null && e.gamma === null) return
-    mode = 'tilt'
-    tiltX = 50 + AMP_X * Math.tanh((e.gamma ?? 0) / TILT_SPREAD)
-    tiltY =
+    const x = 50 + AMP_X * Math.tanh((e.gamma ?? 0) / TILT_SPREAD)
+    const y =
       REST_Y + AMP_Y * Math.tanh(((e.beta ?? TILT_NEUTRAL_BETA) - TILT_NEUTRAL_BETA) / TILT_SPREAD)
+    /*
+     * Sensor noise is not movement. The gyro reports ~60 times a second and
+     * never holds still, so the glint never settled and every glass surface
+     * was re-painted, backdrop blur included, on nearly every frame while the
+     * dock was on screen. That was most of the lag on Android. A real tilt
+     * moves well past 1.5 points.
+     */
+    if (mode === 'tilt' && Math.abs(x - tiltX) < 1.5 && Math.abs(y - tiltY) < 1.5) return
+    mode = 'tilt'
+    tiltX = x
+    tiltY = y
     schedule()
   }
 
   const invalidate = () => {
     needsMeasure = true
-    schedule()
+    // Only the pointer light depends on where a surface is on screen.
+    if (mode === 'pointer') schedule()
   }
 
   let tiltAttached = false

@@ -116,8 +116,7 @@ export function HomePanel({
 
         <button
           type="button"
-          className="home-round lg lg-interactive"
-          data-glass=""
+          className="home-round"
           onClick={onSearch}
           aria-label={t.homeOpenSearch}
         >

@@ -366,7 +366,12 @@
       rgb(var(--lg-rim) / calc(var(--lg-sheen-alpha) * 0.45 * var(--lg-enter))) 0%,
       rgb(var(--lg-rim) / 0) 62%
     );
-  mix-blend-mode: screen;
+  /*
+   * No `mix-blend-mode: screen`. A blend mode makes the compositor build
+   * a separate surface for this and blend it every frame the backdrop
+   * changes, which over a scrolling list is every frame. White at low
+   * alpha over a tinted pane reads the same to the eye.
+   */
   pointer-events: none;
 }
 
@@ -397,6 +402,17 @@
   --lg-tint-max: var(--lg-tint-max-bar);
   --lg-clarity-bump: 0.4;
   contain: paint;
+  /*
+   * Blur and saturation only. A bar re-filters its backdrop on every
+   * scroll frame, and each function in a backdrop-filter chain is another
+   * full pass over that region: brightness and contrast were two passes
+   * for a difference the bar's own high tint already hides. Measured on
+   * the surah list (CPU at 4x): the full chain doubled the median frame.
+   */
+  -webkit-backdrop-filter: blur(calc(var(--lg-blur) * var(--lg-enter)))
+    saturate(calc(100% + (var(--lg-sat) - 100%) * var(--lg-enter)));
+  backdrop-filter: blur(calc(var(--lg-blur) * var(--lg-enter)))
+    saturate(calc(100% + (var(--lg-sat) - 100%) * var(--lg-enter)));
 }
 
 /*
@@ -1217,19 +1233,18 @@
 /* =====================================================================
    The WebGL tab lens (src/ui/lensGL.ts)
    ---------------------------------------------------------------------
-   A canvas over the tab pill that draws the selection lens: the tab
-   labels bent through a rounded lens with the colour fringe at its rim.
-   It only takes over once its picture is ready, by adding `gl` to the
-   nav; until then, and wherever it cannot run, the CSS chip above is the
-   selection. While it is on, the CSS chip gives up its fill and rim so
-   there is one lens, not two.
+   A canvas under the tab labels that draws the selection lens: a glass
+   capsule with the colour fringe at its rim, sliding between tabs. Once
+   it is on, the nav carries `gl` and the CSS chip gives up its fill and
+   rim so there is one lens, not two; wherever it cannot run, the CSS chip
+   is the selection.
    ===================================================================== */
 .dock-tabs > canvas.lens-gl {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  z-index: 2;
+  z-index: 0;
   pointer-events: none;
   opacity: 0;
   transition: opacity var(--t-base) var(--ease-out);
@@ -1245,22 +1260,6 @@
   opacity: 0;
 }
 
-/* The copy html2canvas photographs: labels only. */
-.lens-snap.lens-snap {
-  background: none !important;
-  box-shadow: none !important;
-  -webkit-backdrop-filter: none !important;
-  backdrop-filter: none !important;
-}
-.lens-snap::before,
-.lens-snap::after,
-.lens-snap .lg-chip::before,
-.lens-snap .lg-chip::after {
-  display: none !important;
-}
-.lens-snap .dock-tab.lg-chip {
-  background-color: transparent !important;
-}
 .lg-off .dock-tabs > canvas.lens-gl {
   display: none;
 }
@@ -1284,11 +1283,6 @@
 :root:not(.lg-off) [data-glass].sgl > canvas.surface-gl {
   opacity: 1;
 }
-/* The canvas redraws the icons bent at the rim; the originals step back so
-   nothing shows twice. Typed text is never photographed and stays on top. */
-:root:not(.lg-off) [data-glass]:not([data-glass='rim']).sgl > :not(canvas):not(input) {
-  opacity: 0;
-}
 [data-glass] > input {
   position: relative;
   z-index: 2;
@@ -1297,12 +1291,13 @@
   display: none;
 }
 
-/* The search field and the home header's round button wear the material
-   too. Each is styled with a `background` shorthand at one class in a file
-   that loads after this one, so the fill is restated here at two. */
-.search.lg,
-.home-round.lg,
-.head-save.lg {
+/* The search field wears the lens material: tint and rim with NO backdrop
+   blur. It sits over the static header, where a blur has nothing to show,
+   and Chrome still re-sampled it on every frame the list scrolled
+   (measured: a third of the frame). `.search` sets a `background`
+   shorthand in a file loading after this one, so the fill is restated at
+   two classes. */
+.search.lg-chip {
   background-image: none;
   background-color: rgb(
     var(--lg-tint) /
@@ -1313,4 +1308,33 @@
       )
   );
   border-color: transparent;
+}
+
+/* The play controls in the now-playing sheet: a glass capsule with the
+   WebGL rim. A lens fill (`lg-chip`, no backdrop-filter of its own), since
+   the sheet behind it is already glass and a nested blur goes murky. */
+.controls.lg-chip {
+  border-radius: var(--radius-pill);
+  margin: 0.55rem 0.2rem 0.1rem;
+  padding: 0.45rem 0.4rem;
+}
+
+/*
+ * The now-playing sheet covers nearly the whole screen and its fill is
+ * clamped near-opaque, so its backdrop blur was almost invisible while
+ * costing a full-screen re-blur on every frame of the slide-in. Tint and
+ * rim stay; the blur goes.
+ */
+.player.lg {
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  /* With no blur, the fill alone has to hide the list behind the sheet. */
+  background-color: color-mix(in srgb, var(--card) 97%, transparent);
+}
+
+/* The dock lens draws UNDER the live labels, so they stay crisp and are
+   never copied; the CSS chip steps back while it is on. */
+:root:not(.lg-off) .dock-tabs.gl > .dock-tab {
+  position: relative;
+  z-index: 1;
 }

@@ -190,7 +190,7 @@ export function ReciterPanel({
 
       {/* The same field as the Quran tab's, down to the class: one search
           box in the app, not two that look almost alike. */}
-      <div className="search lg" data-glass="">
+      <div className="search lg-chip" data-glass="">
         <Search size={20} />
         <input
           value={query}
