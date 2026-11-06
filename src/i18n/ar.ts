@@ -275,6 +275,7 @@ export const ar: Strings = {
     `أُزيلت ${n} سورة محفوظة قد تكون خاطئة — يمكنك حفظها من جديد.`,
   lastAvailable: (name: string) => `آخر سورة متاحة: ${name}`,
   sleepMins: (n: number | string) => `${n}د`,
+  sleepEndSurah: 'نهاية السورة',
   pickSurahForText: 'اختر سورة لعرض المصحف.',
   ayahTimingsOnly:
     'هذه التلاوة موقوتة آية بآية، فتُظلَّل الآية كاملة بدل الكلمة.',

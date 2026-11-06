@@ -306,6 +306,7 @@ export const en = {
     `Removed ${n} saved surah(s) that may have been the wrong recording — you can save them again.`,
   lastAvailable: (name: string) => `Last available: ${name}`,
   sleepMins: (n: number | string) => `${n} min`,
+  sleepEndSurah: 'end of surah',
   pickSurahForText: 'Pick a surah to open the mushaf.',
   ayahTimingsOnly:
     'This recitation is timed verse by verse, so the whole verse is marked rather than the word.',

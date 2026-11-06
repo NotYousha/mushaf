@@ -273,6 +273,7 @@ export const ur: Strings = {
     `${n} محفوظ سورتیں ہٹا دی گئیں جو غلط ریکارڈنگ ہو سکتی تھیں — آپ انہیں دوبارہ محفوظ کر سکتے ہیں۔`,
   lastAvailable: (name: string) => `آخری دستیاب سورت: ${name}`,
   sleepMins: (n: number | string) => `${n} منٹ`,
+  sleepEndSurah: 'سورت کے اختتام پر',
   pickSurahForText: 'مصحف کھولنے کے لیے سورت منتخب کریں۔',
   ayahTimingsOnly:
     'اس تلاوت کا وقت آیت بہ آیت ہے، اس لیے لفظ کے بجائے پوری آیت نمایاں ہوتی ہے۔',

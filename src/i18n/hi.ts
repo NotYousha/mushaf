@@ -273,6 +273,7 @@ export const hi: Strings = {
     `${n} सहेजी गई सूरतें हटाई गईं जो ग़लत रिकॉर्डिंग हो सकती थीं — आप उन्हें दोबारा सहेज सकते हैं।`,
   lastAvailable: (name: string) => `अंतिम उपलब्ध सूरह: ${name}`,
   sleepMins: (n: number | string) => `${n} मिनट`,
+  sleepEndSurah: 'सूरह के अंत में',
   pickSurahForText: 'मुसहफ़ खोलने के लिए एक सूरह चुनें।',
   ayahTimingsOnly:
     'इस तिलावत का समय आयत दर आयत है, इसलिए शब्द के बजाय पूरी आयत चिह्नित होती है।',

@@ -275,6 +275,7 @@ export const fr: Strings = {
     `${n} sourate(s) enregistrée(s) ont été retirées car l'enregistrement pouvait être erroné — vous pouvez les enregistrer à nouveau.`,
   lastAvailable: (name: string) => `Dernière disponible : ${name}`,
   sleepMins: (n: number | string) => `${n} min`,
+  sleepEndSurah: 'fin de la sourate',
   pickSurahForText: 'Choisissez une sourate pour ouvrir le mushaf.',
   ayahTimingsOnly:
     'Cette récitation est minutée verset par verset : le verset entier est marqué, pas le mot.',

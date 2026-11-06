@@ -171,6 +171,10 @@ const READING_TABS: boolean = false
 const SQUARE_FRAME = { zoom: 100, x: 50, y: 50 }
 const UNCROPPED_PHOTOS = new Set(['sheikh.jpg'])
 const SPEEDS = [1, 1.25, 1.5, 0.75]
+/** Sleep timer setting meaning "stop when this surah ends". */
+const SLEEP_SURAH = -1
+/** What tapping the moon cycles through. */
+const SLEEP_STEPS: Array<number | null> = [null, 15, 30, 60, SLEEP_SURAH]
 /** The transport's fixed jump. Ten seconds is the convention, and it is short
  *  enough to land back on the start of an ayah you half-caught. */
 const SKIP_SECONDS = 10
@@ -198,7 +202,14 @@ export default function App() {
   const [repeat, setRepeat] = useState<RepeatMode>('off')
   const [shuffle, setShuffle] = useState(false)
   const [speedIdx, setSpeedIdx] = useState(0)
+  /**
+   * The sleep timer: minutes from when it was set, SLEEP_SURAH for "at the
+   * end of this surah", or null for off.
+   */
   const [sleepAt, setSleepAt] = useState<number | null>(null)
+  /** Read by the ended handler, so the surah that is ending does not advance. */
+  const sleepAtRef = useRef<number | null>(null)
+  sleepAtRef.current = sleepAt
   // Opens on the home screen: the recitation you were in the middle of is
   // more useful than the top of a list of a hundred and fourteen surahs.
   const [tab, setTabState] = useState<Tab>('home')
@@ -1216,6 +1227,13 @@ export default function App() {
       // anything moves on.
       if (talqeenRef.current?.handleEnded()) return
 
+      // "Stop at the end of this surah": it has ended, so stop here rather
+      // than going on to the next.
+      if (sleepAtRef.current === SLEEP_SURAH) {
+        setSleepAt(null)
+        return
+      }
+
       /*
        * The prepared surah first, and without awaiting anything.
        *
@@ -1250,16 +1268,42 @@ export default function App() {
     return () => el.removeEventListener('ended', onEnded)
   }, [advance, surahs, reciter, repeat, playable])
 
+  /*
+   * The minutes timer.
+   *
+   * Measured against the clock on each timeupdate rather than one long
+   * setTimeout: timeupdate keeps firing while audio plays with the screen
+   * locked, where a background timer is throttled. The last ten seconds fade
+   * the volume out, and it PAUSES rather than stops, so the place is kept for
+   * tomorrow; it used to stop dead mid-word and lose the position.
+   */
   useEffect(() => {
-    if (sleepAt === null) return
-    const id = setTimeout(
-      () => {
-        engine.current!.stop()
+    if (sleepAt === null || sleepAt === SLEEP_SURAH) return
+    const el = engine.current!.el
+    const deadline = Date.now() + sleepAt * 60_000
+    const FADE = 10_000
+    const base = el.volume
+    const tick = () => {
+      const left = deadline - Date.now()
+      // Expired while paused (timeupdate only fires during playback): the
+      // night is over, so switch it off rather than pausing the morning's
+      // listening the moment it starts.
+      if (left < -60_000) {
+        el.volume = base
         setSleepAt(null)
-      },
-      sleepAt * 60_000,
-    )
-    return () => clearTimeout(id)
+      } else if (left <= 0) {
+        engine.current!.pause()
+        el.volume = base
+        setSleepAt(null)
+      } else if (left < FADE) {
+        el.volume = Math.max(0, base * (left / FADE))
+      }
+    }
+    el.addEventListener('timeupdate', tick)
+    return () => {
+      el.removeEventListener('timeupdate', tick)
+      el.volume = base
+    }
   }, [sleepAt])
 
   const switchReciter = async (id: string) => {
@@ -2929,7 +2973,11 @@ export default function App() {
               <span>{formatTime(time, lang)}</span>
               <span className="badge">
                 {mode === 'offline' ? t.saved : t.streaming}
-                {sleepAt ? ` · ${t.sleepMins(digits(lang, sleepAt))}` : ''}
+                {sleepAt === SLEEP_SURAH
+                  ? ` · ${t.sleepEndSurah}`
+                  : sleepAt
+                    ? ` · ${t.sleepMins(digits(lang, sleepAt))}`
+                    : ''}
               </span>
               <span>-{formatTime(Math.max(0, duration - time), lang)}</span>
             </div>
@@ -3018,7 +3066,10 @@ export default function App() {
               className="ctrl small"
               aria-label={t.sleep}
               aria-pressed={sleepAt !== null}
-              onClick={() => setSleepAt(sleepAt === null ? 30 : sleepAt === 30 ? 60 : null)}
+              onClick={() => {
+                const i = SLEEP_STEPS.indexOf(sleepAt)
+                setSleepAt(SLEEP_STEPS[(i + 1) % SLEEP_STEPS.length])
+              }}
             >
               <Moon size={22} />
             </button>
