@@ -13,6 +13,7 @@
     "align": "python scripts/align/build.py"
   },
   "dependencies": {
+    "html2canvas": "^1.4.1",
     "idb": "^8.0.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"

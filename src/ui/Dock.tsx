@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { Strings } from '../i18n'
 import { Play, Pause, Forward } from './Icons'
 import { isNativeShell } from '../native/shell'
+import { attachLens, type Lens } from './lensGL'
 
 export type DockTab = {
   id: string
@@ -178,6 +179,26 @@ export function Dock({
     return () => ro.disconnect()
   }, [])
 
+  /*
+   * The WebGL lens over the selected tab (src/ui/lensGL.ts). It attaches once
+   * and is told when the selection moves; where it cannot run, the CSS
+   * `.lg-chip` underneath is the selection and nothing else changes.
+   */
+  const navRef = useRef<HTMLElement | null>(null)
+  const lensRef = useRef<Lens | null>(null)
+  useEffect(() => {
+    const nav = navRef.current
+    if (!nav) return
+    lensRef.current = attachLens(nav)
+    return () => {
+      lensRef.current?.dispose()
+      lensRef.current = null
+    }
+  }, [])
+  useEffect(() => {
+    lensRef.current?.update()
+  }, [active])
+
   if (isNativeShell()) return null
 
   /*
@@ -191,7 +212,7 @@ export function Dock({
   return (
     <div ref={dockRef} className={cls}>
       {now && (
-        <div className="now-capsule glass">
+        <div className="now-capsule lg lg-bar lg-interactive" data-glass="rim">
           <button
             type="button"
             className="cap-open"
@@ -235,11 +256,19 @@ export function Dock({
         </div>
       )}
 
-      <nav className="dock-tabs glass" role="tablist">
+      <nav ref={navRef} className="dock-tabs lg lg-bar" role="tablist" data-glass="rim">
+        {/*
+            The selected tab takes the selection lens, not a second pane of
+            glass. `.lg-chip` deliberately has no backdrop-filter of its own:
+            nesting one samples a backdrop the pill has already tinted and
+            blurred, so the two multiply into a murky patch with a hard seam
+            and the blur is paid for twice. The lens paints the same material
+            minus the sampling, over whatever the pill already resolved.
+        */}
         {tabs.map((tb) => (
           <button
             key={tb.id}
-            className="dock-tab"
+            className={`dock-tab${tb.id === active ? ' lg-chip' : ''}`}
             role="tab"
             aria-selected={tb.id === active}
             onClick={tb.onSelect}

@@ -126,6 +126,8 @@ import { Splash } from './ui/Splash'
 import { Onboarding } from './ui/Onboarding'
 import { defaultEdition } from './ui/editions'
 import { BUILD, holdUpdatesWhile } from './pwa'
+import { attachGlass } from './ui/glass'
+import { watchSurfaces } from './ui/lensGL'
 import './ui/theme.css'
 import './ui/themes.css'
 import './ui/glass.css'
@@ -271,6 +273,16 @@ export default function App() {
   useEffect(() => {
     holdUpdatesWhile(() => busyRef.current)
   }, [])
+  /*
+   * The glass material's runtime half: the stored kill switch, and the
+   * specular highlight that follows the pointer on a desk and the device's
+   * tilt in the hand. Everything it does is additive — with this effect
+   * removed, every surface falls back to the static sheen glass.css already
+   * paints, which is also what reduced motion gets.
+   */
+  useEffect(() => attachGlass(), [])
+  // The WebGL rim and refraction on every `data-glass` surface (src/ui/lensGL.ts).
+  useEffect(() => watchSurfaces(), [])
   const [canCast, setCanCast] = useState(false)
   const [persisted, setPersisted] = useState<boolean | null>(null)
   const [talqeen, setTalqeen] = useState(false)
@@ -1921,7 +1933,8 @@ export default function App() {
                   the reciter and the count before anything is fetched.
               */}
               <button
-                className="head-save"
+                className="head-save lg lg-interactive"
+                data-glass=""
                 disabled={queued > 0}
                 aria-label={t.downloadAllSize(formatBytes(missingBytes, lang))}
                 onClick={() => setConfirmAll(true)}
@@ -1937,7 +1950,7 @@ export default function App() {
 
 
         {tab === 'quran' && (
-          <div className="search">
+          <div className="search lg" data-glass="">
             <Search size={20} />
             <input
               ref={searchRef}
@@ -2517,7 +2530,7 @@ export default function App() {
 
       {currentView && reciter && (!playerMin || leaving) && (
         <div
-          className={`player${leaving ? ' is-leaving' : ''}`}
+          className={`player lg${leaving ? ' is-leaving' : ''}`}
           role="dialog"
           aria-modal="true"
           aria-label={t.openPlayer}
@@ -2923,7 +2936,7 @@ export default function App() {
           aria-label={t.confirmTitle}
           onClick={() => setConfirmAll(false)}
         >
-          <div className="dialog" onClick={(e) => e.stopPropagation()}>
+          <div className="dialog lg" onClick={(e) => e.stopPropagation()}>
             <h3>{t.confirmTitle}</h3>
             <p>
               {t.confirmBody(
@@ -2950,7 +2963,7 @@ export default function App() {
           that failed, the disk filling up mid-save. A toast above the dock is
           reachable whatever else is open. */}
       {error && (
-        <div className="toast" role="status" aria-live="polite">
+        <div className="toast lg lg-bar" role="status" aria-live="polite">
           <p className="err">{error}</p>
           <button
             type="button"
