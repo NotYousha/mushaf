@@ -532,18 +532,38 @@ export default function App() {
     })()
   }, [refreshDownloaded])
 
+  /** Failures already shown, so closing the toast keeps it closed. */
+  const shownFailures = useRef(new Set<string>())
   useEffect(() => {
+    let remaining = -1
     return queue.current!.subscribe((s) => {
       setProgress(s.progress)
-      setQueued(s.active.length + s.pending.length)
+      const left = s.active.length + s.pending.length
+      setQueued(left)
       // Running out of room stops the whole queue, so say that plainly
       // rather than repeating one surah's error message.
       if (queue.current!.outOfSpace) setError(t.outOfSpaceStopped)
       else {
-        const failed = Object.values(s.failed)[0]
-        if (failed) setError(t.saveFailed(failed))
+        /*
+         * Each failure once. Re-asserting the first failure on every queue
+         * event meant the toast came straight back after being closed, for
+         * as long as any other download was still running.
+         */
+        const fresh = Object.entries(s.failed).find(([k]) => !shownFailures.current.has(k))
+        if (fresh) {
+          shownFailures.current.add(fresh[0])
+          setError(t.saveFailed(fresh[1]))
+        }
       }
-      if (!s.active.length && !s.pending.length) void refreshDownloaded()
+      for (const k of shownFailures.current) if (!(k in s.failed)) shownFailures.current.delete(k)
+      /*
+       * Refresh what is saved whenever a job finishes, not only when the
+       * whole queue empties. During a "download all", finished surahs
+       * otherwise went back to showing a download button (or a stale
+       * percentage) until the last of the hundred and fourteen was done.
+       */
+      if (left < remaining || left === 0) void refreshDownloaded()
+      remaining = left
     })
   }, [refreshDownloaded, t])
 

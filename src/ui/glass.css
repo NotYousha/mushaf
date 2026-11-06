@@ -931,38 +931,21 @@
 }
 
 /*
- * While the list is moving the dock drops its blur for a flat fill. The
- * backdrop has to be re-sampled and re-blurred every frame it is over
- * something that moves, and those are precisely the frames with none to
- * spare. It comes back the moment the list settles, which is when anyone is
- * actually looking at it.
+ * The dock keeps its blur while the list moves.
+ *
+ * It used to drop the blur for a flat fill whenever the list scrolled and
+ * bring it back 240 ms after it stopped. With the fill below opaque, the
+ * list showed through SHARP for those frames, so every scroll start and
+ * stop was a visible flash: and during playback the follower scrolls the
+ * list once per ayah, so the capsule flickered all the way through a surah.
+ * Since bars filter with blur + saturate only (see .lg-bar), keeping it on
+ * measures the same median frame as master; steadiness wins.
  */
-.dock.is-scrolling .lg {
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-  /*
-   * The tint takes over for the blur, through the material's own knobs
-   * rather than a flat background of its own — so the rim and the sheen
-   * stay exactly where they were and only the sampling stops. Written as
-   * a `background` shorthand this used to blow away .lg's tint entirely.
-   *
-   * 0.88 rather than the bar ceiling of 0.93: the step from the resting
-   * fill is what the eye catches, and a fill this close to opaque hides
-   * just as much.
-   */
-  --lg-clarity: 1;
-  --lg-tint-max: 0.88;
-  --lg-clarity-bump: 0;
-  /* Instant on the way out. There is no showing sharp content through the
-     resting fill for even one frame, so the flat fill has to be there
-     before the blur goes. */
-  transition: none;
-}
 
 /* Its own layer, so scrolling underneath never repaints it. */
 .dock .lg {
   will-change: transform;
-  /* Only the return is eased — see .is-scrolling above. */
+  /* Theme changes ease the tint. */
   transition: background-color var(--t-base) var(--ease-out);
 }
 

@@ -39,7 +39,10 @@ export function Splash({ lang }: { lang: Lang }) {
       /* nothing to do */
     }
     const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
-    const hold = reduced ? 400 : 1650
+    // 700, not 1650. On Android the system has already shown its own launch
+    // splash, so a second long one made every cold start wait two seconds
+    // before anything could be touched.
+    const hold = reduced ? 400 : 700
     const leave = window.setTimeout(() => setState('leaving'), hold)
     // Matches the fade in CSS; unmounting sooner would cut it off.
     const done = window.setTimeout(() => setState('hidden'), hold + 420)
