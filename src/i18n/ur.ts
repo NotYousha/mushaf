@@ -158,6 +158,8 @@ export const ur: Strings = {
   mushafTab: 'مصحف',
   translationTab: 'ترجمہ',
   translation: 'ترجمہ',
+  playFromRef: (ref: string) => `${ref} سے چلائیں`,
+  noAyahTimings: 'اس تلاوت میں آیات کے اوقات نہیں ہیں، اس لیے یہ سورت کے شروع سے چلے گی۔',
   textSize: 'متن کا سائز',
   arabicText: 'عربی',
   smaller: 'چھوٹا',

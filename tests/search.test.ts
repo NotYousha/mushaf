@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { searchSurahs, foldArabic, foldLatin } from '../src/catalog/search'
+import { searchSurahs, foldArabic, foldLatin, parseReference } from '../src/catalog/search'
 import { buildView, surahMeta } from '../src/catalog/load'
 import { mosqueReciters } from '../src/catalog/mosques'
 
@@ -70,5 +70,33 @@ describe('folding', () => {
   it('collapses doubled vowels and the article', () => {
     expect(foldLatin('Al-Faatiha')).toBe(foldLatin('fatiha'))
     expect(foldLatin('Al-Baqara')).toBe(foldLatin('baqara'))
+  })
+})
+
+describe('a reference typed into the search box', () => {
+  const ref = (q: string) => parseReference(surahs, q)
+  it('reads surah:ayah in either digit set and with common separators', () => {
+    expect(ref('2:255')).toEqual({ surah: 2, ayah: 255 })
+    expect(ref('٢:٢٥٥')).toEqual({ surah: 2, ayah: 255 })
+    expect(ref('2.255')).toEqual({ surah: 2, ayah: 255 })
+    expect(ref('18 - 10')).toEqual({ surah: 18, ayah: 10 })
+  })
+  it('reads a surah name followed by an ayah', () => {
+    expect(ref('kahf 10')).toEqual({ surah: 18, ayah: 10 })
+    expect(ref('Al-Kahf:10')).toEqual({ surah: 18, ayah: 10 })
+    expect(ref('الكهف 10')).toEqual({ surah: 18, ayah: 10 })
+  })
+  it('refuses ayahs that do not exist, and bare numbers', () => {
+    expect(ref('1:8')).toBeNull()
+    expect(ref('114:7')).toBeNull()
+    expect(ref('115:1')).toBeNull()
+    expect(ref('2')).toBeNull()
+    expect(ref('2 255')).toBeNull()
+  })
+  it('lists the referenced surah', () => {
+    expect(find('2:255')).toEqual([2])
+    expect(find('kahf 10')).toEqual([18])
+    // A plain number is still a surah search, prefix and all.
+    expect(find('11').slice(0, 2)).toEqual([11, 110])
   })
 })

@@ -158,6 +158,8 @@ export const hi: Strings = {
   mushafTab: 'मुसहफ़',
   translationTab: 'अनुवाद',
   translation: 'अनुवाद',
+  playFromRef: (ref: string) => `${ref} से चलाएँ`,
+  noAyahTimings: 'इस तिलावत में आयतों का समय नहीं है, इसलिए यह सूरह की शुरुआत से चलेगी।',
   textSize: 'टेक्स्ट का आकार',
   arabicText: 'अरबी',
   smaller: 'छोटा',

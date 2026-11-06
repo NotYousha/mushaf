@@ -90,9 +90,43 @@ const asciiDigits = (s: string) =>
     (d) => String(d.charCodeAt(0) - 0x06f0),
   )
 
+/**
+ * A reference typed into the search box: "2:255", "٢:٢٥٥", "2.255",
+ * "kahf 10", "الكهف 10". Null when the query is not one.
+ *
+ * A bare number stays a surah search (see below), so "2 255" with only a
+ * space is NOT a reference: "11" followed by more typing must not jump.
+ * The ayah must exist in that surah.
+ */
+export function parseReference(
+  surahs: SurahView[],
+  query: string,
+): { surah: number; ayah: number } | null {
+  const q = asciiDigits(query.trim())
+  const num = /^(\d{1,3})\s*[:.\-،/]\s*(\d{1,3})$/.exec(q)
+  let surah: SurahView | undefined
+  let ayah: number
+  if (num) {
+    surah = surahs.find((s) => s.surah === Number(num[1]))
+    ayah = Number(num[2])
+  } else {
+    const named = /^(.*\D)\s*[:\s]\s*(\d{1,3})$/.exec(q)
+    if (!named || !named[1].trim()) return null
+    surah = searchSurahs(surahs, named[1].trim())[0]
+    ayah = Number(named[2])
+  }
+  if (!surah || ayah < 1 || (surah.ayahs && ayah > surah.ayahs)) return null
+  return { surah: surah.surah, ayah }
+}
+
 export function searchSurahs(surahs: SurahView[], query: string): SurahView[] {
   const q = asciiDigits(query.trim())
   if (!q) return surahs
+
+  // A reference finds its surah, so "2:255" lists al-Baqarah rather than
+  // nothing.
+  const ref = /\d/.test(q) && !/^\d+$/.test(q) ? parseReference(surahs, q) : null
+  if (ref) return surahs.filter((s) => s.surah === ref.surah)
 
   if (/^\d+$/.test(q)) {
     const n = Number(q)

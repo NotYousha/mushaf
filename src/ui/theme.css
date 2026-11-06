@@ -5237,3 +5237,12 @@ body {
   min-width: 3rem;
   min-height: 2.75rem;
 }
+
+/* "Play from 2:255" above the surah list when the search box holds a
+   reference. */
+.jump-ref {
+  margin: 0 1.2rem 0.85rem;
+  display: grid;
+  gap: var(--space-2);
+  justify-items: start;
+}

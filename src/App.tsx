@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { loadCatalog, buildView, surahMeta } from './catalog/load'
-import { searchSurahs } from './catalog/search'
+import { parseReference, searchSurahs } from './catalog/search'
 import type { Reciter, SurahView } from './catalog/types'
 import {
   effectiveVerified,
@@ -1538,6 +1538,15 @@ export default function App() {
   }, [current, time, openPlace, openYear, playable, voiceOfSurah])
   const releasedTotal = surahs.filter((s) => s.released).reduce((a, s) => a + s.bytes, 0)
 
+  /** The last jump could not start at its ayah (no timings). */
+  const [jumpUntimed, setJumpUntimed] = useState(false)
+  useEffect(() => setJumpUntimed(false), [query, reciterId])
+  /** The search box holds a reference ("2:255"), not just a name. */
+  const jumpRef = useMemo(
+    () => (/\d/.test(query) ? parseReference(surahs, query) : null),
+    [surahs, query],
+  )
+
   const filtered = useMemo(() => {
     const q = query.trim()
     if (!q) return surahs
@@ -2120,6 +2129,34 @@ export default function App() {
                 window.setTimeout(() => searchRef.current?.focus(), 0)
               }}
             />
+          )}
+
+          {tab === 'quran' && jumpRef && (
+            /*
+             * "2:255", "kahf 10": a reference, so offer to play from that
+             * ayah. Timings are loaded on the tap (they are not until a
+             * reading view has asked), and a recitation without them says so
+             * and starts at the top of the surah.
+             */
+            <div className="jump-ref">
+              <button
+                type="button"
+                className="btn solid"
+                onClick={async () => {
+                  const ref = jumpRef
+                  await loadTimings(reciterId).catch(() => null)
+                  const at = ayahStartsFor(reciterId, ref.surah)?.[ref.ayah - 1]
+                  void playSurah(ref.surah, at !== undefined ? at / 1000 : 0)
+                  // Untimed: say so where the button is. A toast would be
+                  // cleared the moment playback starts.
+                  if (at === undefined) setJumpUntimed(true)
+                  else setQuery('')
+                }}
+              >
+                {t.playFromRef(`${digits(lang, jumpRef.surah)}:${digits(lang, jumpRef.ayah)}`)}
+              </button>
+              {jumpUntimed && <p className="count">{t.noAyahTimings}</p>}
+            </div>
           )}
 
           {tab === 'quran' && (

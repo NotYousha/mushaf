@@ -159,6 +159,8 @@ export const ar: Strings = {
   mushafTab: 'المصحف',
   translationTab: 'الترجمة',
   translation: 'الترجمة',
+  playFromRef: (ref: string) => `تشغيل من ${ref}`,
+  noAyahTimings: 'لا توجد توقيتات للآيات في هذه التلاوة، فتبدأ من أول السورة.',
   textSize: 'حجم الخط',
   arabicText: 'النص العربي',
   smaller: 'أصغر',

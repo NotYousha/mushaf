@@ -187,6 +187,8 @@ export const en = {
   mushafTab: 'Mushaf',
   translationTab: 'Translation',
   translation: 'Translation',
+  playFromRef: (ref: string) => `Play from ${ref}`,
+  noAyahTimings: 'This recitation has no ayah timings, so it starts at the beginning of the surah.',
   textSize: 'Text size',
   arabicText: 'Arabic',
   smaller: 'Smaller',

@@ -160,6 +160,8 @@ export const fr: Strings = {
   mushafTab: 'Mushaf',
   translationTab: 'Traduction',
   translation: 'Traduction',
+  playFromRef: (ref: string) => `Lire à partir de ${ref}`,
+  noAyahTimings: "Cette récitation n'a pas de minutage par verset : elle commence au début de la sourate.",
   textSize: 'Taille du texte',
   arabicText: 'Arabe',
   smaller: 'Plus petit',
