@@ -5192,3 +5192,10 @@ body {
   color: var(--gold);
   cursor: pointer;
 }
+
+/* Pause / Resume beside Stop, under the download count. */
+.dl-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}

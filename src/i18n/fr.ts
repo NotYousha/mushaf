@@ -90,6 +90,9 @@ export const fr: Strings = {
   deleteSaved: "Supprimer l'audio enregistré",
   downloading: (done: number, total: number) => `Téléchargement de ${done} sur ${total}`,
   cancelAll: 'Arrêter le téléchargement',
+  pauseDownloads: 'Pause',
+  resumeDownloads: 'Reprendre',
+  downloadsPausedOffline: 'En pause : pas de connexion. Les téléchargements reprendront au retour du réseau.',
   notEnoughSpace: (need: string, free: string) =>
     `Espace insuffisant : ${need} nécessaires, ${free} disponibles`,
   saveFailed: (why: string) => `Échec de l'enregistrement : ${why}`,

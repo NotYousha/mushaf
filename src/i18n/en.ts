@@ -106,6 +106,9 @@ export const en = {
   deleteSaved: 'Delete saved audio',
   downloading: (done: number, total: number) => `Downloading ${done} of ${total}`,
   cancelAll: 'Stop downloading',
+  pauseDownloads: 'Pause',
+  resumeDownloads: 'Resume',
+  downloadsPausedOffline: 'Paused: no connection. Downloads continue when you are back online.',
   notEnoughSpace: (need: string, free: string) =>
     `Not enough space: needs ${need}, ${free} free`,
   saveFailed: (why: string) => `Could not save: ${why}`,

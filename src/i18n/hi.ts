@@ -90,6 +90,9 @@ export const hi: Strings = {
   deleteSaved: 'सहेजी गई ऑडियो हटाएँ',
   downloading: (done: number, total: number) => `${total} में से ${done} डाउनलोड हो रहा है`,
   cancelAll: 'डाउनलोड रोकें',
+  pauseDownloads: 'रोकें',
+  resumeDownloads: 'फिर से शुरू करें',
+  downloadsPausedOffline: 'कनेक्शन नहीं है, इसलिए डाउनलोड रुका है। नेटवर्क लौटते ही फिर शुरू होगा।',
   notEnoughSpace: (need: string, free: string) =>
     `पर्याप्त जगह नहीं: ${need} चाहिए, ${free} खाली है`,
   saveFailed: (why: string) => `सहेज नहीं सका: ${why}`,

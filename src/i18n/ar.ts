@@ -91,6 +91,9 @@ export const ar: Strings = {
   deleteSaved: 'حذف المحفوظ',
   downloading: (done: number, total: number) => `جارٍ التحميل ${done} من ${total}`,
   cancelAll: 'إيقاف التحميل',
+  pauseDownloads: 'إيقاف مؤقت',
+  resumeDownloads: 'استئناف',
+  downloadsPausedOffline: 'توقف التحميل مؤقتًا لعدم وجود اتصال، وسيستأنف عند عودة الاتصال.',
   notEnoughSpace: (need: string, free: string) =>
     `المساحة غير كافية: يحتاج ${need} ومتاح ${free}`,
   saveFailed: (why: string) => `تعذّر الحفظ: ${why}`,

@@ -12,6 +12,8 @@ export type QueueState = {
   pending: string[]
   progress: Record<string, number>
   failed: Record<string, string>
+  /** Held by pauseAll(); nothing new starts until resumeAll(). */
+  paused: boolean
 }
 
 type Deps = {
@@ -57,6 +59,7 @@ export class DownloadQueue {
       pending: this.pending.map((j) => jobKey(j.reciterId, j.surah)),
       progress: { ...this.progress },
       failed: { ...this.failed },
+      paused: this.paused,
     }
   }
 
@@ -97,14 +100,42 @@ export class DownloadQueue {
     this.emit()
   }
 
+  /**
+   * Hold the queue. Running downloads are aborted and put back at the FRONT
+   * of the line: their chunks are already on disk, so resuming continues
+   * from the last committed byte. Before this, a paused download was simply
+   * dropped (an abort is not a failure, so nothing re-queued it), and pausing
+   * a "download all" quietly lost whatever was in flight.
+   */
   pauseAll() {
+    if (this.paused) return
     this.paused = true
+    const inFlight = [...this.activeJobs.values()]
+    this.pending = [
+      ...inFlight.filter((j) => !this.pending.some((p) => jobKey(p.reciterId, p.surah) === jobKey(j.reciterId, j.surah))),
+      ...this.pending,
+    ]
     this.active.forEach((c) => c.abort())
+    this.emit()
   }
 
   resumeAll() {
+    if (!this.paused) return
     this.paused = false
+    this.emit()
     this.pump()
+  }
+
+  get isPaused() {
+    return this.paused
+  }
+
+  /** Everything, for every reciter: what is running and what is waiting. */
+  cancelAll() {
+    this.pending = []
+    this.paused = false
+    this.active.forEach((c) => c.abort())
+    this.emit()
   }
 
   /** One at a time while anything large is in flight or waiting. */

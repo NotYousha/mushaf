@@ -90,6 +90,9 @@ export const ur: Strings = {
   deleteSaved: 'محفوظ شدہ آڈیو حذف کریں',
   downloading: (done: number, total: number) => `${total} میں سے ${done} ڈاؤن لوڈ ہو رہی ہیں`,
   cancelAll: 'ڈاؤن لوڈ روکیں',
+  pauseDownloads: 'وقفہ',
+  resumeDownloads: 'دوبارہ شروع کریں',
+  downloadsPausedOffline: 'کنکشن نہیں ہے، اس لیے ڈاؤن لوڈ رکا ہوا ہے۔ نیٹ ورک واپس آتے ہی جاری ہو جائے گا۔',
   notEnoughSpace: (need: string, free: string) =>
     `جگہ ناکافی ہے: ${need} درکار ہے، ${free} دستیاب ہے`,
   saveFailed: (why: string) => `محفوظ نہ ہو سکا: ${why}`,

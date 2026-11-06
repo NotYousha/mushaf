@@ -264,6 +264,11 @@ export default function App() {
   /** Portraits the listener has added, imam id to object URL. */
   const [faces, setFaces] = useState<Map<string, Face>>(new Map())
   const [queued, setQueued] = useState(0)
+  /** The download queue is held, by the person or by losing the connection. */
+  const [dlPaused, setDlPaused] = useState(false)
+  /** Held because the connection dropped, so coming back online resumes it. */
+  const [dlOffline, setDlOffline] = useState(false)
+  const autoPaused = useRef(false)
   /*
    * Never reload for an update while something is playing or downloading.
    * The updater cannot see either of those, so it asks.
@@ -540,6 +545,7 @@ export default function App() {
       setProgress(s.progress)
       const left = s.active.length + s.pending.length
       setQueued(left)
+      setDlPaused(s.paused)
       // Running out of room stops the whole queue, so say that plainly
       // rather than repeating one surah's error message.
       if (queue.current!.outOfSpace) setError(t.outOfSpaceStopped)
@@ -566,6 +572,36 @@ export default function App() {
       remaining = left
     })
   }, [refreshDownloaded, t])
+
+  /*
+   * Losing the connection pauses the queue instead of failing it.
+   *
+   * Without this, walking out of Wi-Fi during "download all" burned three
+   * retries per surah and then filed every remaining one as failed. Coming
+   * back online resumes it, but only a pause this made: one the person chose
+   * stays theirs.
+   */
+  useEffect(() => {
+    const q = queue.current!
+    const offline = () => {
+      if (q.isPaused || !q.state().active.length && !q.state().pending.length) return
+      autoPaused.current = true
+      setDlOffline(true)
+      q.pauseAll()
+    }
+    const online = () => {
+      if (!autoPaused.current) return
+      autoPaused.current = false
+      setDlOffline(false)
+      q.resumeAll()
+    }
+    window.addEventListener('offline', offline)
+    window.addEventListener('online', online)
+    return () => {
+      window.removeEventListener('offline', offline)
+      window.removeEventListener('online', online)
+    }
+  }, [])
 
   // A cast target may appear or vanish at any time, so this is a live watch
   // rather than a one-off check.
@@ -2272,18 +2308,37 @@ export default function App() {
                       surahs.filter((s) => s.released).length,
                     )}
                   </p>
-                  <button
-                    className="btn"
-                    onClick={() => {
-                      // cancel() aborts an active download and drops a pending
-                      // one, so this alone empties the queue.
-                      for (const n of urls.keys()) queue.current!.cancel(reciterId, n)
-                      setQueued(0)
-                      void refreshDownloaded()
-                    }}
-                  >
-                    {t.cancelAll}
-                  </button>
+                  {dlOffline && <p className="count">{t.downloadsPausedOffline}</p>}
+                  <div className="dl-actions">
+                    <button
+                      className="btn"
+                      onClick={() => {
+                        // A choice the person made: the connection coming
+                        // back must not override it.
+                        autoPaused.current = false
+                        setDlOffline(false)
+                        if (dlPaused) queue.current!.resumeAll()
+                        else queue.current!.pauseAll()
+                      }}
+                    >
+                      {dlPaused ? t.resumeDownloads : t.pauseDownloads}
+                    </button>
+                    <button
+                      className="btn"
+                      onClick={() => {
+                        // Every reciter's downloads, not only this one's: the
+                        // count above is the whole queue, and stopping half of
+                        // it left that count lying.
+                        autoPaused.current = false
+                        setDlOffline(false)
+                        queue.current!.cancelAll()
+                        setQueued(0)
+                        void refreshDownloaded()
+                      }}
+                    >
+                      {t.cancelAll}
+                    </button>
+                  </div>
                 </>
               ) : (
                 <button
