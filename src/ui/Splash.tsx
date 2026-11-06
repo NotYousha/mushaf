@@ -22,6 +22,15 @@ const BASE = import.meta.env?.BASE_URL ?? '/'
 
 export function Splash({ lang }: { lang: Lang }) {
   const [state, setState] = useState<'hidden' | 'running' | 'leaving'>(() => {
+    /*
+     * Not in the installed app. Android (and the Play Store build, which is
+     * the installed app) has already shown its own launch screen by the time
+     * this mounts, so a second one only made every cold start wait before
+     * anything could be touched. The browser tab keeps it.
+     */
+    if (typeof window !== 'undefined' && window.matchMedia?.('(display-mode: standalone)').matches) {
+      return 'hidden'
+    }
     if (typeof sessionStorage === 'undefined') return 'running'
     try {
       return sessionStorage.getItem(SEEN) ? 'hidden' : 'running'
